@@ -113,9 +113,9 @@ WIP
 \maketitle
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}\label{sec:intro}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Paper outline:
 %
 %Intro
@@ -139,48 +139,65 @@ Eulerian approaches treat both solid and fluid domains as ``fluid-like" (e.g. vo
 
 In cases where strict enforcement of kinematic and dynamic interface continuity conditions is not required, reasonable results can be attained when both the fluid and solid domains are solved once per time step \citep{farhat2000two}. However, this approach is unstable for strongly coupled systems, as is expected in cardiac xenotransplant simulations. In contrast, strongly coupled approaches strictly enforce the interface conditions at each time step. This strong coupling can be achieved in different ways, depending on the solver structure: partitioned vs monolithic.
 
-In partitioned (staggered/two-system) approaches, separate solvers (and potentially discretisations) are used for the fluid and solid \citep{tukovic2018openfoam}. Consequently, outer iterations must be performed over the fluid and solid domains at each time step, e.g. using Aitken’s acceleration \citep{degroote2009performance, bungartz2016precice, irons1969version, kuttler2008fixed}, quasi-Newton procedures \citep{santiago2020hpc, delaisse2022surrogate}, or Robin-type coupling \citep{tukovic2019added}. The main limitations of these approaches can be robustness and efficiency, where for highly nonlinear, tightly coupled systems, convergence may not be possible or may be prohibitively slow. This is of concern for a whole heart simulation with multiple deforming structures (valves, chambers, vessels) undergoing complex deformations. In contrast, monolithic approaches treat the entire solid-fluid domain as one system, where the discretised fluid and solid problems are solved concurrently in the same linearised system \citep{degroote2009performance}. The primary advantage of monolithic methods is their ability to deal with tightly coupled nonlinear systems, as well as potentially being faster than partitioned approaches (fewer outer iterations). The disadvantages are related to loss of modularity and the resulting poorly conditioned linear system being more challenging to solve.
+In partitioned (staggered/two-system) approaches, separate solvers (and potentially discretisations) are used for the fluid and solid \citep{tukovic2018openfoam}. Consequently, outer iterations must be performed over the fluid and solid domains at each time step, e.g. using Aitken’s acceleration \citep{degroote2009performance, bungartz2016precice, irons1969version, kuttler2008fixed}, quasi-Newton procedures \citep{santiago2020hpc, delaisse2022surrogate}, or Robin-type coupling \citep{tukovic2019added}. The main limitations of these approaches can be robustness and efficiency, whereas for highly nonlinear, tightly coupled systems, convergence may not be possible or may be prohibitively slow. This is of concern for a whole heart simulation with multiple deforming structures (valves, chambers, vessels) undergoing complex deformations. In contrast, monolithic approaches treat the entire solid-fluid domain as one system, where the discretised fluid and solid problems are solved concurrently in the same linearised system \citep{degroote2009performance}. The primary advantage of monolithic methods is their ability to deal with tightly coupled nonlinear systems, as well as potentially being faster than partitioned approaches (fewer outer iterations). The disadvantages are related to the loss of modularity and the resulting poorly conditioned linear system being more challenging to solve.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Mathematical Model and Numerical Methods}\label{sec:math_model}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Mathematical Models}\label{sec:math_model}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%
-%Math model and numerical methods
-%- General governing equation -> unknown D; limit ourselves to compressibility
+The present work focuses on the dynamic interaction between a laminar, Newtonian, incompressible, isothermal fluid and a nonlinear hyperelastic, compressible solid.
 
-\subsection{Governing Equations} \label{sec:governing_eqn}
+%%--------------------------------------------------------------------------------------------------------------------%%
+\subsection{Fluid Dynamics Governing Equations} \label{sec:fluid_governing_eqn}
+%%--------------------------------------------------------------------------------------------------------------------%%
+An arbitrary Lagrangian-Eulerian (ALE) formulation is adopted for the fluid formulation in the current, defined by mass continuity, linear momentum conservation, and space conservation.
 
-In this work, interest is restricted to Lagrangian formulations of the conservation of linear momentum.
-Assuming small strains, the linear geometry formulation is expressed in strong integral form as:
-\begin{eqnarray} \label{eqn:momentum_lingeom}
-    \int_{\Omega} \rho \frac{\partial^2 \bb{u} }{\partial t^2} \, d\Omega
-    =
-    \oint_{\Gamma} \bb{n} \cdot \bb{\sigma}_s \,  d\Gamma
-    + \int_{\Omega}  \bb{f}_b \, d\Omega
+Mass continuity is equivalent to volume continuity for an incompressible material and can be expressed for a moving domain as
+\begin{eqnarray} \label{eqn:continuity}
+	\oint_{ \Gamma} \bb{n} \cdot (\bb{v} - \boldsymbol{v}_\Gamma) \, d\Gamma = 0
 \end{eqnarray}
-where $\Omega$ is the volume of an arbitrary body bounded by a surface $\Gamma$ with outwards pointing normal $\bb{n}$.
-The density is $\rho$, $\bb{u}$ is the displacement vector, $\bb{\sigma}_s$ is the engineering (small strain) stress tensor, and $\bb{f}_b$ is a body force per unit volume, e.g., $\rho \bb{g}$, where $\bb{g}$ is gravity.
+where $\Omega$ is the volume of an arbitrary body bounded by a surface $\Gamma$ with outwards pointing normal $\bb{n}$, $\bb{v}$ is the fluid velocity, and $\boldsymbol{v}_\Gamma$ is the velocity of surface $\Gamma$.
 
-More generally,  linear momentum conservation can be expressed in a nonlinear geometry form, which is suitable for finite strains.
-Two equivalent nonlinear geometry forms are common: the \emph{total} Lagrangian form:
+Linear momentum can be expressed for a laminar, Newtonian, incompressible, isothermal fluid in a moving domain as
+\begin{eqnarray} \label{eqn:momentum_fluid}
+	\frac{d}{dt} \int_{\Omega} \bb{v} \, d\Omega
+	+ \oint_{\Gamma} \bb{n} \cdot (\bb{v} - \bb{v}_\Gamma) \boldsymbol{v} \, d\Gamma
+	=  \oint_{\Gamma} \bb{n} \cdot \left(\nu \bb{\nabla} \bb{v} \right) \, d\Gamma
+%	+ \frac{1}{\rho} \int_{\Omega} \bb{\nabla} p \, d\Omega
+	+ \int_{\Omega} \bb{\nabla} p \, d\Omega
+%	+ \int_{\Omega} \boldsymbol{f} \, d\Omega
+\end{eqnarray}
+where $\nu$ is the kinematic viscosity, $\rho$ is the density, $p$ is the kinematic pressure (pressure per density), and other body forces, such as gravity, are neglected here.
+
+The motion of the fluid domain must follow the geometric (space) conservation law:
+\begin{eqnarray} \label{eqn:space_conservation}
+	\frac{d}{dt} \int_{ \Omega} \, d\Omega
+	\; - \; \oint_{ \Gamma} \bb{n} \cdot \boldsymbol{v}_\Gamma \, d\Gamma = 0
+\end{eqnarray}
+
+\hl{Be consistent: solid vs fluid: reference or deformed configurations}
+
+%%--------------------------------------------------------------------------------------------------------------------%%
+\subsection{Solid Dynamics Governing Equations} \label{sec:solid_governing_eqn}
+%%--------------------------------------------------------------------------------------------------------------------%%
+Linear momentum conservation can be expressed in the following the following total Lagrangian form, which is suitable for finite strains:
 \begin{eqnarray} \label{eqn:momentum_TL}
-    \int_{\Omega_o} \rho_o \frac{\partial^2 \bb{u} }{\partial t^2} d\Omega_o
+    \int_{\Omega_o} \rho_o \frac{\partial^2 \bb{d} }{\partial t^2} d\Omega_o
     =
     \oint_{\Gamma_o} \left( J \bb{F}^{-\text{T}} \cdot \bb{n}_o \right) \cdot \bb{\sigma} \ d\Gamma_o
     + \int_{\Omega_o}  \bb{f}_b \, d\Omega_o
 \end{eqnarray}
-and the \emph{updated} Lagrangian form:
-\begin{eqnarray} \label{eqn:momentum_UL}
-    \int_{\Omega_u} \frac{\partial }{\partial t} \left( \rho_u \frac{\partial \bb{u} }{\partial t} \right) d\Omega_u
-    = \oint_{\Gamma_u}(j\bb{f}^{-\text{T}}\cdot{\bb{n}_u)\cdot \bb{\sigma}}\ d\Gamma_u
-    + \int_{\Omega_u}  \bb{f}_b \, d\Omega_u
-\end{eqnarray}
-where subscript $o$ indicates quantities in the initial reference configuration, and subscript $u$ indicates quantities in the updated configuration.
-The true (Cauchy) stress tensor is indicated by $\bb{\sigma}$.
-The deformation gradient is defined as $\bb{F} = \textbf{I} + (\bb{\nabla} \bb{u})^{\text{T}}$ and its determinant as $J = \text{det}(\bb{F})$.
-Similarly, the \emph{relative} deformation gradient is given in terms of the displacement \emph{increment} as $\bb{f}=\textbf{I} + \left[\bb{\nabla}(\Delta \bb{u}) \right]^{\text{T}}$ and its determinant as $j = \text{det}(\bb{f})$.
-The displacement increment is the change in displacement between the current time step and the previous time step when the time interval is discretised into a finite number of steps.
+%where $\Omega_o$ is the volume of an arbitrary body bounded by a surface $\Gamma_o$ with outwards pointing normal $\bb{n}_o$.
+Subscript $o$ indicates quantities in the initial reference configuration, which is assumed stress-free here.
+The density is $\rho$, $t$ is time, $\bb{d}$ is the displacement vector, $\bb{\sigma}$ is the true (Cauchy) stress tensor (\hl{stress is prescribed on boundary faces}), and $\bb{f}_b$ is a body force per unit volume, e.g., $\rho \bb{g}$, where $\bb{g}$ is gravity.
+
+The deformation gradient is defined as $\bb{F} = \textbf{I} + (\bb{\nabla} \bb{d})^{\text{T}}$ and its determinant as $J = \text{det}(\bb{F})$, or in index notation as $F_{ij} = \delta_{ij} + \frac{\partial d_i}{\partial X_j}$ and $J = \frac{1}{6} \varepsilon_{ijk} \varepsilon_{pqr} F_{ip} F_{jq} F_{kr}$.
+
+The definition of the true stress ($\bb{\sigma}$) in Equation \ref{eqn:momentum_TL} is given by a chosen mechanical law.
+\hl{XXX} mechanical laws are considered in this work, as briefly outlined in Appendix \ref{app:mechLaws}: linear elasticity (Hooke's law), and three forms of hyperelasticity (St.\,Venant-Kirchhoff, neo-Hookean, and Guccione).
+\hl{We may need to mention linear elasticity, depending on the test case - or not}
+
+%The displacement increment is the change in displacement between the current time step and the previous time step when the time interval is discretised into a finite number of steps.
 
 %The two forms are connected through Nanson’s formula \cite{bathe_finite_1996}, which relate the deformed area vector $\bb{\Gamma}$ with the initial area vector $\bb{\Gamma}_{o}$:
 %\begin{equation}
@@ -189,30 +206,175 @@ The displacement increment is the change in displacement between the current tim
 %Although the total Lagrangian approach is a viable option for wire drawing, the current work adopts the updated Lagrangian approach as developing Eulerian-type upstream and downstream conditions (Section \ref{sec:euler_BCs}) is conceptually easier in an updated Lagrangian formulation.
 
 
-The governing equations are complemented by boundary conditions, with three types considered here: prescribed displacement, prescribed traction, and symmetry.
-The definition of the engineering stress ($\bb{\sigma}_s$) and true stress ($\bb{\sigma}$) in Equations \ref{eqn:momentum_lingeom}, \ref{eqn:momentum_TL} and \ref{eqn:momentum_UL} is given by a chosen mechanical law.
-Five mechanical laws are considered in this work, as briefly outlined in Appendix \ref{app:mechLaws}: linear elasticity (Hooke's law), three forms of hyperelasticity (St.\,Venant-Kirchhoff, neo-Hookean, and Guccione), and neo-Hookean $J_2$ hyperelastoplasticity.
-
 
 %%--------------------------------------------------------------------------------------------------------------------%%
-\subsection{Newton-Type Solution Methods}
+\subsection{Fluid-Solid Interface Conditions} \label{sec:fsi_interface}
 %%--------------------------------------------------------------------------------------------------------------------%%
-To facilitate the comparison between the classic segregated solution algorithm and the proposed Jacobian-free Newton-Krylov algorithm, the governing linear momentum conservation (Equations \ref{eqn:momentum_lingeom}, \ref{eqn:momentum_TL} and \ref{eqn:momentum_UL}) is expressed in the general form:
-\begin{eqnarray} \label{eqn:residual}
-	    \bb{R}(\bb{u}) = \bb{0}
+At the interface between the solid and fluid regions, mass conservation leads to the kinematic interface condition:
+\begin{eqnarray} \label{eqn:kinematic}
+	\bb{v}_f = \frac{\partial \bb{d}}{\partial t}
 \end{eqnarray}
-where $\bb{R}$ represents the \emph{residual} (imbalance) of the equation, which is a function of the primary unknown field.
-For example, in the linear geometry case, the residual is given as
-\begin{eqnarray}
-    \bb{R}(\bb{u})
-    \;=\;
-    \oint_{\Gamma} \bb{n} \cdot \bb{\sigma}_s(\bb{u}) \,  d\Gamma
-    + \int_{\Omega}  \rho \bb{g} \, d\Omega
-    -  \int_{\Omega} \rho \frac{\partial^2 \bb{u} }{\partial t^2} \, d\Omega
+ensuring the fluid and solid share the same motion at the interface, i.e., there is no gap or overlap.
+Subscripts $f$ and $s$ are introduced to indicate fluid and solid quantities, respectively.
+
+Linear momentum conservation yields the kinetic interface condition:
+\begin{eqnarray} \label{eqn:kinetic}
+	\bb{n}_f \cdot \bb{\sigma}_f &=& -\bb{n}_s \cdot \bb{\sigma}_s \\
+	\bb{n}_f \cdot \left[\nu \bb{\nabla} \bb{v} + \nu \left(\bb{\nabla} \bb{v}\right)^T - p \right]_f &=& -\bb{n}_s \cdot \bb{\sigma}_s \\
+\end{eqnarray}
+where $\bb{n}_f = -\bb{n}_s$, as the surface normals are assumed to point outwards from each region.
+\hl{Ensure consistent solid/fluid notation throughout, e.g. subscripts s and f}
+
+
+%%--------------------------------------------------------------------------------------------------------------------%%
+\subsection{Boundary Conditions} \label{sec:BCs}
+%%--------------------------------------------------------------------------------------------------------------------%%
+Three types of boundary conditions for the solid domain are considered here: prescribed displacement, prescribed traction, and symmetry.
+For the fluid domain, four boundary condition types are considered: inlet, outlet, no-slip wall, and symmetry.
+\hl{Give math definitions}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Numerical Methods}\label{sec:numerical_methods}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%--------------------------------------------------------------------------------------------------------------------%%
+\subsection{Spatio-temporal Discretisation}
+\label{sec:space_time_discretisation}
+%%--------------------------------------------------------------------------------------------------------------------%%
+The solution domain is discretised in both space and time.
+The total simulation period is divided into a finite number of time increments, denoted as $\Delta t$, and the discretised governing momentum equation is solved iteratively in a time-marching fashion.
+%The spatial domain is partitioned into a finite number of contiguous convex polyhedral cells.
+The fluid and solid spatial domains are partitioned into a finite set $\mathcal{P}$ of contiguous convex polyhedral cells, where each cell is denoted by $P \in \mathcal{P}$.
+The number of cells in the mesh is indicated by $|\mathcal{P}|$.
+A representative cell $P$ is shown in Figure~\ref{fig:cell}.
+The set of all faces of cell $P$ is denoted by $\mathcal{F}_P$. This set is further subdivided into two disjoint subsets:
+\begin{itemize}
+    \item \textbf{Internal Faces} ($\mathcal{F}^{\text{int}}_P$): Faces that are shared with neighbouring cells.
+    \item \textbf{Boundary Faces} ($\mathcal{F}^{\text{bnd}}_P$): Faces that lie on the boundary of the spatial domain, excluding the fluid-solid interface.
+    The boundary faces of cell $P$ are further classed into three disjoint sets, $\mathcal{F}^{\text{bnd}}_P \coloneqq \mathcal{F}^{\text{disp}}_P \cup \mathcal{F}^{\text{trac}}_P \cup \mathcal{F}^{\text{symm}}_P$, representing boundary faces where displacement ($\mathcal{F}^{\text{disp}}_P$), traction ($\mathcal{F}^{\text{trac}}_P$) and symmetry ($\mathcal{F}^{\text{symm}}_P$) conditions are prescribed.
+    \hl{include fluid}
+       % \quad \text{with} \quad \mathcal{F}^{\text{disp}}_P \cap \mathcal{F}^{\text{trac}}_P = \mathcal{F}^{\text{disp}}_P \cap \mathcal{F}^{\text{symm}}_P = \mathcal{F}^{\text{trac}}_P \cap \mathcal{F}^{\text{symm}}_P = \emptyset.$
+    \item \textbf{Fluid-Solid Interface Faces} ($\mathcal{F}^{\text{fsi}}_P$): Faces that lie on the fluid-solid interface; that is, the region of the fluid domain boundary that coincides with the solid domain boundary.
+\end{itemize}
+\hl{Update for FSI}
+\hl{Find neat notation for FSI...}
+\hl{Give discretisation first before settling on the notation}
+Each internal face $f_i \in \mathcal{F}^{\text{int}}_P$ corresponds to a neighbouring cell $N_{f_i} \in \mathcal{N}_P$, where $\mathcal{N}_P$ is the set of all neighbouring cells of $P$ in the same region. The outward unit normal vector associated with an internal face $f_i$ is denoted by $\mathbf{n}_{f_i}$, while the outward unit normal vector associated with a boundary face $b_i$ is denoted by $\mathbf{n}_{b_i}$.
+The vector $\mathbf{d}_{f_i}$ connects the centroid of cell $P$ with the centroid of the neighbouring cell $N_{f_i}$, whereas the vector $\mathbf{d}_{b_i}$ connects the centroid of cell $P$ with the centroid of boundary face ${b_i}$.
+For convenience, we will also define the set of all faces of cell $P$ excluding those on a traction boundary as $\mathcal{F}_P^{\text{non-trac}} \coloneqq \mathcal{F}_P^{\text{int}} \cup \mathcal{F}_P^{\text{disp}} \cup \mathcal{F}_P^{\text{symm}}$.
+\begin{figure}[htbp]
+	\centering
+   		\includegraphics[width=0.8\textwidth]{figures/cell} 
+	\caption{Representative convex polyhedral cell $P$ and neighbouring cell $N_{f_i}$, which share a face $f_i$ (Taken from \citet{Cardiff2025:JFNK})}
+	\label{fig:cell}
+\end{figure}
+
+
+%%--------------------------------------------------------------------------------------------------------------------%%
+\subsection{Governing Equations for Moving Domains}
+%%--------------------------------------------------------------------------------------------------------------------%%
+As the FSI interface motion is a function of the solution, it is unknown a priori.
+Consequently, the fluid and solid governing equations must be formulated in terms of a known reference configuration \citep{Sebastian-Gjertsen-turtleFSI} %Master_Sebastian_Gjertsen.pdf
+\hl{More comments on the reference configuration - add a figure}
+
+\begin{eqnarray} \label{eqn:continuity_motion}
+	\oint_{\tilde{\Gamma}} \left( J_m \bb{F}_m^{-\text{T}} \cdot \tilde{\bb{n}} \right) \cdot (\bb{v} - \boldsymbol{v}_\Gamma) \, d\tilde{\Gamma} &=& 0 \notag \\
+	\oint_{\tilde{\Gamma}} \left( J_m \bb{F}_m^{-\text{T}} \cdot \tilde{\bb{n}} \right)  \cdot \bb{v}  \, d\tilde{\Gamma} &=&
+		\oint_{\tilde{\Gamma}} \left( J_m \bb{F}_m^{-\text{T}} \cdot \tilde{\bb{n}} \right) \cdot  \boldsymbol{v}_\Gamma \, d\tilde{\Gamma} \notag \\
+	\oint_{\tilde{\Gamma}} \left( J_m \bb{F}_m^{-\text{T}} \cdot \tilde{\bb{n}} \right)  \cdot \bb{v} \, d\tilde{\Gamma} &=& 0
+\end{eqnarray}
+where $\tilde{\Gamma}$ indicates the latest known (available) fluid boundary with unit normal $\tilde{\bb{n}}$, i.e. the fluid mesh from the previous outer iteration.
+Similarly, $\tilde{\Omega}$ represents the latest known fluid mesh volume.
+By definition, $\oint_{\Gamma} \bb{n} \cdot  \boldsymbol{v}_\Gamma \, d\Gamma = \oint_{\tilde{\Gamma}} \left( J_m \bb{F}_m^{-\text{T}} \cdot \tilde{\bb{n}} \right) \cdot  \boldsymbol{v}_\Gamma \, d\tilde{\Gamma} = 0$.
+\hl{Cancel this term out in math model section}
+ %where $\Omega$ is the volume of an arbitrary body bounded by a surface $\Gamma$ with outwards pointing normal $\bb{n}$, $\bb{v}$ is the fluid velocity, and $\boldsymbol{v}_\Gamma$ is the velocity of surface $\Gamma$.
+That is, $\bb{F}_m = \textbf{I} + \left(\bb{\nabla} \bb{d}_m\right)^T$ and $J_m = \text{det}[\bb{F}_m]$,
+
+
+Linear momentum can be expressed in terms of the reference fluid configuration as
+\begin{eqnarray} \label{eqn:momentum_fluid_motion}
+	\frac{d}{dt} \int_{\tilde{\Omega}} J_m \bb{v} \, d\tilde{\Omega}
+	+ \oint_{\tilde{\Gamma}} \left( J_m \bb{F}_m^{-\text{T}} \cdot \tilde{\bb{n}} \right)\cdot (\bb{v} - \bb{v}_\Gamma) \boldsymbol{v} \, d\tilde{\Gamma}
+	=  \oint_{\tilde{\Gamma}}\left( J_m \bb{F}_m^{-\text{T}} \cdot \tilde{\bb{n}} \right) \cdot \left(\nu \bb{F}_m^{-\text{T}} \cdot \bb{\nabla} \bb{v} - p \right) \, d\tilde{\Gamma}
+%	+ \frac{1}{\rho} \int_{\tilde{\Omega}} \bb{\nabla} p \, d\tilde{\Omega}
+\end{eqnarray}
+where $\nu$ is the kinematic viscosity, $\rho$ is the density, $p$ is the pressure, and $\bb{f}$ is a body force per unit volume, neglected here.
+
+An additional challenge is that the fluid mesh should be moved (smoothed) to distribute the FSI interface motion throughout the fluid domain.
+To achieve this, the current work adopts a pseudo-solid approach where the fluid mesh is considered to be a solid domain, where the boundary displacements are prescribed.
+The following governing equation is adopted for the fluid mesh motion:
+\begin{eqnarray} \label{eqn:motion}
+    \oint_{\tilde{\Gamma}}
+    \bb{n}_u \cdot \left[ \mu_m \bb{\nabla}\bb{d}_m
+    + \beta_m \mu_m (\bb{\nabla}\bb{d}_m)^T
+    + \beta_m \lambda_m \text{tr}(\bb{\nabla} \bb{d}_m)\textbf{I} \right] 
+    \, d\tilde{\Gamma}
     \;=\; \bb{0}
 \end{eqnarray}
-where the dependence of the stress tensor on the solution vector is made explicitly clear: $\bb{\sigma}_s(\bb{u})$.
+It should be noted that Equation \ref{eqn:motion} is integrated over the fluid reference configuration, but it is not mapped to the deformed configuration; this choice is made purely from an efficiency perspective: the purpose of this equation is merely to maintain fluid mesh quality, and it need not strictly correspond to a physical system.
+To maintain fluid mesh quality near the FSI interface and boundary, the stiffness parameters $\mu_m$ and $\lambda_m$ are defined to be inversely proportional to the distance from the fluid boundary according to:
+\hl{express with if-else}
+\begin{eqnarray}
+	\beta_m &=& \text{min}(\beta_\text{max} \bar{\delta}^{-1}, \text{max}(\beta_\text{min} \bar{\delta}^{-1}, \delta^{-1}))
+\end{eqnarray}
+where $\delta$ is the (approximate) distance from the fluid boundary.
+In the current work, $\delta$ is calculated using a topological search approach, implemented in the \texttt{meshWave} class of OpenFOAM.
+$\beta_m$ is then normalised with respect to its average value, i.e. $\beta_m \coloneqq \frac{\beta_m}{\bar{\beta_m}}$, such that $\bar{\beta_m} \equiv 1$. \hl{introduce additional terms to avoid confusion}
 
+
+\hl{Give the FSI interface conditions for a moving mesh}
+
+
+%%--------------------------------------------------------------------------------------------------------------------%%
+\subsection{Newton-Type Solution Method}
+%%--------------------------------------------------------------------------------------------------------------------%%
+To facilitate the application of a Newton-type solution algorithm, the governing equations are expressed in \emph{residual} form as:
+\begin{eqnarray} \label{eqn:residual}
+	    \bb{R}(\bb{U}) =
+	         \begin{pmatrix}
+			\bb{R}_u  \\
+			R_p \\
+			\bb{R}_m \\
+		    	\bb{R}_d
+		    \end{pmatrix}
+		= \bb{0}
+\end{eqnarray}
+where $\bb{R}$ represents the \emph{residual} (imbalance) of the equations, which is a function of the primary unknowns field $\bb{U} = \left\{\bb{v}, p, \bb{d}_m, \bb{d} \right\}$.
+Concretely, the components of the residual are given as
+\begin{eqnarray}
+    \bb{R}_u %(\bb{U})
+    &=&
+	\oint_{\tilde{\Gamma}}\left( J_m \bb{F}_m^{-\text{T}} \cdot \tilde{\bb{n}} \right) \cdot \left(\nu \bb{F}_m^{-\text{T}} \cdot \bb{\nabla} \bb{v} - p \right) \, d\tilde{\Gamma}
+	- \frac{d}{dt} \int_{\tilde{\Omega}} J_m \bb{v} \, d\tilde{\Omega}
+	- \oint_{\tilde{\Gamma}} \left( J_m \bb{F}_m^{-\text{T}} \cdot \tilde{\bb{n}} \right)\cdot (\bb{v} - \bb{v}_\Gamma) \boldsymbol{v} \, d\tilde{\Gamma}
+    \notag \\
+    R_p %(\bb{U})
+    &=&
+    \oint_{\tilde{\Gamma}} \left( J_m \bb{F}_m^{-\text{T}} \cdot \tilde{\bb{n}} \right)  \cdot \bb{v} \, d\tilde{\Gamma} 
+    \notag \\
+    \bb{R}_m %(\bb{U})
+    &=&
+     \oint_{\tilde{\Gamma}} \bb{n}_u \cdot \left[ \mu_m \bb{\nabla}\bb{d}_m
+    + \beta_m \mu_m (\bb{\nabla}\bb{d}_m)^T
+    + \beta_m \lambda_m \text{tr}(\bb{\nabla} \bb{d}_m)\textbf{I} \right] 
+    \, d\tilde{\Gamma}
+    \notag \\
+    \bb{R}_d %(\bb{U})
+    &=&
+     \oint_{\Gamma_o} \left( J \bb{F}^{-\text{T}} \cdot \bb{n}_o \right) \cdot \bb{\sigma}(\bb{d}) \,  d\Gamma_o
+    + \int_{\Omega_o}  \rho_o \bb{g} \, d\Omega_o
+    -  \int_{\Omega_o} \rho_o \frac{\partial^2 \bb{d} }{\partial t^2} \, d\Omega_o
+\end{eqnarray}
+where the primary unknown $\bb{U} = \left\{ \bb{d}, \bb{v}, p \right\}$, and the dependence of the solid stress tensor on the displacement vector is made explicitly clear: $\bb{\sigma}_s(\bb{d})$.
+
+Several types of coupling exist between the residual components:
+\begin{itemize}
+	\item \textbf{Fluid-to-solid}: the fluid stress appears as a force on the FSI interface in the $\bb{R}_d$ equation. \hl{not explicitly shown!}
+	\item \textbf{Solid-to-fluid}: the solid motion ($\bb{d}$) defines the motion of the FSI interface in the $\bb{R}_u$ equation and $R_p$ equations. \hl{not explicitly shown!}
+	\item \textbf{Solid-to-mesh}: the solid motion ($\bb{d}$) defines the fluid mesh motion of the FSI interface in the $\bb{R}_m$ equation. \hl{not explicitly shown!}
+	\item \textbf{Mesh-to-fluid}: the fluid mesh motion defines the mapping from the reference domain and the mesh flux in the $\bb{R}_u$ equation and $R_p$ equations.
+\end{itemize}
 
 
 In Newton-type methods, a Taylor expansion about a current point $\bb{u}_k$ can be used to solve Equation \ref{eqn:residual} \cite{Knoll2004}:
@@ -283,46 +445,10 @@ A fully explicit procedure can also be viewed from this perspective by selecting
 \end{eqnarray}
 
 
-%%--------------------------------------------------------------------------------------------------------------------%%
-\subsection{Cell-Centred Finite Volume Discretisation}
-\label{sec:discretisation}
-%%--------------------------------------------------------------------------------------------------------------------%%
-In this work, a nominally second-order cell-centred finite volume discretisation is employed.
-% based on previously described work, for example, \citep{Cardiff2017, Batistic2022, Tukovic2013, Jasak2000}.
-%Consequently, only a summary of the discretisation is presented below.
-The solution domain is discretised in both space and time.
-The total simulation period is divided into a finite number of time increments, denoted as $\Delta t$, and the discretised governing momentum equation is solved iteratively in a time-marching fashion.
-%The spatial domain is partitioned into a finite number of contiguous convex polyhedral cells.
-The spatial domain is partitioned into a finite set $\mathcal{P}$ of contiguous convex polyhedral cells, where each cell is denoted by $P \in \mathcal{P}$.
-The number of cells in the mesh is indicated by $|\mathcal{P}|$.
-A representative cell $P$ is shown in Figure~\ref{fig:cell}.
-The set of all faces of cell $P$ is denoted by $\mathcal{F}_P$. This set is further subdivided into two disjoint subsets:
-\begin{itemize}
-    \item \textbf{Internal Faces} ($\mathcal{F}^{\text{int}}_P$): Faces that are shared with neighbouring cells.
-    \item \textbf{Boundary Faces} ($\mathcal{F}^{\text{bnd}}_P$): Faces that lie on the boundary of the spatial domain.
-    The boundary faces of cell $P$ are further classed into three disjoint sets, $\mathcal{F}^{\text{bnd}}_P \coloneqq \mathcal{F}^{\text{disp}}_P \cup \mathcal{F}^{\text{trac}}_P \cup \mathcal{F}^{\text{symm}}_P$, representing boundary faces where displacement ($\mathcal{F}^{\text{disp}}_P$), traction ($\mathcal{F}^{\text{trac}}_P$) and symmetry ($\mathcal{F}^{\text{symm}}_P$) conditions are prescribed.
-       % \quad \text{with} \quad \mathcal{F}^{\text{disp}}_P \cap \mathcal{F}^{\text{trac}}_P = \mathcal{F}^{\text{disp}}_P \cap \mathcal{F}^{\text{symm}}_P = \mathcal{F}^{\text{trac}}_P \cap \mathcal{F}^{\text{symm}}_P = \emptyset.$
-\end{itemize}
-Each internal face $f_i \in \mathcal{F}^{\text{int}}_P$ corresponds to a neighbouring cell $N_{f_i} \in \mathcal{N}_P$, where $\mathcal{N}_P$ is the set of all neighbouring cells of $P$. The outward unit normal vector associated with an internal face $f_i$ is denoted by $\mathbf{n}_{f_i}$, while the outward unit normal vector associated with a boundary face $b_i$ is denoted by $\mathbf{n}_{b_i}$.
-The vector $\mathbf{d}_{f_i}$ connects the centroid of cell $P$ with the centroid of the neighbouring cell $N_{f_i}$, whereas the vector $\mathbf{d}_{b_i}$ connects the centroid of cell $P$ with the centroid of boundary face ${b_i}$.
-For convenience, we will also define the set of all faces of cell $P$ excluding those on a traction boundary as $\mathcal{F}_P^{\text{non-trac}} \coloneqq \mathcal{F}_P^{\text{int}} \cup \mathcal{F}_P^{\text{disp}} \cup \mathcal{F}_P^{\text{symm}}$.
-%The proposed solution discretisation follows closely the approach of \citet{cardiff_lagrangian_2017}; consequently, only an overview of the final discretised form of equations and adopted solution algorithm are given below.
-%\begin{figure}[htbp]
-%	\centering
-%%	\subfigure[Magnitude of the manufactured displacement solution]
-%%	{
-%%		\label{fig:mms_solution}
-%   		\includegraphics[width=\textwidth]{figures/cell} 
-%%   	}
-%%	\subfigure[Polyhedral mesh with $1\,000$ cells]
-%%	{
-%%		\label{fig:mms_mesh}
-%%   		\includegraphics[height=0.45\textwidth]{figures/mms_mesh}  
-%%   	}
-%	\caption{Representative convex polyhedral cell $P$ and neighbouring cell $N_{f_i}$, which share a face $f_i$.}
-%	\label{fig:cell}
-%\end{figure}
 
+\subsection{Rest of CC distcretisation}
+
+In this work, a nominally second-order cell-centred finite volume discretisation is employed.
 
 %The conservation equation (Equations \ref{eqn:momentum_lingeom}, \ref{eqn:momentum_TL}, or \ref{eqn:momentum_UL}) is applied to each cell $\mathcal{P}$ and discretised in terms of the displacement at the centroid of the cell $\bb{u}_P$ and the displacements at the centroids of the neighbouring cells $\bb{u}_{N_{f_i}} \in N_i$.
 The conservation equation (Equations \ref{eqn:momentum_lingeom}, \ref{eqn:momentum_TL}, or \ref{eqn:momentum_UL}) is applied to each cell $P$ and discretised in terms of the displacement at the centroid of the cell $\boldsymbol{u}_P$ and the displacements $\boldsymbol{u}_{N_{f_i}}$ at the centroids of the neighbouring cells.

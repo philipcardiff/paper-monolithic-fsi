@@ -87,15 +87,16 @@ textheight=24cm, % llncs has 19.3cm
 
 \title[Article Title]{A monolithic cell-centred finite volume approach for fluid-solid interaction}
 
-\author*[1,2,3]{\fnm{Philip} \sur{Cardiff}}\email{philip.cardiff@ucd.ie}
+\author*[1]{\fnm{Philip} \sur{Cardiff}}\email{philip.cardiff@ucd.ie}
+%\author*[1,2,3]{\fnm{Philip} \sur{Cardiff}}\email{philip.cardiff@ucd.ie}
 %\author[1,2,3]{\fnm{Dylan} \sur{Armfield}}
 %%\author[5]{\fnm{Hiroaki} \sur{Nishikawa}}
 %\author[4]{\fnm{\v{Z}eljko} \sur{Tukovi\'{c}}}
 %\author[4]{\fnm{Ivan} \sur{Batisti\'{c}}}
 
 \affil*[1]{\orgdiv{School of Mechanical and Materials Engineering}, \orgname{University College Dublin}, \orgaddress{\country{Ireland}}}
-\affil[2]{\orgdiv{UCD Centre for Mechanics}, \orgname{University College Dublin}, \orgaddress{\country{Ireland}}}
-\affil[3]{\orgdiv{SFI I-Form Centre}, \orgname{University College Dublin}, \orgaddress{\country{Ireland}}}
+%\affil[2]{\orgdiv{UCD Centre for Mechanics}, \orgname{University College Dublin}, \orgaddress{\country{Ireland}}}
+%\affil[3]{\orgdiv{I-Form Centre}, \orgname{University College Dublin}, \orgaddress{\country{Ireland}}}
 %\affil[4]{\orgdiv{Faculty of Mechanical Engineering and Naval Architecture}, \orgname{University of Zagreb}, \orgaddress{\country{Croatia}}}
 %\affil[5]{\orgname{National Institute of Aerospace}, \orgaddress{\country{Hampton, VA 23666, USA}}}
 
@@ -141,97 +142,272 @@ In cases where strict enforcement of kinematic and dynamic interface continuity 
 
 In partitioned (staggered/two-system) approaches, separate solvers (and potentially discretisations) are used for the fluid and solid \citep{tukovic2018openfoam}. Consequently, outer iterations must be performed over the fluid and solid domains at each time step, e.g. using Aitken’s acceleration \citep{degroote2009performance, bungartz2016precice, irons1969version, kuttler2008fixed}, quasi-Newton procedures \citep{santiago2020hpc, delaisse2022surrogate}, or Robin-type coupling \citep{tukovic2019added}. The main limitations of these approaches can be robustness and efficiency, whereas for highly nonlinear, tightly coupled systems, convergence may not be possible or may be prohibitively slow. This is of concern for a whole heart simulation with multiple deforming structures (valves, chambers, vessels) undergoing complex deformations. In contrast, monolithic approaches treat the entire solid-fluid domain as one system, where the discretised fluid and solid problems are solved concurrently in the same linearised system \citep{degroote2009performance}. The primary advantage of monolithic methods is their ability to deal with tightly coupled nonlinear systems, as well as potentially being faster than partitioned approaches (fewer outer iterations). The disadvantages are related to the loss of modularity and the resulting poorly conditioned linear system being more challenging to solve.
 
+More references:
+- \citet{Gjertsen2017} masters thesis, \citep{Sebastian-Gjertsen-turtleFSI}
+- Wolfgang Wall paper
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Mathematical Models}\label{sec:math_model}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+The present work focuses on the time evolution of a system (Figure \ref{fig:fsi_problem}) that occupies moving domain $\Omega(t)$, which is composed of a moving solid domain $\Omega^s(t)$ and a moving fluid domain $\Omega^f(t)$.
+The boundary of system domain $\bb{\Gamma}$ is composed of solid $\bb{\Gamma}^s$ and fluid $\bb{\Gamma}^f$ regions, and the region where the solid and fluid boundaries coincide is termed the \emph{fluid-solid interface}.
+The problem consists of determining the time evolution of the system configuration from the initial configuration ($\Omega^s_0$, $\Omega^f_0$, $\bb{\Gamma}^s_0$, $\bb{\Gamma}^f_0$) to the deformed configuration ($\Omega^s(t)$, $\Omega^f(t)$, $\bb{\Gamma}^s(t)$, $\bb{\Gamma}^f(t)$) at time $t$.
+%$\bb{\Gamma} = \bb{\Gamma}^f \cup \bb{\Gamma}^s$ but exclude FSI interface.
+%dynamic interaction between a laminar, Newtonian, incompressible, isothermal fluid and a nonlinear hyperelastic, compressible solid.
+%The mechanical problem under consideration is a time-varying domain $\Omega(t)$ is composed of a solid domain $\Omega(t)^s$ and a fluid domain $\Omega(t)^f$
+%In this section, the governing equations for the fluid-solid interaction problem are presented in the \emph{deformed} configuration; that is, the integrals are given over the deformed solid and fluid domains.
+%As the deformed configurations are unknown (the solid deformation is to be determined), the governing equations are subsequently presented over known \emph{reference} configurations, exploiting appropriate mappings from the deformed configuration.
+%Consider a representative fluid-solid interaction problem (Figure \ref{fig:fsi_problem}
+\begin{figure}[htbp]
+	\centering
+	\subfigure[Initial configurations of the fluid (left) and solid (right) domains, showing the initial volumes $\Omega_0$, boundaries $\bb{\Gamma}_0$ and outward-facing unit normals $\hat{\bb{n}}_0$]
+	{
+		\label{fig:mms_solution}
+   		\includegraphics[width=0.8\textwidth]{figures/fsi_problem_initial} 
+   	}
+	\subfigure[Deformed configurations of the fluid (left) and solid (right) domains at time $t$, showing the deformed volumes $\Omega(t)$, boundaries $\bb{\Gamma}(t)$ and outward-facing unit normals $\hat{\bb{n}}(t)$]
+	{
+		\label{fig:mms_mesh}
+   		\includegraphics[width=0.8\textwidth]{figures/fsi_problem_current}  
+   	}
+	\caption{Representative fluid-solid interaction problem, where superscript $f$ represents fluid domain quantities and superscript $s$ represents solid domain quantities. Image adapted from \citet{OneraWebsite}}
+	\label{fig:fsi_problem}
+\end{figure}
 
-The present work focuses on the dynamic interaction between a laminar, Newtonian, incompressible, isothermal fluid and a nonlinear hyperelastic, compressible solid.
+OneraWebsite: https://w3.onera.fr/erc-aeroflex/en/project/strategies-for-coupling-the-fluid-and-solid-dynamics
+
+
+%%%--------------------------------------------------------------------------------------------------------------------%%
+%\subsection{Governing Equations in the Deformed Configurations}
+%%%--------------------------------------------------------------------------------------------------------------------%%
+
+%%----------------------------------------------------------%%
+\subsection{Solid Dynamics Governing Equations}
+%%----------------------------------------------------------%%
+Dynamics of the solid region are governed by linear momentum conservation, which can be expressed in Lagrangian form on the deformed configuration as
+\begin{eqnarray} \label{eqn:solid_momentum_deformed}
+    \int_{\Omega^s} \frac{\partial \rho^s \bb{v} }{\partial t} d\Omega^s
+    =
+    \oint_{\Gamma^s} \hat{\bb{n}}^s \cdot \bb{\sigma} \ d\Gamma^s
+    + \int_{\Omega^s}  \bb{f}_b^s \, d\Omega^s
+\end{eqnarray}
+where $\rho^s$ is the density, $\bb{v}^s$ is the velocity vector, $\hat{\bb{n}}^s$ is the unit outwards-facing normal to surface $\Gamma^s$, $\bb{\sigma}^s$ is the true (Cauchy) stress tensor, and $\bb{f}_b^s$ is a body force per unit volume, e.g. $\bb{f}_b^s = \rho^s \bb{g}$ for a gravity body force, where $\bb{g}$ is gravitionational acceleration.
+For notational simplicity, the time dependence notation $(t)$ has been omitted from the moving volumes and surfaces; that is, $\Omega(t) \equiv \Omega$ and $\Gamma(t) \equiv \Gamma$.
+
+
+%$\hat{\bb{n}}^s = \nicefrac{\bb{\Gamma}}{|\bb{\Gamma}|}$ is the outwards-pointing unit surface normal,
+
+The integrals above (Equation \ref{eqn:solid_momentum_deformed}) are expressed over the as-yet-unknown deformed configuration. 
+These integrals can be reexpressed over the known initial configuration by introducing the deformation gradient $\bb{F} = \textbf{I} + (\bb{\nabla} \bb{d})^{\text{T}}$ and its determinant as $J = \text{det}[\bb{F}]$, in terms of the displacement vector $\bb{d}$ and del operator $\bb{\nabla}$.
+Note that the current work adopts the convention that $(\nabla d)_{ij} = \nicefrac{\partial d_j}{\partial x_i}$, so, to avoid confusion, $\bb{F}$ and $J$ are expressed in index notation as $F_{ij} = \delta_{ij} + \frac{\partial d_i}{\partial X_j}$ and $J = \frac{1}{6} \varepsilon_{ijk} \varepsilon_{pqr} F_{ip} F_{jq} F_{kr}$, where $\delta_{ij}$ is the Kronecker delta and $\varepsilon_{ijk}$ is the permutation symbol.
+
+Employing $\bb{F}$ and $J$, volume integrals can be expressed over the initial configuration as
+\begin{eqnarray}
+    \int_{\Omega^s} \bb{T} \; \text{d}\Omega^s &=& \int_{\Omega_0^s} J \bb{T} \; \text{d}\Omega^s_0
+\end{eqnarray}
+where $\bb{T}$ represents an arbitrary scalar, vector or tensor field.
+From this, $J$ can be interpreted as the ratio of the deformed to the initial volume $J = \nicefrac{\Omega^s}{\Omega_0^s}$, allowing the current density to be expressed in terms of the initial density as $\rho^s = J \rho_0^s$.
+Similarly, surface integrals over the deformed configuration can be reexpressed over the initial configuration as
+\begin{eqnarray}
+    \oint_{\Gamma^s} \hat{\bb{n}}^s \cdot \bb{T} \; \text{d}\Gamma^s &=&
+    \oint_{\Gamma_0^s} \left(J \bb{F}^{-T} \cdot \hat{\bb{n}}_0^s \right) \cdot \bb{T} \; \text{d}\Gamma_0^s
+\end{eqnarray}
+where the $\cdot$ operator is replaced by a suitable scalar/vector/tensor multiplication operator.
+Here, $J \bb{F}^{-T}$ can be seen to rotate and scale the normal vector from the initial to the deformed configuration;
+this stems from Nanson's relation, $\bb{\Gamma} = J \bb{F}^{-T} \cdot \bb{\Gamma}_0$, which relates the deformed area vector $\bb{\Gamma}$ to the initial area vector $\bb{\Gamma}_0$. 
+
+With these mappings, linear momentum conservation can be expressed in the so-called \emph{total Lagrangian} form, where integrals are given over the initial configuration:
+\begin{eqnarray} \label{eqn:solid_momentum_TL}
+    \int_{\Omega_0^s} \rho_0 \frac{\partial^2 \bb{d} }{\partial t^2} \; d\Omega_0^s
+    &=&
+    \oint_{\Gamma_0^s} \left( J \bb{F}^{-\text{T}} \cdot \bb{n}_0^s \right) \cdot \bb{\sigma}^s \ d\Gamma_0^s
+    + \int_{\Omega_0^s}  \bb{f}_{b_0}^s \, d\Omega_0^s
+\end{eqnarray}
+The body force $\bb{f}_{b_0}^s$ is per unit \emph{initial} volume, e.g. $\bb{f}_{b_0}^s = \rho^s_0 \bb{g}$.
+
+%where $\Omega_o$ is the volume of an arbitrary body bounded by a surface $\Gamma_o$ with outwards pointing normal $\bb{n}_o$.
+%Subscript $o$ indicates quantities in the initial reference configuration, which is assumed stress-free here.
+%The density is $\rho$, $t$ is time, $\bb{d}$ is the displacement vector, $\bb{\sigma}$ is the true (Cauchy) stress tensor (\hl{stress is prescribed on boundary faces}), and $\bb{f}_b$ is a body force per unit volume, e.g., $\rho \bb{g}$, where $\bb{g}$ is gravity.
+
+%The deformation gradient is defined as $\bb{F} = \textbf{I} + (\bb{\nabla} \bb{d})^{\text{T}}$ and its determinant as $J = \text{det}(\bb{F})$, or in index notation as $F_{ij} = \delta_{ij} + \frac{\partial d_i}{\partial X_j}$ and $J = \frac{1}{6} \varepsilon_{ijk} \varepsilon_{pqr} F_{ip} F_{jq} F_{kr}$.
+
+The definition of the true stress ($\bb{\sigma}^s$ in Equations \ref{eqn:solid_momentum_deformed} and \ref{eqn:solid_momentum_TL}) is given by a chosen mechanical law.
+Four mechanical laws are considered in this work, as defined in Appendix A of \citet{Cardiff2025JFNK}: linear elasticity (Hooke's law), and three forms of hyperelasticity (St.\ Venant-Kirchhoff, neo-Hookean, and Guccione).
+%\hl{We may need to mention linear elasticity, depending on the test case - or not}
+
+Three types of boundary conditions for the solid domain are considered here: prescribed displacement, prescribed traction, and symmetry.
+
+%The displacement increment is the change in displacement between the current time step and the previous time step when the time interval is discretised into a finite number of steps.
+
+
 
 %%--------------------------------------------------------------------------------------------------------------------%%
 \subsection{Fluid Dynamics Governing Equations} \label{sec:fluid_governing_eqn}
 %%--------------------------------------------------------------------------------------------------------------------%%
-An arbitrary Lagrangian-Eulerian (ALE) formulation is adopted for the fluid formulation in the current, defined by mass continuity, linear momentum conservation, and space conservation.
 
+The dynamics of the moving fluid region are governed by mass conservation and linear momentum conservation.
+%, which can be expressed in Lagrangian form on the deformed configuration as
+%
+%An arbitrary Lagrangian-Eulerian (ALE) formulation is adopted for the fluid formulation in the current, defined by mass continuity, linear momentum conservation, and space conservation.
 Mass continuity is equivalent to volume continuity for an incompressible material and can be expressed for a moving domain as
-\begin{eqnarray} \label{eqn:continuity}
-	\oint_{ \Gamma} \bb{n} \cdot (\bb{v} - \boldsymbol{v}_\Gamma) \, d\Gamma = 0
+\begin{eqnarray} \label{eqn:continuity_deformed_full}
+	\frac{d}{dt} \int_{\Omega^f} \, d\Omega^f
+	\;+\; \oint_{ \Gamma^f} \hat{\bb{n}}^f \cdot (\bb{v}^f - \boldsymbol{v}^{\Gamma}) \, d\Gamma^f = 0
 \end{eqnarray}
-where $\Omega$ is the volume of an arbitrary body bounded by a surface $\Gamma$ with outwards pointing normal $\bb{n}$, $\bb{v}$ is the fluid velocity, and $\boldsymbol{v}_\Gamma$ is the velocity of surface $\Gamma$.
-
-Linear momentum can be expressed for a laminar, Newtonian, incompressible, isothermal fluid in a moving domain as
-\begin{eqnarray} \label{eqn:momentum_fluid}
-	\frac{d}{dt} \int_{\Omega} \bb{v} \, d\Omega
-	+ \oint_{\Gamma} \bb{n} \cdot (\bb{v} - \bb{v}_\Gamma) \boldsymbol{v} \, d\Gamma
-	=  \oint_{\Gamma} \bb{n} \cdot \left(\nu \bb{\nabla} \bb{v} \right) \, d\Gamma
-%	+ \frac{1}{\rho} \int_{\Omega} \bb{\nabla} p \, d\Omega
-	+ \int_{\Omega} \bb{\nabla} p \, d\Omega
-%	+ \int_{\Omega} \boldsymbol{f} \, d\Omega
+where $\bb{v}^f$ is the fluid velocity, and $\boldsymbol{v}^\Gamma$ is the velocity of the moving surface $\Gamma^f$.
+%$\Omega$ is the volume of an arbitrary body bounded by a surface $\Gamma$ with outwards pointing normal $\bb{n}$,
+The continuity equation simplifies to
+\begin{eqnarray} \label{eqn:continuity_deformed}
+	\oint_{ \Gamma^f} \hat{\bb{n}}^f \cdot \bb{v}^f \, d\Gamma^f = 0
 \end{eqnarray}
-where $\nu$ is the kinematic viscosity, $\rho$ is the density, $p$ is the kinematic pressure (pressure per density), and other body forces, such as gravity, are neglected here.
-
-The motion of the fluid domain must follow the geometric (space) conservation law:
+by using the geometric (space) conservation law
 \begin{eqnarray} \label{eqn:space_conservation}
-	\frac{d}{dt} \int_{ \Omega} \, d\Omega
-	\; - \; \oint_{ \Gamma} \bb{n} \cdot \boldsymbol{v}_\Gamma \, d\Gamma = 0
+	\frac{d}{dt} \int_{\Omega^f} \, d\Omega^f
+	\; - \; \oint_{ \Gamma^f} \hat{\bb{n}}^f \cdot \boldsymbol{v}^\Gamma \, d\Gamma^\Gamma = 0
+\end{eqnarray}
+%which states that the rate of change of the fluid domain volume (or a subset of it) must equal the net flux of the velocity across its boundaries.
+
+
+Similarly, linear momentum can be expressed in Eulerian form for a laminar, Newtonian, incompressible, isothermal fluid in a moving domain as
+\begin{eqnarray} \label{eqn:momentum_fluid_deformed}
+	\frac{d}{dt} \int_{\Omega^f} \bb{v}^f \, d\Omega^f
+	+ \oint_{\Gamma^f} \hat{\bb{n}}^f \cdot (\bb{v}^f - \bb{v}^\Gamma) \boldsymbol{v}^f \, d\Gamma^f
+	=  \oint_{\Gamma^f} \hat{\bb{n}}^f \cdot \bb{\sigma}^f \, d\Gamma^f
+%	=  \oint_{\Gamma^f} \hat{\bb{n}}^f \cdot \left(\nu \bb{\nabla} \bb{v}^f \right) \, d\Gamma^f
+%%	+ \frac{1}{\rho} \int_{\Omega} \bb{\nabla} p \, d\Omega
+%	+ \int_{\Omega^f} \bb{\nabla} p \, d\Omega^f
+	+ \int_{\Omega^f} \bb{f}_b^f \, d\Omega^f
+\end{eqnarray}
+where $\bb{f}_b^f$ are body forces per mass, e.g., $\bb{f}_b^f = g$.
+The true (Cauchy) stress $\bb{\sigma}^f$ is defined for a Newtonian fluid as
+\begin{eqnarray} \label{eqn:fluid_stress}
+	\bb{\sigma}^f &=& \nu \bb{\nabla} \bb{v}^f + \nu \left(\bb{\nabla} \bb{v}^f \right)^T - p \textbf{I}
+\end{eqnarray}
+where $\nu$ is the kinematic viscosity, $p$ is the kinematic pressure (pressure per density), and $\textbf{I}$ is the second-order identity tensor.
+%\begin{eqnarray} \label{eqn:momentum_fluid_deformed}
+%	\frac{d}{dt} \int_{\Omega^f} \bb{v}^f \, d\Omega^f
+%	+ \oint_{\Gamma^f} \hat{\bb{n}}^f \cdot (\bb{v}^f - \bb{v}^\Gamma) \boldsymbol{v}^f \, d\Gamma^f
+%	=  \oint_{\Gamma^f} \hat{\bb{n}}^f \cdot \left(\nu \bb{\nabla} \bb{v}^f \right) \, d\Gamma^f
+%%	+ \frac{1}{\rho} \int_{\Omega} \bb{\nabla} p \, d\Omega
+%	+ \int_{\Omega^f} \bb{\nabla} p \, d\Omega^f
+%%	+ \int_{\Omega} \boldsymbol{f} \, d\Omega
+%\end{eqnarray}
+%where $\nu$ is the kinematic viscosity, $p$ is the kinematic pressure (pressure per density), and other body forces, such as gravity, are neglected here.
+%$\rho$ is the density, 
+
+As was the case for the solid dynamics equations, the integrals above (Equations \ref{eqn:continuity_deformed} and \ref{eqn:momentum_fluid_deformed}) are expressed over the unknown deformed fluid configuration and must be expressed over a known configuration.
+To achieve this, we employ the deformation gradient $\bb{F}^{\Gamma}$ for the moving fluid domain; that is, the deformation of the fluid domain is driven by the motion of the fluid-solid interface, where, as yet, we have not defined a governing equation for the propagation of this interface motion into the fluid domain.
+For a given fluid domain displacement $\bb{d}^{\Gamma}$, the fluid domain deformation gradient is defined as $\bb{F}^{\Gamma} = \textbf{I} + (\bb{\nabla} \bb{d}^\Gamma)^{\text{T}}$ and its determinant as $J^\Gamma = \text{det}[\bb{F}^\Gamma]$.
+
+Employing $\bb{F}_{\Gamma}$ and $J_\Gamma$, volume continuity can be expressed in terms of an integral over the initial fluid configuration as
+\begin{eqnarray} \label{eqn:continuity_initial}
+%	\oint_{\Gamma^f_0}  \left( J \bb{F}^{-\text{T}} \cdot \hat{\bb{n}}_0^s \right)  \cdot (\bb{v}^f - \boldsymbol{v}^{\Gamma}) \, d\Gamma^f_0 = 0
+	\oint_{\Gamma^f_0}  \left( J \bb{F}^{-\text{T}} \cdot \hat{\bb{n}}_0^f \right) \cdot \bb{v}^f \, d\Gamma^f_0 = 0
 \end{eqnarray}
 
-\hl{Be consistent: solid vs fluid: reference or deformed configurations}
-
-%%--------------------------------------------------------------------------------------------------------------------%%
-\subsection{Solid Dynamics Governing Equations} \label{sec:solid_governing_eqn}
-%%--------------------------------------------------------------------------------------------------------------------%%
-Linear momentum conservation can be expressed in the following the following total Lagrangian form, which is suitable for finite strains:
-\begin{eqnarray} \label{eqn:momentum_TL}
-    \int_{\Omega_o} \rho_o \frac{\partial^2 \bb{d} }{\partial t^2} d\Omega_o
-    =
-    \oint_{\Gamma_o} \left( J \bb{F}^{-\text{T}} \cdot \bb{n}_o \right) \cdot \bb{\sigma} \ d\Gamma_o
-    + \int_{\Omega_o}  \bb{f}_b \, d\Omega_o
+Before expressing linear momentum conservation over the initial configuration, we must introduce the mapping of the gradient operator in the deformed configuration to the gradient operator in the initial configuration:
+\begin{eqnarray}
+	\bb{\nabla} \bb{T} = \bb{F}^{-T} \cdot \left( \bb{\nabla}_0 \bb{T} \right) \\
+	\left( \bb{\nabla} \bb{T} \right)^T = \left( \bb{\nabla}_0 \bb{T} \right)^T \cdot  \bb{F}^{-1} 
 \end{eqnarray}
-%where $\Omega_o$ is the volume of an arbitrary body bounded by a surface $\Gamma_o$ with outwards pointing normal $\bb{n}_o$.
-Subscript $o$ indicates quantities in the initial reference configuration, which is assumed stress-free here.
-The density is $\rho$, $t$ is time, $\bb{d}$ is the displacement vector, $\bb{\sigma}$ is the true (Cauchy) stress tensor (\hl{stress is prescribed on boundary faces}), and $\bb{f}_b$ is a body force per unit volume, e.g., $\rho \bb{g}$, where $\bb{g}$ is gravity.
 
-The deformation gradient is defined as $\bb{F} = \textbf{I} + (\bb{\nabla} \bb{d})^{\text{T}}$ and its determinant as $J = \text{det}(\bb{F})$, or in index notation as $F_{ij} = \delta_{ij} + \frac{\partial d_i}{\partial X_j}$ and $J = \frac{1}{6} \varepsilon_{ijk} \varepsilon_{pqr} F_{ip} F_{jq} F_{kr}$.
+With these mappings, linear momentum conservation for the fluid can be expressed over the initial configuration as
+%\begin{eqnarray} \label{eqn:momentum_fluid_deformed}
+%	\int_{\Omega^f_0} J_\Gamma \frac{\partial \bb{v}^f}{\partial t} \, d\Omega^f_0
+%	+ \oint_{\Gamma^f_0}  \left( J \bb{F}^{-\text{T}} \cdot \bb{n}_0^s \right) \cdot (\bb{v}^f - \bb{v}_\Gamma) \boldsymbol{v}^f \, d\Gamma^f_0
+%	= \notag \\
+%	 \oint_{\Gamma^f_0}  \left( J \bb{F}^{-\text{T}} \cdot \bb{n}_0^s \right) \cdot \left[\nu \bb{F}^{-T} \cdot \left( \bb{\nabla}_0 \bb{v}^f \right) \right] \, d\Gamma^f_0
+%	+ \int_{\Omega^f_0} J_\Gamma \bb{F}^{-T} \cdot \left( \bb{\nabla}_0 p \right) \, d\Omega^f_0
+%\end{eqnarray}
+\begin{align} \label{eqn:momentum_fluid_deformed}
+\int_{\Omega^f_0} J^\Gamma \frac{\partial \bb{v}^f}{\partial t} \, d\Omega^f_0
+	&+ \oint_{\Gamma^f_0}  \left[ J^\Gamma (\bb{F}^\Gamma)^{-\text{T}} \cdot \hat{\bb{n}}_0^f \right] \cdot \left(\bb{v}^f - \frac{\partial \bb{d}^\Gamma}{\partial t}\right) \bb{v}^f \, d\Gamma^f_0 = \notag \\
+	&\oint_{\Gamma^f_0}  \left[ J^\Gamma (\bb{F}^\Gamma)^{-\text{T}} \cdot \hat{\bb{n}}_0^f \right]
+	\cdot \left[\nu (\bb{F}^\Gamma)^{-T} \cdot \left( \bb{\nabla}_0 \bb{v}^f \right) \right] \, d\Gamma^f_0 \notag \\
+	&\quad + \int_{\Omega^f_0} J^\Gamma (\bb{F}^\Gamma)^{-T} \cdot \left( \bb{\nabla}_0 p \right) \, d\Omega^f_0
+\quad+\quad \int_{\Omega^f_0} \bb{f}_{b_0}^f \, d\Omega^f_0
+\end{align}
+where the time derivative in the first term is brought inside the integral as the initial volume is unchanging.
+In addition, the identity
+$\bb{\nabla} \cdot \left[ \left(\bb{\nabla} \bb{v}^f \right)^T \right] = \bb{\nabla} \left( \bb{\nabla} \cdot \bb{v}^f \right) = \bb{0}$ has been employed, and the velocity $\bb{v}^\Gamma$ of the moving fluid domain has been replaced with the time derivative $\nicefrac{\partial \bb{d}^\Gamma}{\partial t}$ of the moving fluid domain displacement.
 
-The definition of the true stress ($\bb{\sigma}$) in Equation \ref{eqn:momentum_TL} is given by a chosen mechanical law.
-\hl{XXX} mechanical laws are considered in this work, as briefly outlined in Appendix \ref{app:mechLaws}: linear elasticity (Hooke's law), and three forms of hyperelasticity (St.\,Venant-Kirchhoff, neo-Hookean, and Guccione).
-\hl{We may need to mention linear elasticity, depending on the test case - or not}
-
-%The displacement increment is the change in displacement between the current time step and the previous time step when the time interval is discretised into a finite number of steps.
-
-%The two forms are connected through Nanson’s formula \cite{bathe_finite_1996}, which relate the deformed area vector $\bb{\Gamma}$ with the initial area vector $\bb{\Gamma}_{o}$:
-%\begin{equation}
-%    \bb{\Gamma} = J\bb{F}^{-\text{T}}\cdot\bb{\Gamma}_o
-%\end{equation}
-%Although the total Lagrangian approach is a viable option for wire drawing, the current work adopts the updated Lagrangian approach as developing Eulerian-type upstream and downstream conditions (Section \ref{sec:euler_BCs}) is conceptually easier in an updated Lagrangian formulation.
-
+For the fluid domain, four boundary condition types are considered: inlet, outlet, no-slip wall, and symmetry.
 
 
 %%--------------------------------------------------------------------------------------------------------------------%%
 \subsection{Fluid-Solid Interface Conditions} \label{sec:fsi_interface}
 %%--------------------------------------------------------------------------------------------------------------------%%
-At the interface between the solid and fluid regions, mass conservation leads to the kinematic interface condition:
+At the interface $\Gamma_\text{fsi}$ between the solid and fluid regions, mass conservation leads to the \emph{kinematic} interface conditions, which state that the velocity of the fluid is equal to the velocity of the solid and the velocity of the moving fluid domain:
 \begin{eqnarray} \label{eqn:kinematic}
-	\bb{v}_f = \frac{\partial \bb{d}}{\partial t}
+	\bb{v}^f = \frac{\partial \bb{d}^s}{\partial t} = \frac{\partial \bb{d}^\Gamma}{\partial t}
+	\quad\quad\quad\quad\text{on}\quad \Gamma_\text{fsi}
 \end{eqnarray}
-ensuring the fluid and solid share the same motion at the interface, i.e., there is no gap or overlap.
-Subscripts $f$ and $s$ are introduced to indicate fluid and solid quantities, respectively.
+ensuring the fluid and solid share the same motion at the interface (i.e., there is no gap or overlap), assuming the fluid and solid interfaces are coincident in the initial configuration.
 
-Linear momentum conservation yields the kinetic interface condition:
-\begin{eqnarray} \label{eqn:kinetic}
-	\bb{n}_f \cdot \bb{\sigma}_f &=& -\bb{n}_s \cdot \bb{\sigma}_s \\
-	\bb{n}_f \cdot \left[\nu \bb{\nabla} \bb{v} + \nu \left(\bb{\nabla} \bb{v}\right)^T - p \right]_f &=& -\bb{n}_s \cdot \bb{\sigma}_s \\
+%Subscripts $f$ and $s$ are introduced to indicate fluid and solid quantities, respectively.
+
+Linear momentum conservation yields the \emph{kinetic} interface condition in the deformed configuration $\Gamma_\text{fsi}$ as:
+\begin{eqnarray} \label{eqn:kinetic_deformed}
+	\hat{\bb{n}}^f \cdot \bb{\sigma}^f &=& -\hat{\bb{n}}^s \cdot \bb{\sigma}^s \\
+	\hat{\bb{n}}^f \cdot \left[\nu \bb{\nabla} \bb{v}^f + \nu \left(\bb{\nabla} \bb{v}^f \right)^T - p \right]
+		&=& -\hat{\bb{n}}^s \cdot \bb{\sigma}^s
 \end{eqnarray}
-where $\bb{n}_f = -\bb{n}_s$, as the surface normals are assumed to point outwards from each region.
-\hl{Ensure consistent solid/fluid notation throughout, e.g. subscripts s and f}
+where $\hat{\bb{n}}^f = -\hat{\bb{n}}^s$, as the surface normals are assumed to point outwards from each region.
+Equivalently, the kinetic condition can be expressed on the initial configuration as
+\begin{eqnarray} \label{eqn:kinetic_initial}
+	\left[ J^\Gamma (\bb{F}^\Gamma)^{-\text{T}} \cdot \hat{\bb{n}}_0^f \right] \cdot \bb{\sigma}^f &=&
+	-\left[ J \bb{F}^{-\text{T}} \cdot \hat{\bb{n}}_0^s \right] \cdot \bb{\sigma}^s \\
+	\left[ J^\Gamma (\bb{F}^\Gamma)^{-\text{T}} \cdot \hat{\bb{n}}_0^f \right]
+	 \cdot 
+	 \left[
+	 \nu (\bb{F}^\Gamma)^{-T} \cdot \bb{\nabla} \bb{v}^f 
+	 + \nu \left(\bb{\nabla} \bb{v}^f \right)^T \cdot (\bb{F}^\Gamma)^{-1}
+	 - p
+	 \right]
+	&=& 
+	-\left[ J \bb{F}^{-\text{T}} \cdot \hat{\bb{n}}_0^s \right] \cdot \bb{\sigma}^s
+\end{eqnarray}
 
 
 %%--------------------------------------------------------------------------------------------------------------------%%
-\subsection{Boundary Conditions} \label{sec:BCs}
+\subsection{Fluid Domain Motion} \label{sec:fluid_domain_motion}
 %%--------------------------------------------------------------------------------------------------------------------%%
-Three types of boundary conditions for the solid domain are considered here: prescribed displacement, prescribed traction, and symmetry.
-For the fluid domain, four boundary condition types are considered: inlet, outlet, no-slip wall, and symmetry.
-\hl{Give math definitions}
+The motion of the fluid-solid interface $\Gamma_\text{fsi}$ is dictated by the motion of the solid domain; however, as yet, we have not defined how this interface motion should be distributed throughout the fluid domain.
+This fluid domain motion need not follow a conservation law and should instead be ideally defined to smoothly transit the interface motion, preserving the quality of the computational mesh—to be described below.
+Nonetheless, any chosen fluid domain motion procedure or equation should follow the geometric (space) conservation law (Equation \ref{eqn:space_conservation}), 
+which states that the rate of change of the fluid domain volume (or a subset of it) must equal the net flux of the domain velocity across its boundaries.
+%\begin{eqnarray} \label{eqn:space_conservation}
+%	\frac{d}{dt} \int_{\Omega^f} \, d\Omega^f
+%	\; - \; \oint_{ \Gamma^f} \hat{\bb{n}}^f \cdot \boldsymbol{v}^\Gamma \, d\Gamma^\Gamma = 0
+%\end{eqnarray}
+
+In the current work, the displacement $\bb{d}^\Gamma$ of the fluid domain is assumed to follow the pseudo-solid linear elastic, static momentum equation:
+\begin{eqnarray} \label{eqn:motion_momentum}
+%    \oint_{\Gamma_0^f} \left( J^\Gamma (\bb{F}^\Gamma)^{-\text{T}} \cdot \bb{n}_0^f \right) \cdot \bb{\sigma}^\Gamma \ d\Gamma_0^f
+    \oint_{\Gamma_0^f} \bb{n}_0^f \cdot
+    \left[
+    \mu^\Gamma \bb{\nabla}_0 \bb{d}^\Gamma + \mu^\Gamma \left(\bb{\nabla}_0 \bb{d}^\Gamma\right)^T
+    + \lambda^\Gamma (\bb{\nabla}_0 \cdot \bb{d}^\Gamma) \textbf{I}
+    \right]
+    \, d\Gamma_0^f
+    &=& \bb{0}
+\end{eqnarray}
+where $\mu^\Gamma$ and $\lambda^\Gamma$ are spatially-varying \emph{stiffness} parameters for controlling the distribution of the motion.
+Note that the quantities are not mapped to the deformed configuration, resulting in the equation being linear in $\bb{d}^\Gamma$; as a result, this approach does not formally conserve linear momentum, however, as will be shown in test cases section below, it is sufficient for maintaining the fluid domain computational mesh quality.
+The value of $\bb{d}^\Gamma$ is prescribed on all boundaries of $\Gamma^f$, where the $\bb{d}^\Gamma = \bb{d}^s$ on the fluid-solid interface and zero on other boundaries.
+
+
+
+
+%%%--------------------------------------------------------------------------------------------------------------------%%
+%\subsection{Boundary Conditions} \label{sec:BCs}
+%%%--------------------------------------------------------------------------------------------------------------------%%
+%\hl{Maybe mention these in passing in the sections above when giving the governing equations}
+%\hl{Also, I need to mention the material/space the eqns apply to}
+%Three types of boundary conditions for the solid domain are considered here: prescribed displacement, prescribed traction, and symmetry.
+%For the fluid domain, four boundary condition types are considered: inlet, outlet, no-slip wall, and symmetry.
+%\hl{Give math definitions}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -243,26 +419,25 @@ For the fluid domain, four boundary condition types are considered: inlet, outle
 \label{sec:space_time_discretisation}
 %%--------------------------------------------------------------------------------------------------------------------%%
 The solution domain is discretised in both space and time.
-The total simulation period is divided into a finite number of time increments, denoted as $\Delta t$, and the discretised governing momentum equation is solved iteratively in a time-marching fashion.
-%The spatial domain is partitioned into a finite number of contiguous convex polyhedral cells.
+The total simulation period is divided into a finite number of time increments, denoted as $\Delta t$, and the discretised governing equations are solved iteratively in a time-marching fashion.
 The fluid and solid spatial domains are partitioned into a finite set $\mathcal{P}$ of contiguous convex polyhedral cells, where each cell is denoted by $P \in \mathcal{P}$.
-The number of cells in the mesh is indicated by $|\mathcal{P}|$.
+The total number of cells in the mesh is indicated by $|\mathcal{P}| = |\mathcal{P}|^f + |\mathcal{P}^s|$, where $|\mathcal{P}^f|$ indicates the number of cells in the fluid mesh and $|\mathcal{P}^s|$ indicates the number in the solid mesh.
 A representative cell $P$ is shown in Figure~\ref{fig:cell}.
-The set of all faces of cell $P$ is denoted by $\mathcal{F}_P$. This set is further subdivided into two disjoint subsets:
+The set of all faces of cell $P$ is denoted by $\mathcal{F}_P$. This set is further subdivided into three disjoint subsets:
 \begin{itemize}
-    \item \textbf{Internal Faces} ($\mathcal{F}^{\text{int}}_P$): Faces that are shared with neighbouring cells.
+    \item \textbf{Internal Faces} ($\mathcal{F}^{\text{int}}_P$): Faces that are shared with neighbouring cells, excluding the fluid-solid interface. 
     \item \textbf{Boundary Faces} ($\mathcal{F}^{\text{bnd}}_P$): Faces that lie on the boundary of the spatial domain, excluding the fluid-solid interface.
-    The boundary faces of cell $P$ are further classed into three disjoint sets, $\mathcal{F}^{\text{bnd}}_P \coloneqq \mathcal{F}^{\text{disp}}_P \cup \mathcal{F}^{\text{trac}}_P \cup \mathcal{F}^{\text{symm}}_P$, representing boundary faces where displacement ($\mathcal{F}^{\text{disp}}_P$), traction ($\mathcal{F}^{\text{trac}}_P$) and symmetry ($\mathcal{F}^{\text{symm}}_P$) conditions are prescribed.
-    \hl{include fluid}
+    %The boundary faces of cell $P$ are further classed into three disjoint sets, $\mathcal{F}^{\text{bnd}}_P \coloneqq \mathcal{F}^{\text{disp}}_P \cup \mathcal{F}^{\text{trac}}_P \cup \mathcal{F}^{\text{symm}}_P$, representing boundary faces where displacement ($\mathcal{F}^{\text{disp}}_P$), traction ($\mathcal{F}^{\text{trac}}_P$) and symmetry ($\mathcal{F}^{\text{symm}}_P$) conditions are prescribed.
+    %\hl{include fluid}
        % \quad \text{with} \quad \mathcal{F}^{\text{disp}}_P \cap \mathcal{F}^{\text{trac}}_P = \mathcal{F}^{\text{disp}}_P \cap \mathcal{F}^{\text{symm}}_P = \mathcal{F}^{\text{trac}}_P \cap \mathcal{F}^{\text{symm}}_P = \emptyset.$
-    \item \textbf{Fluid-Solid Interface Faces} ($\mathcal{F}^{\text{fsi}}_P$): Faces that lie on the fluid-solid interface; that is, the region of the fluid domain boundary that coincides with the solid domain boundary.
+    \item \textbf{Fluid-Solid Interface Faces} ($\mathcal{F}^{\text{fsi}}_P$): Faces that lie on the fluid-solid interface; that is, faces that straddle a cell in the fluid mesh and a cell in the solid mesh.
 \end{itemize}
-\hl{Update for FSI}
-\hl{Find neat notation for FSI...}
-\hl{Give discretisation first before settling on the notation}
-Each internal face $f_i \in \mathcal{F}^{\text{int}}_P$ corresponds to a neighbouring cell $N_{f_i} \in \mathcal{N}_P$, where $\mathcal{N}_P$ is the set of all neighbouring cells of $P$ in the same region. The outward unit normal vector associated with an internal face $f_i$ is denoted by $\mathbf{n}_{f_i}$, while the outward unit normal vector associated with a boundary face $b_i$ is denoted by $\mathbf{n}_{b_i}$.
-The vector $\mathbf{d}_{f_i}$ connects the centroid of cell $P$ with the centroid of the neighbouring cell $N_{f_i}$, whereas the vector $\mathbf{d}_{b_i}$ connects the centroid of cell $P$ with the centroid of boundary face ${b_i}$.
-For convenience, we will also define the set of all faces of cell $P$ excluding those on a traction boundary as $\mathcal{F}_P^{\text{non-trac}} \coloneqq \mathcal{F}_P^{\text{int}} \cup \mathcal{F}_P^{\text{disp}} \cup \mathcal{F}_P^{\text{symm}}$.
+
+\hl{I need to update below: notation becomes too verbose when FSI is added}
+\hl{Maybe include as internal face and introduce notation for subsets}
+Each internal face $f_i \in \mathcal{F}^{\text{int}}_P$ corresponds to a neighbouring cell $N_{f_i} \in \mathcal{N}_P$, where $\mathcal{N}_P$ is the set of all neighbouring cells of $P$ in the same region. The outward unit normal vector associated with an internal face $f_i$ is denoted by $\mathbf{n}_{f_i}$, while $\mathbf{n}_{b_i}$ indicates the normal for a boundary face $b_i$, and $\mathbf{n}_{I_i}$ indicates the normal for a fluid-solid interface face $I_i$.
+The vector $\mathbf{d}_{f_i}$ connects the centroid of cell $P$ with the centroid of the neighbouring cell $N_{f_i}$, whereas the vector $\mathbf{d}_{b_i}$ connects the centroid of cell $P$ with the centroid of boundary face ${b_i}$, and the vector $\mathbf{d}_{I_i}$ connects the centroid of cell $P$ with the centroid of the neighbouring cell $N_{I_i}$ across a fluid-solid interface.
+%For convenience, we will also define the set of all faces of cell $P$ excluding those on a traction boundary as $\mathcal{F}_P^{\text{non-trac}} \coloneqq \mathcal{F}_P^{\text{int}} \cup \mathcal{F}_P^{\text{disp}} \cup \mathcal{F}_P^{\text{symm}}$.
 \begin{figure}[htbp]
 	\centering
    		\includegraphics[width=0.8\textwidth]{figures/cell} 
@@ -271,59 +446,9 @@ For convenience, we will also define the set of all faces of cell $P$ excluding 
 \end{figure}
 
 
-%%--------------------------------------------------------------------------------------------------------------------%%
-\subsection{Governing Equations for Moving Domains}
-%%--------------------------------------------------------------------------------------------------------------------%%
-As the FSI interface motion is a function of the solution, it is unknown a priori.
-Consequently, the fluid and solid governing equations must be formulated in terms of a known reference configuration \citep{Sebastian-Gjertsen-turtleFSI} %Master_Sebastian_Gjertsen.pdf
-\hl{More comments on the reference configuration - add a figure}
-
-\begin{eqnarray} \label{eqn:continuity_motion}
-	\oint_{\tilde{\Gamma}} \left( J_m \bb{F}_m^{-\text{T}} \cdot \tilde{\bb{n}} \right) \cdot (\bb{v} - \boldsymbol{v}_\Gamma) \, d\tilde{\Gamma} &=& 0 \notag \\
-	\oint_{\tilde{\Gamma}} \left( J_m \bb{F}_m^{-\text{T}} \cdot \tilde{\bb{n}} \right)  \cdot \bb{v}  \, d\tilde{\Gamma} &=&
-		\oint_{\tilde{\Gamma}} \left( J_m \bb{F}_m^{-\text{T}} \cdot \tilde{\bb{n}} \right) \cdot  \boldsymbol{v}_\Gamma \, d\tilde{\Gamma} \notag \\
-	\oint_{\tilde{\Gamma}} \left( J_m \bb{F}_m^{-\text{T}} \cdot \tilde{\bb{n}} \right)  \cdot \bb{v} \, d\tilde{\Gamma} &=& 0
-\end{eqnarray}
-where $\tilde{\Gamma}$ indicates the latest known (available) fluid boundary with unit normal $\tilde{\bb{n}}$, i.e. the fluid mesh from the previous outer iteration.
-Similarly, $\tilde{\Omega}$ represents the latest known fluid mesh volume.
-By definition, $\oint_{\Gamma} \bb{n} \cdot  \boldsymbol{v}_\Gamma \, d\Gamma = \oint_{\tilde{\Gamma}} \left( J_m \bb{F}_m^{-\text{T}} \cdot \tilde{\bb{n}} \right) \cdot  \boldsymbol{v}_\Gamma \, d\tilde{\Gamma} = 0$.
-\hl{Cancel this term out in math model section}
- %where $\Omega$ is the volume of an arbitrary body bounded by a surface $\Gamma$ with outwards pointing normal $\bb{n}$, $\bb{v}$ is the fluid velocity, and $\boldsymbol{v}_\Gamma$ is the velocity of surface $\Gamma$.
-That is, $\bb{F}_m = \textbf{I} + \left(\bb{\nabla} \bb{d}_m\right)^T$ and $J_m = \text{det}[\bb{F}_m]$,
 
 
-Linear momentum can be expressed in terms of the reference fluid configuration as
-\begin{eqnarray} \label{eqn:momentum_fluid_motion}
-	\frac{d}{dt} \int_{\tilde{\Omega}} J_m \bb{v} \, d\tilde{\Omega}
-	+ \oint_{\tilde{\Gamma}} \left( J_m \bb{F}_m^{-\text{T}} \cdot \tilde{\bb{n}} \right)\cdot (\bb{v} - \bb{v}_\Gamma) \boldsymbol{v} \, d\tilde{\Gamma}
-	=  \oint_{\tilde{\Gamma}}\left( J_m \bb{F}_m^{-\text{T}} \cdot \tilde{\bb{n}} \right) \cdot \left(\nu \bb{F}_m^{-\text{T}} \cdot \bb{\nabla} \bb{v} - p \right) \, d\tilde{\Gamma}
-%	+ \frac{1}{\rho} \int_{\tilde{\Omega}} \bb{\nabla} p \, d\tilde{\Omega}
-\end{eqnarray}
-where $\nu$ is the kinematic viscosity, $\rho$ is the density, $p$ is the pressure, and $\bb{f}$ is a body force per unit volume, neglected here.
 
-An additional challenge is that the fluid mesh should be moved (smoothed) to distribute the FSI interface motion throughout the fluid domain.
-To achieve this, the current work adopts a pseudo-solid approach where the fluid mesh is considered to be a solid domain, where the boundary displacements are prescribed.
-The following governing equation is adopted for the fluid mesh motion:
-\begin{eqnarray} \label{eqn:motion}
-    \oint_{\tilde{\Gamma}}
-    \bb{n}_u \cdot \left[ \mu_m \bb{\nabla}\bb{d}_m
-    + \beta_m \mu_m (\bb{\nabla}\bb{d}_m)^T
-    + \beta_m \lambda_m \text{tr}(\bb{\nabla} \bb{d}_m)\textbf{I} \right] 
-    \, d\tilde{\Gamma}
-    \;=\; \bb{0}
-\end{eqnarray}
-It should be noted that Equation \ref{eqn:motion} is integrated over the fluid reference configuration, but it is not mapped to the deformed configuration; this choice is made purely from an efficiency perspective: the purpose of this equation is merely to maintain fluid mesh quality, and it need not strictly correspond to a physical system.
-To maintain fluid mesh quality near the FSI interface and boundary, the stiffness parameters $\mu_m$ and $\lambda_m$ are defined to be inversely proportional to the distance from the fluid boundary according to:
-\hl{express with if-else}
-\begin{eqnarray}
-	\beta_m &=& \text{min}(\beta_\text{max} \bar{\delta}^{-1}, \text{max}(\beta_\text{min} \bar{\delta}^{-1}, \delta^{-1}))
-\end{eqnarray}
-where $\delta$ is the (approximate) distance from the fluid boundary.
-In the current work, $\delta$ is calculated using a topological search approach, implemented in the \texttt{meshWave} class of OpenFOAM.
-$\beta_m$ is then normalised with respect to its average value, i.e. $\beta_m \coloneqq \frac{\beta_m}{\bar{\beta_m}}$, such that $\bar{\beta_m} \equiv 1$. \hl{introduce additional terms to avoid confusion}
-
-
-\hl{Give the FSI interface conditions for a moving mesh}
 
 
 %%--------------------------------------------------------------------------------------------------------------------%%
@@ -345,55 +470,58 @@ Concretely, the components of the residual are given as
 \begin{eqnarray}
     \bb{R}_u %(\bb{U})
     &=&
-	\oint_{\tilde{\Gamma}}\left( J_m \bb{F}_m^{-\text{T}} \cdot \tilde{\bb{n}} \right) \cdot \left(\nu \bb{F}_m^{-\text{T}} \cdot \bb{\nabla} \bb{v} - p \right) \, d\tilde{\Gamma}
-	- \frac{d}{dt} \int_{\tilde{\Omega}} J_m \bb{v} \, d\tilde{\Omega}
-	- \oint_{\tilde{\Gamma}} \left( J_m \bb{F}_m^{-\text{T}} \cdot \tilde{\bb{n}} \right)\cdot (\bb{v} - \bb{v}_\Gamma) \boldsymbol{v} \, d\tilde{\Gamma}
-    \notag \\
+%	\oint_{\tilde{\Gamma}}\left( J_m \bb{F}_m^{-\text{T}} \cdot \tilde{\bb{n}} \right) \cdot \left(\nu \bb{F}_m^{-\text{T}} \cdot \bb{\nabla} \bb{v} - p \right) \, d\tilde{\Gamma}
+%	- \frac{d}{dt} \int_{\tilde{\Omega}} J_m \bb{v} \, d\tilde{\Omega}
+%	- \oint_{\tilde{\Gamma}} \left( J_m \bb{F}_m^{-\text{T}} \cdot \tilde{\bb{n}} \right)\cdot (\bb{v} - \bb{v}_\Gamma) \boldsymbol{v} \, d\tilde{\Gamma}
+%d\Gamma^f_0 \\
+	\oint_{\Gamma^f_0}  \left[ J^\Gamma (\bb{F}^\Gamma)^{-\text{T}} \cdot \hat{\bb{n}}_0^f \right]
+		\cdot \left[\nu (\bb{F}^\Gamma)^{-T} \cdot \left( \bb{\nabla}_0 \bb{v}^f \right) \right] \, d\Gamma^f_0
+	+ \int_{\Omega^f_0} J^\Gamma (\bb{F}^\Gamma)^{-T} \cdot \left( \bb{\nabla}_0 p \right) \, d\Omega^f_0 \notag \\
+	&&+ \int_{\Omega^f_0} \bb{f}_{b_0}^f \, d\Omega^f_0
+	- \int_{\Omega^f_0} J^\Gamma \frac{\partial \bb{v}^f}{\partial t} \, d\Omega^f_0 
+	- \oint_{\Gamma^f_0}  \left[ J^\Gamma (\bb{F}^\Gamma)^{-\text{T}} \cdot \hat{\bb{n}}_0^f \right] \cdot \left(\bb{v}^f - \frac{\partial \bb{d}_m}{\partial t}\right) \bb{v}^f
+	\notag \\
     R_p %(\bb{U})
-    &=&
-    \oint_{\tilde{\Gamma}} \left( J_m \bb{F}_m^{-\text{T}} \cdot \tilde{\bb{n}} \right)  \cdot \bb{v} \, d\tilde{\Gamma} 
+    &=&	\oint_{\Gamma^f_0}  \left[ J^\Gamma (\bb{F}^\Gamma)^{-\text{T}}  \cdot \hat{\bb{n}}_0^f \right] \cdot \bb{v}^f \, d\Gamma^f_0 \;+\; \mathcal{D}_p
     \notag \\
     \bb{R}_m %(\bb{U})
     &=&
-     \oint_{\tilde{\Gamma}} \bb{n}_u \cdot \left[ \mu_m \bb{\nabla}\bb{d}_m
-    + \beta_m \mu_m (\bb{\nabla}\bb{d}_m)^T
-    + \beta_m \lambda_m \text{tr}(\bb{\nabla} \bb{d}_m)\textbf{I} \right] 
-    \, d\tilde{\Gamma}
+    \oint_{\Gamma_0^f} \bb{n}_0^f \cdot
+    \left[
+    \mu^\Gamma \bb{\nabla}_0 \bb{d}_m + \mu^\Gamma \left(\bb{\nabla}_0 \bb{d}_m \right)^T
+    + \lambda^\Gamma (\bb{\nabla}_0 \cdot \bb{d}_m) \textbf{I}
+    \right]
+    \, d\Gamma_0^f
+    \;+\; \bb{\mathcal{D}}_m
+%     \oint_{\Gamma_0} \bb{n}_u \cdot \left[ \mu_m \bb{\nabla}\bb{d}_m
+%    + \beta_m \mu_m (\bb{\nabla}\bb{d}_m)^T
+%    + \beta_m \lambda_m \text{tr}(\bb{\nabla} \bb{d}_m)\textbf{I} \right] 
+%    \, d\Gamma_0
     \notag \\
     \bb{R}_d %(\bb{U})
     &=&
-     \oint_{\Gamma_o} \left( J \bb{F}^{-\text{T}} \cdot \bb{n}_o \right) \cdot \bb{\sigma}(\bb{d}) \,  d\Gamma_o
-    + \int_{\Omega_o}  \rho_o \bb{g} \, d\Omega_o
-    -  \int_{\Omega_o} \rho_o \frac{\partial^2 \bb{d} }{\partial t^2} \, d\Omega_o
+    \oint_{\Gamma_0^s} \left( J \bb{F}^{-\text{T}} \cdot \bb{n}_0^s \right) \cdot \bb{\sigma}^s \ d\Gamma_0^s
+    + \int_{\Omega_0^s}  \bb{f}_{b_0}^s \, d\Omega_0^s
+    - \int_{\Omega_0^s} \rho_0 \frac{\partial^2 \bb{d} }{\partial t^2} \; d\Omega_0^s
+    \;+\; \bb{\mathcal{D}}_d
 \end{eqnarray}
-where the primary unknown $\bb{U} = \left\{ \bb{d}, \bb{v}, p \right\}$, and the dependence of the solid stress tensor on the displacement vector is made explicitly clear: $\bb{\sigma}_s(\bb{d})$.
+where $\mathcal{D}_p$, $\bb{\mathcal{D}}_m$, and $\bb{\mathcal{D}}_d$ are stabilisation terms to be defined.
 
-Several types of coupling exist between the residual components:
-\begin{itemize}
-	\item \textbf{Fluid-to-solid}: the fluid stress appears as a force on the FSI interface in the $\bb{R}_d$ equation. \hl{not explicitly shown!}
-	\item \textbf{Solid-to-fluid}: the solid motion ($\bb{d}$) defines the motion of the FSI interface in the $\bb{R}_u$ equation and $R_p$ equations. \hl{not explicitly shown!}
-	\item \textbf{Solid-to-mesh}: the solid motion ($\bb{d}$) defines the fluid mesh motion of the FSI interface in the $\bb{R}_m$ equation. \hl{not explicitly shown!}
-	\item \textbf{Mesh-to-fluid}: the fluid mesh motion defines the mapping from the reference domain and the mesh flux in the $\bb{R}_u$ equation and $R_p$ equations.
-\end{itemize}
-
-
-In Newton-type methods, a Taylor expansion about a current point $\bb{u}_k$ can be used to solve Equation \ref{eqn:residual} \cite{Knoll2004}:
-\begin{eqnarray}
-	\bb{R}(\bb{u}_{k+1}) = \bb{R}(\bb{u}_{k}) \;+\;  \bb{R}'(\bb{u}_{k}) (\bb{u}_{k+1} - \bb{u}_{k}) \;+\; \text{H.O.T.} = \bb{0}
-\end{eqnarray}
-Neglecting the higher-order terms ($\text{H.O.T.}$) yields the strict Newton method in terms of an iteration over a sequence of linear systems: 
+The residuals $\bb{R}_v$, $R_p$ and $\bb{R}_m$ are applied to each cell in the fluid domain and discretised, while residual $\bb{R}_d$ is applied to each cell in the solid domain and discretised, as is described below.
+The resulting system of coupled nonlinear equations in terms of $\bb{U}$ can be linearised and iteratively solved using a Newton-type method:
+%In Newton-type methods, a Taylor expansion about a current point $\bb{u}_k$ can be used to solve Equation \ref{eqn:residual} \cite{Knoll2004}:
+%\begin{eqnarray}
+%	\bb{R}(\bb{u}_{k+1}) = \bb{R}(\bb{u}_{k}) \;+\;  \bb{R}'(\bb{u}_{k}) (\bb{u}_{k+1} - \bb{u}_{k}) \;+\; \text{H.O.T.} = \bb{0}
+%\end{eqnarray}
+%Neglecting the higher-order terms ($\text{H.O.T.}$) yields the strict Newton method in terms of an iteration over a sequence of linear systems: 
 \begin{eqnarray} \label{eq:NewtonRaphson}
-	\bb{J}(\bb{u}_k) \delta \bb{u} &=& -\bb{R}(\bb{u}_k), \notag \\
-	\bb{u}_{k+1} &=& \bb{u}_k + s \, \delta \bb{u}, \notag \\
+	\bb{J}(\bb{U}_k) \delta \bb{U} &=& -\bb{R}(\bb{U}_k), \notag \\
+	\bb{U}_{k+1} &=& \bb{U}_k + s \, \delta \bb{U}, \notag \\
 	\quad
 	k &=& 0,1,...
-%    \label{eq:NewtonRaphsonA}
-%    \overbrace{\left[ \frac{\partial \mathcal{R}(\bb{u})}{\partial \bb{u}} \right]_n}^{\mathcal{J}} \Delta \bb{u} = -\mathcal{R}(\bb{u})_n \\
-%    \label{eq:NewtonRaphsonB}
-%    \bb{u}_{n+1} = \bb{u}_{n} + \alpha \Delta \bb{u}
 \end{eqnarray}
-where $\bb{J} \equiv \bb{R}' \equiv \partial \bb{R}/\partial \bb{u}$ is the Jacobian matrix.
-Starting the Newton procedure requires the specification of $\bb{u}_0$.
+where $\bb{J} \equiv \bb{R}' \equiv \partial \bb{R}/\partial \bb{U}$ is the Jacobian matrix.
+Starting the Newton procedure requires the specification of $\bb{U}_0$.
 %is iteratively solved by linearisation about the current value of the solution, leading to a linear system and iterative update of the solution vector:
 %\begin{eqnarray}
 %    \label{eq:NewtonRaphsonA}
@@ -403,10 +531,52 @@ Starting the Newton procedure requires the specification of $\bb{u}_0$.
 %\end{eqnarray}
 %where subscript $n$ indicates the outer (Newton) iteration index.
 The scalar $s > 0$ can be chosen to improve convergence, for example, using a line search or under-relaxation/damping procedure, and is equal to unity in the classic Newton-Raphson approach.
-Iterations are performed over this system until the residual $\bb{R}(\bb{u}_k)$ and solution correction $\delta \bb{u}$ are sufficiently small, with appropriate normalisation.
+Iterations are performed over this system until the residual $\bb{R}(\bb{U}_k)$ and solution correction $\delta \bb{U}$ are sufficiently small, with appropriate normalisation.
 
-%\hl{$\Delta u$: we are using in two ways: increment and correction. Fix this!}
-%\hl{KnollKeyes give a nice concise description of Newton: check}
+The linear system in Equation \ref{eq:NewtonRaphson} can be represented as
+\begin{eqnarray}
+\begin{bmatrix}
+\bb{J}_{vv} & \bb{J}_{vp} & \bb{J}_{vm} & \bb{J}_{vd} \\
+\bb{J}_{pv} & \bb{J}_{pp} & \bb{J}_{pm} & \bb{J}_{pd} \\
+0 & 0 & \bb{J}_{mm} & \bb{J}_{md} \\
+\bb{J}_{dv} & \bb{J}_{dp} & 0 & \bb{J}_{dd}
+\end{bmatrix}_k
+\begin{bmatrix}
+\delta \bb{v} \\
+\delta p \\
+\delta \bb{d}_m \\
+\delta \bb{d}
+\end{bmatrix}
+=
+-
+\begin{bmatrix}
+\bb{R}_v  \\
+R_p \\
+\bb{R}_m \\
+\bb{R}_d
+\end{bmatrix}_k
+\end{eqnarray}
+where the subscript $k$ indicates that the Jacobian matrix and right-hand side vector are evaluated in terms of $\bb{U}_k$.
+The submatrices $\bb{J}_{ab}$ represent the coupling in the residual $a$ coming from the unknown $b$.
+Several types of coupling exist between the residual components:
+\begin{itemize}
+	\item \textbf{Fluid-to-solid}, represented by $\bb{J}_{dv}$ and $\bb{J}_{dp}$:
+	the fluid forces are passed to the solid by replacing the solid stress $\bb{\sigma}^s$ with the fluid stress $\bb{\sigma}^f$ at the fluid-solid interface in $\bb{R}_d$.
+	\item \textbf{Solid-to-fluid}, represented by $\bb{J}_{vd}$ and $\bb{J}_{pd}$
+	the solid motion is passed to the fluid equations by replacing the fluid velocity $\bb{v}^f$ by the solid velocity $\nicefrac{\partial \bb{d}^s}{\partial t}$ at the fluid-solid interface in $\bb{R}_v$ and $R_p$.
+	\item \textbf{Solid-to-mesh}, represented by $\bb{J}_{md}$:
+	the solid motion is passed to the fluid mesh by replacing the fluid mesh displacement $\bb{d}_m$ by the solid displacement $\bb{d}^s$ at the fluid-solid interface in $\bb{R}_m$. 
+	\item \textbf{Mesh-to-fluid}, represented by $\bb{J}_{vm}$ and $\bb{J}_{pm}$:
+	the fluid mesh motion velocity $\nicefrac{\partial \bb{d}_m}{\partial t}$ appears in the advection term of $\bb{R}_v$ and the fluid mesh motion displacement $\bb{d}_m$ appears in the fluid mesh deformation gradients terms ($\bb{F}_m$, $J_m$) of $\bb{R}_v$ and $R_p$.
+\end{itemize}
+Several submatrices are not present, indicating an absence of coupling:
+\begin{itemize}
+	\item $\bb{J}_{mv}$, $\bb{J}_{mp}$: the fluid mesh motion $\bb{d}_m$ does not depend on the fluid velocity $\bb{v}$ and pressure $p$.
+	\item $\bb{J}_{dm}$: the solid motion $\bb{d}$ does not depend on the fluid mesh motion $\bb{d}_m$. 
+\end{itemize}
+
+
+\hl{HERE}
 
 For problems with $N$ scalar equations and $N$ scalar unknowns, the residual $\bb{R}$ and solution $\bb{u}$ vectors have dimensions of $N \times 1$. %, while the Jacobian matrix has dimensions of $N \times N$.
 %In contrast, for vector problems, like the solid mechanics problems considered in this work, the residual and solution vectors have dimensions of $N_d N \times 1$ and the Jacobian matrix has dimensions of $N_d N \times N_d N$, where $N_d$ is the geometric dimension of the problem, e.g. $N_d = 2$ for 2-D and $N_d = 3$ for 3-D.
@@ -445,8 +615,32 @@ A fully explicit procedure can also be viewed from this perspective by selecting
 \end{eqnarray}
 
 
+%%--------------------------------------------------------------------------------------------------------------------%%
+\subsection{Fluid Mesh Motion}
+%%--------------------------------------------------------------------------------------------------------------------%%
+An additional challenge is that the fluid mesh should be moved (smoothed) to distribute the FSI interface motion throughout the fluid domain.
+To achieve this, the current work adopts a pseudo-solid approach where the fluid mesh is considered to be a solid domain, where the boundary displacements are prescribed.
+The following governing equation is adopted for the fluid mesh motion:
+\begin{eqnarray} \label{eqn:motion}
+    \oint_{\tilde{\Gamma}}
+    \bb{n}_u \cdot \left[ \mu_m \bb{\nabla}\bb{d}_m
+    + \beta_m \mu_m (\bb{\nabla}\bb{d}_m)^T
+    + \beta_m \lambda_m \text{tr}(\bb{\nabla} \bb{d}_m)\textbf{I} \right] 
+    \, d\tilde{\Gamma}
+    \;=\; \bb{0}
+\end{eqnarray}
+It should be noted that Equation \ref{eqn:motion} is integrated over the fluid reference configuration, but it is not mapped to the deformed configuration; this choice is made purely from an efficiency perspective: the purpose of this equation is merely to maintain fluid mesh quality, and it need not strictly correspond to a physical system.
+To maintain fluid mesh quality near the FSI interface and boundary, the stiffness parameters $\mu_m$ and $\lambda_m$ are defined to be inversely proportional to the distance from the fluid boundary according to:
+\hl{express with if-else}
+\begin{eqnarray}
+	\beta_m &=& \text{min}(\beta_\text{max} \bar{\delta}^{-1}, \text{max}(\beta_\text{min} \bar{\delta}^{-1}, \delta^{-1}))
+\end{eqnarray}
+where $\delta$ is the (approximate) distance from the fluid boundary.
+In the current work, $\delta$ is calculated using a topological search approach, implemented in the \texttt{meshWave} class of OpenFOAM.
+$\beta_m$ is then normalised with respect to its average value, i.e. $\beta_m \coloneqq \frac{\beta_m}{\bar{\beta_m}}$, such that $\bar{\beta_m} \equiv 1$. \hl{introduce additional terms to avoid confusion}
 
-\subsection{Rest of CC distcretisation}
+
+\subsection{Rest of CC discretisation}
 
 In this work, a nominally second-order cell-centred finite volume discretisation is employed.
 

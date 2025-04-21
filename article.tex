@@ -204,16 +204,15 @@ Note that the current work adopts the convention that $(\nabla d)_{ij} = \nicefr
 
 Employing $\bb{F}$ and $J$, volume integrals can be expressed over the initial configuration as
 \begin{eqnarray}
-    \int_{\Omega^s} \bb{T} \; \text{d}\Omega^s &=& \int_{\Omega_0^s} J \bb{T} \; \text{d}\Omega^s_0
+    \int_{\Omega^s} \; \text{d}\Omega^s &=& \int_{\Omega_0^s} J \; \text{d}\Omega^s_0
 \end{eqnarray}
-where $\bb{T}$ represents an arbitrary scalar, vector or tensor field.
 From this, $J$ can be interpreted as the ratio of the deformed to the initial volume $J = \nicefrac{\Omega^s}{\Omega_0^s}$, allowing the current density to be expressed in terms of the initial density as $\rho^s = J \rho_0^s$.
 Similarly, surface integrals over the deformed configuration can be reexpressed over the initial configuration as
 \begin{eqnarray}
-    \oint_{\Gamma^s} \hat{\bb{n}}^s \cdot \bb{T} \; \text{d}\Gamma^s &=&
-    \oint_{\Gamma_0^s} \left(J \bb{F}^{-T} \cdot \hat{\bb{n}}_0^s \right) \cdot \bb{T} \; \text{d}\Gamma_0^s
+    \oint_{\Gamma^s} \hat{\bb{n}}^s \cdot \bb{\phi} \; \text{d}\Gamma^s &=&
+    \oint_{\Gamma_0^s} \left(J \bb{F}^{-T} \cdot \hat{\bb{n}}_0^s \right) \cdot \bb{\phi} \; \text{d}\Gamma_0^s
 \end{eqnarray}
-where the $\cdot$ operator is replaced by a suitable scalar/vector/tensor multiplication operator.
+where $\bb{\phi}$ represents an arbitrary scalar, vector or tensor field, and $\cdot$ operator is replaced by a suitable scalar/vector/tensor multiplication operator.
 Here, $J \bb{F}^{-T}$ can be seen to rotate and scale the normal vector from the initial to the deformed configuration;
 this stems from Nanson's relation, $\bb{\Gamma} = J \bb{F}^{-T} \cdot \bb{\Gamma}_0$, which relates the deformed area vector $\bb{\Gamma}$ to the initial area vector $\bb{\Gamma}_0$. 
 
@@ -308,8 +307,8 @@ Employing $\bb{F}_{\Gamma}$ and $J_\Gamma$, volume continuity can be expressed i
 
 Before expressing linear momentum conservation over the initial configuration, we must introduce the mapping of the gradient operator in the deformed configuration to the gradient operator in the initial configuration:
 \begin{eqnarray}
-	\bb{\nabla} \bb{T} = \bb{F}^{-T} \cdot \left( \bb{\nabla}_0 \bb{T} \right) \\
-	\left( \bb{\nabla} \bb{T} \right)^T = \left( \bb{\nabla}_0 \bb{T} \right)^T \cdot  \bb{F}^{-1} 
+	\bb{\nabla} \bb{\phi} = \bb{F}^{-T} \cdot \left( \bb{\nabla}_0 \bb{\phi} \right) \\
+	\left( \bb{\nabla} \bb{\phi} \right)^T = \left( \bb{\nabla}_0 \bb{\phi} \right)^T \cdot  \bb{F}^{-1} 
 \end{eqnarray}
 
 With these mappings, linear momentum conservation for the fluid can be expressed over the initial configuration as
@@ -466,25 +465,23 @@ To facilitate the application of a Newton-type solution algorithm, the governing
 		= \bb{0}
 \end{eqnarray}
 where $\bb{R}$ represents the \emph{residual} (imbalance) of the equations, which is a function of the primary unknowns field $\bb{U} = \left\{\bb{v}, p, \bb{d}_m, \bb{d} \right\}$.
-Concretely, the components of the residual are given as
-\begin{eqnarray}
+Concretely, the components of the residual are given as \hl{use on Omega f notation etc}
+\begin{eqnarray} \label{eq:residuals}
     \bb{R}_u %(\bb{U})
     &=&
-%	\oint_{\tilde{\Gamma}}\left( J_m \bb{F}_m^{-\text{T}} \cdot \tilde{\bb{n}} \right) \cdot \left(\nu \bb{F}_m^{-\text{T}} \cdot \bb{\nabla} \bb{v} - p \right) \, d\tilde{\Gamma}
-%	- \frac{d}{dt} \int_{\tilde{\Omega}} J_m \bb{v} \, d\tilde{\Omega}
-%	- \oint_{\tilde{\Gamma}} \left( J_m \bb{F}_m^{-\text{T}} \cdot \tilde{\bb{n}} \right)\cdot (\bb{v} - \bb{v}_\Gamma) \boldsymbol{v} \, d\tilde{\Gamma}
-%d\Gamma^f_0 \\
 	\oint_{\Gamma^f_0}  \left[ J^\Gamma (\bb{F}^\Gamma)^{-\text{T}} \cdot \hat{\bb{n}}_0^f \right]
 		\cdot \left[\nu (\bb{F}^\Gamma)^{-T} \cdot \left( \bb{\nabla}_0 \bb{v}^f \right) \right] \, d\Gamma^f_0
 	+ \int_{\Omega^f_0} J^\Gamma (\bb{F}^\Gamma)^{-T} \cdot \left( \bb{\nabla}_0 p \right) \, d\Omega^f_0 \notag \\
 	&&+ \int_{\Omega^f_0} \bb{f}_{b_0}^f \, d\Omega^f_0
 	- \int_{\Omega^f_0} J^\Gamma \frac{\partial \bb{v}^f}{\partial t} \, d\Omega^f_0 
-	- \oint_{\Gamma^f_0}  \left[ J^\Gamma (\bb{F}^\Gamma)^{-\text{T}} \cdot \hat{\bb{n}}_0^f \right] \cdot \left(\bb{v}^f - \frac{\partial \bb{d}_m}{\partial t}\right) \bb{v}^f
+	- \oint_{\Gamma^f_0}  \left[ J^\Gamma (\bb{F}^\Gamma)^{-\text{T}} \cdot \hat{\bb{n}}_0^f \right] \cdot \left(\bb{v}^f - \frac{\partial \bb{d}_m}{\partial t}\right) \bb{v}^f \, d\Gamma^f_0
+	\notag \\
+	&&+\; \bb{\mathcal{D}}_v
 	\notag \\
     R_p %(\bb{U})
     &=&	\oint_{\Gamma^f_0}  \left[ J^\Gamma (\bb{F}^\Gamma)^{-\text{T}}  \cdot \hat{\bb{n}}_0^f \right] \cdot \bb{v}^f \, d\Gamma^f_0 \;+\; \mathcal{D}_p
     \notag \\
-    \bb{R}_m %(\bb{U})
+    \bb{R}_m
     &=&
     \oint_{\Gamma_0^f} \bb{n}_0^f \cdot
     \left[
@@ -493,10 +490,6 @@ Concretely, the components of the residual are given as
     \right]
     \, d\Gamma_0^f
     \;+\; \bb{\mathcal{D}}_m
-%     \oint_{\Gamma_0} \bb{n}_u \cdot \left[ \mu_m \bb{\nabla}\bb{d}_m
-%    + \beta_m \mu_m (\bb{\nabla}\bb{d}_m)^T
-%    + \beta_m \lambda_m \text{tr}(\bb{\nabla} \bb{d}_m)\textbf{I} \right] 
-%    \, d\Gamma_0
     \notag \\
     \bb{R}_d %(\bb{U})
     &=&
@@ -505,7 +498,7 @@ Concretely, the components of the residual are given as
     - \int_{\Omega_0^s} \rho_0 \frac{\partial^2 \bb{d} }{\partial t^2} \; d\Omega_0^s
     \;+\; \bb{\mathcal{D}}_d
 \end{eqnarray}
-where $\mathcal{D}_p$, $\bb{\mathcal{D}}_m$, and $\bb{\mathcal{D}}_d$ are stabilisation terms to be defined.
+where $\bb{\mathcal{D}}_v$, $\mathcal{D}_p$, $\bb{\mathcal{D}}_m$, and $\bb{\mathcal{D}}_d$ are stabilisation terms to be defined.
 
 The residuals $\bb{R}_v$, $R_p$ and $\bb{R}_m$ are applied to each cell in the fluid domain and discretised, while residual $\bb{R}_d$ is applied to each cell in the solid domain and discretised, as is described below.
 The resulting system of coupled nonlinear equations in terms of $\bb{U}$ can be linearised and iteratively solved using a Newton-type method:
@@ -534,10 +527,10 @@ The scalar $s > 0$ can be chosen to improve convergence, for example, using a li
 Iterations are performed over this system until the residual $\bb{R}(\bb{U}_k)$ and solution correction $\delta \bb{U}$ are sufficiently small, with appropriate normalisation.
 
 The linear system in Equation \ref{eq:NewtonRaphson} can be represented as
-\begin{eqnarray}
+\begin{eqnarray} \label{eqn:jacobian}
 \begin{bmatrix}
 \bb{J}_{vv} & \bb{J}_{vp} & \bb{J}_{vm} & \bb{J}_{vd} \\
-\bb{J}_{pv} & \bb{J}_{pp} & \bb{J}_{pm} & \bb{J}_{pd} \\
+J_{pv} & J_{pp} & J_{pm} & J_{pd} \\
 0 & 0 & \bb{J}_{mm} & \bb{J}_{md} \\
 \bb{J}_{dv} & \bb{J}_{dp} & 0 & \bb{J}_{dd}
 \end{bmatrix}_k
@@ -557,16 +550,17 @@ R_p \\
 \end{bmatrix}_k
 \end{eqnarray}
 where the subscript $k$ indicates that the Jacobian matrix and right-hand side vector are evaluated in terms of $\bb{U}_k$.
+\hl{Jvd and Jpd can be removed since this comes form Jvm and Jpm}
 The submatrices $\bb{J}_{ab}$ represent the coupling in the residual $a$ coming from the unknown $b$.
 Several types of coupling exist between the residual components:
 \begin{itemize}
 	\item \textbf{Fluid-to-solid}, represented by $\bb{J}_{dv}$ and $\bb{J}_{dp}$:
 	the fluid forces are passed to the solid by replacing the solid stress $\bb{\sigma}^s$ with the fluid stress $\bb{\sigma}^f$ at the fluid-solid interface in $\bb{R}_d$.
-	\item \textbf{Solid-to-fluid}, represented by $\bb{J}_{vd}$ and $\bb{J}_{pd}$
+	\item \hl{Merge with below}  \textbf{Solid-to-fluid}, represented by $\bb{J}_{vd}$ and $\bb{J}_{pd}$ \hl{not required, per se}
 	the solid motion is passed to the fluid equations by replacing the fluid velocity $\bb{v}^f$ by the solid velocity $\nicefrac{\partial \bb{d}^s}{\partial t}$ at the fluid-solid interface in $\bb{R}_v$ and $R_p$.
 	\item \textbf{Solid-to-mesh}, represented by $\bb{J}_{md}$:
 	the solid motion is passed to the fluid mesh by replacing the fluid mesh displacement $\bb{d}_m$ by the solid displacement $\bb{d}^s$ at the fluid-solid interface in $\bb{R}_m$. 
-	\item \textbf{Mesh-to-fluid}, represented by $\bb{J}_{vm}$ and $\bb{J}_{pm}$:
+	\item \hl{Rename} \textbf{Mesh-to-fluid}, represented by $\bb{J}_{vm}$ and $\bb{J}_{pm}$:
 	the fluid mesh motion velocity $\nicefrac{\partial \bb{d}_m}{\partial t}$ appears in the advection term of $\bb{R}_v$ and the fluid mesh motion displacement $\bb{d}_m$ appears in the fluid mesh deformation gradients terms ($\bb{F}_m$, $J_m$) of $\bb{R}_v$ and $R_p$.
 \end{itemize}
 Several submatrices are not present, indicating an absence of coupling:
@@ -575,49 +569,313 @@ Several submatrices are not present, indicating an absence of coupling:
 	\item $\bb{J}_{dm}$: the solid motion $\bb{d}$ does not depend on the fluid mesh motion $\bb{d}_m$. 
 \end{itemize}
 
-
-\hl{HERE}
-
-For problems with $N$ scalar equations and $N$ scalar unknowns, the residual $\bb{R}$ and solution $\bb{u}$ vectors have dimensions of $N \times 1$. %, while the Jacobian matrix has dimensions of $N \times N$.
-%In contrast, for vector problems, like the solid mechanics problems considered in this work, the residual and solution vectors have dimensions of $N_d N \times 1$ and the Jacobian matrix has dimensions of $N_d N \times N_d N$, where $N_d$ is the geometric dimension of the problem, e.g. $N_d = 2$ for 2-D and $N_d = 3$ for 3-D.
-The components of the $N \times N$ Jacobian are
-\begin{eqnarray} \label{eq:J}
-	{J}_{ij} = \frac{\partial {R}_i (\bb{u})}{\partial u_j}
+The current work adopts a Jacobian-free Newton-Krylov solution procedure \citep{Cardiff2025JFNK} to solve the nonlinear system given by Equation \ref{eqn:residual}.
+Consequently, the true Jacobian given in Equation \ref{eqn:jacobian} is not strictly required; instead, an approximate Jacobian $\tilde{\bb{J}}$ is formed and employed to precondition the nonlinear Newton-Krylov solution.
+Here, the approximate Jacobian $\tilde{\bb{J}}$ takes the form:
+\begin{eqnarray} \label{eqn:approx_jacobian}
+\tilde{\bb{J}} =
+\begin{bmatrix}
+\tilde{\bb{J}}_{vv} & \bb{J}_{vp} & \bb{J}_{vm} & \bb{J}_{vd} \\
+J_{pv} & \tilde{J}_{pp} & J_{pm} & J_{pd} \\
+0 & 0 & \tilde{\bb{J}}_{mm} & \bb{J}_{md} \\
+0 & \bb{J}_{dp} & 0 & \tilde{\bb{J}}_{dd}
+\end{bmatrix}_k
 \end{eqnarray}
+where $\bb{J}_{dv}$ is dropped as the fluid viscous forces on the fluid-solid interface are assumed to be small in comparison to the fluid pressure forces (represented by $\bb{J}_{dp}$).
+In addition, compact stencil approximate Jacobians for solid ($\tilde{\bb{J}}_{dd}$), fluid ($\tilde{\bb{J}}_{vv}$, $\tilde{J}_{pp}$) and fluid mesh motion ($\tilde{\bb{J}}_{mm}$) terms are employed.
 
-The current work focuses on vector problems, where the governing momentum equation is formulated in terms of the unknown displacement solution vector.
-In this case, Equation \ref{eq:J} refers to the individual scalar components of the residual, solution, and Jacobian.
-That is, for 3-D analyses, the residual takes the form
-\begin{eqnarray}
-	\bb{R}(\bb{u}) = \left\{ R_1^x, R_1^y, R_1^z, R_2^x, R_2^y, R_2^z, ..., R_n^z \right\}
-\end{eqnarray}
-and the solution takes the form
-\begin{eqnarray}
-	\bb{u} = \left\{ u_1^x, u_1^y, u_1^z, u_2^x, u_2^y, u_2^z, ..., u_n^z \right\}
-\end{eqnarray}
-In practice, it is often more practical and efficient to form and store the residual, solution and Jacobian in a \emph{blocked} manner, where the residual and solution can be considered as vectors of vectors.
-Similarly, the Jacobian can be formed in terms of sub-matrix block coefficients.
+Details of the cell-centred finite volume discretisation of residuals are given below, in addition to the calculation of the approximate Jacobian submatrices.
 
-In the strict Newton procedure, the residuals converge at a quadratic rate when the current solution is close to the true solution; that is, the iteration error decreases proportionally to the square of the error at the previous iteration.
-Once the method gets sufficiently close to the true solution, the number of correct digits in the approximation roughly doubles with each iteration. 
-However, quadratic convergence is only possible when using the exact Jacobian.
-In contrast, a quasi-Newton method uses an approximation to the Jacobian, sacrificing strict quadratic convergence in an attempt to produce an overall more computationally efficient procedure.
-From this perspective, the segregated solution algorithm commonly employed in finite volume solid mechanics can be viewed as a quasi-Newton method, where an approximate Jacobian replaces the exact Jacobian: 
-\begin{eqnarray} \label{eq:Seg}
-    \bb{\tilde{J}}(\bb{u}_k) \;\delta \bb{u} = -\bb{R}(\bb{u}_k)
-\end{eqnarray}
-In this case, the approximate Jacobian $\bb{\tilde{J}}$ comes from the compact stencil discretisation of a simple diffusion (Laplacian) term inertia terms.
-A benefit of this approach is that the inter-component coupling is removed from the Jacobian, allowing the solution of three smaller scalar systems rather than one larger vector system in 3-D (or two smaller systems in 2-D).
 
-A fully explicit procedure can also be viewed from this perspective by selecting a \emph{diagonal} approximate Jacobian $\bb{\tilde{D}}$ (only the inertia term), making the solution of the linear system trivial:
-\begin{eqnarray} \label{eq:exp}
-    \bb{\tilde{D}}(\bb{u}_k) \;\delta \bb{u} = -\bb{R}(\bb{u}_k)
-\end{eqnarray}
 
 
 %%--------------------------------------------------------------------------------------------------------------------%%
-\subsection{Fluid Mesh Motion}
+\subsection{Cell-Centred Finite Volume Discretisation}
 %%--------------------------------------------------------------------------------------------------------------------%%
+A nominally second-order cell-centred finite volume discretisation is employed in this work.
+This section describes the adopted finite volume discretisation for general volume and surface integrals, gradient calculation, and time derivatives.
+Equation-specific details are given in the subsequent fluid dynamics, mesh motion and solid dynamics sections.
+
+The presented discretisation is second-order accurate in space for displacement if the cell-centred displacement gradients (and the stress) are at least first-order accurate in space, even if the cell faces are not flat.
+
+To quell zero-energy solution modes (i.e. checkerboarding oscillations), Rhie-Chow-type stabilisation terms \cite{Rhie1983} are added to the residual equations, as described below.
+As shown in \citet{Cardiff2025jfnk} and \citet{Cardiff2020}, a Rhie-Chow-type stabilisation term can be cast in the same form as an upwind stabilisation term.
+
+%%The conservation equation (Equations \ref{eqn:momentum_lingeom}, \ref{eqn:momentum_TL}, or \ref{eqn:momentum_UL}) is applied to each cell $\mathcal{P}$ and discretised in terms of the displacement at the centroid of the cell $\bb{u}_P$ and the displacements at the centroids of the neighbouring cells $\bb{u}_{N_{f_i}} \in N_i$.
+%The conservation equation (Equations \ref{eqn:momentum_lingeom}, \ref{eqn:momentum_TL}, or \ref{eqn:momentum_UL}) is applied to each cell $P$ and discretised in terms of the displacement at the centroid of the cell $\boldsymbol{u}_P$ and the displacements $\boldsymbol{u}_{N_{f_i}}$ at the centroids of the neighbouring cells.
+%% $\boldsymbol{u}_{N_{f_i}} \in \mathcal{U}_{\mathcal{N}_P}$, where $\mathcal{U}_{\mathcal{N}_P}$ represents the set of such displacements.
+%Proceeding with the discretisation, the volume and surface integrals in the governing equation are approximated by algebraic equations as described below.
+
+%%----------------------------%%
+\paragraph{Volume Integrals}
+%%----------------------------%%
+%To discretise the volume integrals, the integrand $\bb{\phi}$ is assumed to locally vary according to a truncated Taylor series expansion about the centroid of cell $P$:
+%\begin{eqnarray}
+%	\bb{\phi}(\bb{x})  \approx \bb{\phi}_P + (\bb{x} - \bb{x}_P) \cdot \nabla \bb{\phi}_P
+%\end{eqnarray}
+%where subscript $P$ indicates a value at the centroid of the cell $P$.
+%% assuming a linear variation of the integrand across the cell, the mid-point rule approximates the integral in terms of the cell centre value.
+%Consequently,
+Volume integrals over a cell $P$ are approximated to second-order accuracy by assuming the integrand $\bb{\phi}$ to vary locally according to a truncated Taylor series expansion about the centroid:
+\begin{eqnarray} \label{eq:volume_integral}
+	\int_{\Omega_P} \bb{\phi} \, d \Omega_P
+		&\approx& \int_{\Omega_P}  \left[ \bb{\phi}_P + (\bb{x} - \bb{x}_P) \cdot \nabla \bb{\phi}_P \right] d \Omega_P \notag \\
+%		&\approx& \int_{\mathrm{\Omega}}  \bb{\phi}_P d\mathrm{\Omega}  + \int_{\mathrm{\Omega}}  (\bb{x} - \bb{x}_P) \cdot \nabla \bb{\phi}_P d\mathrm{\Omega} \notag \\
+		&\approx& \bb{\phi}_P \Omega_P
+\end{eqnarray}
+where subscript $P$ indicates a value at the centroid of the cell $P$, $\Omega_P$ is the volume of cell $P$ and $\int_{\Omega_P} (\bb{x} - \bb{x}_P) d\Omega_P \equiv 0$ by definition of the cell centroid.
+This approximation corresponds to the midpoint rule and one-point quadrature.
+
+
+%%----------------------------%%
+\paragraph{Surface Integrals}
+%%----------------------------%%
+%In the current work, discretisation of the surface integrals (in Equations \ref{eq:residuals}) depends on whether the terms are diffusion-type (e.g., $\bb{n} \cdot \bb{\sigma}^s$, $\bb{n} \cdot \left(\nu \bb{\nabla} \bb{v}\right)$) or advection-type term (e.g., $\bb{n} \cdot \bb{v}$).
+%Surface integral terms require the surface integration of terms containing the derivative of a solution unknown in the deformed configuration (e.g., $\bb{\nabla} \bb{v}$), while advection-type terms contain solution unknown in the deformed configuration (e.g., $\bb{\nabla} \cdot \left(\bb{v} \otimes \bb{v}\right)$, $\bb{\nabla} \cdot \bb{v}$).
+Surface integrals of generic integrand $\bb{q}$ can be discretised using one-point quadrature at each face as
+\begin{eqnarray} \label{eq:diffusion_discret}
+	\oint_{\Gamma_P} \bb{n} \cdot \bb{q}  \; d\Gamma_P
+	&=& \sum_{f_i \in \mathcal{F}_P} \int_{\Gamma_{f_i}} \bb{n} \cdot \bb{q}  \,  d \Gamma_{f_i} \notag \\
+	&\approx&
+%	\sum_{f_i \in \mathcal{F}_P^{\text{int}} \cup \mathcal{F}_P^{\text{disp}} \cup \mathcal{F}_P^{\text{symm}}} \bb{\Gamma}_{f_i} \cdot \bb{q}_{f_i}
+%	\sum_{f_i \in \mathcal{F}_P^{\text{non-trac}}} \bb{\Gamma}_{f_i} \cdot \bb{q}_{f_i}
+	\sum_{f_i \in \mathcal{F}_P^{\text{int}}} \bb{\Gamma}_{f_i} \cdot \bb{q}_{f_i}
+	+ \sum_{d_i \in \mathcal{F}_P^{\text{D}}} \bb{\Gamma}_{d_i} \cdot \bb{q}_{P}
+	+ \sum_{s_i \in \mathcal{F}_P^{\text{symm}}} \bb{\Gamma}_{s_i} \cdot \bb{q}_{s_i}
+	+ \sum_{t_i \in \mathcal{F}_P^{\text{trac}}} |\bb{\Gamma}_{t_i}| \bar{\bb{Q}}_{t_i}
+\end{eqnarray}
+where $\Gamma_P$ indicates the surface of cell $P$, $\bb{\Gamma}_{f_i}$ indicates the deformed area vector of face $f_i$, and $\bar{\bb{Q}}_{t_i}$ represents the prescribed normal component of $\bb{q}$ on a boundary faces where $\bb{q}$ is prescribed, e.g. $\bar{\bb{Q}}_{t_i}$ represents the prescribed traction on fluid and solid Neumann boundaries.
+%where $\Gamma_P$ indicates the surface of cell $P$, and $\bb{\Gamma}_{f_i}$ indicates the area vector of face $f_i$.
+
+%As solution unknowns ($\bb{v}$, $p$, $\bb{d}_m$, $\bb{d}$) are assumed to vary linearly within each cell, their gradients are constant within each cell.
+In the current work, a unique definition of solution gradient (e.g., $\bb{q}_{f_i}$)
+In the current work, the value of the integrand $\bb{q}$ at each cell face $f_i$ is given as a weighted-averaged of values in the two cells straddling the face \citep{Cardiff2025JFNK, Jasak1996}:
+%The stress $\bb{\sigma}_{f_i}$ at an internal face is calculated by linear interpolation from the adjacent cell centres \citep{Jasak1996}:
+\begin{eqnarray} \label{eq:face_interp}
+	\bb{q}_{f_i} &=& w_{f_i} \bb{q}_P + (1 - w_{f_i}) \bb{q}_{N_{f_i}} \\
+	\bb{q}_{f_i} &=& \left( \nicefrac{1}{2} \right) \left[ \bb{q}_P +  \bb{q}_{N_{f_i}} \right]
+%	\left(\bb{\nabla} \bb{\phi}\right)_{f_i} &=& w_{f_i} \left(\bb{\nabla} \bb{\phi}\right)_P + (1 - w_{f_i}) \left(\bb{\nabla} \bb{\phi}\right)_{N_{f_i}} \\
+%	\left(\bb{\nabla} \bb{\phi}\right)_{f_i} &=& \left( \nicefrac{1}{2} \right) \left[ \left(\bb{\nabla} \bb{\phi}\right)_P +  \left(\bb{\nabla} \bb{\phi}\right)_{N_{f_i}} \right]
+%	\left(\bb{\nabla} \bb{\phi}\right)_{f_i} &=& \nicefrac{\left[ \left(\bb{\nabla} \bb{\phi}\right)_P +  \left(\bb{\nabla} \bb{\phi}\right)_{N_{f_i}} \right]}{2}
+\end{eqnarray}
+%where $\bb{\sigma}_{f_i}$ is the stress at an interface face $f_i$, 
+where the interpolation weight is defined as $w_{f_i} = (\bb{n}_{f_i} \cdot [\bb{x}_{N_{f_i}} - \bb{x}_{f_i}])/(\bb{n}_{f_i} \cdot [\bb{x}_{N_{f_i}} - \bb{x}_{P} ])$.
+% however, achieving second-order accuracy of the displacement field is independent of the value of the weights, and, for example, $w_{f_i} = \nicefrac{1}{2}$ would also be sufficient.
+\hl{We can average instead for derivative terms - 2nd eq}
+\hl{Should I use deformed config weights?}
+\hl{Mat props harmonic interp?}
+
+%It is noted that the displacement is assumed to vary linearly within each cell; hence, the displacement gradient and stress are constant within each cell.
+
+The integrand value $\bb{q}_{s_i}$  at a symmetry boundary face is calculated as
+\begin{eqnarray} \label{eq:symm}
+	\bb{q}_{s_i} 
+%		&=& \frac{1}{2} \left (\bb{q}_P + \bb{R}_{s_i} \cdot \bb{q}_{P} \right) \notag \\
+		&=& \left( \nicefrac{1}{2} \right) \left (\bb{q}_P + \bb{R}_{s_i} \cdot \bb{q}_{P} \right) \notag \\
+		&=& \left (\textbf{I} - \bb{n}_{s_i} \otimes \bb{n}_{s_i} \right) \cdot \bb{q}_P
+\end{eqnarray}
+where $\bb{R}_{s_i} \cdot \bb{q}_{P}$ represents the mirror reflection of $\bb{q}_P$ across the symmetry boundary face $s_i$.
+The reflection tensor is $\bb{R}_{s_i} = \textbf{I} - 2 \bb{n}_{s_i} \otimes \bb{n}_{s_i}$ \citep{Demirdzic2022}, with $\bb{n}_{s_i}$ indicating the unit normal of the symmetry boundary face $s_i$.
+%From Equation \ref{eq:symm}, it is clear that shear stresses are zero on a symmetry plane boundary face.
+%Note from Equation \ref{eq:divStressDiscret} that the stress on displacement boundary faces is assumed to be equal to the stress $\bb{\sigma}_P$ at the centroid of cell $P$.
+
+The discretisation of surface integral terms above (Equation \ref{eq:diffusion_discret}) is given in terms of deformed configuration;
+integration over the initial domain is achieved by expressing the deformed area vectors $\bb{\Gamma}_{f_i}$ at a face in terms of the initial configuration:
+\begin{eqnarray} 
+	\bb{\Gamma}_{f_i} = J_{f_i} \bb{F}_{f_i}^{-\text{T}} \cdot \bb{\Gamma}_{0_{f_i}}
+\end{eqnarray} 
+where the face values $J_{f_i}$ and $\bb{F}_{f_i}^{-\text{T}}$ are averaged from adjacent cells according to Equation \ref{eq:face_interp}.
+\hl{Use text(T) for all transposes}
+
+%An exception to the surface integral discretisation above is made for the advection term in the fluid linear momentum equation, which is instead discretised as \hl{fix}
+%\begin{eqnarray} \label{eq:advect_discret}
+%	\oint_{\Gamma_P} \bb{n} \cdot \left(\bb{v} - \frac{\partial \bb{d}_{m}}{\partial t}\right) \bb{v} \; d\Gamma_P
+%	&=& \sum_{f_i \in \mathcal{F}_P} \int_{\Gamma_{f_i}} \bb{n} \cdot  \left(\bb{v} - \frac{\partial \bb{d}_{m}}{\partial t}\right) \bb{v}   \,  d \Gamma_{f_i} \notag \\
+%	&\approx&
+%	\sum_{f_i \in \mathcal{F}_P^{\text{int}}} \bb{\Gamma}_{f_i} \cdot \left( \bb{v}_{f_i} - \frac{\partial \bb{d}_{m,f_i}}{\partial t} \right) \tilde{\bb{v}}_{f_i} \notag \\
+%	&&+ \sum_{d_i \in \mathcal{F}_P^{\text{D}}} \bb{\Gamma}_{d_i} \cdot \left( \bb{v}_{d_i} - \frac{\partial \bb{d}_{m,d_i}}{\partial t} \right) \tilde{\bb{v}}_{d_i}
+%	%+ \sum_{s_i \in \mathcal{F}_P^{\text{symm}}} \bb{\Gamma}_{s_i} \cdot \bb{p}_{s_i}
+%%	+ \sum_{t_i \in \mathcal{F}_P^{\text{trac}}} |\bb{\Gamma}_{t_i}| \bar{\bb{P}}_{t_i}
+%\end{eqnarray}
+%%where $\tilde{\bb{v}}_{f_i}$ is interpolated using upwinding.
+%Note that the advection term is zero at symmetry faces as the face flux (mass flow) is zero by definition.
+%Here, $\tilde{\bb{v}}_{f_i}$ is calculated using first-order upwind for the approximate Jacobian $\bb{J}_v$ contribution
+%\begin{eqnarray}
+%	\tilde{\bb{v}}_{f_i} =
+%		\text{max}\left[ \bb{\Gamma}_{f_i} \cdot \left( \bb{v}_{f_i} - \frac{\partial \bb{d}_{m,f_i}}{\partial t} \right), \, 0\right] \tilde{\bb{v}}_P
+%		+ \text{min}\left[ \bb{\Gamma}_{f_i} \cdot \left( \bb{v}_{f_i} - \frac{\partial \bb{d}_{m,f_i}}{\partial t} \right), \, 0\right] \tilde{\bb{v}}_{N_i}
+%\end{eqnarray}
+%where $\text{max}\left[\cdot \,, \cdot \right]$ is the maximum operator and $\text{min}\left[\cdot \,, \cdot \right]$ is the minimum operator.
+%In the residual $\bb{R}_v$ (which controls the order of accuracy of the final solution), $\tilde{\bb{v}}_{f_i}$ is calculated using a second-order \hl{upwind/CD/limited-decide} scheme:
+%\begin{eqnarray}
+%	\tilde{\bb{v}}_{f_i} =  w_{f_i} \bb{v}_P + (1 - w_{f_i}) \bb{v}_{N_{f_i}}
+%\end{eqnarray}
+
+
+
+%%----------------------------%%
+\paragraph{Gradients}
+%%----------------------------%%
+Cell-centred displacement gradients $\bb{\nabla} \bb{\phi}$ are determined using a weighted first-neighbours least squares method \citep{Cardiff2025JFNK, Jasak1996}:
+\begin{eqnarray} \label{eq:leastSquaresGrad}
+	\left(\bb{\nabla}\bb{\phi}\right)_P
+		&=&\sum_{f_i \in \mathcal{F}^{\text{int}}_P} w_{f_i} |\bb{\Gamma}_{f_i}| \frac{\bb{G}^{-1}_P \cdot \bb{d}_{f_i}}{\bb{d}_{f_i} \cdot \bb{d}_{f_i}}  \otimes \left(\bb{\phi}_{N_{f_i}} - \bb{\phi}_P \right) \notag \\
+		&&+ \sum_{d_i \in \mathcal{F}^{\text{D}}_P} w_{f_i} |\bb{\Gamma}_{d_i}| \frac{ \bb{G}^{-1}_P \cdot \bb{d}_{d_i} }{\bb{d}_{d_i} \cdot \bb{d}_{d_i}} \otimes \left(\bb{\phi}_{d_i} - \bb{\phi}_P \right) \notag \\
+		&&+ \sum_{s_i \in \mathcal{F}^{\text{symm}}_P} w_{f_i} |\bb{\Gamma}_{s_i}| \frac{\bb{G}^{-1}_P \cdot \bb{d}_{s_i}}{\bb{d}_{s_i} \cdot \bb{d}_{s_i}} \otimes \left(\bb{R}_{s_i} \cdot \bb{\phi}_P - \bb{\phi}_P \right)
+\end{eqnarray}
+which is exact for linear functions.
+The tensor multiplication operator $\otimes$ is replaced with an appropriate vector-scalar multiplication operator when $\bb{\phi}$ is a scalar, e.g. kinematic pressure $p$.
+%where the least squares weights are $\omega_{f_i} = 1/|\bb{d}_{f_i}|$ and  $\omega_{b_i} = 1/|\bb{d}_{b_i}|$.
+The vector $\bb{\phi}_{b_i}$ indicates the value of $\bb{\phi}$ at the centroid of boundary face ${b_i}$, while vector $\bb{d}_{d_i}$ connects the centroid of cell $P$ to the centroid of displacement boundary face $d_i$.
+The quantity $\bb{R}_{s_i} \cdot \bb{\phi}_P$ represents the mirror reflection of $\bb{\phi}_P$ across the symmetry boundary face $s_i$.
+% where the reflection tensor is $\bb{R}_{s_i} = \textbf{I} - 2 \bb{n}_{s_i} \otimes \bb{n}_{s_i}$ \citep{Demirdzic2022}.
+The vector $\bb{d}_{s_i}$ connects the centroid $\bb{x}_P$ of cell $P$ with its mirror reflection $\bb{R}_{s_i}  \cdot \bb{x}_P$ through boundary face $s_i$.
+
+%Traction boundary faces are excluded in Equation \ref{eq:leastSquaresGrad}, as the displacement is unknown there; this is in contrast to the default approach in OpenFOAM \citep{Jasak2011}.
+The $\bb{G}_P$ tensor for cell $P$ is calculated as
+\begin{eqnarray}
+	 \bb{G}_P &=&
+%	 \sum_{{f_i} \in \mathcal{F}^{\text{int}}_P} \omega_{f_i}^2 \bb{d}_{f_i} \bb{d}_{f_i}
+%	 +  \sum_{{b_i} \in \mathcal{F}^{\text{disp}}_P} \omega_{b_i}^2 \bb{d}_{b_i} \bb{d}_{b_i}
+%	 +  \sum_{{b_i} \in \mathcal{F}^{\text{symm}}_P} \omega_{b_i}^2 \bb{d}_{b_i}^{\text{symm}} \bb{d}_{b_i}^{\text{symm}}
+%	 \sum_{{f_i} \in \mathcal{F}^{\text{int}}_P} \frac{\bb{d}_{f_i} \otimes \bb{d}_{f_i}}{\bb{d}_{f_i} \cdot \bb{d}_{f_i}}
+%	 +  \sum_{{d_i} \in \mathcal{F}^{\text{disp}}_P} \frac{\bb{d}_{d_i} \otimes \bb{d}_{d_i}}{\bb{d}_{d_i} \cdot \bb{d}_{d_i}}
+%	 +  \sum_{{s_i} \in \mathcal{F}^{\text{symm}}_P} \frac{\bb{d}_{s_i} \otimes \bb{d}_{s_i}}{\bb{d}_{s_i} \cdot \bb{d}_{s_i}}
+	 \sum_{{f_i} \in \mathcal{F}^{\text{int}}_P} (1 - w_{f_i}) |\bb{\Gamma}_{f_i}|  \frac{\bb{d}_{f_i} \otimes \bb{d}_{f_i}}{\bb{d}_{f_i} \cdot \bb{d}_{f_i}} \notag \\
+	 &&+  \sum_{{d_i} \in \mathcal{F}^{\text{disp}}_P} (1 - w_{d_i}) |\bb{\Gamma}_{d_i}|  \frac{\bb{d}_{d_i} \otimes \bb{d}_{d_i}}{\bb{d}_{d_i} \cdot \bb{d}_{d_i}} \notag \\
+	 && +  \sum_{{s_i} \in \mathcal{F}^{\text{symm}}_P} (1 - w_{s_i}) |\bb{\Gamma}_{s_i}|  \frac{\bb{d}_{s_i} \otimes \bb{d}_{s_i}}{\bb{d}_{s_i} \cdot \bb{d}_{s_i}}
+\end{eqnarray}
+As the $w |\bb{\Gamma}| \ \bb{G}^{-1}_P \cdot \bb{d}/(\bb{d}\cdot \bb{d})$ vectors in Equation \ref{eq:leastSquaresGrad} are purely a function of the mesh, they can be computed once (or each time the mesh moves) and stored.
+Equation \ref{eq:leastSquaresGrad} approximates the cell-centre gradients to at least a first-order accuracy, increasing to second-order accuracy on certain smooth grids \citep{Syrakos2023};
+first-order accurate gradients are sufficient to preserve second-order accuracy of the cell-centre primary unknowns.
+
+
+
+%%----------------------------%%
+\paragraph{Time Derivatives}
+%%----------------------------%%
+Time derivatives $\nicefrac{\partial \bb{\phi}}{\partial t}$ at the centre of cell $P$ are discretised in time using the second-order backwards (BDF2) scheme:
+\begin{eqnarray} \label{eq:ddt}
+	\left(\frac{\partial \bb{\phi}}{\partial t}\right)_P^{[t+1]}
+		&\approx& \frac{3 \bb{\phi}_P^{[t+1]} - 4 \bb{\phi}_P^{[t]} + \bb{\phi}_P^{[t-1]}}{2\Delta t} 
+\end{eqnarray}
+where $\Delta t$ is the time increment -- assumed constant here.
+Superscript $[t]$ indicates the time level, with $\bb{\phi}_P^{[t+1]}$ corresponding to the value of $\bb{\phi}$ at the centre of cell $P$ at the current time step $[t+1]$.
+Using the second-order backwards scheme, second time derivatives $\nicefrac{\partial^2 \bb{\phi}}{\partial t^2}$ are discretised as
+\begin{eqnarray}
+	\left(\frac{\partial^2 \bb{\phi}}{\partial t^2}\right)_P
+	&\approx&
+	\frac{3\left( 
+		\dfrac{3\bb{\phi}_P^{[t+1]} - 4\bb{\phi}_P^{[t]} + \bb{\phi}_P^{[t-1]}}{2\Delta t} 
+		\right) 
+	- 4\left(\frac{\partial \bb{\phi}}{\partial t}\right)_P^{[t]} + \left(\frac{\partial \bb{\phi}}{\partial t}\right)_P^{[t-1]}}{2\Delta t}
+\end{eqnarray}
+where the $\frac{\partial \bb{\phi}}{\partial t}$ terms are discretised are also discretised using the second-order backwards scheme (Equation \ref{eq:ddt}).
+
+
+
+%%--------------------------------------------------------------------------------------------------------------------%%
+\subsubsection[Discretisation of the Fluid Dynamics Residuals]{Discretisation of the Fluid Dynamics Residuals $\bb{R}_v$ and $R_p$}
+%%--------------------------------------------------------------------------------------------------------------------%%
+
+The fluid equation linear momentum residual $\bb{R}_v$ repeated here is
+\begin{eqnarray}
+    \bb{R}_u %(\bb{U})
+    &=&
+	\oint_{\Gamma^f_0}  \left[ J^\Gamma (\bb{F}^\Gamma)^{-\text{T}} \cdot \hat{\bb{n}}_0^f \right]
+		\cdot \left[\nu (\bb{F}^\Gamma)^{-T} \cdot \left( \bb{\nabla}_0 \bb{v}^f \right) \right] \, d\Gamma^f_0
+	+ \int_{\Omega^f_0} J^\Gamma (\bb{F}^\Gamma)^{-T} \cdot \left( \bb{\nabla}_0 p \right) \, d\Omega^f_0 \notag \\
+	&&+ \int_{\Omega^f_0} \bb{f}_{b_0}^f \, d\Omega^f_0
+	- \int_{\Omega^f_0} J^\Gamma \frac{\partial \bb{v}^f}{\partial t} \, d\Omega^f_0 
+	- \oint_{\Gamma^f_0}  \left[ J^\Gamma (\bb{F}^\Gamma)^{-\text{T}} \cdot \hat{\bb{n}}_0^f \right] \cdot \left(\bb{v}^f - \frac{\partial \bb{d}_m}{\partial t}\right) \bb{v}^f \, d\Gamma^f_0
+\end{eqnarray}
+
+The three volume integrals are approximated to second-order accuracy using the mid-point rule (Equation \ref{eq:volume_integral}):
+\begin{eqnarray}
+	\int_{\Omega^f_0} J^\Gamma (\bb{F}^\Gamma)^{-T} \cdot \left( \bb{\nabla}_0 p \right) \, d\Omega^f_0
+		&\approx& J^\Gamma_P (\bb{F}^\Gamma_P)^{-T} \cdot \left( \bb{\nabla}_0 p \right)_P  \Omega_{0,P} \\
+	\int_{\Omega^f_0} \bb{f}_{b_0}^f \, d\Omega^f_0	&\approx&		\left( \bb{f}_{b_0}^f \right)_P  \Omega_{0,P} \\
+	\int_{\Omega^f_0} J^\Gamma \frac{\partial \bb{v}^f}{\partial t} \, d\Omega^f_0
+		&\approx& 	J^\Gamma_P  \frac{3 \bb{v}_P - 4 \bb{v}_P^{[t]} + \bb{v}_P^{[t-1]}}{2\Delta t}  \Omega_{0,P}
+\end{eqnarray}
+where the second-order in time backwards differencing scheme is used for the time derivative;
+the $[t+1]$ time index notation is dropped for brevity, i.e., $\bb{v}_P  \equiv \bb{v}_P^{[t+1]}$.
+The cell-centred pressure gradient $\left( \bb{\nabla}_0 p \right)_P$ is calculated using weighted least squares (Equation \ref{eq:least_squares}).
+The cell-centred fluid mesh deformation gradient and its determinant are calculated in terms of the fluid mesh displacement gradient according to Equation \ref{eq:fluid_deformation_grad}, where the cell-centred gradient is calculated using weighted least squares (Equation \ref{eq:least_squares}).
+
+The diffusion (viscous stresses) surface integral is approximated as \hl{FSI-term}
+\begin{eqnarray}
+	\oint_{\Gamma^f_0}  \left[ J^\Gamma (\bb{F}^\Gamma)^{-\text{T}} \cdot \hat{\bb{n}}_0^f \right]
+		\cdot \left[\nu (\bb{F}^\Gamma)^{-T} \cdot \left( \bb{\nabla}_0 \bb{v}^f \right) \right] \, d\Gamma^f_0
+		&\approx&
+		\sum_{f_i \in \mathcal{F}^{\text{int}}_P}
+		\left[ J^\Gamma_{f_i} (\bb{F}^\Gamma_{f_i})^{-\text{T}} \cdot \hat{\bb{\Gamma}}_{0, f_i}^f \right]
+			\cdot \left[\nu_{f_i} (\bb{F}^\Gamma_{f_i})^{-T} \cdot \left( \bb{\nabla}_0 \bb{v}^f \right)_{f_i} \right]
+			\notag \\
+		+ \sum_{d_i \in \mathcal{F}^{\text{D}}_P} TODO \notag \\
+		+ \sum_{s_i \in \mathcal{F}^{\text{symm}}_P} TODO 
+\end{eqnarray}
+The face values $J^\Gamma_{f_i}$, $\bb{F}^\Gamma_{f_i}$, $\nu_{f_i}$, and $\left( \bb{\nabla}_0 \bb{v}^f \right)_{f_i} $ are interpolated from the cell-centres using Equation \ref{eq:interp}.
+Once again, the cell-centred gradient is calculated using weighted least squares (Equation \ref{eq:least_squares}).
+
+The advection surface integral is approximated as \hl{FSI-term}
+\begin{align}
+	\oint_{\Gamma^f_0}  \left[ J^\Gamma (\bb{F}^\Gamma)^{-\text{T}} \cdot \hat{\bb{n}}_0^f \right]
+		& \cdot \left(\bb{v}^f - \frac{\partial \bb{d}_m}{\partial t}\right) \bb{v}^f \, d\Gamma^f_0
+		\approx \notag \\
+		& \sum_{f_i \in \mathcal{F}_P^{\text{int}}}
+	\left[ J^\Gamma_{f_i} (\bb{F}^\Gamma_{f_i})^{-\text{T}} \cdot \hat{\bb{\Gamma}}_{0, f_i}^f \right]
+		\cdot \left( \bb{v}_{f_i} - \frac{3 \bb{d}_{m,f_i} - 4 \bb{d}_{m,f_i}^{[t]} + \bb{d}_{m,f_i}^{[t-1]}}{2\Delta t}  \right) \tilde{\bb{v}}_{f_i} \notag \\
+	&+ \sum_{d_i \in \mathcal{F}_P^{\text{D}}} \left[ J^\Gamma_{d_i} (\bb{F}^\Gamma_{d_i})^{-\text{T}} \cdot \hat{\bb{\Gamma}}_{0, d_i}^f \right]
+		 \cdot \left( \bb{v}_{d_i} - \frac{\partial \bb{d}_{m,d_i}}{\partial t} \right) \tilde{\bb{v}}_{d_i}
+\end{align}
+Note that the advection term is zero at symmetry faces as the face flux (mass flow) is zero by definition.
+Here, $\tilde{\bb{v}}_{f_i}$ is calculated using first-order upwind for the approximate Jacobian $\bb{J}_v$ contribution
+\begin{eqnarray}
+	\tilde{\bb{v}}_{f_i} =
+		\text{max}\left[ \bb{\Gamma}_{f_i} \cdot \left( \bb{v}_{f_i} - \frac{\partial \bb{d}_{m,f_i}}{\partial t} \right), \, 0\right] \tilde{\bb{v}}_P
+		+ \text{min}\left[ \bb{\Gamma}_{f_i} \cdot \left( \bb{v}_{f_i} - \frac{\partial \bb{d}_{m,f_i}}{\partial t} \right), \, 0\right] \tilde{\bb{v}}_{N_i}
+\end{eqnarray}
+where $\text{max}\left[\cdot \,, \cdot \right]$ is the maximum operator and $\text{min}\left[\cdot \,, \cdot \right]$ is the minimum operator.
+In the residual $\bb{R}_v$ (which controls the order of accuracy of the final solution), $\tilde{\bb{v}}_{f_i}$ is calculated using a second-order \hl{upwind/CD/limited-decide} scheme:
+\begin{eqnarray}
+	\tilde{\bb{v}}_{f_i} =  w_{f_i} \bb{v}_P + (1 - w_{f_i}) \bb{v}_{N_{f_i}}
+\end{eqnarray}
+
+\hl{Dv stab term}
+
+The fluid continuity equation residual $R_p$ repeated here is
+\begin{eqnarray}
+    R_p
+    &=&	\oint_{\Gamma^f_0}  \left[ J^\Gamma (\bb{F}^\Gamma)^{-\text{T}}  \cdot \hat{\bb{n}}_0^f \right] \cdot \bb{v}^f \, d\Gamma^f_0 \;+\; \mathcal{D}_p
+\end{eqnarray}
+
+\hl{div(u)}
+
+\hl{Dp stab}
+
+%%----------------------------%%
+\subsubsection[Discretisation of the Fluid Mesh Motion Residual]{Discretisation of the Fluid Mesh Motion Residual $\bb{R}_m$}
+%%----------------------------%%
+The fluid mesh motion equation residual $\bb{R}_m$ repeated here is \hl{maybe we should use large strain approach - see if required in test cases}
+\begin{eqnarray}
+    \bb{R}_m
+    &=&
+    \oint_{\Gamma_0^f} \bb{n}_0^f \cdot
+    \left[
+    \mu^\Gamma \bb{\nabla}_0 \bb{d}_m + \mu^\Gamma \left(\bb{\nabla}_0 \bb{d}_m \right)^T
+    + \lambda^\Gamma (\bb{\nabla}_0 \cdot \bb{d}_m) \textbf{I}
+    \right]
+    \, d\Gamma_0^f
+    \;+\; \bb{\mathcal{D}}_m
+\end{eqnarray}
+
+\hl{div(sigma mesh)}
+
+\hl{Dm stab term}
+
+
+\hl{Merge in text below}
 An additional challenge is that the fluid mesh should be moved (smoothed) to distribute the FSI interface motion throughout the fluid domain.
 To achieve this, the current work adopts a pseudo-solid approach where the fluid mesh is considered to be a solid domain, where the boundary displacements are prescribed.
 The following governing equation is adopted for the fluid mesh motion:
@@ -640,87 +898,50 @@ In the current work, $\delta$ is calculated using a topological search approach,
 $\beta_m$ is then normalised with respect to its average value, i.e. $\beta_m \coloneqq \frac{\beta_m}{\bar{\beta_m}}$, such that $\bar{\beta_m} \equiv 1$. \hl{introduce additional terms to avoid confusion}
 
 
-\subsection{Rest of CC discretisation}
-
-In this work, a nominally second-order cell-centred finite volume discretisation is employed.
-
-%The conservation equation (Equations \ref{eqn:momentum_lingeom}, \ref{eqn:momentum_TL}, or \ref{eqn:momentum_UL}) is applied to each cell $\mathcal{P}$ and discretised in terms of the displacement at the centroid of the cell $\bb{u}_P$ and the displacements at the centroids of the neighbouring cells $\bb{u}_{N_{f_i}} \in N_i$.
-The conservation equation (Equations \ref{eqn:momentum_lingeom}, \ref{eqn:momentum_TL}, or \ref{eqn:momentum_UL}) is applied to each cell $P$ and discretised in terms of the displacement at the centroid of the cell $\boldsymbol{u}_P$ and the displacements $\boldsymbol{u}_{N_{f_i}}$ at the centroids of the neighbouring cells.
-% $\boldsymbol{u}_{N_{f_i}} \in \mathcal{U}_{\mathcal{N}_P}$, where $\mathcal{U}_{\mathcal{N}_P}$ represents the set of such displacements.
-Proceeding with the discretisation, the volume and surface integrals in the governing equation are approximated by algebraic equations as described below.
 
 
-\subsubsection{Volume Integrals}
-To discretise the volume integrals, the integrand $\bb{\phi}$ is assumed to locally vary according to a truncated Taylor series expansion about the centroid of cell $P$:
+%%----------------------------%%
+\subsubsection[Discretisation of the Solid Dynamics Residual]{Discretisation of the Solid Dynamics Residual $\bb{R}_d$}
+%%----------------------------%%
+The solid linear momentum equation residual $\bb{R}_d$ repeated here is
 \begin{eqnarray}
-	\bb{\phi}(\bb{x})  \approx \bb{\phi}_P + (\bb{x} - \bb{x}_P) \cdot \nabla \bb{\phi}_P
+    \bb{R}_d
+    &=&
+    \oint_{\Gamma_0^s} \left( J \bb{F}^{-\text{T}} \cdot \bb{n}_0^s \right) \cdot \bb{\sigma}^s \ d\Gamma_0^s
+    + \int_{\Omega_0^s}  \bb{f}_{b_0}^s \, d\Omega_0^s
+    - \int_{\Omega_0^s} \rho_0 \frac{\partial^2 \bb{d} }{\partial t^2} \; d\Omega_0^s
+    \;+\; \bb{\mathcal{D}}_d
 \end{eqnarray}
-where subscript $P$ indicates a value at the centroid of the cell $P$.
-%assuming a linear variation of the integrand across the cell, the mid-point rule approximates the integral in terms of the cell centre value.
-Consequently, volume integrals over a cell $P$ can be approximated to second-order accuracy as
-\begin{eqnarray} \label{eq:volume_integral}
-	\int_{\Omega_P} \bb{\phi} \, d \Omega_P
-		&\approx& \int_{\Omega_P}  \left[ \bb{\phi}_P + (\bb{x} - \bb{x}_P) \cdot \nabla \bb{\phi}_P \right] d \Omega_P \notag \\
-%		&\approx& \int_{\mathrm{\Omega}}  \bb{\phi}_P d\mathrm{\Omega}  + \int_{\mathrm{\Omega}}  (\bb{x} - \bb{x}_P) \cdot \nabla \bb{\phi}_P d\mathrm{\Omega} \notag \\
-		&\approx& \bb{\phi}_P \Omega_P
-\end{eqnarray}
-where $\Omega_P$ is the volume of cell $P$ and $\int_{\Omega_P} (\bb{x} - \bb{x}_P) d\Omega_P \equiv 0$ by definition of the cell centroid.
-This approximation corresponds to the midpoint rule and one point quadrature.
 
-Using Equation \ref{eq:volume_integral}, the inertia term (e.g. left-hand side term of Equation \ref{eqn:momentum_lingeom}) becomes
-\begin{eqnarray} \label{eq:inertia}
-	\int_{\Omega_P} \rho \frac{\partial \bb{u} }{\partial t}  d \Omega_P
-%	\;&\approx&\;
-%	\int_{\mathrm{\Omega}} \rho \left[ \frac{\partial \bb{u} }{\partial t}_P + (\bb{x} - \bb{x}_P) \cdot \nabla \frac{\partial \bb{u} }{\partial t}_P \right] d\mathrm{\Omega} \notag \\
-	\;&\approx&\;
-	\rho_P \left(\frac{\partial^2 \bb{u} }{\partial t^2}\right)_P  \Omega_P
-\end{eqnarray}
-Similarly, the body force term (e.g. the second term on the right-hand side of Equation \ref{eqn:momentum_lingeom}) becomes:
+\hl{Volume terms}
+The two volume integrals are approximated to second-order accuracy using the mid-point rule (Equation \ref{eq:volume_integral}):
 \begin{eqnarray}
-	\int_{\Omega_P} \, \rho \, \bb{g} \,  d \Omega_P
-	\;&\approx&\;
-	\rho_P \, \bb{g}\,  \Omega_P
+	\int_{\Omega_0^s} \rho_0 \frac{\partial^2 \bb{d} }{\partial t^2} \; d\Omega_0^s
+		\;&\approx&\; \frac{\rho_{0,P}}{2\Delta t}
+		\left[
+			3\left( 
+			\dfrac{3\boldsymbol{d}_P - 4\boldsymbol{d}_P^{[t]} + \boldsymbol{d}_P^{[t-1]}}{2\Delta t} 
+			\right) 
+			- 4\boldsymbol{v}_P^{[t]} + \boldsymbol{v}_P^{[t-1]}
+		\right] \Omega_{0,P} \\
+	\int_{\Omega_0^s}  \bb{f}_{b_0}^s \, d\Omega_0^s
+		\;&\approx&\;  \rho_{0,P} \left(\bb{f}^s_{b_0}\right)_P \Omega_{0,P}
 \end{eqnarray}
-%where subscript $P$ indicates a quantity at the cell centre.
-The discretisation of the acceleration in Equation \ref{eq:inertia} can be achieved using one of many finite difference schemes, e.g. first-order Euler, second-order backwards, or second-order Newmark-beta.
-In the current work, the second-order backwards (BDF2) scheme is used:
-%\begin{eqnarray}
-%	 \left(\frac{\partial^2 \bb{u} }{\partial t^2}\right)_P
-%	 &\approx& \frac{3\bb{v}_{t+1} - 4\bb{v}_{t} + \bb{v}_{t-1}}{2\Delta t} \notag \\
-%	&\approx& \frac{3\left( \frac{3\bb{u}_{t+1} - 4\bb{u}_{t} + \bb{u}_{t-1}}{2\Delta t} \right) - 4\bb{v}_{t} + \bb{v}_{t-1}}{2\Delta t}
-%\end{eqnarray}
-\begin{eqnarray} \label{eq:inertia2}
-	\left(\frac{\partial^2 \boldsymbol{u}_P}{\partial t^2}\right)_P
-	&\approx& \frac{3\boldsymbol{v}_P^{[t+1]} - 4\boldsymbol{v}_P^{[t]} + \boldsymbol{v}_P^{[t-1]}}{2\Delta t} \notag \\
-	&\approx&
-	\frac{3\left( 
-		\dfrac{3\boldsymbol{u}_P^{[t+1]} - 4\boldsymbol{u}_P^{[t]} + \boldsymbol{u}_P^{[t-1]}}{2\Delta t} 
-		\right) 
-	- 4\boldsymbol{v}_P^{[t]} + \boldsymbol{v}_P^{[t-1]}}{2\Delta t}
-\end{eqnarray}
-where $\Delta t$ is the time increment -- assumed constant here.
-Superscript $[t]$ indicates the time level, with $\bb{u}_P^{[t+1]}$ corresponding to the unknown displacement at the current time step.
- The velocity vector $\bb{v} = \partial \bb{u}/\partial t$ at the current time step is also updated using the BDF2 scheme as
+where the acceleration term has been approximated using the second-order in time backwards differencing (BDF2) scheme.
+Here, $\boldsymbol{v} = \nicefrac{\partial \bb{u}}{\partial t}$ refers to the solid velocity vector (not to be confused with the fluid velocity vector), also calculated using the BDF2 scheme:
  \begin{eqnarray}
 	\boldsymbol{v}_P^{[t+1]}	&\approx&
 		\dfrac{3\boldsymbol{u}_P^{[t+1]} - 4\boldsymbol{u}_P^{[t]} + \boldsymbol{u}_P^{[t-1]}}{2\Delta t} 
 \end{eqnarray}
-Consequently, the displacement and velocity at the two previous time steps must be stored, or alternatively, the displacement at the previous four time steps.
 
 
-\subsubsection{Surface Integrals}
-The surface integral term can be discretised using one-point quadrature at each face $f_i$ as
-%\begin{eqnarray} \label{eq:surface_integral}
-%	\oint_{\Gamma_P} \bb{\phi} \, d \Gamma_P
-%		&=& \sum_{f_i \in \mathcal{F}_P} \int_{\Gamma_{f_i}} \bb{\phi} \,  d \Gamma_{f_i} \notag \\
-%%		&\approx& \sum_{f_i \in \mathcal{F}_P} \int_{\Gamma_{f_i}}  \left[ \bb{\phi}_{f_i} + (\bb{x} - \bb{x}_{f_i}) \cdot \nabla \bb{\phi}_{f_i} \right] d \Gamma_{f_i} \notag \\
-%%		&\approx& \int_{\mathrm{\Omega}}  \bb{\phi}_P d\mathrm{\Omega}  + \int_{\mathrm{\Omega}}  (\bb{x} - \bb{x}_P) \cdot \nabla \bb{\phi}_P d\mathrm{\Omega} \notag \\
-%		&\approx& \sum_{f_i \in \mathcal{F}_P} \bb{\phi}_{f_i} |\bb{\Gamma}_{f_i} |
-%\end{eqnarray}
+
+\hl{div(sigma) term}
+%Consequently, by assuming $\bb{\phi}$ represents $\bb{n} \cdot \bb{\sigma}$ in Equation \ref{eq:surface_integral}, the surface integral term (first term on the right-hand side of Equation \ref{eqn:momentum_lingeom}), corresponding to the divergence of stress, can be discretised as
+%%by assuming that the stress varies linearly across the face, allowing the mid-point rule to be used:
 \begin{eqnarray} \label{eq:divStressDiscret}
 	\oint_{\Gamma_P} \bb{n} \cdot \bb{\sigma}  \; d\Gamma_P
-	&=& \sum_{f_i \in \mathcal{F}_P} \int_{\Gamma_{f_i}} \bb{n} \cdot \bb{\sigma}  \,  d \Gamma_{f_i} \notag \\
-	&\approx&
+	\approx 
 %	\sum_{f_i \in \mathcal{F}_P^{\text{int}} \cup \mathcal{F}_P^{\text{disp}} \cup \mathcal{F}_P^{\text{symm}}} \bb{\Gamma}_{f_i} \cdot \bb{\sigma}_{f_i}
 %	\sum_{f_i \in \mathcal{F}_P^{\text{non-trac}}} \bb{\Gamma}_{f_i} \cdot \bb{\sigma}_{f_i}
 	\sum_{f_i \in \mathcal{F}_P^{\text{int}}} \bb{\Gamma}_{f_i} \cdot \bb{\sigma}_{f_i}
@@ -728,19 +949,14 @@ The surface integral term can be discretised using one-point quadrature at each 
 	+ \sum_{s_i \in \mathcal{F}_P^{\text{symm}}} \bb{\Gamma}_{s_i} \cdot \bb{\sigma}_{s_i}
 	+ \sum_{t_i \in \mathcal{F}_P^{\text{trac}}} |\bb{\Gamma}_{t_i}| \bar{\bb{T}}_{t_i}
 \end{eqnarray}
-where $\Gamma_P$ indicates the surface of cell $P$, $\bb{\Gamma}_{f_i}$ indicates the area vector of face $f_i$, and vector $\bar{\bb{T}}_{t_i}$ represents the prescribed traction on the traction boundary face $t_i$.
-%where $\Gamma_P$ indicates the surface of cell $P$, and $\bb{\Gamma}_{f_i}$ indicates the area vector of face $f_i$.
-
-It is noted that the displacement is assumed to vary linearly within each cell; hence, the displacement gradient and stress are constant within each cell.
-In the current work, a unique definition of stress $\bb{\sigma}_{f_i}$ at each cell face $f_i$ is given as a weighted-averaged of values in the two cells ($\bb{\sigma}_P $, $\bb{\sigma}_{N_{f_i}}$) straddling the face \citep{Jasak1996}:
-%The stress $\bb{\sigma}_{f_i}$ at an internal face is calculated by linear interpolation from the adjacent cell centres \citep{Jasak1996}:
-\begin{eqnarray} \label{eq:stressInterp}
-	\bb{\sigma}_{f_i} &=& w_{f_i} \bb{\sigma}_P + (1 - w_{f_i}) \bb{\sigma}_{N_{f_i}}
-\end{eqnarray}
-%where $\bb{\sigma}_{f_i}$ is the stress at an interface face $f_i$, 
-where the interpolation weight is defined as $w_{f_i} = (\bb{n}_{f_i} \cdot [\bb{x}_{N_{f_i}} - \bb{x}_{f_i}])/(\bb{n}_{f_i} \cdot [\bb{x}_{N_{f_i}} - \bb{x}_{P} ])$; however, achieving second-order accuracy of the displacement field is independent of the value of the weights, and, for example, $w_{f_i} = \nicefrac{1}{2}$ would also be sufficient.
-
-The stress $\bb{\sigma}_{s_i}$ at a symmetry boundary face is calculated as
+where vector $\bar{\bb{T}}_{t_i}$ represents the prescribed traction on the traction boundary face $t_i$.
+For faces $f_i$ in Equation \ref{eq:divStressDiscret} that are on traction boundary faces $b_i \in \mathcal{F}_P^{\text{trac}} \subset \mathcal{F}_P$, 
+the traction $\bar{\bb{t}}_{b_i}$ is known and is directly enforced; that is, $\bb{\Gamma}_{f_i} \cdot \bb{\sigma}_{f_i} = |\bb{\Gamma}_{f_i}| \bb{n}_{f_i} \cdot \bb{\sigma}_{f_i} =  |\bb{\Gamma}_{f_i}| \bar{\bb{t}}_{b_i}$.
+%subscript $f$ indicates a quantity at the centre of a cell face, and 
+The stress $\bb{\sigma}_{f_i}$ at an internal face is calculated by linear interpolation from the adjacent cell centres (Equation \ref{eq:interp}).
+For faces $f_i$ in Equation \ref{eq:divStressDiscret} that are on traction boundary faces $b_i \in \mathcal{F}_P^{\text{trac}} \subset \mathcal{F}_P$, the traction $\bar{\bb{t}}_{b_i}$ is known and is directly enforced; that is, $\bb{\Gamma}_{f_i} \cdot \bb{\sigma}_{f_i} = |\bb{\Gamma}_{f_i}| \bb{n}_{f_i} \cdot \bb{\sigma}_{f_i} =  |\bb{\Gamma}_{f_i}| \bar{\bb{t}}_{b_i}$.
+%Vector $\bb{d}_{f}$ connects cell centre $P$ with cell centre $N_f$, $\bb{d}_f = \bb{x}_{N_f} - \bb{x}_P$, and $\bb{n}_{f}$ is the outward-facing unit normal to the face $f$.
+Similarly, the stress $\bb{\sigma}_{s_i}$ at a symmetry boundary face is calculated as
 \begin{eqnarray} \label{eq:symm}
 	\bb{\sigma}_{s_i}
 		&=& \frac{1}{2} \left (\bb{\sigma}_P + \bb{R}_{s_i} \cdot \bb{\sigma}_{P} \right) \notag \\
@@ -749,99 +965,10 @@ The stress $\bb{\sigma}_{s_i}$ at a symmetry boundary face is calculated as
 where $\bb{R}_{s_i} \cdot \bb{\sigma}_{P}$ represents the mirror reflection of $\bb{\sigma}_P$ across the symmetry boundary face $s_i$.
 The reflection tensor is $\bb{R}_{s_i} = \textbf{I} - 2 \bb{n}_{s_i} \otimes \bb{n}_{s_i}$ \citep{Demirdzic2022}, with $\bb{n}_{s_i}$ indicating the unit normal of the symmetry boundary face $s_i$.
 From Equation \ref{eq:symm}, it is clear that shear stresses are zero on a symmetry plane boundary face.
-Note from Equation \ref{eq:divStressDiscret} that the stress on displacement boundary faces is assumed to be equal to the stress $\bb{\sigma}_P$ at the centroid of cell $P$.
-
-%The surface integrals are discretised in a similar fashion to the volume integrals, where the integrand $\bb{\phi}$ is assumed to vary locally according to a truncated Taylor series expansion about a face centroid $\bb{x}_{f_i}$:
-%\begin{eqnarray}
-%	\bb{\phi}(\bb{x})  \approx \bb{\phi}_{f_i} + (\bb{x} - \bb{x}_{f_i}) \cdot \left(\nabla \bb{\phi} \right)_{f_i}
-%\end{eqnarray}
-%where subscript $f_i$ indicates a value at the centroid of the face $f_i$.
-%Consequently, surface integrals about a cell $P$ can be approximated to second-order accuracy as
-%\begin{eqnarray} \label{eq:surface_integral}
-%	\oint_{\Gamma_P} \bb{\phi} \, d \Gamma_P
-%		&=& \sum_{f_i \in \mathcal{F}_P} \int_{\Gamma_{f_i}} \bb{\phi} \,  d \Gamma_{f_i} \notag \\
-%		&\approx& \sum_{f_i \in \mathcal{F}_P} \int_{\Gamma_{f_i}}  \left[ \bb{\phi}_{f_i} + (\bb{x} - \bb{x}_{f_i}) \cdot \nabla \bb{\phi}_{f_i} \right] d \Gamma_{f_i} \notag \\
-%%		&\approx& \int_{\mathrm{\Omega}}  \bb{\phi}_P d\mathrm{\Omega}  + \int_{\mathrm{\Omega}}  (\bb{x} - \bb{x}_P) \cdot \nabla \bb{\phi}_P d\mathrm{\Omega} \notag \\
-%		&\approx& \sum_{f_i \in \mathcal{F}_P} \bb{\phi}_{f_i} |\bb{\Gamma}_{f_i} |
-%\end{eqnarray}
-%where $\Gamma_P$ indicates the surface of cell $P$, and $\bb{\Gamma}_{f_i}$ indicates the area vector of face $f_i$.
-%$N_f$ represents the set of neighbouring cells which share a face with cell $P$, 
-
-%Consequently, by assuming $\bb{\phi}$ represents $\bb{n} \cdot \bb{\sigma}$ in Equation \ref{eq:surface_integral}, the surface integral term (first term on the right-hand side of Equation \ref{eqn:momentum_lingeom}), corresponding to the divergence of stress, can be discretised as
-%%by assuming that the stress varies linearly across the face, allowing the mid-point rule to be used:
-%\begin{eqnarray} \label{eq:divStressDiscret}
-%	\oint_{\Gamma_P} \bb{n} \cdot \bb{\sigma}  \; d\Gamma_P
-%	\approx 
-%%	\sum_{f_i \in \mathcal{F}_P^{\text{int}} \cup \mathcal{F}_P^{\text{disp}} \cup \mathcal{F}_P^{\text{symm}}} \bb{\Gamma}_{f_i} \cdot \bb{\sigma}_{f_i}
-%%	\sum_{f_i \in \mathcal{F}_P^{\text{non-trac}}} \bb{\Gamma}_{f_i} \cdot \bb{\sigma}_{f_i}
-%	\sum_{f_i \in \mathcal{F}_P^{\text{int}}} \bb{\Gamma}_{f_i} \cdot \bb{\sigma}_{f_i}
-%	+ \sum_{d_i \in \mathcal{F}_P^{\text{disp}}} \bb{\Gamma}_{d_i} \cdot \bb{\sigma}_{P}
-%	+ \sum_{s_i \in \mathcal{F}_P^{\text{symm}}} \bb{\Gamma}_{s_i} \cdot \bb{\sigma}_{s_i}
-%	+ \sum_{t_i \in \mathcal{F}_P^{\text{trac}}} |\bb{\Gamma}_{t_i}| \bar{\bb{T}}_{t_i}
-%\end{eqnarray}
-%where vector $\bar{\bb{T}}_{t_i}$ represents the prescribed traction on the traction boundary face $t_i$.
-%For faces $f_i$ in Equation \ref{eq:divStressDiscret} that are on traction boundary faces $b_i \in \mathcal{F}_P^{\text{trac}} \subset \mathcal{F}_P$, 
-%the traction $\bar{\bb{t}}_{b_i}$ is known and is directly enforced; that is, $\bb{\Gamma}_{f_i} \cdot \bb{\sigma}_{f_i} = |\bb{\Gamma}_{f_i}| \bb{n}_{f_i} \cdot \bb{\sigma}_{f_i} =  |\bb{\Gamma}_{f_i}| \bar{\bb{t}}_{b_i}$.
-%subscript $f$ indicates a quantity at the centre of a cell face, and 
-%The stress $\bb{\sigma}_{f_i}$ at an internal face is calculated by linear interpolation from the adjacent cell centres \citep{Jasak1996}:
-%\begin{eqnarray} \label{eq:stressInterp}
-%	\bb{\sigma}_{f_i} &=& w_{f_i} \bb{\sigma}_P + (1 - w_{f_i}) \bb{\sigma}_{N_{f_i}}
-%\end{eqnarray}
-%where the interpolation ratio is defined as $w_{f_i} = (\bb{n}_{f_i} \cdot [\bb{x}_{N_{f_i}} - \bb{x}_{f_i}])/(\bb{n}_{f_i} \cdot [\bb{x}_{N_{f_i}} - \bb{x}_{P} ])$; however, using a value of $\nicefrac{1}{2}$ would also be sufficient to achieve second-order accuracy of the displacement field.
-%For faces $f_i$ in Equation \ref{eq:divStressDiscret} that are on traction boundary faces $b_i \in \mathcal{F}_P^{\text{trac}} \subset \mathcal{F}_P$, the traction $\bar{\bb{t}}_{b_i}$ is known and is directly enforced; that is, $\bb{\Gamma}_{f_i} \cdot \bb{\sigma}_{f_i} = |\bb{\Gamma}_{f_i}| \bb{n}_{f_i} \cdot \bb{\sigma}_{f_i} =  |\bb{\Gamma}_{f_i}| \bar{\bb{t}}_{b_i}$.
-%Vector $\bb{d}_{f}$ connects cell centre $P$ with cell centre $N_f$, $\bb{d}_f = \bb{x}_{N_f} - \bb{x}_P$, and $\bb{n}_{f}$ is the outward-facing unit normal to the face $f$.
-%Similarly, the stress $\bb{\sigma}_{s_i}$ at a symmetry boundary face is calculated as
-%\begin{eqnarray} \label{eq:symm}
-%	\bb{\sigma}_{s_i}
-%		&=& \frac{1}{2} \left (\bb{\sigma}_P + \bb{R}_{s_i} \cdot \bb{\sigma}_{P} \right) \notag \\
-%		&=& \left (\textbf{I} - \bb{n}_{s_i} \otimes \bb{n}_{s_i} \right) \cdot \bb{\sigma}_P
-%\end{eqnarray}
-%where $\bb{R}_{s_i} \cdot \bb{\sigma}_{P}$ represents the mirror reflection of $\bb{\sigma}_P$ across the symmetry boundary face $s_i$.
-%The reflection tensor is $\bb{R}_{s_i} = \textbf{I} - 2 \bb{n}_{s_i} \otimes \bb{n}_{s_i}$ \citep{Demirdzic2022}, with $\bb{n}_{s_i}$ indicating the unit normal of the symmetry boundary face $s_i$.
-%From Equation \ref{eq:symm}, it is clear that shear stresses are zero on a symmetry plane boundary face.
-%Note from Equation \ref{eq:divStressDiscret} that the stress on displacement boundary faces is assumed equal to the stress $\bb{\sigma}_P$ at the centroid of cell $P$.
+Note from Equation \ref{eq:divStressDiscret} that the stress on displacement boundary faces is assumed equal to the stress $\bb{\sigma}_P$ at the centroid of cell $P$.
 
 The cell-centred stress $\bb{\sigma}_P$ is calculated as a function of the displacement gradient according to the chosen mechanical law, for example, as shown in Appendix \ref{app:mechLaws}.
-The presented discretisation is second-order accurate in space for displacement if the cell-centred displacement gradients (and the stress) are at least first-order accurate in space, even if the cell faces are not flat.
-To achieve this, the cell-centred displacement gradients are determined using a weighted first-neighbours least squares method \citep{Jasak1996},
-\begin{eqnarray} \label{eq:leastSquaresGrad}
-	\left(\bb{\nabla}\bb{u}\right)_P
-%		&=&\sum_{f_i \in \mathcal{F}^{\text{int}}_P} \omega_{f_i}^2 \bb{G}^{-1}_P \cdot \bb{d}_{f_i} \left(\bb{u}_{N_{f_i}} - \bb{u}_P \right) \notag \\
-%		&&+ \sum_{b_i \in \mathcal{F}^{\text{disp}}_P} \omega_{b_i}^2 \bb{G}^{-1}_P \cdot \bb{d}_{b_i} \left(\bb{u}_{b_i} - \bb{u}_P \right) \notag \\
-%		&&+ \sum_{b_i \in \mathcal{F}^{\text{symm}}_P} \omega_{b_i}^2 \bb{G}^{-1}_P \cdot \bb{d}_{b_i}^{\text{symm}} \left(\bb{R}_{b_i} \cdot \bb{u}_P - \bb{u}_P \right)
-%		&=&\sum_{f_i \in \mathcal{F}^{\text{int}}_P} \left( \nicefrac{1}{|\bb{d}_{f_i}|^2} \right) \bb{G}^{-1}_P \cdot \bb{d}_{f_i} \left(\bb{u}_{N_{f_i}} - \bb{u}_P \right) \notag \\
-%		&&+ \sum_{b_i \in \mathcal{F}^{\text{disp}}_P} \left( \nicefrac{1}{|\bb{d}_{b_i}|^2} \right) \bb{G}^{-1}_P \cdot \bb{d}_{b_i} \left(\bb{u}_{b_i} - \bb{u}_P \right) \notag \\
-%		&&+ \sum_{b_i \in \mathcal{F}^{\text{symm}}_P} \left( \nicefrac{1}{|\bb{d}_{b_i}^{\text{symm}}|^2} \right) \bb{G}^{-1}_P \cdot \bb{d}_{b_i}^{\text{symm}} \left(\bb{R}_{b_i} \cdot \bb{u}_P - \bb{u}_P \right) \\
-%		&=&\sum_{f_i \in \mathcal{F}^{\text{int}}_P} \frac{\bb{G}^{-1}_P \cdot \bb{d}_{f_i}}{\bb{d}_{f_i} \cdot \bb{d}_{f_i}}  \otimes \left(\bb{u}_{N_{f_i}} - \bb{u}_P \right) \notag \\
-%		&&+ \sum_{d_i \in \mathcal{F}^{\text{disp}}_P} \frac{ \bb{G}^{-1}_P \cdot \bb{d}_{d_i} }{\bb{d}_{d_i} \cdot \bb{d}_{d_i}} \otimes \left(\bb{u}_{d_i} - \bb{u}_P \right) \notag \\
-%		&&+ \sum_{s_i \in \mathcal{F}^{\text{symm}}_P} \frac{\bb{G}^{-1}_P \cdot \bb{d}_{s_i}}{\bb{d}_{s_i} \cdot \bb{d}_{s_i}} \otimes \left(\bb{R}_{s_i} \cdot \bb{u}_P - \bb{u}_P \right)
-		&=&\sum_{f_i \in \mathcal{F}^{\text{int}}_P} w_{f_i} |\bb{\Gamma}_{f_i}| \frac{\bb{G}^{-1}_P \cdot \bb{d}_{f_i}}{\bb{d}_{f_i} \cdot \bb{d}_{f_i}}  \otimes \left(\bb{u}_{N_{f_i}} - \bb{u}_P \right) \notag \\
-		&&+ \sum_{d_i \in \mathcal{F}^{\text{disp}}_P} w_{f_i} |\bb{\Gamma}_{d_i}| \frac{ \bb{G}^{-1}_P \cdot \bb{d}_{d_i} }{\bb{d}_{d_i} \cdot \bb{d}_{d_i}} \otimes \left(\bb{u}_{d_i} - \bb{u}_P \right) \notag \\
-		&&+ \sum_{s_i \in \mathcal{F}^{\text{symm}}_P} w_{f_i} |\bb{\Gamma}_{s_i}| \frac{\bb{G}^{-1}_P \cdot \bb{d}_{s_i}}{\bb{d}_{s_i} \cdot \bb{d}_{s_i}} \otimes \left(\bb{R}_{s_i} \cdot \bb{u}_P - \bb{u}_P \right)
-\end{eqnarray}
-which is exact for linear functions.
-%where the least squares weights are $\omega_{f_i} = 1/|\bb{d}_{f_i}|$ and  $\omega_{b_i} = 1/|\bb{d}_{b_i}|$.
-The vector $\bb{u}_{b_i}$ indicates the displacement at the centroid of boundary face ${b_i}$, while vector $\bb{d}_{d_i}$ connects the centroid of cell $P$ to the centroid of displacement boundary face $d_i$.
-The quantity $\bb{R}_{s_i} \cdot \bb{u}_P$ represents the mirror reflection of $\bb{u}_P$ across the symmetry boundary face $s_i$.
-% where the reflection tensor is $\bb{R}_{s_i} = \textbf{I} - 2 \bb{n}_{s_i} \otimes \bb{n}_{s_i}$ \citep{Demirdzic2022}.
-The vector $\bb{d}_{s_i}$ connects the centroid $\bb{x}_P$ of cell $P$ with its mirror reflection $\bb{R}_{s_i}  \cdot \bb{x}_P$ through boundary face $s_i$.
-Traction boundary faces are excluded in Equation \ref{eq:leastSquaresGrad}, as the displacement is unknown there; this is in contrast to the default approach in OpenFOAM \citep{Jasak2011}.
-The $\bb{G}_P$ tensor for cell $P$ is calculated as
-\begin{eqnarray}
-	 \bb{G}_P &=&
-%	 \sum_{{f_i} \in \mathcal{F}^{\text{int}}_P} \omega_{f_i}^2 \bb{d}_{f_i} \bb{d}_{f_i}
-%	 +  \sum_{{b_i} \in \mathcal{F}^{\text{disp}}_P} \omega_{b_i}^2 \bb{d}_{b_i} \bb{d}_{b_i}
-%	 +  \sum_{{b_i} \in \mathcal{F}^{\text{symm}}_P} \omega_{b_i}^2 \bb{d}_{b_i}^{\text{symm}} \bb{d}_{b_i}^{\text{symm}}
-%	 \sum_{{f_i} \in \mathcal{F}^{\text{int}}_P} \frac{\bb{d}_{f_i} \otimes \bb{d}_{f_i}}{\bb{d}_{f_i} \cdot \bb{d}_{f_i}}
-%	 +  \sum_{{d_i} \in \mathcal{F}^{\text{disp}}_P} \frac{\bb{d}_{d_i} \otimes \bb{d}_{d_i}}{\bb{d}_{d_i} \cdot \bb{d}_{d_i}}
-%	 +  \sum_{{s_i} \in \mathcal{F}^{\text{symm}}_P} \frac{\bb{d}_{s_i} \otimes \bb{d}_{s_i}}{\bb{d}_{s_i} \cdot \bb{d}_{s_i}}
-	 \sum_{{f_i} \in \mathcal{F}^{\text{int}}_P} (1 - w_{f_i}) |\bb{\Gamma}_{f_i}|  \frac{\bb{d}_{f_i} \otimes \bb{d}_{f_i}}{\bb{d}_{f_i} \cdot \bb{d}_{f_i}} \notag \\
-	 &&+  \sum_{{d_i} \in \mathcal{F}^{\text{disp}}_P} (1 - w_{d_i}) |\bb{\Gamma}_{d_i}|  \frac{\bb{d}_{d_i} \otimes \bb{d}_{d_i}}{\bb{d}_{d_i} \cdot \bb{d}_{d_i}} \notag \\
-	 && +  \sum_{{s_i} \in \mathcal{F}^{\text{symm}}_P} (1 - w_{s_i}) |\bb{\Gamma}_{s_i}|  \frac{\bb{d}_{s_i} \otimes \bb{d}_{s_i}}{\bb{d}_{s_i} \cdot \bb{d}_{s_i}}
-\end{eqnarray}
-As the $w |\bb{\Gamma}| \ \bb{G}^{-1}_P \cdot \bb{d}/(\bb{d}\cdot \bb{d})$ vectors in Equation \ref{eq:leastSquaresGrad} are purely a function of the mesh, they can be computed once (or each time the mesh moves) and stored.
-Equation \ref{eq:leastSquaresGrad} approximates the cell-centre gradients to at least a first-order accuracy, increasing to second-order accuracy on certain smooth grids \citep{Syrakos2023};
-first-order accurate gradients are sufficient to preserve second-order accuracy of the cell-centre displacements.
+
 
 As noted, boundary conditions are enforced through the discretised surface integral terms at the boundary faces. % (Equations \ref{eq:divStressDiscret} and \ref{eq:RhieChow}).
 If required, the displacement $\bb{u}_{t_i}$ on a traction boundary face $t_i$ can be calculated by extrapolation from the centre of cell $P$ as
@@ -858,17 +985,8 @@ Similarly, if required, the displacement $\bb{u}_{s_i}$ at a symmetry plane face
 
 
 
-
-\subsubsection{Rhie-Chow Stabilisation}
-%The discretisation is complete but, i
-To quell zero-energy solution modes (i.e. checkerboarding oscillations), a Rhie-Chow-type stabilisation term \cite{Rhie1983} is added to the residual (Equation \ref{eqn:residual}).
-% to quell such oscillations.
-%The term introduces numerical diffusion to the discretisation, which reduces at a third-order rate.
-% based on the earlier approach of Rhie and Chow \citet{demirdzic_numerical_1995}.
-%One issue encountered with the finite volume method is that the discretisation of the governing conservation of momentum equation ( can be unstable and is known to suffer from checker-boarding errors .
-%In order to rectify these issues, the Rhie-Chow stabilisation term \cite{rhie_numerical_1983} as introduced into solid mechanics by  is added to the discretised divergence of the stress in equation \ref{eqn:MomentumImplicitExplicit}.
-%In the current approach, 
-The Rhie-Chow stabilisation term  $\mathcal{D}_P^{\text {Rhie-Chow }}$ for a cell $P$ takes the following form:
+\hl{Dd stab term}
+The stabilisation term  $\mathcal{D}_{d,P}$ for a cell $P$ takes the following form:
 \begin{eqnarray} \label{eq:RhieChow}
 	\mathcal{D}_P^{\text {Rhie-Chow}}
 	&=& \sum_{f_i \in \mathcal{F}^{\text{int}}_P} \alpha \bar{K}_{f_i} \left[
@@ -893,45 +1011,6 @@ The displacement gradient $\left(\bb{\nabla} \bb{u} \right)_{f_i}$ at the intern
 Similarly, the displacement gradient $\left(\bb{\nabla} \bb{u} \right)_{s_i}$ at a symmetry boundary face $s_i$ is averaged from cell $P$ and its mirror reflection across face $s_i$, as in Equation \ref{eq:symm}.
 Note that the displacement gradient at the displacement boundary $d_i$ is assumed to be equal to the displacement gradient at the centroid of cell $P$.
 In addition, no stabilisation term is applied on a traction boundary face $t_i$.
-%and increases in magnitude as the deviation between the $\bb{d}_{f}$ and $\bb{n}_{f}$ vectors increases, 
-%In this way, the amount of stabilisation increases on distorted meshes.
-%\hl{Should we mention Nishikawa alpha scheme?} \hl{Very similar: but scales differently with mesh distortion}
-%and non-orthogonal correction vector $\bb{k}_f=\bb{n}_f-\bb{\Delta}_f$, where $\bb{n}_f$ is the outward-facing unit normal to the face $f$.
-%Vector $\bb{d}_f$ connects the centre of cell $P$ with the centre of cell $N_f$ in the updated configuration.
-%The first term on the right-hand side is treated implicitly, while the second term - representing non-orthogonal corrections at the face - is treated in a deferred correction manner.
-%The Rhie-Chow stabilisation term, first used for finite volume solid mechanics by  \citet{Demirdzic1995}, consists of the numerical difference between a diffusion (Laplacian) term calculated using compact and larger computational stencils.
-
-Within the square braces on the right-hand side of Equation \ref{eq:RhieChow}, the first terms represent a compact stencil (two-node) approximation of the face normal gradient, while the second terms represent a larger stencil approximation.
-These two terms cancel out in the limit of mesh refinement (or if the solution varies linearly); otherwise, they produce a stabilisation effect that tends to smooth the solution fields.
-The magnitude of the stabilisation is shown in Appendix \ref{app:RhieChow} to reduce at a second-order rate (not a third-order rate as stated previously \citep{Demirdzic1995}), and hence does not affect the overall scheme's second-order accuracy.
-It is informative to note that the first term in the square bracket in Equation \ref{eq:RhieChow} can be expressed, assuming $(\bb{d}_{f_i} \cdot \bb{n}_{f_i}) > 0$, as
-\begin{eqnarray} \label{eq:RhieChow2}
-	\alpha \left[ \left|\bb{\Delta}_{f_i} \right| \frac{ \bb{u}_{N_{f_i}} - \bb{u}_P}{\left|\bb{d}_{f_i}\right|}	-  \bb{\Delta}_{f_i} \cdot \left(\bb{\nabla} \bb{u} \right)_{f_i} \right]
-	&=&
-	\alpha \left| \frac{\bb{d}_{f_i}}{\bb{d}_{f_i} \cdot \bb{n}_{f_i}} \right| \frac{ \bb{u}_{N_{f_i}} - \bb{u}_P}{\left|\bb{d}_{f_i}\right|}
-	-  \alpha \frac{\bb{d}_{f_i}}{\bb{d}_{f_i} \cdot \bb{n}_{f_i}} \cdot \left(\bb{\nabla} \bb{u} \right)_{f_i} \notag \\
-	&=&
-	\frac{\alpha}{\bb{d}_{f_i} \cdot \bb{n}_{f_i}} \left[ \left( \bb{u}_{N_{f_i}} - \bb{u}_P \right) -  \bb{d}_{f_i} \cdot \left(\bb{\nabla} \bb{u} \right)_{f_i} \right]
-\end{eqnarray}
-Noting that $\left(\bb{\nabla} \bb{u} \right)_{f_i} = \left[ \left(\bb{\nabla} \bb{u} \right)_{N_{f_i}} + \left(\bb{\nabla} \bb{u} \right)_P \right]/2$, Equation \ref{eq:RhieChow2} can be expressed as
-\begin{eqnarray}
-	\alpha \left[ \left|\bb{\Delta}_{f_i} \right| \frac{ \bb{u}_{N_{f_i}} - \bb{u}_P}{\left|\bb{d}_{f_i}\right|}	-  \bb{\Delta}_{f_i} \cdot \left(\bb{\nabla} \bb{u} \right)_{f_i} \right]
-	&=&
-	\frac{\alpha}{\bb{d}_{f_i} \cdot \bb{n}_{f_i}} \left( \bb{u}_{N_{f_i}}^* - \bb{u}_P^* \right)
-\end{eqnarray}
-where
-\begin{eqnarray}
-	\bb{u}_P^* &=& \bb{u}_P + (\bb{d}_{f_i}/2) \cdot \left(\bb{\nabla} \bb{u} \right)_P  \\
-	\bb{u}_{N_{f_i}}^* &=& \bb{u}_{N_{f_i}} - (\bb{d}_{f_i}/2) \cdot \left(\bb{\nabla} \bb{u} \right)_{N_{f_i}}
-\end{eqnarray}
-
-So, this Rhie-Chow stabilisation can take the form of a \emph{jump} term; that is, it is a function of the jump in solution between neighbouring cells.
-The two states, $\bb{u}_P^*$ and $\bb{u}_{N_{f_i}}^*$, are evaluated halfway between $P$ and $N_{f_i}$, and it may not be at a face centre; however, as noted by \citet{Nishikawa2010}, this will not affect the second-order accuracy of the method; consequently, the user is free to choose the value of $\alpha$ for stabilisation and accuracy purposes.
-% but it doesn't matter because this team is only stabilisation and it vanishes in the grid refinement.
-%As long as it vanishes for linear functions, second-order accuracy is preserved. It means that the parameter alpha can be chosen solely for the purpose of stabilization. 
-
-
-%All dependent variables must be specified at the initial time.
 
 
 %\subsubsection{Boundary Conditions}

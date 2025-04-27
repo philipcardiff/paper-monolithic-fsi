@@ -143,8 +143,13 @@ In cases where strict enforcement of kinematic and dynamic interface continuity 
 In partitioned (staggered/two-system) approaches, separate solvers (and potentially discretisations) are used for the fluid and solid \citep{tukovic2018openfoam}. Consequently, outer iterations must be performed over the fluid and solid domains at each time step, e.g. using Aitken’s acceleration \citep{degroote2009performance, bungartz2016precice, irons1969version, kuttler2008fixed}, quasi-Newton procedures \citep{santiago2020hpc, delaisse2022surrogate}, or Robin-type coupling \citep{tukovic2019added}. The main limitations of these approaches can be robustness and efficiency, whereas for highly nonlinear, tightly coupled systems, convergence may not be possible or may be prohibitively slow. This is of concern for a whole heart simulation with multiple deforming structures (valves, chambers, vessels) undergoing complex deformations. In contrast, monolithic approaches treat the entire solid-fluid domain as one system, where the discretised fluid and solid problems are solved concurrently in the same linearised system \citep{degroote2009performance}. The primary advantage of monolithic methods is their ability to deal with tightly coupled nonlinear systems, as well as potentially being faster than partitioned approaches (fewer outer iterations). The disadvantages are related to the loss of modularity and the resulting poorly conditioned linear system being more challenging to solve.
 
 More references:
-- \citet{Gjertsen2017} masters thesis, \citep{Sebastian-Gjertsen-turtleFSI}
-- Wolfgang Wall paper
+\begin{itemize}
+	\item \citet{Gjertsen2017} masters thesis, \citep{Sebastian-Gjertsen-turtleFSI}
+	\item Wall papers: Gee
+	\item Heil UoM 2004 and 2008
+	\item Tandis thesis
+	\item Greenshields and related uniform FSI papers
+\end{itemize}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -529,8 +534,10 @@ Iterations are performed over this system until the residual $\bb{R}(\bb{U}_k)$ 
 The linear system in Equation \ref{eq:NewtonRaphson} can be represented as
 \begin{eqnarray} \label{eqn:jacobian}
 \begin{bmatrix}
-\bb{J}_{vv} & \bb{J}_{vp} & \bb{J}_{vm} & \bb{J}_{vd} \\
-J_{pv} & J_{pp} & J_{pm} & J_{pd} \\
+%\bb{J}_{vv} & \bb{J}_{vp} & \bb{J}_{vm} & \bb{J}_{vd} \\
+%J_{pv} & J_{pp} & J_{pm} & J_{pd} \\
+\bb{J}_{vv} & \bb{J}_{vp} & \bb{J}_{vm} & 0 \\
+J_{pv} & J_{pp} & J_{pm} & 0 \\
 0 & 0 & \bb{J}_{mm} & \bb{J}_{md} \\
 \bb{J}_{dv} & \bb{J}_{dp} & 0 & \bb{J}_{dd}
 \end{bmatrix}_k
@@ -571,18 +578,25 @@ Several submatrices are not present, indicating an absence of coupling:
 
 The current work adopts a Jacobian-free Newton-Krylov solution procedure \citep{Cardiff2025JFNK} to solve the nonlinear system given by Equation \ref{eqn:residual}.
 Consequently, the true Jacobian given in Equation \ref{eqn:jacobian} is not strictly required; instead, an approximate Jacobian $\tilde{\bb{J}}$ is formed and employed to precondition the nonlinear Newton-Krylov solution.
+Note that adopting an approximate Jacobian does not affect the final converged solution in each time step, assuming convergence is achieved; in addition, the quadratic convergence of the Newton-Raphson method is unaffected, once again assuming convergence is achieved.
+Instead, this approximate Jacobian only affects the convergence of the linear iterative (Krylov) solver.
+Others have proposed the use of physics-specific preconditioning procedures, e.g. \citet{Gee20??_Wall} and \citet{Heil2008} => these approaches sound better, but here we use a simpler approach to demonstrate the first FVM monolithic FSI solver.
+Physics preconditioners are certainly suitable (e.g., using SIMPLE and segregated solvers) and will be examined in a future publication.
 Here, the approximate Jacobian $\tilde{\bb{J}}$ takes the form:
 \begin{eqnarray} \label{eqn:approx_jacobian}
 \tilde{\bb{J}} =
 \begin{bmatrix}
-\tilde{\bb{J}}_{vv} & \bb{J}_{vp} & \bb{J}_{vm} & \bb{J}_{vd} \\
-J_{pv} & \tilde{J}_{pp} & J_{pm} & J_{pd} \\
-0 & 0 & \tilde{\bb{J}}_{mm} & \bb{J}_{md} \\
+%\tilde{\bb{J}}_{vv} & \bb{J}_{vp} & \bb{J}_{vm} & \bb{J}_{vd} \\
+%J_{pv} & \tilde{J}_{pp} & J_{pm} & J_{pd} \\
+\tilde{\bb{J}}_{vv} & \bb{J}_{vp} & \tilde{\bb{J}}_{vm} & 0 \\
+J_{pv} & \tilde{J}_{pp} & 0 & 0 \\
+0 & 0 & \tilde{\bb{J}}_{mm} & \tilde{\bb{J}}_{md} \\
 0 & \bb{J}_{dp} & 0 & \tilde{\bb{J}}_{dd}
 \end{bmatrix}_k
 \end{eqnarray}
 where $\bb{J}_{dv}$ is dropped as the fluid viscous forces on the fluid-solid interface are assumed to be small in comparison to the fluid pressure forces (represented by $\bb{J}_{dp}$).
-In addition, compact stencil approximate Jacobians for solid ($\tilde{\bb{J}}_{dd}$), fluid ($\tilde{\bb{J}}_{vv}$, $\tilde{J}_{pp}$) and fluid mesh motion ($\tilde{\bb{J}}_{mm}$) terms are employed.
+In addition, compact stencil approximate Jacobians for solid ($\tilde{\bb{J}}_{dd}$), fluid ($\tilde{\bb{J}}_{vv}$, $\tilde{J}_{pp}$) and fluid mesh motion ($\tilde{\bb{J}}_{mm}$, $\tilde{\bb{J}}_{md}$) terms are employed.
+The $J_{pm}$ term is also ignored, and $\tilde{\bb{J}}_{vm}$ contains only the advective mesh velocity term.
 
 Details of the cell-centred finite volume discretisation of residuals are given below, in addition to the calculation of the approximate Jacobian submatrices.
 
@@ -590,8 +604,10 @@ Details of the cell-centred finite volume discretisation of residuals are given 
 
 
 %%--------------------------------------------------------------------------------------------------------------------%%
-\subsection{Cell-Centred Finite Volume Discretisation}
+\subsection{Cell-Centred Finite Volume Discretisation Principles}
 %%--------------------------------------------------------------------------------------------------------------------%%
+\hl{This section summaries the main principles of the cell-centred FV scheme employed here}
+\hl{State truncated Taylor series}
 A nominally second-order cell-centred finite volume discretisation is employed in this work.
 This section describes the adopted finite volume discretisation for general volume and surface integrals, gradient calculation, and time derivatives.
 Equation-specific details are given in the subsequent fluid dynamics, mesh motion and solid dynamics sections.
@@ -716,7 +732,7 @@ where the face values $J_{f_i}$ and $\bb{F}_{f_i}^{-\text{T}}$ are averaged from
 %%----------------------------%%
 \paragraph{Gradients}
 %%----------------------------%%
-Cell-centred displacement gradients $\bb{\nabla} \bb{\phi}$ are determined using a weighted first-neighbours least squares method \citep{Cardiff2025JFNK, Jasak1996}:
+Cell-centred displacement gradients $\bb{\nabla} \bb{\phi}$ are determined using a weighted first-neighbours least squares method \citep{Cardiff2025JFNK, Jasak1996}: \hl{introduce symbol for LS vec}
 \begin{eqnarray} \label{eq:leastSquaresGrad}
 	\left(\bb{\nabla}\bb{\phi}\right)_P
 		&=&\sum_{f_i \in \mathcal{F}^{\text{int}}_P} w_{f_i} |\bb{\Gamma}_{f_i}| \frac{\bb{G}^{-1}_P \cdot \bb{d}_{f_i}}{\bb{d}_{f_i} \cdot \bb{d}_{f_i}}  \otimes \left(\bb{\phi}_{N_{f_i}} - \bb{\phi}_P \right) \notag \\
@@ -775,6 +791,11 @@ where the $\frac{\partial \bb{\phi}}{\partial t}$ terms are discretised are also
 
 
 %%--------------------------------------------------------------------------------------------------------------------%%
+\subsection{Discretisation of the Residuals}
+%%--------------------------------------------------------------------------------------------------------------------%%
+
+
+%%--------------------------------------------------------------------------------------------------------------------%%
 \subsubsection[Discretisation of the Fluid Dynamics Residuals]{Discretisation of the Fluid Dynamics Residuals $\bb{R}_v$ and $R_p$}
 %%--------------------------------------------------------------------------------------------------------------------%%
 
@@ -830,7 +851,7 @@ The advection surface integral is approximated as \hl{FSI-term}
 		 \cdot \left( \bb{v}_{d_i} - \frac{\partial \bb{d}_{m,d_i}}{\partial t} \right) \tilde{\bb{v}}_{d_i}
 \end{align}
 Note that the advection term is zero at symmetry faces as the face flux (mass flow) is zero by definition.
-Here, $\tilde{\bb{v}}_{f_i}$ is calculated using first-order upwind for the approximate Jacobian $\bb{J}_v$ contribution
+Here, $\tilde{\bb{v}}_{f_i}$ is calculated using first-order upwind for the approximate Jacobian $\bb{J}_v$ contribution \hl{make consistent with Jacobian section later}
 \begin{eqnarray}
 	\tilde{\bb{v}}_{f_i} =
 		\text{max}\left[ \bb{\Gamma}_{f_i} \cdot \left( \bb{v}_{f_i} - \frac{\partial \bb{d}_{m,f_i}}{\partial t} \right), \, 0\right] \tilde{\bb{v}}_P
@@ -843,6 +864,7 @@ In the residual $\bb{R}_v$ (which controls the order of accuracy of the final so
 \end{eqnarray}
 
 \hl{Dv stab term}
+\hl{TODO}
 
 The fluid continuity equation residual $R_p$ repeated here is
 \begin{eqnarray}
@@ -851,8 +873,10 @@ The fluid continuity equation residual $R_p$ repeated here is
 \end{eqnarray}
 
 \hl{div(u)}
+\hl{TODO}
 
 \hl{Dp stab}
+\hl{TODO}
 
 %%----------------------------%%
 \subsubsection[Discretisation of the Fluid Mesh Motion Residual]{Discretisation of the Fluid Mesh Motion Residual $\bb{R}_m$}
@@ -878,10 +902,10 @@ The fluid mesh motion equation residual $\bb{R}_m$ repeated here is \hl{maybe we
 \hl{Merge in text below}
 An additional challenge is that the fluid mesh should be moved (smoothed) to distribute the FSI interface motion throughout the fluid domain.
 To achieve this, the current work adopts a pseudo-solid approach where the fluid mesh is considered to be a solid domain, where the boundary displacements are prescribed.
-The following governing equation is adopted for the fluid mesh motion:
+The following governing equation is adopted for the fluid mesh motion: \hl{I could add F-old to rotate but keep linear}
 \begin{eqnarray} \label{eqn:motion}
     \oint_{\tilde{\Gamma}}
-    \bb{n}_u \cdot \left[ \mu_m \bb{\nabla}\bb{d}_m
+    \bb{n}_u \cdot \left[ \beta_m \mu_m \bb{\nabla}\bb{d}_m
     + \beta_m \mu_m (\bb{\nabla}\bb{d}_m)^T
     + \beta_m \lambda_m \text{tr}(\bb{\nabla} \bb{d}_m)\textbf{I} \right] 
     \, d\tilde{\Gamma}
@@ -913,7 +937,6 @@ The solid linear momentum equation residual $\bb{R}_d$ repeated here is
     \;+\; \bb{\mathcal{D}}_d
 \end{eqnarray}
 
-\hl{Volume terms}
 The two volume integrals are approximated to second-order accuracy using the mid-point rule (Equation \ref{eq:volume_integral}):
 \begin{eqnarray}
 	\int_{\Omega_0^s} \rho_0 \frac{\partial^2 \bb{d} }{\partial t^2} \; d\Omega_0^s
@@ -936,19 +959,14 @@ Here, $\boldsymbol{v} = \nicefrac{\partial \bb{u}}{\partial t}$ refers to the so
 
 
 
-\hl{div(sigma) term}
-%Consequently, by assuming $\bb{\phi}$ represents $\bb{n} \cdot \bb{\sigma}$ in Equation \ref{eq:surface_integral}, the surface integral term (first term on the right-hand side of Equation \ref{eqn:momentum_lingeom}), corresponding to the divergence of stress, can be discretised as
-%%by assuming that the stress varies linearly across the face, allowing the mid-point rule to be used:
-\begin{eqnarray} \label{eq:divStressDiscret}
-	\oint_{\Gamma_P} \bb{n} \cdot \bb{\sigma}  \; d\Gamma_P
-	\approx 
-%	\sum_{f_i \in \mathcal{F}_P^{\text{int}} \cup \mathcal{F}_P^{\text{disp}} \cup \mathcal{F}_P^{\text{symm}}} \bb{\Gamma}_{f_i} \cdot \bb{\sigma}_{f_i}
-%	\sum_{f_i \in \mathcal{F}_P^{\text{non-trac}}} \bb{\Gamma}_{f_i} \cdot \bb{\sigma}_{f_i}
-	\sum_{f_i \in \mathcal{F}_P^{\text{int}}} \bb{\Gamma}_{f_i} \cdot \bb{\sigma}_{f_i}
-	+ \sum_{d_i \in \mathcal{F}_P^{\text{disp}}} \bb{\Gamma}_{d_i} \cdot \bb{\sigma}_{P}
+The surface integral term, corresponding to the divergence of stress, can be discretised as
+\begin{align} \label{eq:divStressDiscret}
+	\oint_{\Gamma_0^s} \left( J \bb{F}^{-\text{T}} \cdot \bb{n}_0^s \right) \cdot \bb{\sigma}^s & \, d\Gamma_0^s
+	\approx  \sum_{f_i \in \mathcal{F}_P^{\text{int}}} \left( J_{f_i} \bb{F}^{-\text{T}}_{f_i} \cdot \bb{\Gamma}_{0,f_i}^s \right) \cdot \bb{\sigma}_{f_i} \notag \\
+	&+ \sum_{d_i \in \mathcal{F}_P^{\text{disp}}} \bb{\Gamma}_{d_i} \cdot \bb{\sigma}_{P}
 	+ \sum_{s_i \in \mathcal{F}_P^{\text{symm}}} \bb{\Gamma}_{s_i} \cdot \bb{\sigma}_{s_i}
 	+ \sum_{t_i \in \mathcal{F}_P^{\text{trac}}} |\bb{\Gamma}_{t_i}| \bar{\bb{T}}_{t_i}
-\end{eqnarray}
+\end{align}
 where vector $\bar{\bb{T}}_{t_i}$ represents the prescribed traction on the traction boundary face $t_i$.
 For faces $f_i$ in Equation \ref{eq:divStressDiscret} that are on traction boundary faces $b_i \in \mathcal{F}_P^{\text{trac}} \subset \mathcal{F}_P$, 
 the traction $\bar{\bb{t}}_{b_i}$ is known and is directly enforced; that is, $\bb{\Gamma}_{f_i} \cdot \bb{\sigma}_{f_i} = |\bb{\Gamma}_{f_i}| \bb{n}_{f_i} \cdot \bb{\sigma}_{f_i} =  |\bb{\Gamma}_{f_i}| \bar{\bb{t}}_{b_i}$.
@@ -967,48 +985,48 @@ The reflection tensor is $\bb{R}_{s_i} = \textbf{I} - 2 \bb{n}_{s_i} \otimes \bb
 From Equation \ref{eq:symm}, it is clear that shear stresses are zero on a symmetry plane boundary face.
 Note from Equation \ref{eq:divStressDiscret} that the stress on displacement boundary faces is assumed equal to the stress $\bb{\sigma}_P$ at the centroid of cell $P$.
 
+\hl{maybe neglect symmetry planes to avoid confusion}
+
 The cell-centred stress $\bb{\sigma}_P$ is calculated as a function of the displacement gradient according to the chosen mechanical law, for example, as shown in Appendix \ref{app:mechLaws}.
 
 
-As noted, boundary conditions are enforced through the discretised surface integral terms at the boundary faces. % (Equations \ref{eq:divStressDiscret} and \ref{eq:RhieChow}).
-If required, the displacement $\bb{u}_{t_i}$ on a traction boundary face $t_i$ can be calculated by extrapolation from the centre of cell $P$ as
-\begin{eqnarray}
-	\bb{u}_{t_i} = \bb{u}_P + \bb{d}_{t_i} \cdot \left(\bb{\nabla} \bb{u} \right)_P
-\end{eqnarray}
-where $\bb{d}_{t_i}$ represents the vector from the centroid of cell $P$ to the centroid of the traction boundary face $t_i$.
-Similarly, if required, the displacement $\bb{u}_{s_i}$ at a symmetry plane face $s_i$ is calculated using the same approach as Equation \ref{eq:symm}:
-\begin{eqnarray} 
-	\bb{u}_{s_i}
-		&=&  \frac{1}{2} \left( \bb{u}_P + \bb{R}_{s_i} \cdot \bb{u}_P \right) \notag \\
-		&=& \left (\textbf{I} - \bb{n}_{s_i} \otimes \bb{n}_{s_i} \right) \cdot \bb{u}_P
-\end{eqnarray}
+%As noted, boundary conditions are enforced through the discretised surface integral terms at the boundary faces. % (Equations \ref{eq:divStressDiscret} and \ref{eq:RhieChow}).
+%If required, the displacement $\bb{u}_{t_i}$ on a traction boundary face $t_i$ can be calculated by extrapolation from the centre of cell $P$ as
+%\begin{eqnarray}
+%	\bb{u}_{t_i} = \bb{u}_P + \bb{d}_{t_i} \cdot \left(\bb{\nabla} \bb{u} \right)_P
+%\end{eqnarray}
+%where $\bb{d}_{t_i}$ represents the vector from the centroid of cell $P$ to the centroid of the traction boundary face $t_i$.
+%Similarly, if required, the displacement $\bb{u}_{s_i}$ at a symmetry plane face $s_i$ is calculated using the same approach as Equation \ref{eq:symm}:
+%\begin{eqnarray} 
+%	\bb{u}_{s_i}
+%		&=&  \frac{1}{2} \left( \bb{u}_P + \bb{R}_{s_i} \cdot \bb{u}_P \right) \notag \\
+%		&=& \left (\textbf{I} - \bb{n}_{s_i} \otimes \bb{n}_{s_i} \right) \cdot \bb{u}_P
+%\end{eqnarray}
 
 
 
-\hl{Dd stab term}
-The stabilisation term  $\mathcal{D}_{d,P}$ for a cell $P$ takes the following form:
+The stabilisation term  $\bb{\mathcal{D}}_{d,P}$ for a cell $P$ takes the following form \hl{two d: new symbol} \hl{deformed config?}:
 \begin{eqnarray} \label{eq:RhieChow}
-	\mathcal{D}_P^{\text {Rhie-Chow}}
+	\bb{\mathcal{D}}_{d,P}
 	&=& \sum_{f_i \in \mathcal{F}^{\text{int}}_P} \alpha \bar{K}_{f_i} \left[
-		\left|\bb{\Delta}_{f_i} \right| \frac{ \bb{u}_{N_{f_i}} - \bb{u}_P}{\left|\bb{d}_{f_i}\right|}	- \bb{\Delta}_{f_i} \cdot \left(\bb{\nabla} \bb{u} \right)_{f_i}
+		\left|\bb{\Delta}_{f_i} \right| \frac{ \bb{d}_{N_{f_i}} - \bb{d}_P}{\left|\bb{d}_{f_i}\right|}	- \bb{\Delta}_{f_i} \cdot \left(\bb{\nabla} \bb{d} \right)_{f_i}
 		\right]    \left|\bb{\Gamma}_{f_i}\right| \notag \\
 	&&+ \sum_{d_i \in \mathcal{F}^{\text{disp}}_P} \alpha \bar{K}_{d_i} \left[
-		\left|\bb{\Delta}_{d_i} \right| \frac{ \bar{\bb{u}}_{d_i} - \bb{u}_P}{\left|\bb{d}_{d_i}\right|}	- \bb{\Delta}_{d_i} \cdot \left(\bb{\nabla} \bb{u} \right)_{P}
+		\left|\bb{\Delta}_{d_i} \right| \frac{ \bar{\bb{u}}_{d_i} - \bb{u}_P}{\left|\bb{d}_{d_i}\right|}	- \bb{\Delta}_{d_i} \cdot \left(\bb{\nabla} \bb{d} \right)_{P}
 		\right]    \left|\bb{\Gamma}_{d_i}\right| \notag \\
 	&&+ \sum_{s_i \in \mathcal{F}^{\text{symm}}_P} \alpha \bar{K}_{s_i} \left[
-		\left|\bb{\Delta}_{s_i} \right| \frac{ \bb{R}_{s_i} \cdot \bb{u}_{P} - \bb{u}_P}{\left|\bb{d}_{s_i}\right|} - \bb{\Delta}_{s_i} \cdot \left(\bb{\nabla} \bb{u} \right)_{s_i}
+		\left|\bb{\Delta}_{s_i} \right| \frac{ \bb{R}_{s_i} \cdot \bb{d}_{P} - \bb{d}_P}{\left|\bb{d}_{s_i}\right|} - \bb{\Delta}_{s_i} \cdot \left(\bb{\nabla} \bb{d} \right)_{s_i}
 		\right]    \left|\bb{\Gamma}_{s_i}\right|
 \end{eqnarray}
 %which comes from the difference between Equations \ref{eq:diffusion} and \ref{eq:diffusion_exp}.
-where $\alpha > 0$ is a user-defined parameter for globally scaling the amount of stabilisation.
-Parameter $\bar{K}$ is a stiffness-type parameter that gives the stabilisation an appropriate scale and dimension.
-Here, $\bar{K} = \frac{4}{3}\mu + \kappa = 2\mu + \lambda$ following previous work \cite{Jasak2000, Cardiff2017, Cardiff2018}, where $\mu$ is the shear modulus (first Lam\'{e} parameter), $\kappa$ is the bulk modulus, and $\lambda$ is the second Lam\'{e} parameter.
-Vector $\bar{\bb{u}}_{d_i}$ represents the prescribed displacement at the centroid of displacement boundary face $d_i$.
+where $\alpha_d > 0$ is a user-defined parameter for globally scaling the amount of stabilisation.
+Parameter $\bar{K}$ is a stiffness-type parameter that gives the stabilisation an appropriate scale and dimension, chosen here to be $\bar{K} = \frac{4}{3}\mu + \kappa = 2\mu + \lambda$ following previous work \cite{Jasak2000, Cardiff2017, Cardiff2018}, where $\mu$ is the shear modulus (first Lam\'{e} parameter), $\kappa$ is the bulk modulus, and $\lambda$ is the second Lam\'{e} parameter (or their equivalent for the chosen mechanical law).
+Vector $\bar{\bb{d}}_{d_i}$ represents the prescribed displacement at the centroid of displacement boundary face $d_i$.
 %where $N_f$ represents the set of faces $f$ in cell $P$, and neighbouring cell centre $N_f$ shares face $f$ with the cell $P$.
 %Vector $\bb{n}_{f}$ is the outward-facing unit normal to the face $f$.
 The quantities $\bb{\Delta} = \nicefrac{\bb{d}}{\bb{d} \cdot \bb{n}}$ are termed the \emph{over-relaxed orthogonal} vectors \cite{Jasak1996}.
-The displacement gradient $\left(\bb{\nabla} \bb{u} \right)_{f_i}$ at the internal face $f_i$ is calculated by interpolation from adjacent cell centres (like in Equation \ref{eq:stressInterp}).
-Similarly, the displacement gradient $\left(\bb{\nabla} \bb{u} \right)_{s_i}$ at a symmetry boundary face $s_i$ is averaged from cell $P$ and its mirror reflection across face $s_i$, as in Equation \ref{eq:symm}.
+The displacement gradient $\left(\bb{\nabla} \bb{d} \right)_{f_i}$ at the internal face $f_i$ is calculated by interpolation from adjacent cell centres (like in Equation \ref{eq:stressInterp}).
+Similarly, the displacement gradient $\left(\bb{\nabla} \bb{d} \right)_{s_i}$ at a symmetry boundary face $s_i$ is averaged from cell $P$ and its mirror reflection across face $s_i$, as in Equation \ref{eq:symm}.
 Note that the displacement gradient at the displacement boundary $d_i$ is assumed to be equal to the displacement gradient at the centroid of cell $P$.
 In addition, no stabilisation term is applied on a traction boundary face $t_i$.
 
@@ -1114,6 +1132,318 @@ In addition, no stabilisation term is applied on a traction boundary face $t_i$.
 %%where cell-centred values corrected for mesh skewness errors are
 %
 %Further details on the implementation of symmetry planes in segregated cell-centred finite volume formulations can be found in \citet{Demirdzic2022}.
+
+
+
+%%--------------------------------------------------------------------------------------------------------------------%%
+\subsection{Discretisation of the Jacobian}
+%%--------------------------------------------------------------------------------------------------------------------%%
+
+%%----------------------------%%
+\subsubsection[Fluid Dynamics Jacobian Submatrices]{Fluid Dynamics Jacobian Submatrices $\tilde{\bb{J}}_{vv}$, $\bb{J}_{vp}$, $J_{pv}$ and $\tilde{J}_{pp}$}
+%%----------------------------%%
+
+\hl{vv = inertia/diffusion (same as solid) + advection}
+The true Jacobian submatrix $\bb{J}_{vv}$ is defined as
+\begin{eqnarray}
+    \bb{J}_{vv} = \frac{\partial \bb{R}_u}{\partial \bb{v}}
+    &=&
+    	\frac{\partial}{\partial \bb{v}}
+	\left[
+	\oint_{\Gamma_0}  \left( J_m \bb{F}_m^{-\text{T}} \cdot \hat{\bb{n}}_0 \right)
+		\cdot \left(\nu \bb{F}_m^{-T} \cdot \bb{\nabla}_0 \bb{v} \right) \, d\Gamma_0
+	\right. \notag \\
+	&& \left. 
+	- \int_{\Omega_0} J_m \frac{\partial \bb{v}}{\partial t} \, d\Omega_0 
+	- \oint_{\Gamma_0}  \left[ \left( J_m \bb{F}_m^{-\text{T}} \cdot \hat{\bb{n}}_0 \right) \cdot \bb{v} \right] \left(\bb{v} - \frac{\partial \bb{d}_m}{\partial t} \right) \, d\Gamma_0
+	\right]
+\end{eqnarray}
+where terms not dependent on $\bb{v}$ have been dropped.
+
+Proceeding term by term: the diffusion (viscous stress) term is \hl{consistent with JFNK paper but we can do better by including J/F}
+\begin{eqnarray}
+    	\left\{
+	\frac{\partial}{\partial \bb{v}}
+	\left[
+	\oint_{\Gamma_0}  \left( J_m \bb{F}_m^{-\text{T}} \cdot \hat{\bb{n}}_0 \right)
+		\cdot \left(\nu \bb{F}_m^{-T} \cdot \bb{\nabla}_0 \bb{v} \right) \, d\Gamma_0
+	\right]
+	\right\}_{PP}
+	&\approx&
+	- \sum_{f_i \in \mathcal{F}^{\text{int}}_P}  \nu
+%	\frac{ \left|\bb{\Delta}_{f_i} \right| }{\left|\bb{d}_{f_i}\right|}    \left|\bb{\Gamma}_{f_i}\right| \textbf{I}
+	\frac{ \left|\bb{\Delta}_0 \right| }{\left|\bb{d}_0 \right|}  \left|\bb{\Gamma}_0 \right| \textbf{I}
+%D_f = - \frac{J_m \, \nu}{|\delta|^2} \left( \mathbf{F}_f^{-\mathrm{T}} \cdot \hat{\mathbf{n}}_0 \right) \otimes \left( \mathbf{F}_f^{-T} \cdot \delta \right)
+\end{eqnarray}
+where the \emph{over-relaxed} vectors are $\bb{\Delta}_0 = \nicefrac{\bb{d}_{0,m}}{\bb{d}_{0,m} \cdot \bb{n}_{0,m}}$ \hl{maybe use delta instead of d}
+While the off-diagonal contribution (row $P$, column $Q$) is
+\begin{eqnarray}
+    	\left\{
+	\frac{\partial}{\partial \bb{v}}
+	\left[
+	\oint_{\Gamma_0}  \left( J_m \bb{F}_m^{-\text{T}} \cdot \hat{\bb{n}}_0 \right)
+		\cdot \left(\nu \bb{F}_m^{-T} \cdot \bb{\nabla}_0 \bb{v} \right) \, d\Gamma_0
+	\right]
+	\right\}_{PQ}
+	&\approx& \nu \frac{ \left|\bb{\Delta}_0 \right| }{\left|\bb{d}_0 \right|}  \left|\bb{\Gamma}_0 \right| \textbf{I}
+\end{eqnarray}
+
+
+The time derivative term contributes only to the diagonal of cell $P$ (row $P$, column $P$):
+\begin{eqnarray}
+	\left\{
+    	\frac{\partial}{\partial \bb{v}}
+	\left[
+	- \int_{\Omega_0} J_m \frac{\partial \bb{v}}{\partial t} \, d\Omega_0 
+	\right]
+	\right\}_{PP}
+%	&=&	- \int_{\Omega_0} \frac{\partial}{\partial \bb{v}} \left( J_m \frac{\partial \bb{v}}{\partial t} \right) \, d\Omega_0 \notag \\
+%	&=&	- \int_{\Omega_0} \frac{\partial J_m}{\partial \bb{v}} \frac{\partial \bb{v}}{\partial t}
+%		+ J_m \frac{\partial}{\partial \bb{v}} \left( \frac{\partial \bb{v}}{\partial t} \right) \, d\Omega_0 
+%	&\approx& J_m \frac{3 \bb{v}_P^{[t+1]} - 4 \bb{v}_P^{[t]} + \bb{v}_P^{[t-1]}}{2\Delta t} \Omega_{0,P}
+%	&\approx& -J_m \frac{3 \bb{v}_P^{[t+1]}}{2\Delta t} \Omega_{0,P}
+	&\approx& - \frac{3}{2} \frac{J_m \Omega_{0,P}}{\Delta t} \textbf{I}
+\end{eqnarray}
+
+The advection term, which is nonlinear in $\bb{v}$, is discretised using first-order upwinding for the Jacobian:
+\begin{eqnarray}
+	\left\{
+    	\frac{\partial}{\partial \bb{v}}
+	\left[
+	- \oint_{\Gamma_0}  \left[ \left( J_m \bb{F}_m^{-\text{T}} \cdot \hat{\bb{n}}_0 \right) \cdot \bb{v} \right] \left(\bb{v} - \frac{\partial \bb{d}_m}{\partial t} \right) \, d\Gamma_0
+	\right]
+	\right\}_{PP} &\approx&
+	- \sum_{f_i \in \mathcal{F}^{\text{int}}_P} \text{max}\left[\psi, \, 0 \right] \textbf{I}
+\end{eqnarray}
+where the volume flux through the control volume face $\psi = \left( J_m \bb{F}_m^{-\text{T}} \cdot \hat{\bb{n}}_0 \right) \cdot \left(\bb{v} - \frac{\partial \bb{d}_m}{\partial t} \right)$.
+Note that the advection term is calculated using a second-order scheme in the fluid momentum equation residual $\bb{R}_v$, and first-order upwinding in only used for the approximate Jacobian.
+The corresponding off-diagonal term (row $P$, column $Q$) is
+\begin{eqnarray}
+	\left\{
+    	\frac{\partial}{\partial \bb{v}}
+	\left[
+	- \oint_{\Gamma_0}  \left[ \left( J_m \bb{F}_m^{-\text{T}} \cdot \hat{\bb{n}}_0 \right) \cdot \bb{v} \right] \left(\bb{v} - \frac{\partial \bb{d}_m}{\partial t} \right) \, d\Gamma_0
+	\right]
+	\right\}_{PQ} &\approx& \text{min}\left[\psi, \, 0 \right] \textbf{I}
+\end{eqnarray}
+where $\text{max}\left[\cdot\right]$ is the maximum operator and $\text{min}\left[\cdot\right]$ is the minimum operator. \hl{Add extra NR term - see code}
+
+
+The block ($3\times1$ for 3-D, $2\times1$ for 2-D) diagonal coefficient for cell $P$ (row $P$, column $P$) for Jacobian submatrix $\bb{J}_{vp}$ can be expressed as
+\begin{eqnarray}
+	\left\{
+    	\frac{\partial}{\partial \bb{p}}
+	\left[
+	-\int_{\Omega_0} J_m \bb{F}_m^{-T} \cdot \left( \bb{\nabla}_0 p \right) \, d\Omega_0
+	\right]
+	\right\}_{PP}
+	&\approx& \sum_{f_i \in \mathcal{F}^{\text{int}}_P} J_{P,m} \, \bb{g}_{P,f_i} \,  \Omega_{0,P}
+\end{eqnarray}
+where $\bb{g}_{P, f_i}$ is the least squares vector stored for cell $P$ at face $f_i$, as defined in Equation \ref{eq:least_squares_vectors}.
+While the off-diagonal contribution (row $P$, column $Q \neq P$) is
+\begin{eqnarray}
+	\left\{
+    	\frac{\partial}{\partial \bb{p}}
+	\left[
+	\int_{\Omega_0} J_m \bb{F}_m^{-T} \cdot \left( \bb{\nabla}_0 p \right) \, d\Omega_0
+	\right]
+	\right\}_{PQ}
+	&\approx& -J_{P,m} \, \bb{g}_{P,f_i} \,  \Omega_{0,P}
+\end{eqnarray}
+
+
+
+The block ($1\times1$ for 3-D and 2-D) diagonal coefficient for cell $P$ (row $P$, column $P$) for approximate Jacobian submatrix $\tilde{J}_{pp}$ can be expressed as
+\begin{eqnarray}
+	\left\{
+    	\frac{\partial}{\partial p}
+	\left[
+		\oint_{\Gamma} \alpha_p D_p \, \bb{n}_0 \cdot \bb{\nabla}_0 p \; d\Gamma
+	\right]
+	\right\}_{PP}
+	&\approx&
+		- \sum_{f_i \in \mathcal{F}^{\text{int}}_P}  \alpha_p D_p
+		\frac{ \left|\bb{\Delta}_{0,f_i} \right| }{\left|\bb{d}_{0,f_i}\right|}    \left|\bb{\Gamma}_{0,f_i}\right|
+\end{eqnarray}
+while the off-diagonal coefficient (row $P$, column $Q \neq P$) is
+\begin{eqnarray}
+	\left\{
+    	\frac{\partial}{\partial p}
+	\left[
+		\oint_{\Gamma} \alpha_p D_p \, \bb{n}_0 \cdot \bb{\nabla}_0 p \; d\Gamma
+	\right]
+	\right\}_{PP}
+	&\approx&	   \alpha_p D_p \frac{ \left|\bb{\Delta}_{0,f_i} \right| }{\left|\bb{d}_{0,f_i}\right|}    \left|\bb{\Gamma}_{0,f_i}\right|
+\end{eqnarray}
+
+
+The block ($1\times3$ for 3-D, $1\times2$ in 2-D) diagonal coefficient for cell $P$ (row $P$, column $P$) for approximate Jacobian submatrix $\tilde{J}_{pv}$ can be expressed as
+\begin{eqnarray}
+	\left\{
+    	\frac{\partial}{\partial \bb{v}}
+	\left[
+		\oint_{\Gamma^f}  \left[ J_m \bb{F}_m^{-\text{T}}  \cdot \hat{\bb{n}}_0 \right] \cdot \bb{v} \, d\Gamma_0
+	\right]
+	\right\}_{PP}
+	&\approx&
+		- \sum_{f_i \in \mathcal{F}^{\text{int}}_P} 	w_{f_i} \bb{\Gamma}_{0, f_i}
+\end{eqnarray}
+while the off-diagonal contribution is
+\begin{eqnarray}
+	\left\{
+    	\frac{\partial}{\partial \bb{v}}
+	\left[
+		\oint_{\Gamma^f}  \left[ J_m \bb{F}_m^{-\text{T}}  \cdot \hat{\bb{n}}_0 \right] \cdot \bb{v} \, d\Gamma_0
+	\right]
+	\right\}_{PQ}
+	&\approx& w_{f_i} \bb{\Gamma}_{0, f_i}
+\end{eqnarray}
+
+
+%%----------------------------%%
+\subsubsection[Fluid Mesh Motion Jacobian Submatrices]{Fluid Mesh Motion Jacobian Submatrix $\tilde{\bb{J}}_{mm}$}
+%%----------------------------%%
+The true Jacobian $\bb{J}_{mm} \equiv \partial \bb{R}_{mm}/\partial \bb{d}_m$; in the current work, an approximate Jacobian $\tilde{\bb{J}}_{mm}$ is employed for the solid dynamics based on the segregated solution procedures commonly employed in cell-centred finite volume solid dynamics.
+A recent article \citep{Cardiff2025jfnk} by the authors describes this approach in detail.
+The approximate Jacobian $\tilde{\bb{J}}_{mm}$ is derived from the compact stencil component of the stabilisation term $\bb{\mathcal{D}}_m$:
+\begin{eqnarray}
+	\tilde{\bb{J}} &=& \frac{\partial}{\partial \bb{d}_m} \left[ \oint_{\Gamma_P} \alpha \bar{K} \, \bb{n} \cdot \bb{\nabla} \bb{d}_m \; d\Gamma_P \right]
+\end{eqnarray}
+
+The $M_m \times M_m$ matrix $\left[ \bb{\tilde{J}}_{mm} \right]$ is symmetric and strongly diagonally dominant (due to Dirichlet conditions), where $M_m = 3|\mathcal{P}^f|$ in 3-D and $M_m = 2|\mathcal{P}^f|$ in 2-D.
+The block ($3\times3$ for 3-D, $2\times2$ for 2-D) diagonal coefficient for cell $P$ (row $P$, column $P$) can be expressed as \hl{notation}
+\begin{eqnarray}
+	 \left[ \tilde{\bb{J}}_{mm} \right]_{PP} &=&
+		- \sum_{f_i \in \mathcal{F}^{\text{int}}_P}  \alpha \bar{K}
+		\frac{ \left|\bb{\Delta}_{f_i} \right| }{\left|\bb{d}_{f_i}\right|}    \left|\bb{\Gamma}_{f_i}\right| \textbf{I} 
+	    \quad-  \sum_{d_i \in \mathcal{F}^{\text{disp}}_P}  \alpha \bar{K}
+%		\left|\bb{\Delta}_{d_i} \right| \left( \ \frac{ \bar{\bb{u}}_{d_i} - \bb{u}_P}{\left|\bb{d}_{d_i}\right|}  \right) 
+		 \frac{ \left|\bb{\Delta}_{d_i} \right| }{\left|\bb{d}_{d_i}\right|} 
+		\left|\bb{\Gamma}_{d_i}\right| \textbf{I} \notag \\
+	 &&\quad - \sum_{s_i \in \mathcal{F}^{\text{symm}}_P} \alpha \bar{K}
+		 \frac{ \left|\bb{\Delta}_{s_i} \right|}{\left|\bb{d}_{s_i}\right|}
+		\left|\bb{\Gamma}_{s_i}\right|  \bb{n}_{s_i} \otimes \bb{n}_{s_i}
+\end{eqnarray}
+while the off-diagonal coefficients (row $P$, column $Q$) can be expressed as
+\begin{eqnarray}
+	\left[\tilde{\bb{J}}_{mm} \right] _{PQ} &=&
+		\alpha \bar{K} \frac{ \left|\bb{\Delta}_{f_{PQ}} \right| }{\left|\bb{d}_{f_{PQ}}\right|} \left|\bb{\Gamma}_{f_{PQ}}\right| \textbf{I} 
+\end{eqnarray}
+where subscript $PQ$ indicates a quantity associated with the internal face $f$ shared between cells $P$ and $Q$.
+
+
+
+%%----------------------------%%
+\subsubsection[Solid Dynamics Jacobian Submatrices]{Solid Dynamics Jacobian Submatrix $\tilde{\bb{J}}_{dd}$}
+%%----------------------------%%
+The true Jacobian $\bb{J}_{dd} \equiv \partial \bb{R}_{dd}/\partial \bb{d}$; in the current work, an approximate Jacobian $\tilde{\bb{J}}_{dd}$ is employed for the solid dynamics based on the segregated solution procedures commonly employed in cell-centred finite volume solid dynamics.
+A recent article \citep{Cardiff2025jfnk} by the authors describes this approach in detail.
+The approximate Jacobian $\tilde{\bb{J}}_{dd}$ is derived from the inertia term and the compact stencil component of the stabilisation term $\bb{\mathcal{D}}_d$:
+\begin{eqnarray}
+	\tilde{\bb{J}}_{dd}
+	&=&
+	\frac{\partial}{\partial \bb{u}} \left[ \oint_{\Gamma_P} \alpha \bar{K} \, \bb{n} \cdot \bb{\nabla} \bb{u} \; d\Gamma_P
+	 \; -\;  \int_{\Omega_P} \rho \frac{\partial^2 \bb{u} }{\partial t^2} \, d\Omega_P \right]
+\end{eqnarray}
+
+%The linearised system (Equation \ref{eq:Seg}) is formed for each cell in the domain, resulting in a system of algebraic equations:
+%\begin{eqnarray} \label{eq:SegSys}
+%    \left[ \bb{\tilde{J}} \right]  \; \left[ \delta \bb{u} \right] = - \left[\bb{R}(\bb{u}_k)\right]
+%\end{eqnarray}
+The $M_d \times M_d$ matrix $\left[ \bb{\tilde{J}} \right]$ is symmetric, where $M = 3|\mathcal{P^s}|$ in 3-D and $M = 2|\mathcal{P^s}|$ in 2-D.
+If $\Delta t < \infty$ or $\mathcal{F}^{\text{disp}}_P \neq \emptyset$, matrix $\left[ \bb{\tilde{J}} \right]$ is strongly diagonally dominant; otherwise, it is weakly diagonally dominant.
+The block ($3\times3$ for 3-D, $2\times2$ for 2-D) diagonal coefficient for cell $P$ (row $P$, column $P$) can be expressed as \hl{notation}
+\begin{eqnarray}
+	 \left[ \tilde{\bb{J}}_{dd} \right]_{PP} &=&
+		- \sum_{f_i \in \mathcal{F}^{\text{int}}_P}  \alpha \bar{K}
+		\frac{ \left|\bb{\Delta}_{f_i} \right| }{\left|\bb{d}_{f_i}\right|}    \left|\bb{\Gamma}_{f_i}\right| \textbf{I} 
+	    \quad-  \sum_{d_i \in \mathcal{F}^{\text{disp}}_P}  \alpha \bar{K}
+%		\left|\bb{\Delta}_{d_i} \right| \left( \ \frac{ \bar{\bb{u}}_{d_i} - \bb{u}_P}{\left|\bb{d}_{d_i}\right|}  \right) 
+		 \frac{ \left|\bb{\Delta}_{d_i} \right| }{\left|\bb{d}_{d_i}\right|} 
+		\left|\bb{\Gamma}_{d_i}\right| \textbf{I} \notag \\
+	 &&\quad - \sum_{s_i \in \mathcal{F}^{\text{symm}}_P} \alpha \bar{K}
+		 \frac{ \left|\bb{\Delta}_{s_i} \right|}{\left|\bb{d}_{s_i}\right|}
+		\left|\bb{\Gamma}_{s_i}\right|  \bb{n}_{s_i} \otimes \bb{n}_{s_i} 
+	\quad - \quad \frac{9}{4}  \frac{\rho_P \Omega_P}{\Delta t^2} \textbf{I}
+\end{eqnarray}
+while the off-diagonal coefficients (row $P$, column $Q$) can be expressed as
+\begin{eqnarray}
+	\left[\tilde{\bb{J}}_{dd} \right] _{PQ} &=&
+		\alpha \bar{K} \frac{ \left|\bb{\Delta}_{f_{PQ}} \right| }{\left|\bb{d}_{f_{PQ}}\right|} \left|\bb{\Gamma}_{f_{PQ}}\right| \textbf{I} 
+\end{eqnarray}
+where subscript $PQ$ indicates a quantity associated with the internal face $f$ shared between cells $P$ and $Q$.
+
+
+
+%%----------------------------%%
+\subsubsection[Mesh-to-Fluid Coupling Submatrix]{Mesh-to-Fluid Coupling Submatrix $\bb{J}_{vm}$} % and $J_{pm}$}
+%%----------------------------%%
+The coupling matrix $\bb{J}_{vm} \equiv \partial \bb{R}_{v}/\partial \bb{d}_m$ accounts for the effect of the fluid mesh motion on the fluid momentum equation.
+This effect comes in two forms: firstly, the mesh velocity directly appears in the advection term; secondly, all terms contain $\bb{F}_m$ and $J_m$, which map the terms from the initial fluid mesh to the unknown deformed mesh.
+
+
+The block ($3\times3$ for 3-D, $2\times2$ for 2-D) diagonal coefficient for cell $P$ (row $P$, column $P$) can be expressed as
+\begin{eqnarray}
+	 \left[ \tilde{\bb{J}}_{vm} \right]_{PP} &=&
+		 \frac{\alpha_t}{\Delta t} \sum_{f_i \in \mathcal{F}^{\text{int}}_P}  \left(J_m \bb{F}_m^{-T} \cdot \bb{\Gamma}_m \right)_{f_i}^{[m]} \otimes \bb{v}^*
+%	 \left[ \tilde{\bb{J}}_{vm} \right]_{PP} &=&
+%	 \begin{cases}
+%		\sum_{f_i \in \mathcal{F}^{\text{int}}_P}  \left(J_m \bb{F}_m^{-T} \cdot \bb{\Gamma} \right)_{f_i}^{[m]} \otimes \bb{v}_F
+%		& \text{if } \Phi > 0, \\
+%		\sum_{f_i \in \mathcal{F}^{\text{int}}_P}  \left(J_m \bb{F}_m^{-T} \cdot \bb{\Gamma} \right)_{f_i}^{[m]} \otimes \bb{v}_F
+%		& \text{otherwise}.
+%	\end{cases}
+\end{eqnarray}
+where $\bb{v}^*$ is interpolated using first-order upwinding.
+For the first-order Euler scheme $\alpha_t = 1$, while for the second-order backward scheme $\alpha_t = \nicefrac{3}{2}$.
+The off-diagonal coefficients as
+\begin{eqnarray}
+	 \left[ \tilde{\bb{J}}_{vm} \right]_{PQ} &=&
+	 	 \frac{\alpha_t}{\Delta t} \left(J_m \bb{F}_m^{-T} \cdot \bb{\Gamma}_m \right)_{PQ}^{[m]} \otimes \bb{v}^*
+%	 \begin{cases}
+%		\left(J_m \bb{F}_m^{-T} \cdot \bb{\Gamma} \right)_{f_i}^{[m]} \otimes \bb{v}_P
+%		& \text{if } \Phi > 0, \\
+%		\left(J_m \bb{F}_m^{-T} \cdot \bb{\Gamma} \right)_{f_i}^{[m]} \otimes \bb{v}_Q
+%		& \text{otherwise}.
+%	\end{cases}
+\end{eqnarray}
+where subscript $PQ$ indicates a quantity associated with the internal face $f$ shared between cells $P$ and $Q$.
+%The flux $\Phi = \left(J_m \bb{F}_m^{-T} \cdot \bb{n}_0 \right)_{f_i}^{[m]} (\bb{v}^f_{f_i} - \frac{\partial \bb{d}_m}{\partial t})$
+
+%The coupling matrix $J_{pm} \equiv \partial R_{p}/\partial \bb{d}_m$, which accounts for the effect of the fluid mesh motion on the fluid continuity equation, contains mapping terms  $\bb{F}_m$ and $J_m$.
+%\hl{Try first by ignoring J-pm as it only relates to the moving mesh}
+%\hl{The pv and pp discretisations can use the old or previous-guess mesh fields, e.g. using F-old/previous}
+%\begin{eqnarray}
+%	 \left[ \tilde{J}_{pm} \right]_{PQ} &=& 0
+%%	  \sum_{f_i \in \mathcal{F}^{\text{int}}_P}  -\rho^f \left(J_m \bb{F}_m^{-T} \cdot \bb{\Gamma}_{f_i}^s\right)
+%\end{eqnarray}
+
+%%----------------------------%%
+\subsubsection[Solid-to-Mesh Coupling Submatrix]{Solid-to-Mesh Coupling Submatrix $\bb{J}_{md}$}
+%%----------------------------%%
+The true Jacobian $\bb{J}_{md} \equiv \partial \bb{R}_{m}/\partial \bb{d}$; in the current work, an approximate coupling matrix $\tilde{\bb{J}}_{md}$ is employed, where the fluid-solid interface displacement for the fluid mesh interface face is taken as the displacement of the adjacent solid cell centre.
+This results in a small (one-cell) stencil, in contrast to the true Jacobian $\bb{J}_{md}$, which would require a larger stencil due to extrapolation from the adjacent solid cell centre using the solid cell centre displacement gradient.
+
+The block ($3\times3$ for 3-D, $2\times2$ for 2-D) coefficient for row $P$, column $Q$ can be expressed as \hl{ref or current?}
+\begin{eqnarray}
+	 \left[ \tilde{\bb{J}}_{md} \right]_{PQ} &=&
+		\beta_m (2\mu_m + \lambda_m)  \frac{ \left| \bb{\Gamma}_{f_i} \right| }{\bb{n} \cdot \bb{d}_{f_i}}
+\end{eqnarray}
+for all pairs of fluid-solid cells at the fluid-solid interface, where $P$ indicates the fluid cell index (and row of $\bb{J}_{md}$) and $Q$ indicates the solid cell index (and column of $\bb{J}_{md}$).
+
+
+
+%%----------------------------%%
+\subsubsection[Fluid-to-Solid Coupling Submatrix]{Fluid-to-Solid Coupling Submatrix $\bb{J}_{dp}$}
+%%----------------------------%%
+The coupling matrix $\bb{J}_{dp} \equiv \partial \bb{R}_{d}/\partial p$ accounts for the effect of the fluid interface pressure on the solid deformation. 
+The block ($3\times1$ for 3-D, $2\times1$ for 2-D) coefficient for row $P$, column $Q$ of the can be expressed as
+\begin{eqnarray}
+%	 \left[ \tilde{\bb{J}}_{dp} \right]_{PQ} &=& -\rho^f \bb{\Gamma}_{f_i}^s
+	 \left[ \tilde{\bb{J}}_{dp} \right]_{PQ} &=& -\rho^f \left[ J^s (\bb{F}^s)^{-\text{T}} \cdot \hat{\bb{\Gamma}}_0^s \right] 
+\end{eqnarray}
+for all pairs of fluid-solid cells at the fluid-solid interface, where $P$ indicates the solid cell index (and row of $\bb{J}_{dp}$) and $Q$ indicates the fluid cell index (and column of $\bb{J}_{dp}$).
+Note that the fluid density $\rho^f$ scales the fluid kinematic pressure to actual pressure.
 
 
 
@@ -1224,36 +1554,7 @@ From an implementation perspective, this allows a single scalar matrix to be for
 
 The \emph{inner} linear sparse systems (Equations \ref{eq:segX}, \ref{eq:segY} and \ref{eq:segZ}) can be solved using any typical direct or iterative linear solver approach; however, an incomplete Cholesky pre-conditioned conjugate gradient method \cite{Jacobs1986} is often preferred as the diagonally dominant characteristic leads to good convergence characteristics.
 Algebraic multigrid can also be used to accelerate convergence.
-%In non-linear problems, this system of equations is solved multiple times with updated coefficients in a fixed-point iteration scheme. 
-%As noted in previous articles on segregated methods, the inner system need not be solved to a tight tolerance as coefficients and source terms are approximated from the previous increment; a reduction in the residuals of one order of magnitude is typically sufficient. The outer iterations are performed until the predefined tolerance, typically $1 \times 10^{-6}$, has been achieved \cite{cardiff_lagrangian_2017}. 
-%In the current updated Lagrangian approach, the mesh is moved to the deformed configuration at the end of each time step rather than after each outer iteration.
-%Since the displacements are calculated at the cell centres, a linear least-squared method is employed here \cite{cardiff_lagrangian_2017} to interpolate the displacement increments to the mesh vertices, allowing the mesh to be moved.
-%In this method, a linear least squares plane is fit through a vertex and its immediately adjacent cell centres. For boundary vertices, boundary face-centre values are also included in the fitting.
-%
-%The procedures have been implemented and publicly shared within the solids4foam toolbox \citep{Cardiff2018, Tukovic2018} of the open-source OpenFOAM software.
 
-In literature, the segregated solution algorithm is typically formulated in terms of the total displacement vector (or its difference between time steps) as the primary unknown; in contrast, in the quasi-Newton interpretation presented here, the primary unknown is the correction to the displacement vector, which goes to zero at convergence.
-In the total displacement approach, the matrix is the same, and the only difference is the formulation of the right-hand side, which is calculated as the difference between the residual and the matrix times the previous solution.
-Equivalence of both approaches can be seen by adding $\left[ \bb{\tilde{J}} \right]  \; \left[ \bb{u} \right]_k$ to both sides of Equation \ref{eq:SegSys}:
-\begin{eqnarray} \label{eq:SegSys}
-    \left[ \bb{\tilde{J}} \right]  \; \left[ \delta \bb{u} \right] + \left[ \bb{\tilde{J}} \right]  \; \left[ \bb{u} \right]_k  = - \left[\bb{R}(\bb{u}_k)\right] + \left[ \bb{\tilde{J}} \right]  \; \left[ \bb{u} \right]_k \notag \\
-    \left[ \bb{\tilde{J}} \right]  \; \left[ \bb{u} \right]_{k+1} = \left[ \bb{\tilde{J}} \right]  \; \left[ \bb{u} \right]_k - \left[\bb{R}(\bb{u}_k)\right] \
-\end{eqnarray}
-where $\left[ \bb{u} \right]_k$ is the solution field at the previous iteration, and noting that $\left[ \bb{u} \right]_{k+1} = \left[ \bb{u} \right]_k + \left[ \delta \bb{u} \right]$.
-In practice, the $\left[ \bb{\tilde{J}} \right]  \; \left[ \bb{u} \right]_k$ term on the right-hand side can be evaluated directly in terms of the discretised temporal and diffusion terms, without the need for matrix multiplication.
-In the current work, the standard total displacement segregated formulation is employed.
-%It is not expected that either formulation displays performance advantages.
-
-As a final comment, the $\alpha$ scaling factor in the stabilisation term (Equation \ref{eq:RhieChow}) need not take the same value as in the approximate Jacobian (Equation \ref{eq:diffusion}).
-In the current work, $\alpha$ is taken as unity in the approximate Jacobian, while the variation of its value in the residual calculation is examined in Section \ref{sec:RhieChowResults}.
-
-%\hl{Comment: we can solve 31 or 34-36; we are using 31 in PETSc, while the native OF code uses 34-36}
-%\hl{We should comment on this}
-%The current procedure is implemented and publicly shared in the solids4foam toolbox of OpenFOAM.
-%\hl{Add a section about code sharing: appendix?}
-%\hl{Comment: we have two implementations of segregated: native OpenFOAM (solves Eqs 16-18) and PETSc SNES (solves Eq 15)}
-%\hl{Do we need to comment on this? Maybe we should use only PETSc SNES for a fair comparison}
-%\hl{Or we could use both on the verification case and then stick with just one afterwards}
 
 
 
@@ -1261,42 +1562,6 @@ In the current work, $\alpha$ is taken as unity in the approximate Jacobian, whi
 \subsection{Jacobian-free Newton-Krylov Algorithm}
 \label{sec:JFNK_alg}
 %%--------------------------------------------------------------------------------------------------------------------%%
-
-%\hl{cite KnollKeyes2004}
-
-As noted in the introduction, the Jacobian-free Newton-Krylov method avoids the need to explicitly construct the Jacobian matrix by approximating its action on a solution vector using the finite difference method, repeated here:
-\begin{eqnarray} \label{eq:JF}
-	\bb{J} \bb{v} \approx \frac{\bb{R}(\bb{u} + \epsilon \bb{v}) - \bb{R}(\bb{u})}{\epsilon}
-\end{eqnarray}
-
-%\hl{1}
-%Derive Jv for 2x2 system.
-The derivation of this approximation can be shown for a $2 \times 2$ system as \cite{Knoll2004}:
-\begin{eqnarray}
-	\frac{\bb{R}(\mathbf{u} + \epsilon \mathbf{v}) - \mathbf{R}(\mathbf{u})}{\epsilon}
-	&=&
-	\begin{pmatrix}
-	\dfrac{R_1 (u_1 + \epsilon v_1, u_2 + \epsilon v_2) - R_1 (u_1, u_2)}{\epsilon}\\
-	\dfrac{R_2 (u_1 + \epsilon v_1, u_2 + \epsilon v_2) - R_2 (u_1, u_2)}{\epsilon}
-	\end{pmatrix} \notag \\
-	&\approx&
-	\begin{pmatrix}
-	\dfrac{R_1 (u_1,u_2) + \epsilon v_1 \dfrac{\partial R_1}{\partial u_1} + \epsilon v_2 \dfrac{\partial R_1}{\partial u_2} - R_1 (u_1, u_2)}{\epsilon}\\
-	\dfrac{R_2 (u_1, u_2) + \epsilon v_1 \dfrac{\partial R_2}{\partial u_1} + \epsilon v_2 \dfrac{\partial R_2}{\partial u_2}  - R_2 (u_1, u_2)}{\epsilon}
-	\end{pmatrix} \notag \\
-	&\approx&
-	\begin{pmatrix}
-	v_1 \dfrac{\partial R_1}{\partial u_1} +  v_2 \dfrac{\partial R_1}{\partial u_2} \\
-	v_1 \dfrac{\partial R_2}{\partial u_1} + v_2 \dfrac{\partial R_2}{\partial u_2}
-	\end{pmatrix} \notag \\
-	&\approx&
-	\bb{J} \bb{v}
-\end{eqnarray}
-where a first-order truncated Taylor series expansion about $\bb{u}$ was used to approximate $\bb{R} (\bb{u} + \epsilon \bb{v})$.
-%\hl{1b}
-%Choosing $\epsilon$ is important.
-As noted above, choosing an appropriate value for $\epsilon$ is non-trivial, and care must be taken to balance truncation error (reduced by decreasing $\epsilon$) and round-off error (increased by decreasing $\epsilon$).
-
 
 %\hl{2}
 %- preconditioner => important
@@ -1306,81 +1571,42 @@ As noted above, choosing an appropriate value for $\epsilon$ is non-trivial, and
 %The literature indicates that the choice of preconditioner for the inner linearised system has a major impact on the efficiency and robustness of the overall solution procedure.
 The purpose of preconditioning the Jacobian-free Newton-Krylov method is to reduce the number of inner linear solver iterations.
 The current work uses the GMRES linear solver for the inner system.
-%Left or right preconditioning, may be employed in a Jacobian-free context, and there are pros and cons to both.
-Using right preconditioning, the finite difference approximation of Equation \ref{eq:JF} becomes
-\begin{eqnarray}
-%	(\bb{J} \bb{P}^{-1}) (\bb{P} \delta \bb{u}) = -\bb{R}(\bb{u})
-	\bb{J} \bb{P}^{-1} \bb{v}
-	\approx
-	\frac{\bb{R}(\bb{u} + \epsilon \bb{P}^{-1} \bb{v}) - \bb{R}(\bb{u})}{\epsilon}
-\end{eqnarray}
-where $\bb{P}$ is the preconditioning matrix or process.
-In practice, only the action of $\bb{P}^{-1}$ on a vector is required, and $\bb{P}^{-1}$ need not be explicitly formed.
+
 Concretely, the preconditioner needs to approximately solve the linear system $\bb{y} = \bb{P}^{-1} \bb{v}$.
 %Thus, while we may refer to the matrix P, operationally the algorithm only requires the action of $P^{-1}$ on a vector.
 
-%\hl{3}
-%- we use approx J to form precon
-%- many precon used in lit, we will consider ILU($k$) and MG, where MG is expected to be better, but also LU since direct solvers are popular in FE solid mechanics
-In the current work, we propose to use the compact-stencil approximate Jacobian from the segregated algorithm $\tilde{\bb{J}}$ as the preconditioning matrix $\bb{P}$ for the preconditioned Jacobian-free Newton-Krylov method.
-%\hl{Comment on literature: used before but not yet for solids}.
-This preconditioning approach can be considered a ``physics-based" preconditioner in the classifications of \citet{Knoll2004}.
-The approach is conceptually similar to approximating a higher-order large-stencil scheme Jacobian by a compact-stencil lower-order scheme.
-A benefit of the proposed approach is that existing segregated frameworks can re-use their existing matrix assembly and storage implementations.
-Concretely, the Jacobian-free Newton-Krylov method requires only a procedure for forming this preconditioning matrix and a procedure for explicitly evaluating the residual.
-Both routines are easily implemented - and are likely already available - in an existing segregated framework.
-The only additional required procedure is an interface to an existing Jacobian-free Newton-Krylov implementation.
-%"The motivation behind this approach is that there exist numerous, legacy algorithms to solve nonlinear systems, both IVPs and BVPs. These algorithms typically were developed with some insight into the time scales or physical behavior of the problem. As a benefit of this insight, a reduced implicit system, or a sequence of segregated explicit or implicit systems may be solved in place of the fully coupled system. "
+
 In the current work, the PETSc package (version 3.22.2) \cite{PETSc} is used as the nonlinear solver, driven by a finite volume solver implemented in the solids4foam toolbox \citep{Cardiff2018, Tukovic2018} for OpenFOAM toolbox \citep{Weller1998} (version OpenFOAM-v2312).
 The codes are publicly available at \url{https://github.com/solids4foam/solids4foam} on the \texttt{feature-petsc-snes} branch, and the cases and plotting scripts are available at \url{https://github.com/solids4foam/solid-benchmarks}.
 
-Several preconditioners are available in the literature, incomplete Cholesky or ILU($k$) being popular; however, multigrid methods offer the greatest potential for large-scale problems.
-As noted by \citet{Knoll2004}, algorithmic simplifications within a multigrid procedure, which may result in loss of convergence for multigrid as a solver, have a much weaker effect when multigrid is used as a preconditioner.
-In this work, three preconditioners are considered:
-\begin{enumerate}
-	\item ILU($k$): incomplete lower-upper decomposition with fill-in $k$. %The segregated solver uses ILU(0), that is, ILU with zero fill-in.
-	\item Multigrid: the HYPRE Boomerang \citep{hypre} multigrid implementation.
-	\item LU: the MUMPS \citep{MUMPS:1, MUMPS:2} lower-upper decomposition direct solver.
-\end{enumerate}
 
 
 %\hl{4 - globalisation}
-A challenge with Newton-type methods, including Jacobian-free versions, is poor convergence when far from the true solution, and divergence is often a real possibility.
-Globalisation refers to steering an initial solution towards the quadratic convergence range of the Newton method.
-Several strategies are possible, and it is common to combine approaches \cite{Knoll2004}.
-In the current work, a line search procedure is used to select the $s$ parameter in the solution update step (the second line in Equations \ref{eq:NewtonRaphson}).
-Line search methods assume the Newton update direction is correct and aim to find a scalar $s > 0$ that decreases the residual $\bb{R}(\bb{u}_k + s \delta \bb{u}) < \bb{R}(\bb{u}_k)$.
-%The scalar $s$ is typically $\leq 1$, but extrapolation ($>1$) is also possible for accelerating convergence, albeit at the expense of robustness.
-In addition to a line search approach, a \emph{transient continuation} globalisation approach is used in the current work, where the displacement $\bb{u}_P$ for cell $P$ at time $t + \Delta t$ is predicted at the start of a new time (or loading) step, based on a truncated second-order Taylor series expansion:
-\begin{eqnarray} \label{eq:predictor}
-%	\bb{u}^{[t+\Delta t]} = \bb{u}^{[t]} + \Delta t \left(\frac{\partial \bb{u}}{\partial t}\right)^{[t]} + \frac{1}{2} \Delta t^2 \left( \frac{\partial^2 \bb{u}}{\partial t^2} \right)^{[t]}
-	\bb{u}^{[t+\Delta t]}_P = \bb{u}^{[t]}_P + \Delta t \, \bb{v}^{[t]}_P + \frac{1}{2} \Delta t^2 \left( \frac{\partial \bb{v}}{\partial t} \right)^{[t]}_P
-\end{eqnarray}
-where $\bb{v}^{[t]}_P$ is the velocity of cell $P$ at time $t$, and $\left( \frac{\partial \bb{v}}{\partial t} \right)^{[t]}_P$ is the acceleration.
-%$\left( \frac{\partial^2 \bb{u}}{\partial t^2} \right)_t$ 
-In this way, for highly nonlinear problems, the user can decrease the time step size $\Delta t$ as a globalisation approach to improve the performance of the Newton method.
-The predictor step in Equation \ref{eq:predictor} has been chosen to be consistent with the discretisation of the inertia term (Equation \ref{eq:inertia2}).
+\hl{Globalisation}
+%A challenge with Newton-type methods, including Jacobian-free versions, is poor convergence when far from the true solution, and divergence is often a real possibility.
+%Globalisation refers to steering an initial solution towards the quadratic convergence range of the Newton method.
+%Several strategies are possible, and it is common to combine approaches \cite{Knoll2004}.
+%In the current work, a line search procedure is used to select the $s$ parameter in the solution update step (the second line in Equations \ref{eq:NewtonRaphson}).
+%Line search methods assume the Newton update direction is correct and aim to find a scalar $s > 0$ that decreases the residual $\bb{R}(\bb{u}_k + s \delta \bb{u}) < \bb{R}(\bb{u}_k)$.
+%%The scalar $s$ is typically $\leq 1$, but extrapolation ($>1$) is also possible for accelerating convergence, albeit at the expense of robustness.
+%In addition to a line search approach, a \emph{transient continuation} globalisation approach is used in the current work, where the displacement $\bb{u}_P$ for cell $P$ at time $t + \Delta t$ is predicted at the start of a new time (or loading) step, based on a truncated second-order Taylor series expansion:
+%\begin{eqnarray} \label{eq:predictor}
+%%	\bb{u}^{[t+\Delta t]} = \bb{u}^{[t]} + \Delta t \left(\frac{\partial \bb{u}}{\partial t}\right)^{[t]} + \frac{1}{2} \Delta t^2 \left( \frac{\partial^2 \bb{u}}{\partial t^2} \right)^{[t]}
+%	\bb{u}^{[t+\Delta t]}_P = \bb{u}^{[t]}_P + \Delta t \, \bb{v}^{[t]}_P + \frac{1}{2} \Delta t^2 \left( \frac{\partial \bb{v}}{\partial t} \right)^{[t]}_P
+%\end{eqnarray}
+%where $\bb{v}^{[t]}_P$ is the velocity of cell $P$ at time $t$, and $\left( \frac{\partial \bb{v}}{\partial t} \right)^{[t]}_P$ is the acceleration.
+%%$\left( \frac{\partial^2 \bb{u}}{\partial t^2} \right)_t$ 
+%In this way, for highly nonlinear problems, the user can decrease the time step size $\Delta t$ as a globalisation approach to improve the performance of the Newton method.
+%The predictor step in Equation \ref{eq:predictor} has been chosen to be consistent with the discretisation of the inertia term (Equation \ref{eq:inertia2}).
 
 
-%\hl{5 - oversolving}
-%Comment on over-solving => also applies to the segregated system.
-%This could be a parameter we look at.
-A final comment on the Jacobian-free Newton-Krylov solution algorithm is the potential importance of \emph{oversolving}.
-Here, oversolving refers to solving the linear system to a tolerance that is too tight during the early Newton iterations, essentially wasting time when the solution is far from the true solution.
-In addition, some authors %\cite{See164_and_176_in_Knoll2004}
-\cite{Knoll2004} have shown Newton convergence to be worse when the earlier iterations are solved to too tight a tolerance.
-The concept of oversolving also applies to segregated solution procedures and has been well-known since the early work of Demird\v{z}i\'{c} and co-workers \cite{Demirdzic1995}, where the residuals are typically reduced by one order of magnitude in the inner linear system.
-%The optimal choice of residual reduction for a Jacobian-free Newton-Krylov finite volume solid mechanics procedure is explored in Section \ref{sec:test_cases}. \hl{Check: do we examine this?}
-In the current work, the residual is reduced by a factor of 0.9 in the segregated approach and by three orders in the Jacobian-free Newton-Krylov approach.
-%\hl{Try for EW plastic: $-snes_ksp_ew -snes_ksp_ew_version 2 -snes_ksp_ew_rtol0 1e-4$}
-
-%Knoll2004:
-%The forcing term and the issue of ‘‘oversolving’’ a Newton step has recently gained interest [164,176]. The concept of ‘‘oversolving’’ implies that at early Newton iterations c is too small. Then one may obtain an accurate linear solution to an inaccurate Newton correction. This may result in a poor Newton update and degradation in the Newton convergence. In [164,176] it has been demonstrated that in some situations the Newton convergence may actually suffer if c is too small in early Newton iterations.
 
 
 %%--------------------------------------------------------------------------------------------------------------------%%
 \subsection{Checking Convergence}
 %%--------------------------------------------------------------------------------------------------------------------%%
+\hl{Update}
+\hl{Mention normalisation of solid/mesh residuals}
 The current work adopts three checks for determining whether convergence has been achieved within each time (or loading) step, closely following the default strategy in the PETSc toolbox:
 \begin{itemize}
     \item Norm of the residual $|\bb{R}(\bb{u})|$:

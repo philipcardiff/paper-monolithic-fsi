@@ -667,15 +667,18 @@ where $\Gamma_P$ indicates the surface of cell $P$, $\bb{\Gamma}_{f_i}$ indicate
 In the current work, a unique definition of solution gradient (e.g., $\bb{q}_{f_i}$)
 In the current work, the value of the integrand $\bb{q}$ at each cell face $f_i$ is given as a weighted-averaged of values in the two cells straddling the face \citep{Cardiff2025JFNK, Jasak1996}:
 %The stress $\bb{\sigma}_{f_i}$ at an internal face is calculated by linear interpolation from the adjacent cell centres \citep{Jasak1996}:
-\begin{eqnarray} \label{eq:face_interp}
+\begin{eqnarray}
+	\label{eq:face_interp}
 	\bb{q}_{f_i} &=& w_{f_i} \bb{q}_P + (1 - w_{f_i}) \bb{q}_{N_{f_i}} \\
-	\bb{q}_{f_i} &=& \left( \nicefrac{1}{2} \right) \left[ \bb{q}_P +  \bb{q}_{N_{f_i}} \right]
+	\bb{q}_{f_i} &=& \left( \nicefrac{1}{2} \right) \left[ \bb{q}_P +  \bb{q}_{N_{f_i}} \right] \\
 %	\left(\bb{\nabla} \bb{\phi}\right)_{f_i} &=& w_{f_i} \left(\bb{\nabla} \bb{\phi}\right)_P + (1 - w_{f_i}) \left(\bb{\nabla} \bb{\phi}\right)_{N_{f_i}} \\
 %	\left(\bb{\nabla} \bb{\phi}\right)_{f_i} &=& \left( \nicefrac{1}{2} \right) \left[ \left(\bb{\nabla} \bb{\phi}\right)_P +  \left(\bb{\nabla} \bb{\phi}\right)_{N_{f_i}} \right]
 %	\left(\bb{\nabla} \bb{\phi}\right)_{f_i} &=& \nicefrac{\left[ \left(\bb{\nabla} \bb{\phi}\right)_P +  \left(\bb{\nabla} \bb{\phi}\right)_{N_{f_i}} \right]}{2}
+	\label{eq:face_interp_weights}
+	w_{f_i} &=& (\bb{n}_{f_i} \cdot [\bb{x}_{N_{f_i}} - \bb{x}_{f_i}])/(\bb{n}_{f_i} \cdot [\bb{x}_{N_{f_i}} - \bb{x}_{P} ])
 \end{eqnarray}
 %where $\bb{\sigma}_{f_i}$ is the stress at an interface face $f_i$, 
-where the interpolation weight is defined as $w_{f_i} = (\bb{n}_{f_i} \cdot [\bb{x}_{N_{f_i}} - \bb{x}_{f_i}])/(\bb{n}_{f_i} \cdot [\bb{x}_{N_{f_i}} - \bb{x}_{P} ])$.
+where $w_{f_i}$ is the interpolation weight a face $f_i$. % is defined as $w_{f_i} = (\bb{n}_{f_i} \cdot [\bb{x}_{N_{f_i}} - \bb{x}_{f_i}])/(\bb{n}_{f_i} \cdot [\bb{x}_{N_{f_i}} - \bb{x}_{P} ])$.
 % however, achieving second-order accuracy of the displacement field is independent of the value of the weights, and, for example, $w_{f_i} = \nicefrac{1}{2}$ would also be sufficient.
 \hl{We can average instead for derivative terms - 2nd eq}
 \hl{Should I use deformed config weights?}
@@ -863,20 +866,39 @@ In the residual $\bb{R}_v$ (which controls the order of accuracy of the final so
 	\tilde{\bb{v}}_{f_i} =  w_{f_i} \bb{v}_P + (1 - w_{f_i}) \bb{v}_{N_{f_i}}
 \end{eqnarray}
 
-\hl{Dv stab term}
-\hl{TODO}
+The vector stabilisation term $\bb{\mathcal{D}}_v$ takes the form of the difference between a compact and large stencil gradient at a cell face:
+\begin{eqnarray}
+	\bb{\mathcal{D}}_v
+	&=& \sum_{f_i \in \mathcal{F}^{\text{int}}_P} \alpha_v \nu \left[
+		\left|\bb{\Delta}_{0,f_i} \right| \frac{ \bb{v}_{N_{f_i}} - \bb{v}_P}{\left|\bb{\delta}_{0,f_i}\right|}	- \bb{\Delta}_{0,f_i} \cdot \left(\bb{\nabla}_0 \bb{v} \right)_{f_i}
+		\right]    \left|\bb{\Gamma}_{0,f_i}\right|
+\end{eqnarray}
+
 
 The fluid continuity equation residual $R_p$ repeated here is
 \begin{eqnarray}
-    R_p
-    &=&	\oint_{\Gamma^f_0}  \left[ J^\Gamma (\bb{F}^\Gamma)^{-\text{T}}  \cdot \hat{\bb{n}}_0^f \right] \cdot \bb{v}^f \, d\Gamma^f_0 \;+\; \mathcal{D}_p
+    R_p    &=&	\oint_{\Gamma^f_0}  \left[ J^\Gamma (\bb{F}^\Gamma)^{-\text{T}}  \cdot \hat{\bb{n}}_0^f \right] \cdot \bb{v}^f \, d\Gamma^f_0 \;+\; \mathcal{D}_p
 \end{eqnarray}
 
-\hl{div(u)}
-\hl{TODO}
+The velocity divergence term is approximated for cell $P$ as
+\begin{eqnarray}
+	\oint_{\Gamma^f}  \left[ J_m \bb{F}_m^{-\text{T}}  \cdot \hat{\bb{n}}_0 \right] \cdot \bb{v} \, d\Gamma_0
+	&\approx&
+		\sum_{f_i \in \mathcal{F}^{\text{int}}_P}
+		\left( J_m \bb{F}_m^{-\text{T}}  \cdot \hat{\bb{\Gamma}}_0 \right)
+		\cdot \left[ w_{f_i} \bb{v}_P + (1 - w_{f_i})\bb{v}_{N_{f_i}}  \right]
+\end{eqnarray}
+where the linear interpolation weights $w_{f_i}$ are given by Equation \ref{eq:face_interp_weights}.
 
-\hl{Dp stab}
-\hl{TODO}
+The scalar stabilisation term $\mathcal{D}_p$ takes the same form as the vector stabilisation $\mathcal{D}_v$, and is calculated as \hl{use Hiro's alpha damping} \hl{ref vs def config?}:
+\begin{eqnarray}
+	\mathcal{D}_p
+	&=& \sum_{f_i \in \mathcal{F}^{\text{int}}_P} \alpha_p D_p \left[
+		\left|\bb{\Delta}_{0,f_i} \right| \frac{ p_{N_{f_i}} - p_P}{\left|\bb{\delta}_{0,f_i}\right|}	- \bb{\Delta}_{0,f_i} \cdot \left(\bb{\nabla}_0 p \right)_{f_i}
+		\right]    \left|\bb{\Gamma}_{0,f_i}\right|
+\end{eqnarray}
+
+
 
 %%----------------------------%%
 \subsubsection[Discretisation of the Fluid Mesh Motion Residual]{Discretisation of the Fluid Mesh Motion Residual $\bb{R}_m$}
@@ -894,9 +916,31 @@ The fluid mesh motion equation residual $\bb{R}_m$ repeated here is \hl{maybe we
     \;+\; \bb{\mathcal{D}}_m
 \end{eqnarray}
 
-\hl{div(sigma mesh)}
+The discretisation of the stress divergence is
+\begin{align}
+    \oint_{\Gamma_0^f} \bb{n}_0^f \cdot
+    &\left[
+    \mu^\Gamma \bb{\nabla}_0 \bb{d}_m + \mu^\Gamma \left(\bb{\nabla}_0 \bb{d}_m \right)^T
+    + \lambda^\Gamma (\bb{\nabla}_0 \cdot \bb{d}_m) \textbf{I}
+    \right]    \, d\Gamma_0^f
+	\approx \notag \\
+	&\sum_{f_i \in \mathcal{F}_P^{\text{int}}}
+	\bb{\Gamma}_{0,f_i}
+	\cdot
+	\left[
+	\mu_m \left(\bb{\nabla}_0 \bb{d}_m\right)_{f_i} + \mu_m \left(\bb{\nabla}_0 \bb{d}_m \right)^T_{f_i}
+    + \lambda_m (\bb{\nabla}_0 \cdot \bb{d}_m)_{f_i} \textbf{I}
+	\right]
+\end{align}
+where the gradient terms are interpolated from the cell centres to the faces according to Equation \ref{eq:face_interp}.
 
-\hl{Dm stab term}
+The vector stabilisation term $\bb{\mathcal{D}}_m$ takes the form as $\bb{\mathcal{D}}_v$:
+\begin{eqnarray}
+	\bb{\mathcal{D}}_m
+	&=& \sum_{f_i \in \mathcal{F}^{\text{int}}_P} \alpha_m (2\mu_m + \lambda_m) \left[
+		\left|\bb{\Delta}_{0,f_i} \right| \frac{ \bb{d}_{m,N_{f_i}} - \bb{d}_{m,P}}{\left|\bb{\delta}_{0,f_i}\right|}	- \bb{\Delta}_{0,f_i} \cdot \left(\bb{\nabla}_0 \bb{d}_m \right)_{f_i}
+		\right]    \left|\bb{\Gamma}_{0,f_i}\right|
+\end{eqnarray}
 
 
 \hl{Merge in text below}
@@ -1143,7 +1187,6 @@ In addition, no stabilisation term is applied on a traction boundary face $t_i$.
 \subsubsection[Fluid Dynamics Jacobian Submatrices]{Fluid Dynamics Jacobian Submatrices $\tilde{\bb{J}}_{vv}$, $\bb{J}_{vp}$, $J_{pv}$ and $\tilde{J}_{pp}$}
 %%----------------------------%%
 
-\hl{vv = inertia/diffusion (same as solid) + advection}
 The true Jacobian submatrix $\bb{J}_{vv}$ is defined as
 \begin{eqnarray}
     \bb{J}_{vv} = \frac{\partial \bb{R}_u}{\partial \bb{v}}
@@ -1299,6 +1342,7 @@ while the off-diagonal contribution is
 	&\approx& w_{f_i} \bb{\Gamma}_{0, f_i}
 \end{eqnarray}
 
+\hl{summarise Js?}
 
 %%----------------------------%%
 \subsubsection[Fluid Mesh Motion Jacobian Submatrices]{Fluid Mesh Motion Jacobian Submatrix $\tilde{\bb{J}}_{mm}$}
@@ -1379,7 +1423,7 @@ where subscript $PQ$ indicates a quantity associated with the internal face $f$ 
 \subsubsection[Mesh-to-Fluid Coupling Submatrix]{Mesh-to-Fluid Coupling Submatrix $\bb{J}_{vm}$} % and $J_{pm}$}
 %%----------------------------%%
 The coupling matrix $\bb{J}_{vm} \equiv \partial \bb{R}_{v}/\partial \bb{d}_m$ accounts for the effect of the fluid mesh motion on the fluid momentum equation.
-This effect comes in two forms: firstly, the mesh velocity directly appears in the advection term; secondly, all terms contain $\bb{F}_m$ and $J_m$, which map the terms from the initial fluid mesh to the unknown deformed mesh.
+This effect comes in two \hl{three? FSI velocity} forms: firstly, the mesh velocity directly appears in the advection term; secondly, all terms contain $\bb{F}_m$ and $J_m$, which map the terms from the initial fluid mesh to the unknown deformed mesh.
 
 
 The block ($3\times3$ for 3-D, $2\times2$ for 2-D) diagonal coefficient for cell $P$ (row $P$, column $P$) can be expressed as
@@ -1455,113 +1499,11 @@ Note that the fluid density $\rho^f$ scales the fluid kinematic pressure to actu
 %- JFNK approach summary
 %	- implementation via PETSc. Newton with line search, GMRes with MG preconditioner.
 
-%%--------------------------------------------------------------------------------------------------------------------%%
-\subsection{Segregated Solution Algorithm} 
-\label{sec:seg_alg}
-%%--------------------------------------------------------------------------------------------------------------------%%
-The classic segregated solution algorithm can be viewed as a quasi-Newton method, where an approximate Jacobian is derived from the inertia term and a compact-stencil discretisation of a diffusion term (from the stabilisation term):
-%The surface forces Laplacian term (first term on the right-hand side of Equation \ref{eqn:MomentumImplicitExplicit}) is discretised using central differencing with over-relaxed non-orthogonal correction \cite{demirdzic_finite_1993, jasak_application_2000, cardiff_development_2014, cardiff_large_2014, cardiff_lagrangian_2017}:
-\begin{eqnarray} \label{eq:diffusion}
-	\tilde{\bb{J}} &=& \frac{\partial}{\partial \bb{u}} \left[ \oint_{\Gamma_P} \alpha \bar{K} \, \bb{n} \cdot \bb{\nabla} \bb{u} \; d\Gamma_P
-	 \; -\;  \int_{\Omega_P} \rho \frac{\partial^2 \bb{u} }{\partial t^2} \, d\Omega_P \right]
-\end{eqnarray}
-The inertia term is discretised as described in Equations \ref{eq:inertia} and \ref{eq:inertia2}, while the diffusion term is discretised in the same manner as the compact-stencil component of the Rhie-Chow stabilisation term:
-\begin{eqnarray}
-	\oint_{\Gamma_P} \alpha \bar{K} \, \bb{n} \cdot \bb{\nabla} \bb{u} \; d\Gamma_P &\approx&
-		\sum_{f_i \in \mathcal{F}^{\text{int}}_P}  \alpha \bar{K}
-		\left|\bb{\Delta}_{f_i} \right| \frac{ \bb{u}_{N_{f_i}} - \bb{u}_P}{\left|\bb{d}_{f_i}\right|}    \left|\bb{\Gamma}_{f_i}\right| \notag \\
-	&&+  \sum_{d_i \in \mathcal{F}^{\text{disp}}_P}  \alpha \bar{K}
-%		\left|\bb{\Delta}_{d_i} \right| \left( \ \frac{ \bar{\bb{u}}_{d_i} - \bb{u}_P}{\left|\bb{d}_{d_i}\right|}  \right) 
-		\left|\bb{\Delta}_{d_i} \right| \frac{ \bar{\bb{u}}_{d_i}  - \bb{u}_P}{\left|\bb{d}_{d_i}\right|} 
-		\left|\bb{\Gamma}_{d_i}\right| \notag \\
-	&&+ \sum_{s_i \in \mathcal{F}^{\text{symm}}_P}  \alpha \bar{K}
-		\left|\bb{\Delta}_{s_i} \right| \frac{ \bb{R}_{s_i} \cdot \bb{u}_{P} - \bb{u}_P}{\left|\bb{d}_{s_i}\right|}
-		\left|\bb{\Gamma}_{s_i}\right|
-\end{eqnarray}
-When a diffusion term is typically discretised using the cell-centre finite volume method, non-orthogonal corrections are included in a deferred correction manner to preserve the order of accuracy on distorted grids.
-However, in the current quasi-Newton method form, the approximate Jacobian's exact value does not affect the final converged solution, but only the convergence behaviour.
-Consequently, non-orthogonal corrections are not included in the approximate Jacobian here. However, grid distortion is appropriately accounted for in the calculation of the residual.
-Nonetheless, as a result, it is expected that the convergence behaviour of the segregated approach may degrade as mesh non-orthogonality increases.
-%Similarly, the prescribed displacements from the $\mathcal{F}^{\text{disp}}_P$ boundary faces does not affect the Jacobian.
-
-The linearised system (Equation \ref{eq:Seg}) is formed for each cell in the domain, resulting in a system of algebraic equations:
-\begin{eqnarray} \label{eq:SegSys}
-    \left[ \bb{\tilde{J}} \right]  \; \left[ \delta \bb{u} \right] = - \left[\bb{R}(\bb{u}_k)\right]
-\end{eqnarray}
-where $\left[ \bb{\tilde{J}} \right]$ is a symmetric, $M \times M$ stiffness matrix, where $M = 3|\mathcal{P}|$ in 3-D and $M = 2|\mathcal{P}|$ in 2-D.
-If $\Delta t < \infty$ or $\mathcal{F}^{\text{disp}}_P \neq \emptyset$, matrix $\left[ \bb{\tilde{J}} \right]$ is strongly diagonally dominant; otherwise, it is weakly diagonally dominant.
-The block ($3\times3$ for 3-D, $2\times2$ for 2-D) diagonal coefficient for cell $P$ (row $P$, column $P$) can be expressed as
-\begin{eqnarray}
-	 \left[ \tilde{\bb{J}}\right]_{PP} &=&
-		- \sum_{f_i \in \mathcal{F}^{\text{int}}_P}  \alpha \bar{K}
-		\frac{ \left|\bb{\Delta}_{f_i} \right| }{\left|\bb{d}_{f_i}\right|}    \left|\bb{\Gamma}_{f_i}\right| \textbf{I} 
-	    \quad-  \sum_{d_i \in \mathcal{F}^{\text{disp}}_P}  \alpha \bar{K}
-%		\left|\bb{\Delta}_{d_i} \right| \left( \ \frac{ \bar{\bb{u}}_{d_i} - \bb{u}_P}{\left|\bb{d}_{d_i}\right|}  \right) 
-		 \frac{ \left|\bb{\Delta}_{d_i} \right| }{\left|\bb{d}_{d_i}\right|} 
-		\left|\bb{\Gamma}_{d_i}\right| \textbf{I} \notag \\
-	 &&\quad - \sum_{s_i \in \mathcal{F}^{\text{symm}}_P} \alpha \bar{K}
-		 \frac{ \left|\bb{\Delta}_{s_i} \right|}{\left|\bb{d}_{s_i}\right|}
-		\left|\bb{\Gamma}_{s_i}\right|  \bb{n}_{s_i} \otimes \bb{n}_{s_i} 
-	\quad - \quad \frac{9}{4}  \frac{\rho_P \Omega_P}{\Delta t^2} \textbf{I}
-\end{eqnarray}
-while the off-diagonal coefficients (row $P$, column $Q$) can be expressed as
-\begin{eqnarray}
-	\left[\tilde{\bb{J}}\right] _{PQ} &=&
-		\alpha \bar{K} \frac{ \left|\bb{\Delta}_{f_{PQ}} \right| }{\left|\bb{d}_{f_{PQ}}\right|} \left|\bb{\Gamma}_{f_{PQ}}\right| \textbf{I} 
-\end{eqnarray}
-where subscript $PQ$ indicates a quantity associated with the internal face $f$ shared between cells $P$ and $Q$.
-%where $N_f$ represents the set of faces $f$ in cell $P$, and neighbouring cell centre $N_f$ shares face $f$ with the cell $P$.
-%The over-relaxed orthogonal vector $\bb{\Delta}_f = \frac{\bb{d}_f}{\bb{d}_f \cdot \bb{n}_f}$ 
-%The non-orthogonal correction vector $\bb{k}_f=\bb{n}_f-\bb{\Delta}_f$.
-% where $\bb{n}_f$ is the outward-facing unit normal to the face $f$.
-%Vector $\bb{d}_f$ connects the centre of cell $P$ with the centre of cell $N_f$ in the updated configuration.
-%The first term on the right-hand side is treated implicitly, while the second term - representing non-orthogonal corrections at the face - is treated in a deferred correction manner.
-
-% since their implicit inclusion would require a coupled solution approach
-
-
-%The block row in the Jacobian corresponding to cell $P$ can be expressed as
-%\begin{eqnarray} \label{eq:lin_sys_seg_cellP}
-%	\tilde{\bb{J}}_P 	&=& \bb{A}_P \cdot  \bb{u}_P +  \sum_{f_i \in \mathcal{F}^{\text{int}}_P}  \bb{A}_{N_{f_i}} \cdot  \bb{u}_{N_{f_i}}
-%\end{eqnarray}
-%where the block diagonal coefficient is
-%\begin{eqnarray}
-%	\bb{A}_P
-%	&\approx& -\sum_{f_i \in \mathcal{F}^{\text{int}}_P}  \bar{K} \frac{ \left|\bb{\Delta}_{f_i} \right| }{\left|\bb{d}_{f_i}\right|} \left|\bb{\Gamma}_{f_i}\right| \textbf{I} \notag \\
-%	&&-\sum_{d_i \in \mathcal{F}^{\text{disp}}_P}  \bar{K} \frac{  \left|\bb{\Delta}_{d_i} \right|}{\left|\bb{d}_{d_i}\right|} \left|\bb{\Gamma}_{d_i}\right| \textbf{I} \notag \\
-%	&&- \sum_{s_i \in \mathcal{F}^{\text{symm}}_P}  \bar{K} \frac{ \left|\bb{\Delta}_{s_i} \right|  }{\left|\bb{d}_{s_i}\right|} \left|\bb{\Gamma}_{s_i}\right| \bb{n}_{s_i} \otimes \bb{n}_{s_i}
-%	\notag \\
-%\end{eqnarray}
-%and each off-diagonal coefficient is
-%\begin{eqnarray}
-%	\bb{A}_{N_{f_i}} 	&\approx&  \bar{K} \frac{ \left|\bb{\Delta}_{f_i} \right| }{\left|\bb{d}_{f_i}\right|} \left|\bb{\Gamma}_{f_i}\right| \textbf{I}
-%\end{eqnarray}
-
-
-By design, matrix $\left[ \bb{\tilde{J}} \right]$  contains no inter-component coupling, i.e., each block coefficient is diagonal; consequently, three equivalent smaller linear systems can be formed in 3-D (or two linear systems in 2-D) and solved for the Cartesian components of the displacement correction, e.g.
-\begin{eqnarray} \label{eq:SegSysX}
-%     \bb{\tilde{J}}_x(\bb{u}_n)  \;  \Delta \bb{u}_x = - \mathcal{R}_x(\bb{u}_n) \label{eq:segX} \\
-%     \bb{\tilde{J}}_y(\bb{u}_n)  \;  \Delta \bb{u}_y = - \mathcal{R}_y(\bb{u}_n) \label{eq:segY} \\
-%     \bb{\tilde{J}}_z(\bb{u}_n)  \;  \Delta \bb{u}_z = - \mathcal{R}_z(\bb{u}_n) \label{eq:segZ}
-     \left[ \bb{\tilde{J}}_x \right]  \;  \left[ \Delta \bb{u}_x \right] = - \left[ \mathcal{R}_x(\bb{u}_k) \right] \label{eq:segX} \\
-     \left[ \bb{\tilde{J}}_y \right]  \;  \left[ \Delta \bb{u}_y \right] = - \left[ \mathcal{R}_y(\bb{u}_k) \right] \label{eq:segY} \\
-     \left[ \bb{\tilde{J}}_z \right]  \;  \left[ \Delta \bb{u}_z \right] = - \left[ \mathcal{R}_z(\bb{u}_k) \right] \label{eq:segZ}
-\end{eqnarray}
-where $ \bullet_x$ represents the components in the $x$ direction, $ \bullet_y$ represents the components in the $y$ direction, and $ \bullet_z$ represents the components in the $z$ direction.
-Matrices $\left[ \bb{\tilde{J}}_x \right]$, $ \left[ \bb{\tilde{J}}_y\right]$ and $\left[ \bb{\tilde{J}}_z\right]$ have the size $|\mathcal{P}| \times |\mathcal{P}|$.
-An additional benefit from a memory and assembly perspective, is that matrices $\left[ \bb{\tilde{J}}_x \right]$, $ \left[ \bb{\tilde{J}}_y\right]$ and $\left[ \bb{\tilde{J}}_z\right]$ are identical, except for the effects from including boundary conditions ($\mathcal{F}^{\text{symm}}_P$ terms).
-From an implementation perspective, this allows a single scalar matrix to be formed and stored, where the boundary condition contributions are inserted before solving a particular component.
-
-The \emph{inner} linear sparse systems (Equations \ref{eq:segX}, \ref{eq:segY} and \ref{eq:segZ}) can be solved using any typical direct or iterative linear solver approach; however, an incomplete Cholesky pre-conditioned conjugate gradient method \cite{Jacobs1986} is often preferred as the diagonally dominant characteristic leads to good convergence characteristics.
-Algebraic multigrid can also be used to accelerate convergence.
-
-
-
-
-%%--------------------------------------------------------------------------------------------------------------------%%
-\subsection{Jacobian-free Newton-Krylov Algorithm}
-\label{sec:JFNK_alg}
-%%--------------------------------------------------------------------------------------------------------------------%%
+%
+%%%--------------------------------------------------------------------------------------------------------------------%%
+%\subsection{Jacobian-free Newton-Krylov Algorithm}
+%\label{sec:JFNK_alg}
+%%%--------------------------------------------------------------------------------------------------------------------%%
 
 %\hl{2}
 %- preconditioner => important

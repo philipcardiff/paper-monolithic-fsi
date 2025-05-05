@@ -589,7 +589,7 @@ Here, the approximate Jacobian $\tilde{\bb{J}}$ takes the form:
 %\tilde{\bb{J}}_{vv} & \bb{J}_{vp} & \bb{J}_{vm} & \bb{J}_{vd} \\
 %J_{pv} & \tilde{J}_{pp} & J_{pm} & J_{pd} \\
 \tilde{\bb{J}}_{vv} & \bb{J}_{vp} & \tilde{\bb{J}}_{vm} & 0 \\
-J_{pv} & \tilde{J}_{pp} & 0 & 0 \\
+\bb{J}_{pv} & \tilde{J}_{pp} & 0 & 0 \\
 0 & 0 & \tilde{\bb{J}}_{mm} & \tilde{\bb{J}}_{md} \\
 0 & \bb{J}_{dp} & 0 & \tilde{\bb{J}}_{dd}
 \end{bmatrix}_k
@@ -598,7 +598,7 @@ where $\bb{J}_{dv}$ is dropped as the fluid viscous forces on the fluid-solid in
 In addition, compact stencil approximate Jacobians for solid ($\tilde{\bb{J}}_{dd}$), fluid ($\tilde{\bb{J}}_{vv}$, $\tilde{J}_{pp}$) and fluid mesh motion ($\tilde{\bb{J}}_{mm}$, $\tilde{\bb{J}}_{md}$) terms are employed.
 The $J_{pm}$ term is also ignored, and $\tilde{\bb{J}}_{vm}$ contains only the advective mesh velocity term.
 
-Details of the cell-centred finite volume discretisation of residuals are given below, in addition to the calculation of the approximate Jacobian submatrices.
+Details of the cell-centred finite volume discretisation of residuals are given below, in addition to calculating the approximate Jacobian submatrices.
 
 
 
@@ -794,13 +794,14 @@ where the $\frac{\partial \bb{\phi}}{\partial t}$ terms are discretised are also
 
 
 %%--------------------------------------------------------------------------------------------------------------------%%
-\subsection{Discretisation of the Residuals}
+\subsection{Discretisation of the Residuals and Jacobian}
 %%--------------------------------------------------------------------------------------------------------------------%%
 
 
 %%--------------------------------------------------------------------------------------------------------------------%%
-\subsubsection[Discretisation of the Fluid Dynamics Residuals]{Discretisation of the Fluid Dynamics Residuals $\bb{R}_v$ and $R_p$}
+\subsubsection[Fluid Dynamics Residuals Discretisation]{Fluid Dynamics Discretisation}
 %%--------------------------------------------------------------------------------------------------------------------%%
+This section describes the discretisation of the fluid residuals $\bb{R}_v$ and $R_p$, as well as the defining the adopted approximate Jacobian submatrices $\bb{J}_{vv}$, $\bb{J}_{vp}$, $J_{pp}$ and $J_{pv}$.
 
 The fluid equation linear momentum residual $\bb{R}_v$ repeated here is
 \begin{eqnarray}
@@ -828,17 +829,17 @@ The cell-centred pressure gradient $\left( \bb{\nabla}_0 p \right)_P$ is calcula
 The cell-centred fluid mesh deformation gradient and its determinant are calculated in terms of the fluid mesh displacement gradient according to Equation \ref{eq:fluid_deformation_grad}, where the cell-centred gradient is calculated using weighted least squares (Equation \ref{eq:least_squares}).
 
 The diffusion (viscous stresses) surface integral is approximated as \hl{FSI-term}
-\begin{eqnarray}
+\begin{align}
 	\oint_{\Gamma^f_0}  \left[ J^\Gamma (\bb{F}^\Gamma)^{-\text{T}} \cdot \hat{\bb{n}}_0^f \right]
-		\cdot \left[\nu (\bb{F}^\Gamma)^{-T} \cdot \left( \bb{\nabla}_0 \bb{v}^f \right) \right] \, d\Gamma^f_0
-		&\approx&
-		\sum_{f_i \in \mathcal{F}^{\text{int}}_P}
+		\cdot & \left[\nu (\bb{F}^\Gamma)^{-T} \cdot \left( \bb{\nabla}_0 \bb{v}^f \right) \right] \, d\Gamma^f_0
+		\approx \notag \\
+		& \sum_{f_i \in \mathcal{F}^{\text{int}}_P}
 		\left[ J^\Gamma_{f_i} (\bb{F}^\Gamma_{f_i})^{-\text{T}} \cdot \hat{\bb{\Gamma}}_{0, f_i}^f \right]
 			\cdot \left[\nu_{f_i} (\bb{F}^\Gamma_{f_i})^{-T} \cdot \left( \bb{\nabla}_0 \bb{v}^f \right)_{f_i} \right]
-			\notag \\
-		+ \sum_{d_i \in \mathcal{F}^{\text{D}}_P} TODO \notag \\
-		+ \sum_{s_i \in \mathcal{F}^{\text{symm}}_P} TODO 
-\end{eqnarray}
+%			\notag \\
+%		+ \sum_{d_i \in \mathcal{F}^{\text{D}}_P} TODO \notag \\
+%		+ \sum_{s_i \in \mathcal{F}^{\text{symm}}_P} TODO 
+\end{align}
 The face values $J^\Gamma_{f_i}$, $\bb{F}^\Gamma_{f_i}$, $\nu_{f_i}$, and $\left( \bb{\nabla}_0 \bb{v}^f \right)_{f_i} $ are interpolated from the cell-centres using Equation \ref{eq:interp}.
 Once again, the cell-centred gradient is calculated using weighted least squares (Equation \ref{eq:least_squares}).
 
@@ -853,14 +854,15 @@ The advection surface integral is approximated as \hl{FSI-term}
 	&+ \sum_{d_i \in \mathcal{F}_P^{\text{D}}} \left[ J^\Gamma_{d_i} (\bb{F}^\Gamma_{d_i})^{-\text{T}} \cdot \hat{\bb{\Gamma}}_{0, d_i}^f \right]
 		 \cdot \left( \bb{v}_{d_i} - \frac{\partial \bb{d}_{m,d_i}}{\partial t} \right) \tilde{\bb{v}}_{d_i}
 \end{align}
-Note that the advection term is zero at symmetry faces as the face flux (mass flow) is zero by definition.
+%Note that the advection term is zero at symmetry faces as the face flux (mass flow) is zero by definition.
+Note that the advection term is zero at the fluid-solid interface as the face flux (mass flow) is zero by definition.
 Here, $\tilde{\bb{v}}_{f_i}$ is calculated using first-order upwind for the approximate Jacobian $\bb{J}_v$ contribution \hl{make consistent with Jacobian section later}
-\begin{eqnarray}
+\begin{eqnarray} \label{eq:advection_velocity_interp}
 	\tilde{\bb{v}}_{f_i} =
-		\text{max}\left[ \bb{\Gamma}_{f_i} \cdot \left( \bb{v}_{f_i} - \frac{\partial \bb{d}_{m,f_i}}{\partial t} \right), \, 0\right] \tilde{\bb{v}}_P
-		+ \text{min}\left[ \bb{\Gamma}_{f_i} \cdot \left( \bb{v}_{f_i} - \frac{\partial \bb{d}_{m,f_i}}{\partial t} \right), \, 0\right] \tilde{\bb{v}}_{N_i}
+		\text{max}\left[ \psi_{f_i}, \, 0\right] \bb{v}_P + \text{min}\left[ \psi_{f_i}, \, 0\right] \bb{v}_{N_i}
 \end{eqnarray}
 where $\text{max}\left[\cdot \,, \cdot \right]$ is the maximum operator and $\text{min}\left[\cdot \,, \cdot \right]$ is the minimum operator.
+The volume flux $\psi$ through the control volume face is $\psi = \left( J_m \bb{F}_m^{-\text{T}} \cdot \hat{\bb{n}}_0 \right) \cdot \left(\bb{v} - \frac{\partial \bb{d}_m}{\partial t} \right)$.
 In the residual $\bb{R}_v$ (which controls the order of accuracy of the final solution), $\tilde{\bb{v}}_{f_i}$ is calculated using a second-order \hl{upwind/CD/limited-decide} scheme:
 \begin{eqnarray}
 	\tilde{\bb{v}}_{f_i} =  w_{f_i} \bb{v}_P + (1 - w_{f_i}) \bb{v}_{N_{f_i}}
@@ -873,9 +875,88 @@ The vector stabilisation term $\bb{\mathcal{D}}_v$ takes the form of the differe
 		\left|\bb{\Delta}_{0,f_i} \right| \frac{ \bb{v}_{N_{f_i}} - \bb{v}_P}{\left|\bb{\delta}_{0,f_i}\right|}	- \bb{\Delta}_{0,f_i} \cdot \left(\bb{\nabla}_0 \bb{v} \right)_{f_i}
 		\right]    \left|\bb{\Gamma}_{0,f_i}\right|
 \end{eqnarray}
+where $\alpha_v$ is a user parameter for controlling the amount of stabilisation ($\alpha_v = 0$ gives no stabilisation, $\alpha_v > 0$ gives stabilisation).
 
 
-The fluid continuity equation residual $R_p$ repeated here is
+
+The diagonal block ($3\times3$ for 3-D, $2\times2$ for 2-D) for cell $P$ (row $P$, column $P$) is: \hl{consistent with JFNK paper, but we can do better by including J/F}
+\begin{align}
+    	\left\{ \tilde{\bb{J}}_{vv} \right\}_{PP} =&
+	- \sum_{f_i \in \mathcal{F}^{\text{int}}_P} \alpha_v \nu
+	\frac{ \left|\bb{\Delta}_0 \right| }{\left|\bb{\delta}_0 \right|}  \left|\bb{\Gamma}_0 \right| \textbf{I} \notag \\
+	& - \; \frac{3}{2} \frac{J_m \Omega_{0,P}}{\Delta t} \textbf{I}
+	\;\;\; - \; \sum_{f_i \in \mathcal{F}^{\text{int}}_P}
+	\max \left[\psi_{f_i}, 0\right] \textbf{I} + w_{f_i} \left( H_P \bb{v}_P + H_Q \bb{v}_Q \right) \otimes \mathbf{\Gamma}_{f_i}
+\end{align}
+%\emph{over-relaxed} 
+where the vectors $\bb{\Delta}_0 = \nicefrac{\bb{\delta}_{0,m}}{\bb{\delta}_{0,m} \cdot \bb{n}_{0,m}}$.
+The Heaviside function terms are defined as
+\begin{eqnarray}
+	H_P &=& H(\psi_{f_i}) =
+	\begin{cases}
+		1  & \text{if} \quad \psi_{f_i} > 0 \\
+		0  & \text{otherwise}
+	\end{cases} \notag \\
+	H_Q &=& 1 - H(\psi_{f_i})
+\end{eqnarray}
+%where $\text{max}\left[\cdot\,,\, \cdot\right]$ is the maximum operator and $\text{min}\left[\cdot\,,\, \cdot\right]$ is the minimum operator.
+while the off-diagonal contribution (row $P$, column $Q \neq P$) is
+\begin{eqnarray}
+    	\left\{ \tilde{\bb{J}}_{vv} \right\}_{PQ} &=&
+	\nu \frac{ \left|\bb{\Delta}_0 \right| }{\left|\bb{d}_0 \right|}  \left|\bb{\Gamma}_0 \right| \textbf{I}
+	\;\; + \;\; \min \left[\psi_{f_i}, 0\right] \textbf{I} + (1 - w_{f_i}) \left( H_P \bb{v}_P + H_Q \bb{v}_Q \right) \otimes \mathbf{\Gamma}_{f_i}
+\end{eqnarray}
+
+The block ($3\times1$ for 3-D, $2\times1$ for 2-D) diagonal coefficient for cell $P$ (row $P$, column $P$) for Jacobian submatrix $\bb{J}_{vp}$ is
+\begin{eqnarray}
+	\left\{
+	\tilde{\bb{J}}_{vp} 
+	\right\}_{PP}
+	&=& \sum_{f_i \in \mathcal{F}^{\text{int}}_P} J_{P,m} \, \bb{g}_{P,f_i} \,  \Omega_{0,P}
+\end{eqnarray}
+where $\bb{g}_{P, f_i}$ is the least squares vector stored for cell $P$ at face $f_i$, as defined in Equation \ref{eq:least_squares_vectors}.
+While the off-diagonal contribution (row $P$, column $Q \neq P$) is
+\begin{eqnarray}
+	\left\{
+	\tilde{\bb{J}}_{vp} 
+	\right\}_{PQ}
+	&=& -J_{P,m} \, \bb{g}_{P,f_i} \,  \Omega_{0,P}
+\end{eqnarray}
+
+
+The coupling matrix $\bb{J}_{vm} \equiv \partial \bb{R}_{v}/\partial \bb{d}_m$ accounts for the effect of the fluid mesh motion on the fluid momentum equation.
+This effect comes in two \hl{three? FSI velocity} forms: firstly, the mesh velocity directly appears in the advection term; secondly, all terms contain $\bb{F}_m$ and $J_m$, which map the terms from the initial fluid mesh to the unknown deformed mesh.
+The block ($3\times3$ for 3-D, $2\times2$ for 2-D) diagonal coefficient for cell $P$ (row $P$, column $P$) is expressed as
+\begin{eqnarray}
+	 \left[ \tilde{\bb{J}}_{vm} \right]_{PP} &=&
+		 \frac{\alpha_t}{\Delta t} \sum_{f_i \in \mathcal{F}^{\text{int}}_P}
+		 \left(J_m \bb{F}_m^{-\text{T}} \cdot \bb{\Gamma}_m \right)_{f_i} \otimes \tilde{\bb{v}}_{f_i}
+%	 \left[ \tilde{\bb{J}}_{vm} \right]_{PP} &=&
+%	 \begin{cases}
+%		\sum_{f_i \in \mathcal{F}^{\text{int}}_P}  \left(J_m \bb{F}_m^{-T} \cdot \bb{\Gamma} \right)_{f_i}^{[m]} \otimes \bb{v}_F
+%		& \text{if } \Phi > 0, \\
+%		\sum_{f_i \in \mathcal{F}^{\text{int}}_P}  \left(J_m \bb{F}_m^{-T} \cdot \bb{\Gamma} \right)_{f_i}^{[m]} \otimes \bb{v}_F
+%		& \text{otherwise}.
+%	\end{cases}
+\end{eqnarray}
+where $\tilde{\bb{v}}_{f_i}$ is defined in Equation \ref{eq:advection_velocity_interp}.
+For the first-order Euler scheme $\alpha_t = 1$, while for the second-order backward scheme $\alpha_t = \nicefrac{3}{2}$.
+The off-diagonal coefficients (row $P$, column $Q \neq P$) are
+\begin{eqnarray}
+	 \left[ \tilde{\bb{J}}_{vm} \right]_{PQ} &=&
+	 	 \frac{\alpha_t}{\Delta t} \left(J_m \bb{F}_m^{-\text{T}} \cdot \bb{\Gamma}_m \right)_{PQ}^{[m]} \otimes \tilde{\bb{v}}_{f_i}
+%	 \begin{cases}
+%		\left(J_m \bb{F}_m^{-T} \cdot \bb{\Gamma} \right)_{f_i}^{[m]} \otimes \bb{v}_P
+%		& \text{if } \Phi > 0, \\
+%		\left(J_m \bb{F}_m^{-T} \cdot \bb{\Gamma} \right)_{f_i}^{[m]} \otimes \bb{v}_Q
+%		& \text{otherwise}.
+%	\end{cases}
+\end{eqnarray}
+where subscript $PQ$ indicates a quantity associated with the internal face $f$ shared between cells $P$ and $Q$.
+
+
+
+Moving to the pressure equation, the fluid continuity equation residual $R_p$ repeated here is
 \begin{eqnarray}
     R_p    &=&	\oint_{\Gamma^f_0}  \left[ J^\Gamma (\bb{F}^\Gamma)^{-\text{T}}  \cdot \hat{\bb{n}}_0^f \right] \cdot \bb{v}^f \, d\Gamma^f_0 \;+\; \mathcal{D}_p
 \end{eqnarray}
@@ -897,73 +978,36 @@ The scalar stabilisation term $\mathcal{D}_p$ takes the same form as the vector 
 		\left|\bb{\Delta}_{0,f_i} \right| \frac{ p_{N_{f_i}} - p_P}{\left|\bb{\delta}_{0,f_i}\right|}	- \bb{\Delta}_{0,f_i} \cdot \left(\bb{\nabla}_0 p \right)_{f_i}
 		\right]    \left|\bb{\Gamma}_{0,f_i}\right|
 \end{eqnarray}
+where, like $\alpha_v$, $\alpha_p$ is a user parameter for controlling the amount of stabilisation.
 
-
-
-%%----------------------------%%
-\subsubsection[Discretisation of the Fluid Mesh Motion Residual]{Discretisation of the Fluid Mesh Motion Residual $\bb{R}_m$}
-%%----------------------------%%
-The fluid mesh motion equation residual $\bb{R}_m$ repeated here is \hl{maybe we should use large strain approach - see if required in test cases}
+%\hl{J-pp}
+The approximate Jacobian submatrix $\tilde{J}_{pp}$ is derived from the compact stencil term of the stabilisation $\mathcal{D}_p$.
+The block ($1\times1$ for 3-D and 2-D) diagonal coefficient for cell $P$ (row $P$, column $P$) is
 \begin{eqnarray}
-    \bb{R}_m
-    &=&
-    \oint_{\Gamma_0^f} \bb{n}_0^f \cdot
-    \left[
-    \mu^\Gamma \bb{\nabla}_0 \bb{d}_m + \mu^\Gamma \left(\bb{\nabla}_0 \bb{d}_m \right)^T
-    + \lambda^\Gamma (\bb{\nabla}_0 \cdot \bb{d}_m) \textbf{I}
-    \right]
-    \, d\Gamma_0^f
-    \;+\; \bb{\mathcal{D}}_m
+	\left\{ \tilde{J}_{pp} \right\}_{PP} &=&
+		- \sum_{f_i \in \mathcal{F}^{\text{int}}_P}  \alpha_p D_p
+		\frac{ \left|\bb{\Delta}_{0,f_i} \right| }{\left|\bb{\delta}_{0,f_i}\right|}    \left|\bb{\Gamma}_{0,f_i}\right|
 \end{eqnarray}
-
-The discretisation of the stress divergence is
-\begin{align}
-    \oint_{\Gamma_0^f} \bb{n}_0^f \cdot
-    &\left[
-    \mu^\Gamma \bb{\nabla}_0 \bb{d}_m + \mu^\Gamma \left(\bb{\nabla}_0 \bb{d}_m \right)^T
-    + \lambda^\Gamma (\bb{\nabla}_0 \cdot \bb{d}_m) \textbf{I}
-    \right]    \, d\Gamma_0^f
-	\approx \notag \\
-	&\sum_{f_i \in \mathcal{F}_P^{\text{int}}}
-	\bb{\Gamma}_{0,f_i}
-	\cdot
-	\left[
-	\mu_m \left(\bb{\nabla}_0 \bb{d}_m\right)_{f_i} + \mu_m \left(\bb{\nabla}_0 \bb{d}_m \right)^T_{f_i}
-    + \lambda_m (\bb{\nabla}_0 \cdot \bb{d}_m)_{f_i} \textbf{I}
-	\right]
-\end{align}
-where the gradient terms are interpolated from the cell centres to the faces according to Equation \ref{eq:face_interp}.
-
-The vector stabilisation term $\bb{\mathcal{D}}_m$ takes the form as $\bb{\mathcal{D}}_v$:
+while the off-diagonal coefficient (row $P$, column $Q \neq P$) is
 \begin{eqnarray}
-	\bb{\mathcal{D}}_m
-	&=& \sum_{f_i \in \mathcal{F}^{\text{int}}_P} \alpha_m (2\mu_m + \lambda_m) \left[
-		\left|\bb{\Delta}_{0,f_i} \right| \frac{ \bb{d}_{m,N_{f_i}} - \bb{d}_{m,P}}{\left|\bb{\delta}_{0,f_i}\right|}	- \bb{\Delta}_{0,f_i} \cdot \left(\bb{\nabla}_0 \bb{d}_m \right)_{f_i}
-		\right]    \left|\bb{\Gamma}_{0,f_i}\right|
+	\left\{ \tilde{J}_{pp} \right\}_{PQ}	 &=&
+		\alpha_p D_p \frac{ \left|\bb{\Delta}_{0,f_i} \right| }{\left|\bb{\delta}_{0,f_i}\right|}    \left|\bb{\Gamma}_{0,f_i}\right|
 \end{eqnarray}
 
 
-\hl{Merge in text below}
-An additional challenge is that the fluid mesh should be moved (smoothed) to distribute the FSI interface motion throughout the fluid domain.
-To achieve this, the current work adopts a pseudo-solid approach where the fluid mesh is considered to be a solid domain, where the boundary displacements are prescribed.
-The following governing equation is adopted for the fluid mesh motion: \hl{I could add F-old to rotate but keep linear}
-\begin{eqnarray} \label{eqn:motion}
-    \oint_{\tilde{\Gamma}}
-    \bb{n}_u \cdot \left[ \beta_m \mu_m \bb{\nabla}\bb{d}_m
-    + \beta_m \mu_m (\bb{\nabla}\bb{d}_m)^T
-    + \beta_m \lambda_m \text{tr}(\bb{\nabla} \bb{d}_m)\textbf{I} \right] 
-    \, d\tilde{\Gamma}
-    \;=\; \bb{0}
-\end{eqnarray}
-It should be noted that Equation \ref{eqn:motion} is integrated over the fluid reference configuration, but it is not mapped to the deformed configuration; this choice is made purely from an efficiency perspective: the purpose of this equation is merely to maintain fluid mesh quality, and it need not strictly correspond to a physical system.
-To maintain fluid mesh quality near the FSI interface and boundary, the stiffness parameters $\mu_m$ and $\lambda_m$ are defined to be inversely proportional to the distance from the fluid boundary according to:
-\hl{express with if-else}
+%\hl{J-pv}
+For the approximate Jacobian submatrix $\tilde{\bb{J}}_{pv}$, the block ($1\times3$ for 3-D, $1\times2$ in 2-D) diagonal coefficient for cell $P$ (row $P$, column $P$) is
 \begin{eqnarray}
-	\beta_m &=& \text{min}(\beta_\text{max} \bar{\delta}^{-1}, \text{max}(\beta_\text{min} \bar{\delta}^{-1}, \delta^{-1}))
+	\left\{ \tilde{\bb{J}}_{pv} \right\}_{PP}	&=&
+		\sum_{f_i \in \mathcal{F}^{\text{int}}_P} w_{f_i}  J_{m,f_i} \bb{F}_{m,f_i}^{-\text{T}}  \cdot \hat{\bb{\Gamma}}_{0,f_i}
 \end{eqnarray}
-where $\delta$ is the (approximate) distance from the fluid boundary.
-In the current work, $\delta$ is calculated using a topological search approach, implemented in the \texttt{meshWave} class of OpenFOAM.
-$\beta_m$ is then normalised with respect to its average value, i.e. $\beta_m \coloneqq \frac{\beta_m}{\bar{\beta_m}}$, such that $\bar{\beta_m} \equiv 1$. \hl{introduce additional terms to avoid confusion}
+while the off-diagonal contribution is
+\begin{eqnarray}
+	\left\{ \tilde{\bb{J}}_{pv} \right\}_{PQ} &=&
+		(1 - w_{f_i})  J_{m,f_i} \bb{F}_{m,f_i}^{-\text{T}}  \cdot \hat{\bb{\Gamma}}_{0,f_i}
+\end{eqnarray}
+
+
 
 
 
@@ -1003,12 +1047,12 @@ Here, $\boldsymbol{v} = \nicefrac{\partial \bb{u}}{\partial t}$ refers to the so
 
 
 
-The surface integral term, corresponding to the divergence of stress, can be discretised as
+The surface integral term, corresponding to the divergence of stress is discretised as
 \begin{align} \label{eq:divStressDiscret}
 	\oint_{\Gamma_0^s} \left( J \bb{F}^{-\text{T}} \cdot \bb{n}_0^s \right) \cdot \bb{\sigma}^s & \, d\Gamma_0^s
 	\approx  \sum_{f_i \in \mathcal{F}_P^{\text{int}}} \left( J_{f_i} \bb{F}^{-\text{T}}_{f_i} \cdot \bb{\Gamma}_{0,f_i}^s \right) \cdot \bb{\sigma}_{f_i} \notag \\
 	&+ \sum_{d_i \in \mathcal{F}_P^{\text{disp}}} \bb{\Gamma}_{d_i} \cdot \bb{\sigma}_{P}
-	+ \sum_{s_i \in \mathcal{F}_P^{\text{symm}}} \bb{\Gamma}_{s_i} \cdot \bb{\sigma}_{s_i}
+%	+ \sum_{s_i \in \mathcal{F}_P^{\text{symm}}} \bb{\Gamma}_{s_i} \cdot \bb{\sigma}_{s_i}
 	+ \sum_{t_i \in \mathcal{F}_P^{\text{trac}}} |\bb{\Gamma}_{t_i}| \bar{\bb{T}}_{t_i}
 \end{align}
 where vector $\bar{\bb{T}}_{t_i}$ represents the prescribed traction on the traction boundary face $t_i$.
@@ -1016,20 +1060,19 @@ For faces $f_i$ in Equation \ref{eq:divStressDiscret} that are on traction bound
 the traction $\bar{\bb{t}}_{b_i}$ is known and is directly enforced; that is, $\bb{\Gamma}_{f_i} \cdot \bb{\sigma}_{f_i} = |\bb{\Gamma}_{f_i}| \bb{n}_{f_i} \cdot \bb{\sigma}_{f_i} =  |\bb{\Gamma}_{f_i}| \bar{\bb{t}}_{b_i}$.
 %subscript $f$ indicates a quantity at the centre of a cell face, and 
 The stress $\bb{\sigma}_{f_i}$ at an internal face is calculated by linear interpolation from the adjacent cell centres (Equation \ref{eq:interp}).
-For faces $f_i$ in Equation \ref{eq:divStressDiscret} that are on traction boundary faces $b_i \in \mathcal{F}_P^{\text{trac}} \subset \mathcal{F}_P$, the traction $\bar{\bb{t}}_{b_i}$ is known and is directly enforced; that is, $\bb{\Gamma}_{f_i} \cdot \bb{\sigma}_{f_i} = |\bb{\Gamma}_{f_i}| \bb{n}_{f_i} \cdot \bb{\sigma}_{f_i} =  |\bb{\Gamma}_{f_i}| \bar{\bb{t}}_{b_i}$.
 %Vector $\bb{d}_{f}$ connects cell centre $P$ with cell centre $N_f$, $\bb{d}_f = \bb{x}_{N_f} - \bb{x}_P$, and $\bb{n}_{f}$ is the outward-facing unit normal to the face $f$.
-Similarly, the stress $\bb{\sigma}_{s_i}$ at a symmetry boundary face is calculated as
-\begin{eqnarray} \label{eq:symm}
-	\bb{\sigma}_{s_i}
-		&=& \frac{1}{2} \left (\bb{\sigma}_P + \bb{R}_{s_i} \cdot \bb{\sigma}_{P} \right) \notag \\
-		&=& \left (\textbf{I} - \bb{n}_{s_i} \otimes \bb{n}_{s_i} \right) \cdot \bb{\sigma}_P
-\end{eqnarray}
-where $\bb{R}_{s_i} \cdot \bb{\sigma}_{P}$ represents the mirror reflection of $\bb{\sigma}_P$ across the symmetry boundary face $s_i$.
-The reflection tensor is $\bb{R}_{s_i} = \textbf{I} - 2 \bb{n}_{s_i} \otimes \bb{n}_{s_i}$ \citep{Demirdzic2022}, with $\bb{n}_{s_i}$ indicating the unit normal of the symmetry boundary face $s_i$.
-From Equation \ref{eq:symm}, it is clear that shear stresses are zero on a symmetry plane boundary face.
-Note from Equation \ref{eq:divStressDiscret} that the stress on displacement boundary faces is assumed equal to the stress $\bb{\sigma}_P$ at the centroid of cell $P$.
+%Similarly, the stress $\bb{\sigma}_{s_i}$ at a symmetry boundary face is calculated as
+%\begin{eqnarray} \label{eq:symm}
+%	\bb{\sigma}_{s_i}
+%		&=& \frac{1}{2} \left (\bb{\sigma}_P + \bb{R}_{s_i} \cdot \bb{\sigma}_{P} \right) \notag \\
+%		&=& \left (\textbf{I} - \bb{n}_{s_i} \otimes \bb{n}_{s_i} \right) \cdot \bb{\sigma}_P
+%\end{eqnarray}
+%where $\bb{R}_{s_i} \cdot \bb{\sigma}_{P}$ represents the mirror reflection of $\bb{\sigma}_P$ across the symmetry boundary face $s_i$.
+%The reflection tensor is $\bb{R}_{s_i} = \textbf{I} - 2 \bb{n}_{s_i} \otimes \bb{n}_{s_i}$ \citep{Demirdzic2022}, with $\bb{n}_{s_i}$ indicating the unit normal of the symmetry boundary face $s_i$.
+%From Equation \ref{eq:symm}, it is clear that shear stresses are zero on a symmetry plane boundary face.
+Note from Equation \ref{eq:divStressDiscret} that the stress on displacement boundary faces is assumed to be equal to the stress $\bb{\sigma}_P$ at the centroid of cell $P$.
 
-\hl{maybe neglect symmetry planes to avoid confusion}
+\hl{Fluid traction on FSI interface}
 
 The cell-centred stress $\bb{\sigma}_P$ is calculated as a function of the displacement gradient according to the chosen mechanical law, for example, as shown in Appendix \ref{app:mechLaws}.
 
@@ -1053,24 +1096,24 @@ The stabilisation term  $\bb{\mathcal{D}}_{d,P}$ for a cell $P$ takes the follow
 \begin{eqnarray} \label{eq:RhieChow}
 	\bb{\mathcal{D}}_{d,P}
 	&=& \sum_{f_i \in \mathcal{F}^{\text{int}}_P} \alpha \bar{K}_{f_i} \left[
-		\left|\bb{\Delta}_{f_i} \right| \frac{ \bb{d}_{N_{f_i}} - \bb{d}_P}{\left|\bb{d}_{f_i}\right|}	- \bb{\Delta}_{f_i} \cdot \left(\bb{\nabla} \bb{d} \right)_{f_i}
+		\left|\bb{\Delta}_{f_i} \right| \frac{ \bb{d}_{N_{f_i}} - \bb{d}_P}{\left|\bb{\delta}_{f_i}\right|}	- \bb{\Delta}_{f_i} \cdot \left(\bb{\nabla} \bb{d} \right)_{f_i}
 		\right]    \left|\bb{\Gamma}_{f_i}\right| \notag \\
 	&&+ \sum_{d_i \in \mathcal{F}^{\text{disp}}_P} \alpha \bar{K}_{d_i} \left[
-		\left|\bb{\Delta}_{d_i} \right| \frac{ \bar{\bb{u}}_{d_i} - \bb{u}_P}{\left|\bb{d}_{d_i}\right|}	- \bb{\Delta}_{d_i} \cdot \left(\bb{\nabla} \bb{d} \right)_{P}
-		\right]    \left|\bb{\Gamma}_{d_i}\right| \notag \\
-	&&+ \sum_{s_i \in \mathcal{F}^{\text{symm}}_P} \alpha \bar{K}_{s_i} \left[
-		\left|\bb{\Delta}_{s_i} \right| \frac{ \bb{R}_{s_i} \cdot \bb{d}_{P} - \bb{d}_P}{\left|\bb{d}_{s_i}\right|} - \bb{\Delta}_{s_i} \cdot \left(\bb{\nabla} \bb{d} \right)_{s_i}
-		\right]    \left|\bb{\Gamma}_{s_i}\right|
+		\left|\bb{\Delta}_{d_i} \right| \frac{ \bar{\bb{u}}_{d_i} - \bb{u}_P}{\left|\bb{\delta}_{d_i}\right|}	- \bb{\Delta}_{d_i} \cdot \left(\bb{\nabla} \bb{d} \right)_{P}
+		\right]    \left|\bb{\Gamma}_{d_i}\right| %\notag \\
+%	&&+ \sum_{s_i \in \mathcal{F}^{\text{symm}}_P} \alpha \bar{K}_{s_i} \left[
+%		\left|\bb{\Delta}_{s_i} \right| \frac{ \bb{R}_{s_i} \cdot \bb{d}_{P} - \bb{d}_P}{\left|\bb{d}_{s_i}\right|} - \bb{\Delta}_{s_i} \cdot \left(\bb{\nabla} \bb{d} \right)_{s_i}
+%		\right]    \left|\bb{\Gamma}_{s_i}\right|
 \end{eqnarray}
 %which comes from the difference between Equations \ref{eq:diffusion} and \ref{eq:diffusion_exp}.
-where $\alpha_d > 0$ is a user-defined parameter for globally scaling the amount of stabilisation.
+where $\alpha_d > 0$ is a user-defined parameter for globally scaling the amount of stabilisation, similar to $\alpha_v$ and $\alpha_p$.
 Parameter $\bar{K}$ is a stiffness-type parameter that gives the stabilisation an appropriate scale and dimension, chosen here to be $\bar{K} = \frac{4}{3}\mu + \kappa = 2\mu + \lambda$ following previous work \cite{Jasak2000, Cardiff2017, Cardiff2018}, where $\mu$ is the shear modulus (first Lam\'{e} parameter), $\kappa$ is the bulk modulus, and $\lambda$ is the second Lam\'{e} parameter (or their equivalent for the chosen mechanical law).
 Vector $\bar{\bb{d}}_{d_i}$ represents the prescribed displacement at the centroid of displacement boundary face $d_i$.
 %where $N_f$ represents the set of faces $f$ in cell $P$, and neighbouring cell centre $N_f$ shares face $f$ with the cell $P$.
 %Vector $\bb{n}_{f}$ is the outward-facing unit normal to the face $f$.
-The quantities $\bb{\Delta} = \nicefrac{\bb{d}}{\bb{d} \cdot \bb{n}}$ are termed the \emph{over-relaxed orthogonal} vectors \cite{Jasak1996}.
+%The quantities $\bb{\Delta} = \nicefrac{\bb{d}}{\bb{d} \cdot \bb{n}}$ are termed the \emph{over-relaxed orthogonal} vectors \cite{Jasak1996}.
 The displacement gradient $\left(\bb{\nabla} \bb{d} \right)_{f_i}$ at the internal face $f_i$ is calculated by interpolation from adjacent cell centres (like in Equation \ref{eq:stressInterp}).
-Similarly, the displacement gradient $\left(\bb{\nabla} \bb{d} \right)_{s_i}$ at a symmetry boundary face $s_i$ is averaged from cell $P$ and its mirror reflection across face $s_i$, as in Equation \ref{eq:symm}.
+%Similarly, the displacement gradient $\left(\bb{\nabla} \bb{d} \right)_{s_i}$ at a symmetry boundary face $s_i$ is averaged from cell $P$ and its mirror reflection across face $s_i$, as in Equation \ref{eq:symm}.
 Note that the displacement gradient at the displacement boundary $d_i$ is assumed to be equal to the displacement gradient at the centroid of cell $P$.
 In addition, no stabilisation term is applied on a traction boundary face $t_i$.
 
@@ -1178,239 +1221,37 @@ In addition, no stabilisation term is applied on a traction boundary face $t_i$.
 %Further details on the implementation of symmetry planes in segregated cell-centred finite volume formulations can be found in \citet{Demirdzic2022}.
 
 
-
-%%--------------------------------------------------------------------------------------------------------------------%%
-\subsection{Discretisation of the Jacobian}
-%%--------------------------------------------------------------------------------------------------------------------%%
-
-%%----------------------------%%
-\subsubsection[Fluid Dynamics Jacobian Submatrices]{Fluid Dynamics Jacobian Submatrices $\tilde{\bb{J}}_{vv}$, $\bb{J}_{vp}$, $J_{pv}$ and $\tilde{J}_{pp}$}
-%%----------------------------%%
-
-The true Jacobian submatrix $\bb{J}_{vv}$ is defined as
-\begin{eqnarray}
-    \bb{J}_{vv} = \frac{\partial \bb{R}_u}{\partial \bb{v}}
-    &=&
-    	\frac{\partial}{\partial \bb{v}}
-	\left[
-	\oint_{\Gamma_0}  \left( J_m \bb{F}_m^{-\text{T}} \cdot \hat{\bb{n}}_0 \right)
-		\cdot \left(\nu \bb{F}_m^{-T} \cdot \bb{\nabla}_0 \bb{v} \right) \, d\Gamma_0
-	\right. \notag \\
-	&& \left. 
-	- \int_{\Omega_0} J_m \frac{\partial \bb{v}}{\partial t} \, d\Omega_0 
-	- \oint_{\Gamma_0}  \left[ \left( J_m \bb{F}_m^{-\text{T}} \cdot \hat{\bb{n}}_0 \right) \cdot \bb{v} \right] \left(\bb{v} - \frac{\partial \bb{d}_m}{\partial t} \right) \, d\Gamma_0
-	\right]
-\end{eqnarray}
-where terms not dependent on $\bb{v}$ have been dropped.
-
-Proceeding term by term: the diffusion (viscous stress) term is \hl{consistent with JFNK paper but we can do better by including J/F}
-\begin{eqnarray}
-    	\left\{
-	\frac{\partial}{\partial \bb{v}}
-	\left[
-	\oint_{\Gamma_0}  \left( J_m \bb{F}_m^{-\text{T}} \cdot \hat{\bb{n}}_0 \right)
-		\cdot \left(\nu \bb{F}_m^{-T} \cdot \bb{\nabla}_0 \bb{v} \right) \, d\Gamma_0
-	\right]
-	\right\}_{PP}
-	&\approx&
-	- \sum_{f_i \in \mathcal{F}^{\text{int}}_P}  \nu
-%	\frac{ \left|\bb{\Delta}_{f_i} \right| }{\left|\bb{d}_{f_i}\right|}    \left|\bb{\Gamma}_{f_i}\right| \textbf{I}
-	\frac{ \left|\bb{\Delta}_0 \right| }{\left|\bb{d}_0 \right|}  \left|\bb{\Gamma}_0 \right| \textbf{I}
-%D_f = - \frac{J_m \, \nu}{|\delta|^2} \left( \mathbf{F}_f^{-\mathrm{T}} \cdot \hat{\mathbf{n}}_0 \right) \otimes \left( \mathbf{F}_f^{-T} \cdot \delta \right)
-\end{eqnarray}
-where the \emph{over-relaxed} vectors are $\bb{\Delta}_0 = \nicefrac{\bb{d}_{0,m}}{\bb{d}_{0,m} \cdot \bb{n}_{0,m}}$ \hl{maybe use delta instead of d}
-While the off-diagonal contribution (row $P$, column $Q$) is
-\begin{eqnarray}
-    	\left\{
-	\frac{\partial}{\partial \bb{v}}
-	\left[
-	\oint_{\Gamma_0}  \left( J_m \bb{F}_m^{-\text{T}} \cdot \hat{\bb{n}}_0 \right)
-		\cdot \left(\nu \bb{F}_m^{-T} \cdot \bb{\nabla}_0 \bb{v} \right) \, d\Gamma_0
-	\right]
-	\right\}_{PQ}
-	&\approx& \nu \frac{ \left|\bb{\Delta}_0 \right| }{\left|\bb{d}_0 \right|}  \left|\bb{\Gamma}_0 \right| \textbf{I}
-\end{eqnarray}
-
-
-The time derivative term contributes only to the diagonal of cell $P$ (row $P$, column $P$):
-\begin{eqnarray}
-	\left\{
-    	\frac{\partial}{\partial \bb{v}}
-	\left[
-	- \int_{\Omega_0} J_m \frac{\partial \bb{v}}{\partial t} \, d\Omega_0 
-	\right]
-	\right\}_{PP}
-%	&=&	- \int_{\Omega_0} \frac{\partial}{\partial \bb{v}} \left( J_m \frac{\partial \bb{v}}{\partial t} \right) \, d\Omega_0 \notag \\
-%	&=&	- \int_{\Omega_0} \frac{\partial J_m}{\partial \bb{v}} \frac{\partial \bb{v}}{\partial t}
-%		+ J_m \frac{\partial}{\partial \bb{v}} \left( \frac{\partial \bb{v}}{\partial t} \right) \, d\Omega_0 
-%	&\approx& J_m \frac{3 \bb{v}_P^{[t+1]} - 4 \bb{v}_P^{[t]} + \bb{v}_P^{[t-1]}}{2\Delta t} \Omega_{0,P}
-%	&\approx& -J_m \frac{3 \bb{v}_P^{[t+1]}}{2\Delta t} \Omega_{0,P}
-	&\approx& - \frac{3}{2} \frac{J_m \Omega_{0,P}}{\Delta t} \textbf{I}
-\end{eqnarray}
-
-The advection term, which is nonlinear in $\bb{v}$, is discretised using first-order upwinding for the Jacobian:
-\begin{eqnarray}
-	\left\{
-    	\frac{\partial}{\partial \bb{v}}
-	\left[
-	- \oint_{\Gamma_0}  \left[ \left( J_m \bb{F}_m^{-\text{T}} \cdot \hat{\bb{n}}_0 \right) \cdot \bb{v} \right] \left(\bb{v} - \frac{\partial \bb{d}_m}{\partial t} \right) \, d\Gamma_0
-	\right]
-	\right\}_{PP} &\approx&
-	- \sum_{f_i \in \mathcal{F}^{\text{int}}_P} \text{max}\left[\psi, \, 0 \right] \textbf{I}
-\end{eqnarray}
-where the volume flux through the control volume face $\psi = \left( J_m \bb{F}_m^{-\text{T}} \cdot \hat{\bb{n}}_0 \right) \cdot \left(\bb{v} - \frac{\partial \bb{d}_m}{\partial t} \right)$.
-Note that the advection term is calculated using a second-order scheme in the fluid momentum equation residual $\bb{R}_v$, and first-order upwinding in only used for the approximate Jacobian.
-The corresponding off-diagonal term (row $P$, column $Q$) is
-\begin{eqnarray}
-	\left\{
-    	\frac{\partial}{\partial \bb{v}}
-	\left[
-	- \oint_{\Gamma_0}  \left[ \left( J_m \bb{F}_m^{-\text{T}} \cdot \hat{\bb{n}}_0 \right) \cdot \bb{v} \right] \left(\bb{v} - \frac{\partial \bb{d}_m}{\partial t} \right) \, d\Gamma_0
-	\right]
-	\right\}_{PQ} &\approx& \text{min}\left[\psi, \, 0 \right] \textbf{I}
-\end{eqnarray}
-where $\text{max}\left[\cdot\right]$ is the maximum operator and $\text{min}\left[\cdot\right]$ is the minimum operator. \hl{Add extra NR term - see code}
-
-
-The block ($3\times1$ for 3-D, $2\times1$ for 2-D) diagonal coefficient for cell $P$ (row $P$, column $P$) for Jacobian submatrix $\bb{J}_{vp}$ can be expressed as
-\begin{eqnarray}
-	\left\{
-    	\frac{\partial}{\partial \bb{p}}
-	\left[
-	-\int_{\Omega_0} J_m \bb{F}_m^{-T} \cdot \left( \bb{\nabla}_0 p \right) \, d\Omega_0
-	\right]
-	\right\}_{PP}
-	&\approx& \sum_{f_i \in \mathcal{F}^{\text{int}}_P} J_{P,m} \, \bb{g}_{P,f_i} \,  \Omega_{0,P}
-\end{eqnarray}
-where $\bb{g}_{P, f_i}$ is the least squares vector stored for cell $P$ at face $f_i$, as defined in Equation \ref{eq:least_squares_vectors}.
-While the off-diagonal contribution (row $P$, column $Q \neq P$) is
-\begin{eqnarray}
-	\left\{
-    	\frac{\partial}{\partial \bb{p}}
-	\left[
-	\int_{\Omega_0} J_m \bb{F}_m^{-T} \cdot \left( \bb{\nabla}_0 p \right) \, d\Omega_0
-	\right]
-	\right\}_{PQ}
-	&\approx& -J_{P,m} \, \bb{g}_{P,f_i} \,  \Omega_{0,P}
-\end{eqnarray}
-
-
-
-The block ($1\times1$ for 3-D and 2-D) diagonal coefficient for cell $P$ (row $P$, column $P$) for approximate Jacobian submatrix $\tilde{J}_{pp}$ can be expressed as
-\begin{eqnarray}
-	\left\{
-    	\frac{\partial}{\partial p}
-	\left[
-		\oint_{\Gamma} \alpha_p D_p \, \bb{n}_0 \cdot \bb{\nabla}_0 p \; d\Gamma
-	\right]
-	\right\}_{PP}
-	&\approx&
-		- \sum_{f_i \in \mathcal{F}^{\text{int}}_P}  \alpha_p D_p
-		\frac{ \left|\bb{\Delta}_{0,f_i} \right| }{\left|\bb{d}_{0,f_i}\right|}    \left|\bb{\Gamma}_{0,f_i}\right|
-\end{eqnarray}
-while the off-diagonal coefficient (row $P$, column $Q \neq P$) is
-\begin{eqnarray}
-	\left\{
-    	\frac{\partial}{\partial p}
-	\left[
-		\oint_{\Gamma} \alpha_p D_p \, \bb{n}_0 \cdot \bb{\nabla}_0 p \; d\Gamma
-	\right]
-	\right\}_{PP}
-	&\approx&	   \alpha_p D_p \frac{ \left|\bb{\Delta}_{0,f_i} \right| }{\left|\bb{d}_{0,f_i}\right|}    \left|\bb{\Gamma}_{0,f_i}\right|
-\end{eqnarray}
-
-
-The block ($1\times3$ for 3-D, $1\times2$ in 2-D) diagonal coefficient for cell $P$ (row $P$, column $P$) for approximate Jacobian submatrix $\tilde{J}_{pv}$ can be expressed as
-\begin{eqnarray}
-	\left\{
-    	\frac{\partial}{\partial \bb{v}}
-	\left[
-		\oint_{\Gamma^f}  \left[ J_m \bb{F}_m^{-\text{T}}  \cdot \hat{\bb{n}}_0 \right] \cdot \bb{v} \, d\Gamma_0
-	\right]
-	\right\}_{PP}
-	&\approx&
-		- \sum_{f_i \in \mathcal{F}^{\text{int}}_P} 	w_{f_i} \bb{\Gamma}_{0, f_i}
-\end{eqnarray}
-while the off-diagonal contribution is
-\begin{eqnarray}
-	\left\{
-    	\frac{\partial}{\partial \bb{v}}
-	\left[
-		\oint_{\Gamma^f}  \left[ J_m \bb{F}_m^{-\text{T}}  \cdot \hat{\bb{n}}_0 \right] \cdot \bb{v} \, d\Gamma_0
-	\right]
-	\right\}_{PQ}
-	&\approx& w_{f_i} \bb{\Gamma}_{0, f_i}
-\end{eqnarray}
-
-\hl{summarise Js?}
-
-%%----------------------------%%
-\subsubsection[Fluid Mesh Motion Jacobian Submatrices]{Fluid Mesh Motion Jacobian Submatrix $\tilde{\bb{J}}_{mm}$}
-%%----------------------------%%
-The true Jacobian $\bb{J}_{mm} \equiv \partial \bb{R}_{mm}/\partial \bb{d}_m$; in the current work, an approximate Jacobian $\tilde{\bb{J}}_{mm}$ is employed for the solid dynamics based on the segregated solution procedures commonly employed in cell-centred finite volume solid dynamics.
+%The true Jacobian $\bb{J}_{dd} \equiv \partial \bb{R}_{dd}/\partial \bb{d}$;
+In the current work, an approximate Jacobian $\tilde{\bb{J}}_{dd}$ is employed for the solid dynamics based on the segregated solution procedures commonly employed in cell-centred finite volume solid dynamics.
 A recent article \citep{Cardiff2025jfnk} by the authors describes this approach in detail.
-The approximate Jacobian $\tilde{\bb{J}}_{mm}$ is derived from the compact stencil component of the stabilisation term $\bb{\mathcal{D}}_m$:
-\begin{eqnarray}
-	\tilde{\bb{J}} &=& \frac{\partial}{\partial \bb{d}_m} \left[ \oint_{\Gamma_P} \alpha \bar{K} \, \bb{n} \cdot \bb{\nabla} \bb{d}_m \; d\Gamma_P \right]
-\end{eqnarray}
-
-The $M_m \times M_m$ matrix $\left[ \bb{\tilde{J}}_{mm} \right]$ is symmetric and strongly diagonally dominant (due to Dirichlet conditions), where $M_m = 3|\mathcal{P}^f|$ in 3-D and $M_m = 2|\mathcal{P}^f|$ in 2-D.
-The block ($3\times3$ for 3-D, $2\times2$ for 2-D) diagonal coefficient for cell $P$ (row $P$, column $P$) can be expressed as \hl{notation}
-\begin{eqnarray}
-	 \left[ \tilde{\bb{J}}_{mm} \right]_{PP} &=&
-		- \sum_{f_i \in \mathcal{F}^{\text{int}}_P}  \alpha \bar{K}
-		\frac{ \left|\bb{\Delta}_{f_i} \right| }{\left|\bb{d}_{f_i}\right|}    \left|\bb{\Gamma}_{f_i}\right| \textbf{I} 
-	    \quad-  \sum_{d_i \in \mathcal{F}^{\text{disp}}_P}  \alpha \bar{K}
-%		\left|\bb{\Delta}_{d_i} \right| \left( \ \frac{ \bar{\bb{u}}_{d_i} - \bb{u}_P}{\left|\bb{d}_{d_i}\right|}  \right) 
-		 \frac{ \left|\bb{\Delta}_{d_i} \right| }{\left|\bb{d}_{d_i}\right|} 
-		\left|\bb{\Gamma}_{d_i}\right| \textbf{I} \notag \\
-	 &&\quad - \sum_{s_i \in \mathcal{F}^{\text{symm}}_P} \alpha \bar{K}
-		 \frac{ \left|\bb{\Delta}_{s_i} \right|}{\left|\bb{d}_{s_i}\right|}
-		\left|\bb{\Gamma}_{s_i}\right|  \bb{n}_{s_i} \otimes \bb{n}_{s_i}
-\end{eqnarray}
-while the off-diagonal coefficients (row $P$, column $Q$) can be expressed as
-\begin{eqnarray}
-	\left[\tilde{\bb{J}}_{mm} \right] _{PQ} &=&
-		\alpha \bar{K} \frac{ \left|\bb{\Delta}_{f_{PQ}} \right| }{\left|\bb{d}_{f_{PQ}}\right|} \left|\bb{\Gamma}_{f_{PQ}}\right| \textbf{I} 
-\end{eqnarray}
-where subscript $PQ$ indicates a quantity associated with the internal face $f$ shared between cells $P$ and $Q$.
-
-
-
-%%----------------------------%%
-\subsubsection[Solid Dynamics Jacobian Submatrices]{Solid Dynamics Jacobian Submatrix $\tilde{\bb{J}}_{dd}$}
-%%----------------------------%%
-The true Jacobian $\bb{J}_{dd} \equiv \partial \bb{R}_{dd}/\partial \bb{d}$; in the current work, an approximate Jacobian $\tilde{\bb{J}}_{dd}$ is employed for the solid dynamics based on the segregated solution procedures commonly employed in cell-centred finite volume solid dynamics.
-A recent article \citep{Cardiff2025jfnk} by the authors describes this approach in detail.
-The approximate Jacobian $\tilde{\bb{J}}_{dd}$ is derived from the inertia term and the compact stencil component of the stabilisation term $\bb{\mathcal{D}}_d$:
-\begin{eqnarray}
-	\tilde{\bb{J}}_{dd}
-	&=&
-	\frac{\partial}{\partial \bb{u}} \left[ \oint_{\Gamma_P} \alpha \bar{K} \, \bb{n} \cdot \bb{\nabla} \bb{u} \; d\Gamma_P
-	 \; -\;  \int_{\Omega_P} \rho \frac{\partial^2 \bb{u} }{\partial t^2} \, d\Omega_P \right]
-\end{eqnarray}
-
+The approximate Jacobian $\tilde{\bb{J}}_{dd}$ is derived from the inertia term and the compact stencil component of the stabilisation term $\bb{\mathcal{D}}_d$.
+%\begin{eqnarray}
+%	\tilde{\bb{J}}_{dd}
+%	&=&
+%	\frac{\partial}{\partial \bb{u}} \left[ \oint_{\Gamma_P} \alpha \bar{K} \, \bb{n} \cdot \bb{\nabla} \bb{u} \; d\Gamma_P
+%	 \; -\;  \int_{\Omega_P} \rho \frac{\partial^2 \bb{u} }{\partial t^2} \, d\Omega_P \right]
+%\end{eqnarray}
 %The linearised system (Equation \ref{eq:Seg}) is formed for each cell in the domain, resulting in a system of algebraic equations:
 %\begin{eqnarray} \label{eq:SegSys}
 %    \left[ \bb{\tilde{J}} \right]  \; \left[ \delta \bb{u} \right] = - \left[\bb{R}(\bb{u}_k)\right]
 %\end{eqnarray}
-The $M_d \times M_d$ matrix $\left[ \bb{\tilde{J}} \right]$ is symmetric, where $M = 3|\mathcal{P^s}|$ in 3-D and $M = 2|\mathcal{P^s}|$ in 2-D.
-If $\Delta t < \infty$ or $\mathcal{F}^{\text{disp}}_P \neq \emptyset$, matrix $\left[ \bb{\tilde{J}} \right]$ is strongly diagonally dominant; otherwise, it is weakly diagonally dominant.
-The block ($3\times3$ for 3-D, $2\times2$ for 2-D) diagonal coefficient for cell $P$ (row $P$, column $P$) can be expressed as \hl{notation}
+The $M_d \times M_d$ matrix $\left[ \bb{\tilde{J}}_{dd} \right]$ is symmetric, where $M = 3|\mathcal{P}^s|$ in 3-D and $M = 2|\mathcal{P}^s|$ in 2-D.
+%If $\Delta t < \infty$ or $\mathcal{F}^{\text{disp}}_P \neq \emptyset$, matrix $\left[ \bb{\tilde{J}}_{dd} \right]$ is strongly diagonally dominant; otherwise, it is weakly diagonally dominant.
+The block ($3\times3$ for 3-D, $2\times2$ for 2-D) diagonal coefficient for cell $P$ (row $P$, column $P$) is
 \begin{eqnarray}
 	 \left[ \tilde{\bb{J}}_{dd} \right]_{PP} &=&
 		- \sum_{f_i \in \mathcal{F}^{\text{int}}_P}  \alpha \bar{K}
-		\frac{ \left|\bb{\Delta}_{f_i} \right| }{\left|\bb{d}_{f_i}\right|}    \left|\bb{\Gamma}_{f_i}\right| \textbf{I} 
+		\frac{ \left|\bb{\Delta}_{f_i} \right| }{\left|\bb{\delta}_{f_i}\right|}    \left|\bb{\Gamma}_{f_i}\right| \textbf{I} 
 	    \quad-  \sum_{d_i \in \mathcal{F}^{\text{disp}}_P}  \alpha \bar{K}
 %		\left|\bb{\Delta}_{d_i} \right| \left( \ \frac{ \bar{\bb{u}}_{d_i} - \bb{u}_P}{\left|\bb{d}_{d_i}\right|}  \right) 
-		 \frac{ \left|\bb{\Delta}_{d_i} \right| }{\left|\bb{d}_{d_i}\right|} 
-		\left|\bb{\Gamma}_{d_i}\right| \textbf{I} \notag \\
-	 &&\quad - \sum_{s_i \in \mathcal{F}^{\text{symm}}_P} \alpha \bar{K}
-		 \frac{ \left|\bb{\Delta}_{s_i} \right|}{\left|\bb{d}_{s_i}\right|}
-		\left|\bb{\Gamma}_{s_i}\right|  \bb{n}_{s_i} \otimes \bb{n}_{s_i} 
-	\quad - \quad \frac{9}{4}  \frac{\rho_P \Omega_P}{\Delta t^2} \textbf{I}
+		 \frac{ \left|\bb{\Delta}_{d_i} \right| }{\left|\bb{\delta}_{d_i}\right|} 
+		\left|\bb{\Gamma}_{d_i}\right| \textbf{I} %\notag \\
+%	 &&\quad - \sum_{s_i \in \mathcal{F}^{\text{symm}}_P} \alpha \bar{K}
+%		 \frac{ \left|\bb{\Delta}_{s_i} \right|}{\left|\bb{d}_{s_i}\right|}
+%		\left|\bb{\Gamma}_{s_i}\right|  \bb{n}_{s_i} \otimes \bb{n}_{s_i} 
+	\quad- \quad \frac{9}{4}  \frac{\rho_P \Omega_P}{\Delta t^2} \textbf{I}
 \end{eqnarray}
-while the off-diagonal coefficients (row $P$, column $Q$) can be expressed as
+while the off-diagonal coefficients (row $P$, column $Q \neq P$) are
 \begin{eqnarray}
 	\left[\tilde{\bb{J}}_{dd} \right] _{PQ} &=&
 		\alpha \bar{K} \frac{ \left|\bb{\Delta}_{f_{PQ}} \right| }{\left|\bb{d}_{f_{PQ}}\right|} \left|\bb{\Gamma}_{f_{PQ}}\right| \textbf{I} 
@@ -1419,52 +1260,115 @@ where subscript $PQ$ indicates a quantity associated with the internal face $f$ 
 
 
 
-%%----------------------------%%
-\subsubsection[Mesh-to-Fluid Coupling Submatrix]{Mesh-to-Fluid Coupling Submatrix $\bb{J}_{vm}$} % and $J_{pm}$}
-%%----------------------------%%
-The coupling matrix $\bb{J}_{vm} \equiv \partial \bb{R}_{v}/\partial \bb{d}_m$ accounts for the effect of the fluid mesh motion on the fluid momentum equation.
-This effect comes in two \hl{three? FSI velocity} forms: firstly, the mesh velocity directly appears in the advection term; secondly, all terms contain $\bb{F}_m$ and $J_m$, which map the terms from the initial fluid mesh to the unknown deformed mesh.
-
-
-The block ($3\times3$ for 3-D, $2\times2$ for 2-D) diagonal coefficient for cell $P$ (row $P$, column $P$) can be expressed as
+The coupling matrix $\bb{J}_{dp} \equiv \partial \bb{R}_{d}/\partial p$ accounts for the effect of the fluid interface pressure on the solid deformation. 
+The block ($3\times1$ for 3-D, $2\times1$ for 2-D) coefficient for row $P$, column $Q$ is expressed here as
 \begin{eqnarray}
-	 \left[ \tilde{\bb{J}}_{vm} \right]_{PP} &=&
-		 \frac{\alpha_t}{\Delta t} \sum_{f_i \in \mathcal{F}^{\text{int}}_P}  \left(J_m \bb{F}_m^{-T} \cdot \bb{\Gamma}_m \right)_{f_i}^{[m]} \otimes \bb{v}^*
-%	 \left[ \tilde{\bb{J}}_{vm} \right]_{PP} &=&
-%	 \begin{cases}
-%		\sum_{f_i \in \mathcal{F}^{\text{int}}_P}  \left(J_m \bb{F}_m^{-T} \cdot \bb{\Gamma} \right)_{f_i}^{[m]} \otimes \bb{v}_F
-%		& \text{if } \Phi > 0, \\
-%		\sum_{f_i \in \mathcal{F}^{\text{int}}_P}  \left(J_m \bb{F}_m^{-T} \cdot \bb{\Gamma} \right)_{f_i}^{[m]} \otimes \bb{v}_F
-%		& \text{otherwise}.
-%	\end{cases}
+%	 \left[ \tilde{\bb{J}}_{dp} \right]_{PQ} &=& -\rho^f \bb{\Gamma}_{f_i}^s
+	 \left[ \tilde{\bb{J}}_{dp} \right]_{PQ} &=& -\rho^f \left[ J^s (\bb{F}^s)^{-\text{T}} \cdot \hat{\bb{\Gamma}}_0^s \right] 
 \end{eqnarray}
-where $\bb{v}^*$ is interpolated using first-order upwinding.
-For the first-order Euler scheme $\alpha_t = 1$, while for the second-order backward scheme $\alpha_t = \nicefrac{3}{2}$.
-The off-diagonal coefficients as
+for all pairs of fluid-solid cells at the fluid-solid interface, where $P$ indicates the solid cell index (and row of $\bb{J}_{dp}$) and $Q$ indicates the fluid cell index (and column of $\bb{J}_{dp}$).
+Note that the fluid density $\rho^f$ scales the fluid kinematic pressure to actual pressure, and viscous effects are neglected in the approximate Jacobian (but not in the residual $\bb{\mathcal{R}}_d$).
+
+
+
+%%----------------------------%%
+\subsubsection[Discretisation of the Fluid Mesh Motion Residual]{Discretisation of the Fluid Mesh Motion Residual $\bb{R}_m$}
+%%----------------------------%%
+The fluid mesh motion equation residual $\bb{R}_m$ repeated here is \hl{maybe we should use large strain approach - see if required in test cases}
 \begin{eqnarray}
-	 \left[ \tilde{\bb{J}}_{vm} \right]_{PQ} &=&
-	 	 \frac{\alpha_t}{\Delta t} \left(J_m \bb{F}_m^{-T} \cdot \bb{\Gamma}_m \right)_{PQ}^{[m]} \otimes \bb{v}^*
-%	 \begin{cases}
-%		\left(J_m \bb{F}_m^{-T} \cdot \bb{\Gamma} \right)_{f_i}^{[m]} \otimes \bb{v}_P
-%		& \text{if } \Phi > 0, \\
-%		\left(J_m \bb{F}_m^{-T} \cdot \bb{\Gamma} \right)_{f_i}^{[m]} \otimes \bb{v}_Q
-%		& \text{otherwise}.
-%	\end{cases}
+    \bb{R}_m
+    &=&
+    \oint_{\Gamma_0^f} \bb{n}_0^f \cdot
+    \left[
+    \mu^\Gamma \bb{\nabla}_0 \bb{d}_m + \mu^\Gamma \left(\bb{\nabla}_0 \bb{d}_m \right)^T
+    + \lambda^\Gamma (\bb{\nabla}_0 \cdot \bb{d}_m) \textbf{I}
+    \right]
+    \, d\Gamma_0^f
+    \;+\; \bb{\mathcal{D}}_m
+\end{eqnarray}
+
+The discretisation of the stress divergence is
+\begin{align}
+    \oint_{\Gamma_0^f} \bb{n}_0^f \cdot
+    &\left[
+    \mu^\Gamma \bb{\nabla}_0 \bb{d}_m + \mu^\Gamma \left(\bb{\nabla}_0 \bb{d}_m \right)^T
+    + \lambda^\Gamma (\bb{\nabla}_0 \cdot \bb{d}_m) \textbf{I}
+    \right]    \, d\Gamma_0^f
+	\approx \notag \\
+	&\sum_{f_i \in \mathcal{F}_P^{\text{int}}}
+	\bb{\Gamma}_{0,f_i}
+	\cdot
+	\left[
+	\mu_m \left(\bb{\nabla}_0 \bb{d}_m\right)_{f_i} + \mu_m \left(\bb{\nabla}_0 \bb{d}_m \right)^T_{f_i}
+    + \lambda_m (\bb{\nabla}_0 \cdot \bb{d}_m)_{f_i} \textbf{I}
+	\right]
+\end{align}
+where the gradient terms are interpolated from the cell centres to the faces according to Equation \ref{eq:face_interp}.
+
+The vector stabilisation term $\bb{\mathcal{D}}_m$ takes the form as $\bb{\mathcal{D}}_v$:
+\begin{eqnarray}
+	\bb{\mathcal{D}}_m
+	&=& \sum_{f_i \in \mathcal{F}^{\text{int}}_P} \alpha_m (2\mu_m + \lambda_m) \left[
+		\left|\bb{\Delta}_{0,f_i} \right| \frac{ \bb{d}_{m,N_{f_i}} - \bb{d}_{m,P}}{\left|\bb{\delta}_{0,f_i}\right|}	- \bb{\Delta}_{0,f_i} \cdot \left(\bb{\nabla}_0 \bb{d}_m \right)_{f_i}
+		\right]    \left|\bb{\Gamma}_{0,f_i}\right|
+\end{eqnarray}
+
+
+\hl{Merge in text below}
+An additional challenge is that the fluid mesh should be moved (smoothed) to distribute the FSI interface motion throughout the fluid domain.
+To achieve this, the current work adopts a pseudo-solid approach where the fluid mesh is considered to be a solid domain, where the boundary displacements are prescribed.
+The following governing equation is adopted for the fluid mesh motion: \hl{I could add F-old to rotate but keep linear}
+\begin{eqnarray} \label{eqn:motion}
+    \oint_{\tilde{\Gamma}}
+    \bb{n}_u \cdot \left[ \beta_m \mu_m \bb{\nabla}\bb{d}_m
+    + \beta_m \mu_m (\bb{\nabla}\bb{d}_m)^T
+    + \beta_m \lambda_m \text{tr}(\bb{\nabla} \bb{d}_m)\textbf{I} \right] 
+    \, d\tilde{\Gamma}
+    \;=\; \bb{0}
+\end{eqnarray}
+It should be noted that Equation \ref{eqn:motion} is integrated over the fluid reference configuration, but it is not mapped to the deformed configuration; this choice is made purely from an efficiency perspective: the purpose of this equation is merely to maintain fluid mesh quality, and it need not strictly correspond to a physical system.
+To maintain fluid mesh quality near the FSI interface and boundary, the stiffness parameters $\mu_m$ and $\lambda_m$ are defined to be inversely proportional to the distance from the fluid boundary according to:
+\hl{express with if-else}
+\begin{eqnarray}
+	\beta_m &=& \text{min}(\beta_\text{max} \bar{\delta}^{-1}, \text{max}(\beta_\text{min} \bar{\delta}^{-1}, \delta^{-1}))
+\end{eqnarray}
+where $\delta$ is the (approximate) distance from the fluid boundary.
+In the current work, $\delta$ is calculated using a topological search approach, implemented in the \texttt{meshWave} class of OpenFOAM.
+$\beta_m$ is then normalised with respect to its average value, i.e. $\beta_m \coloneqq \frac{\beta_m}{\bar{\beta_m}}$, such that $\bar{\beta_m} \equiv 1$. \hl{introduce additional terms to avoid confusion}
+
+
+%The true Jacobian $\bb{J}_{mm} \equiv \partial \bb{R}_{mm}/\partial \bb{d}_m$; in 
+The current work employs a similar approach for defining an approximate Jacobian $\tilde{\bb{J}}_{mm}$ as is employed for the solid dynamics. based on the segregated solution procedures commonly employed in cell-centred finite volume solid dynamics.
+%A recent article \citep{Cardiff2025jfnk} by the authors describes this approach in detail.
+The approximate Jacobian $\tilde{\bb{J}}_{mm}$ is derived from the compact stencil component of the stabilisation term $\bb{\mathcal{D}}_m$.
+%:
+%\begin{eqnarray}
+%	\tilde{\bb{J}} &=& \frac{\partial}{\partial \bb{d}_m} \left[ \oint_{\Gamma_P} \alpha \bar{K} \, \bb{n} \cdot \bb{\nabla} \bb{d}_m \; d\Gamma_P \right]
+%\end{eqnarray}
+The $M_m \times M_m$ matrix $\left[ \bb{\tilde{J}}_{mm} \right]$ is symmetric and strongly diagonally dominant (due to Dirichlet conditions), where $M_m = 3|\mathcal{P}^f|$ in 3-D and $M_m = 2|\mathcal{P}^f|$ in 2-D.
+The block ($3\times3$ for 3-D, $2\times2$ for 2-D) diagonal coefficient for cell $P$ (row $P$, column $P$) can be expressed as \hl{notation}
+\begin{eqnarray}
+	 \left[ \tilde{\bb{J}}_{mm} \right]_{PP} &=&
+		- \sum_{f_i \in \mathcal{F}^{\text{int}}_P}  \alpha \bar{K}
+		\frac{ \left|\bb{\Delta}_{f_i} \right| }{\left|\bb{\delta}_{f_i}\right|}    \left|\bb{\Gamma}_{f_i}\right| \textbf{I} 
+	    \quad-  \sum_{d_i \in \mathcal{F}^{\text{disp}}_P}  \alpha \bar{K}
+%		\left|\bb{\Delta}_{d_i} \right| \left( \ \frac{ \bar{\bb{u}}_{d_i} - \bb{u}_P}{\left|\bb{d}_{d_i}\right|}  \right) 
+		 \frac{ \left|\bb{\Delta}_{d_i} \right| }{\left|\bb{\delta}_{d_i}\right|} 
+		\left|\bb{\Gamma}_{d_i}\right| \textbf{I} % \notag \\
+%	 &&\quad - \sum_{s_i \in \mathcal{F}^{\text{symm}}_P} \alpha \bar{K}
+%		 \frac{ \left|\bb{\Delta}_{s_i} \right|}{\left|\bb{d}_{s_i}\right|}
+%		\left|\bb{\Gamma}_{s_i}\right|  \bb{n}_{s_i} \otimes \bb{n}_{s_i}
+\end{eqnarray}
+while the off-diagonal coefficients (row $P$, column $Q$) can be expressed as
+\begin{eqnarray}
+	\left[\tilde{\bb{J}}_{mm} \right] _{PQ} &=&
+		\alpha \bar{K} \frac{ \left|\bb{\Delta}_{f_{PQ}} \right| }{\left|\bb{\delta}_{f_{PQ}}\right|} \left|\bb{\Gamma}_{f_{PQ}}\right| \textbf{I} 
 \end{eqnarray}
 where subscript $PQ$ indicates a quantity associated with the internal face $f$ shared between cells $P$ and $Q$.
-%The flux $\Phi = \left(J_m \bb{F}_m^{-T} \cdot \bb{n}_0 \right)_{f_i}^{[m]} (\bb{v}^f_{f_i} - \frac{\partial \bb{d}_m}{\partial t})$
 
-%The coupling matrix $J_{pm} \equiv \partial R_{p}/\partial \bb{d}_m$, which accounts for the effect of the fluid mesh motion on the fluid continuity equation, contains mapping terms  $\bb{F}_m$ and $J_m$.
-%\hl{Try first by ignoring J-pm as it only relates to the moving mesh}
-%\hl{The pv and pp discretisations can use the old or previous-guess mesh fields, e.g. using F-old/previous}
-%\begin{eqnarray}
-%	 \left[ \tilde{J}_{pm} \right]_{PQ} &=& 0
-%%	  \sum_{f_i \in \mathcal{F}^{\text{int}}_P}  -\rho^f \left(J_m \bb{F}_m^{-T} \cdot \bb{\Gamma}_{f_i}^s\right)
-%\end{eqnarray}
 
-%%----------------------------%%
-\subsubsection[Solid-to-Mesh Coupling Submatrix]{Solid-to-Mesh Coupling Submatrix $\bb{J}_{md}$}
-%%----------------------------%%
+
+
 The true Jacobian $\bb{J}_{md} \equiv \partial \bb{R}_{m}/\partial \bb{d}$; in the current work, an approximate coupling matrix $\tilde{\bb{J}}_{md}$ is employed, where the fluid-solid interface displacement for the fluid mesh interface face is taken as the displacement of the adjacent solid cell centre.
 This results in a small (one-cell) stencil, in contrast to the true Jacobian $\bb{J}_{md}$, which would require a larger stencil due to extrapolation from the adjacent solid cell centre using the solid cell centre displacement gradient.
 
@@ -1477,17 +1381,328 @@ for all pairs of fluid-solid cells at the fluid-solid interface, where $P$ indic
 
 
 
+%%--------------------------------------------------------------------------------------------------------------------%%
+%\subsection{Discretisation of the Jacobian}
+%%--------------------------------------------------------------------------------------------------------------------%%
+
 %%----------------------------%%
-\subsubsection[Fluid-to-Solid Coupling Submatrix]{Fluid-to-Solid Coupling Submatrix $\bb{J}_{dp}$}
+%\subsubsection[Fluid Dynamics Jacobian Submatrices]{Fluid Dynamics Jacobian Submatrices $\tilde{\bb{J}}_{vv}$, $\bb{J}_{vp}$, $J_{pv}$ and $\tilde{J}_{pp}$}
 %%----------------------------%%
-The coupling matrix $\bb{J}_{dp} \equiv \partial \bb{R}_{d}/\partial p$ accounts for the effect of the fluid interface pressure on the solid deformation. 
-The block ($3\times1$ for 3-D, $2\times1$ for 2-D) coefficient for row $P$, column $Q$ of the can be expressed as
-\begin{eqnarray}
-%	 \left[ \tilde{\bb{J}}_{dp} \right]_{PQ} &=& -\rho^f \bb{\Gamma}_{f_i}^s
-	 \left[ \tilde{\bb{J}}_{dp} \right]_{PQ} &=& -\rho^f \left[ J^s (\bb{F}^s)^{-\text{T}} \cdot \hat{\bb{\Gamma}}_0^s \right] 
-\end{eqnarray}
-for all pairs of fluid-solid cells at the fluid-solid interface, where $P$ indicates the solid cell index (and row of $\bb{J}_{dp}$) and $Q$ indicates the fluid cell index (and column of $\bb{J}_{dp}$).
-Note that the fluid density $\rho^f$ scales the fluid kinematic pressure to actual pressure.
+
+%The true Jacobian submatrix $\bb{J}_{vv}$ is defined as
+%\begin{eqnarray}
+%    \bb{J}_{vv} = \frac{\partial \bb{R}_u}{\partial \bb{v}}
+%    &=&
+%    	\frac{\partial}{\partial \bb{v}}
+%	\left[
+%	\oint_{\Gamma_0}  \left( J_m \bb{F}_m^{-\text{T}} \cdot \hat{\bb{n}}_0 \right)
+%		\cdot \left(\nu \bb{F}_m^{-T} \cdot \bb{\nabla}_0 \bb{v} \right) \, d\Gamma_0
+%	\right. \notag \\
+%	&& \left. 
+%	- \int_{\Omega_0} J_m \frac{\partial \bb{v}}{\partial t} \, d\Omega_0 
+%	- \oint_{\Gamma_0}  \left[ \left( J_m \bb{F}_m^{-\text{T}} \cdot \hat{\bb{n}}_0 \right) \cdot \bb{v} \right] \left(\bb{v} - \frac{\partial \bb{d}_m}{\partial t} \right) \, d\Gamma_0
+%	\right]
+%\end{eqnarray}
+%where terms not dependent on $\bb{v}$ have been dropped.
+
+%Proceeding term by term: the diffusion (viscous stress) term is \hl{consistent with JFNK paper but we can do better by including J/F}
+%\begin{eqnarray}
+%    	\left\{
+%	\frac{\partial}{\partial \bb{v}}
+%	\left[
+%	\oint_{\Gamma_0}  \left( J_m \bb{F}_m^{-\text{T}} \cdot \hat{\bb{n}}_0 \right)
+%		\cdot \left(\nu \bb{F}_m^{-T} \cdot \bb{\nabla}_0 \bb{v} \right) \, d\Gamma_0
+%	\right]
+%	\right\}_{PP}
+%	&\approx&
+%	- \sum_{f_i \in \mathcal{F}^{\text{int}}_P}  \nu
+%%	\frac{ \left|\bb{\Delta}_{f_i} \right| }{\left|\bb{d}_{f_i}\right|}    \left|\bb{\Gamma}_{f_i}\right| \textbf{I}
+%	\frac{ \left|\bb{\Delta}_0 \right| }{\left|\bb{d}_0 \right|}  \left|\bb{\Gamma}_0 \right| \textbf{I}
+%%D_f = - \frac{J_m \, \nu}{|\delta|^2} \left( \mathbf{F}_f^{-\mathrm{T}} \cdot \hat{\mathbf{n}}_0 \right) \otimes \left( \mathbf{F}_f^{-T} \cdot \delta \right)
+%\end{eqnarray}
+%where the \emph{over-relaxed} vectors are $\bb{\Delta}_0 = \nicefrac{\bb{d}_{0,m}}{\bb{d}_{0,m} \cdot \bb{n}_{0,m}}$ \hl{maybe use delta instead of d}
+%While the off-diagonal contribution (row $P$, column $Q$) is
+%\begin{eqnarray}
+%    	\left\{
+%	\frac{\partial}{\partial \bb{v}}
+%	\left[
+%	\oint_{\Gamma_0}  \left( J_m \bb{F}_m^{-\text{T}} \cdot \hat{\bb{n}}_0 \right)
+%		\cdot \left(\nu \bb{F}_m^{-T} \cdot \bb{\nabla}_0 \bb{v} \right) \, d\Gamma_0
+%	\right]
+%	\right\}_{PQ}
+%	&\approx& \nu \frac{ \left|\bb{\Delta}_0 \right| }{\left|\bb{d}_0 \right|}  \left|\bb{\Gamma}_0 \right| \textbf{I}
+%\end{eqnarray}
+
+
+%The time derivative term contributes only to the diagonal of cell $P$ (row $P$, column $P$):
+%\begin{eqnarray}
+%	\left\{
+%    	\frac{\partial}{\partial \bb{v}}
+%	\left[
+%	- \int_{\Omega_0} J_m \frac{\partial \bb{v}}{\partial t} \, d\Omega_0 
+%	\right]
+%	\right\}_{PP}
+%%	&=&	- \int_{\Omega_0} \frac{\partial}{\partial \bb{v}} \left( J_m \frac{\partial \bb{v}}{\partial t} \right) \, d\Omega_0 \notag \\
+%%	&=&	- \int_{\Omega_0} \frac{\partial J_m}{\partial \bb{v}} \frac{\partial \bb{v}}{\partial t}
+%%		+ J_m \frac{\partial}{\partial \bb{v}} \left( \frac{\partial \bb{v}}{\partial t} \right) \, d\Omega_0 
+%%	&\approx& J_m \frac{3 \bb{v}_P^{[t+1]} - 4 \bb{v}_P^{[t]} + \bb{v}_P^{[t-1]}}{2\Delta t} \Omega_{0,P}
+%%	&\approx& -J_m \frac{3 \bb{v}_P^{[t+1]}}{2\Delta t} \Omega_{0,P}
+%	&\approx& - \frac{3}{2} \frac{J_m \Omega_{0,P}}{\Delta t} \textbf{I}
+%\end{eqnarray}
+
+%The advection term, which is nonlinear in $\bb{v}$, is discretised using first-order upwinding for the Jacobian:
+%\begin{align}
+%	\left\{
+%    	\frac{\partial}{\partial \bb{v}}
+%	\left[
+%	- \oint_{\Gamma_0}  \left[ \left( J_m \bb{F}_m^{-\text{T}} \cdot \hat{\bb{n}}_0 \right) \cdot \bb{v} \right]  \left(\bb{v} - \frac{\partial \bb{d}_m}{\partial t} \right) \, d\Gamma_0
+%	\right]
+%	\right\}_{PP}
+%	\approx \notag \\
+%	- \sum_{f_i \in \mathcal{F}^{\text{int}}_P}
+%	\max \left[\psi_{f_i}, 0\right] \textbf{I} + w_{f_i} \left( H_P \bb{v}_P + H_Q \bb{v}_Q \right) \otimes \mathbf{\Gamma}_{f_i}
+%\end{align}
+%where the Heaviside function terms are defined as
+%\begin{eqnarray}
+%	H_P &=& H(\psi_{f_i}) =
+%	\begin{cases}
+%		1  & \text{if} \quad \psi_{f_i} > 0 \\
+%		0  & \text{otherwise}
+%	\end{cases} \notag \\
+%	H_Q &=& 1 - H(\psi_{f_i})
+%\end{eqnarray}
+%where $\text{max}\left[\cdot\right]$ is the maximum operator and $\text{min}\left[\cdot\right]$ is the minimum operator.
+%The volume flux $\psi$ through the control volume face is $\psi = \left( J_m \bb{F}_m^{-\text{T}} \cdot \hat{\bb{n}}_0 \right) \cdot \left(\bb{v} - \frac{\partial \bb{d}_m}{\partial t} \right)$.
+%The corresponding off-diagonal term (row $P$, column $Q$) is
+%\begin{align}
+%	\left\{
+%    	\frac{\partial}{\partial \bb{v}}
+%	\left[
+%	- \oint_{\Gamma_0}  \left[ \left( J_m \bb{F}_m^{-\text{T}} \cdot \hat{\bb{n}}_0 \right) \cdot \bb{v} \right] \left(\bb{v} - \frac{\partial \bb{d}_m}{\partial t} \right) \, d\Gamma_0
+%	\right]
+%	\right\}_{PQ}
+%	\approx \notag \\
+%	- \sum_{f_i \in \mathcal{F}^{\text{int}}_P}
+%	\min \left[\psi_{f_i}, 0\right] \textbf{I} + (1 - w_{f_i}) \left( H_P \bb{v}_P + H_Q \bb{v}_Q \right) \otimes \mathbf{\Gamma}_{f_i}
+%\end{align}
+%Note that the advection term is calculated using a second-order scheme in the fluid momentum equation residual $\bb{R}_v$, and first-order upwinding is only used for the approximate Jacobian.
+
+
+%The block ($3\times1$ for 3-D, $2\times1$ for 2-D) diagonal coefficient for cell $P$ (row $P$, column $P$) for Jacobian submatrix $\bb{J}_{vp}$ can be expressed as
+%\begin{eqnarray}
+%	\left\{
+%    	\frac{\partial}{\partial \bb{p}}
+%	\left[
+%	-\int_{\Omega_0} J_m \bb{F}_m^{-T} \cdot \left( \bb{\nabla}_0 p \right) \, d\Omega_0
+%	\right]
+%	\right\}_{PP}
+%	&\approx& \sum_{f_i \in \mathcal{F}^{\text{int}}_P} J_{P,m} \, \bb{g}_{P,f_i} \,  \Omega_{0,P}
+%\end{eqnarray}
+%where $\bb{g}_{P, f_i}$ is the least squares vector stored for cell $P$ at face $f_i$, as defined in Equation \ref{eq:least_squares_vectors}.
+%While the off-diagonal contribution (row $P$, column $Q \neq P$) is
+%\begin{eqnarray}
+%	\left\{
+%    	\frac{\partial}{\partial \bb{p}}
+%	\left[
+%	\int_{\Omega_0} J_m \bb{F}_m^{-T} \cdot \left( \bb{\nabla}_0 p \right) \, d\Omega_0
+%	\right]
+%	\right\}_{PQ}
+%	&\approx& -J_{P,m} \, \bb{g}_{P,f_i} \,  \Omega_{0,P}
+%\end{eqnarray}
+
+
+
+%The block ($1\times1$ for 3-D and 2-D) diagonal coefficient for cell $P$ (row $P$, column $P$) for approximate Jacobian submatrix $\tilde{J}_{pp}$ can be expressed as
+%\begin{eqnarray}
+%	\left\{
+%    	\frac{\partial}{\partial p}
+%	\left[
+%		\oint_{\Gamma} \alpha_p D_p \, \bb{n}_0 \cdot \bb{\nabla}_0 p \; d\Gamma
+%	\right]
+%	\right\}_{PP}
+%	&\approx&
+%		- \sum_{f_i \in \mathcal{F}^{\text{int}}_P}  \alpha_p D_p
+%		\frac{ \left|\bb{\Delta}_{0,f_i} \right| }{\left|\bb{d}_{0,f_i}\right|}    \left|\bb{\Gamma}_{0,f_i}\right|
+%\end{eqnarray}
+%while the off-diagonal coefficient (row $P$, column $Q \neq P$) is
+%\begin{eqnarray}
+%	\left\{
+%    	\frac{\partial}{\partial p}
+%	\left[
+%		\oint_{\Gamma} \alpha_p D_p \, \bb{n}_0 \cdot \bb{\nabla}_0 p \; d\Gamma
+%	\right]
+%	\right\}_{PP}
+%	&\approx&	   \alpha_p D_p \frac{ \left|\bb{\Delta}_{0,f_i} \right| }{\left|\bb{d}_{0,f_i}\right|}    \left|\bb{\Gamma}_{0,f_i}\right|
+%\end{eqnarray}
+%
+%
+%The block ($1\times3$ for 3-D, $1\times2$ in 2-D) diagonal coefficient for cell $P$ (row $P$, column $P$) for approximate Jacobian submatrix $\tilde{J}_{pv}$ can be expressed as
+%\begin{eqnarray}
+%	\left\{
+%    	\frac{\partial}{\partial \bb{v}}
+%	\left[
+%		\oint_{\Gamma^f}  \left[ J_m \bb{F}_m^{-\text{T}}  \cdot \hat{\bb{n}}_0 \right] \cdot \bb{v} \, d\Gamma_0
+%	\right]
+%	\right\}_{PP}
+%	&\approx&
+%		- \sum_{f_i \in \mathcal{F}^{\text{int}}_P} 	w_{f_i} \bb{\Gamma}_{0, f_i}
+%\end{eqnarray}
+%while the off-diagonal contribution is
+%\begin{eqnarray}
+%	\left\{
+%    	\frac{\partial}{\partial \bb{v}}
+%	\left[
+%		\oint_{\Gamma^f}  \left[ J_m \bb{F}_m^{-\text{T}}  \cdot \hat{\bb{n}}_0 \right] \cdot \bb{v} \, d\Gamma_0
+%	\right]
+%	\right\}_{PQ}
+%	&\approx& w_{f_i} \bb{\Gamma}_{0, f_i}
+%\end{eqnarray}
+
+%\hl{summarise Js?}
+
+%%----------------------------%%
+%\subsubsection[Fluid Mesh Motion Jacobian Submatrices]{Fluid Mesh Motion Jacobian Submatrix $\tilde{\bb{J}}_{mm}$}
+%%----------------------------%%
+%The true Jacobian $\bb{J}_{mm} \equiv \partial \bb{R}_{mm}/\partial \bb{d}_m$; in the current work, an approximate Jacobian $\tilde{\bb{J}}_{mm}$ is employed for the solid dynamics based on the segregated solution procedures commonly employed in cell-centred finite volume solid dynamics.
+%A recent article \citep{Cardiff2025jfnk} by the authors describes this approach in detail.
+%The approximate Jacobian $\tilde{\bb{J}}_{mm}$ is derived from the compact stencil component of the stabilisation term $\bb{\mathcal{D}}_m$:
+%\begin{eqnarray}
+%	\tilde{\bb{J}} &=& \frac{\partial}{\partial \bb{d}_m} \left[ \oint_{\Gamma_P} \alpha \bar{K} \, \bb{n} \cdot \bb{\nabla} \bb{d}_m \; d\Gamma_P \right]
+%\end{eqnarray}
+%
+%The $M_m \times M_m$ matrix $\left[ \bb{\tilde{J}}_{mm} \right]$ is symmetric and strongly diagonally dominant (due to Dirichlet conditions), where $M_m = 3|\mathcal{P}^f|$ in 3-D and $M_m = 2|\mathcal{P}^f|$ in 2-D.
+%The block ($3\times3$ for 3-D, $2\times2$ for 2-D) diagonal coefficient for cell $P$ (row $P$, column $P$) can be expressed as \hl{notation}
+%\begin{eqnarray}
+%	 \left[ \tilde{\bb{J}}_{mm} \right]_{PP} &=&
+%		- \sum_{f_i \in \mathcal{F}^{\text{int}}_P}  \alpha \bar{K}
+%		\frac{ \left|\bb{\Delta}_{f_i} \right| }{\left|\bb{d}_{f_i}\right|}    \left|\bb{\Gamma}_{f_i}\right| \textbf{I} 
+%	    \quad-  \sum_{d_i \in \mathcal{F}^{\text{disp}}_P}  \alpha \bar{K}
+%%		\left|\bb{\Delta}_{d_i} \right| \left( \ \frac{ \bar{\bb{u}}_{d_i} - \bb{u}_P}{\left|\bb{d}_{d_i}\right|}  \right) 
+%		 \frac{ \left|\bb{\Delta}_{d_i} \right| }{\left|\bb{d}_{d_i}\right|} 
+%		\left|\bb{\Gamma}_{d_i}\right| \textbf{I} \notag \\
+%	 &&\quad - \sum_{s_i \in \mathcal{F}^{\text{symm}}_P} \alpha \bar{K}
+%		 \frac{ \left|\bb{\Delta}_{s_i} \right|}{\left|\bb{d}_{s_i}\right|}
+%		\left|\bb{\Gamma}_{s_i}\right|  \bb{n}_{s_i} \otimes \bb{n}_{s_i}
+%\end{eqnarray}
+%while the off-diagonal coefficients (row $P$, column $Q$) can be expressed as
+%\begin{eqnarray}
+%	\left[\tilde{\bb{J}}_{mm} \right] _{PQ} &=&
+%		\alpha \bar{K} \frac{ \left|\bb{\Delta}_{f_{PQ}} \right| }{\left|\bb{d}_{f_{PQ}}\right|} \left|\bb{\Gamma}_{f_{PQ}}\right| \textbf{I} 
+%\end{eqnarray}
+%where subscript $PQ$ indicates a quantity associated with the internal face $f$ shared between cells $P$ and $Q$.
+
+
+
+%%----------------------------%%
+%\subsubsection[Solid Dynamics Jacobian Submatrices]{Solid Dynamics Jacobian Submatrix $\tilde{\bb{J}}_{dd}$}
+%%----------------------------%%
+%The true Jacobian $\bb{J}_{dd} \equiv \partial \bb{R}_{dd}/\partial \bb{d}$; in the current work, an approximate Jacobian $\tilde{\bb{J}}_{dd}$ is employed for the solid dynamics based on the segregated solution procedures commonly employed in cell-centred finite volume solid dynamics.
+%A recent article \citep{Cardiff2025jfnk} by the authors describes this approach in detail.
+%The approximate Jacobian $\tilde{\bb{J}}_{dd}$ is derived from the inertia term and the compact stencil component of the stabilisation term $\bb{\mathcal{D}}_d$:
+%\begin{eqnarray}
+%	\tilde{\bb{J}}_{dd}
+%	&=&
+%	\frac{\partial}{\partial \bb{u}} \left[ \oint_{\Gamma_P} \alpha \bar{K} \, \bb{n} \cdot \bb{\nabla} \bb{u} \; d\Gamma_P
+%	 \; -\;  \int_{\Omega_P} \rho \frac{\partial^2 \bb{u} }{\partial t^2} \, d\Omega_P \right]
+%\end{eqnarray}
+%
+%%The linearised system (Equation \ref{eq:Seg}) is formed for each cell in the domain, resulting in a system of algebraic equations:
+%%\begin{eqnarray} \label{eq:SegSys}
+%%    \left[ \bb{\tilde{J}} \right]  \; \left[ \delta \bb{u} \right] = - \left[\bb{R}(\bb{u}_k)\right]
+%%\end{eqnarray}
+%The $M_d \times M_d$ matrix $\left[ \bb{\tilde{J}} \right]$ is symmetric, where $M = 3|\mathcal{P^s}|$ in 3-D and $M = 2|\mathcal{P^s}|$ in 2-D.
+%If $\Delta t < \infty$ or $\mathcal{F}^{\text{disp}}_P \neq \emptyset$, matrix $\left[ \bb{\tilde{J}} \right]$ is strongly diagonally dominant; otherwise, it is weakly diagonally dominant.
+%The block ($3\times3$ for 3-D, $2\times2$ for 2-D) diagonal coefficient for cell $P$ (row $P$, column $P$) can be expressed as \hl{notation}
+%\begin{eqnarray}
+%	 \left[ \tilde{\bb{J}}_{dd} \right]_{PP} &=&
+%		- \sum_{f_i \in \mathcal{F}^{\text{int}}_P}  \alpha \bar{K}
+%		\frac{ \left|\bb{\Delta}_{f_i} \right| }{\left|\bb{d}_{f_i}\right|}    \left|\bb{\Gamma}_{f_i}\right| \textbf{I} 
+%	    \quad-  \sum_{d_i \in \mathcal{F}^{\text{disp}}_P}  \alpha \bar{K}
+%%		\left|\bb{\Delta}_{d_i} \right| \left( \ \frac{ \bar{\bb{u}}_{d_i} - \bb{u}_P}{\left|\bb{d}_{d_i}\right|}  \right) 
+%		 \frac{ \left|\bb{\Delta}_{d_i} \right| }{\left|\bb{d}_{d_i}\right|} 
+%		\left|\bb{\Gamma}_{d_i}\right| \textbf{I} \notag \\
+%	 &&\quad - \sum_{s_i \in \mathcal{F}^{\text{symm}}_P} \alpha \bar{K}
+%		 \frac{ \left|\bb{\Delta}_{s_i} \right|}{\left|\bb{d}_{s_i}\right|}
+%		\left|\bb{\Gamma}_{s_i}\right|  \bb{n}_{s_i} \otimes \bb{n}_{s_i} 
+%	\quad - \quad \frac{9}{4}  \frac{\rho_P \Omega_P}{\Delta t^2} \textbf{I}
+%\end{eqnarray}
+%while the off-diagonal coefficients (row $P$, column $Q$) can be expressed as
+%\begin{eqnarray}
+%	\left[\tilde{\bb{J}}_{dd} \right] _{PQ} &=&
+%		\alpha \bar{K} \frac{ \left|\bb{\Delta}_{f_{PQ}} \right| }{\left|\bb{d}_{f_{PQ}}\right|} \left|\bb{\Gamma}_{f_{PQ}}\right| \textbf{I} 
+%\end{eqnarray}
+%where subscript $PQ$ indicates a quantity associated with the internal face $f$ shared between cells $P$ and $Q$.
+%
+
+
+%%----------------------------%%
+%\subsubsection[Mesh-to-Fluid Coupling Submatrix]{Mesh-to-Fluid Coupling Submatrix $\bb{J}_{vm}$} % and $J_{pm}$}
+%%----------------------------%%
+%The coupling matrix $\bb{J}_{vm} \equiv \partial \bb{R}_{v}/\partial \bb{d}_m$ accounts for the effect of the fluid mesh motion on the fluid momentum equation.
+%This effect comes in two \hl{three? FSI velocity} forms: firstly, the mesh velocity directly appears in the advection term; secondly, all terms contain $\bb{F}_m$ and $J_m$, which map the terms from the initial fluid mesh to the unknown deformed mesh.
+%
+%The block ($3\times3$ for 3-D, $2\times2$ for 2-D) diagonal coefficient for cell $P$ (row $P$, column $P$) can be expressed as
+%\begin{eqnarray}
+%	 \left[ \tilde{\bb{J}}_{vm} \right]_{PP} &=&
+%		 \frac{\alpha_t}{\Delta t} \sum_{f_i \in \mathcal{F}^{\text{int}}_P}  \left(J_m \bb{F}_m^{-T} \cdot \bb{\Gamma}_m \right)_{f_i}^{[m]} \otimes \bb{v}^*
+%%	 \left[ \tilde{\bb{J}}_{vm} \right]_{PP} &=&
+%%	 \begin{cases}
+%%		\sum_{f_i \in \mathcal{F}^{\text{int}}_P}  \left(J_m \bb{F}_m^{-T} \cdot \bb{\Gamma} \right)_{f_i}^{[m]} \otimes \bb{v}_F
+%%		& \text{if } \Phi > 0, \\
+%%		\sum_{f_i \in \mathcal{F}^{\text{int}}_P}  \left(J_m \bb{F}_m^{-T} \cdot \bb{\Gamma} \right)_{f_i}^{[m]} \otimes \bb{v}_F
+%%		& \text{otherwise}.
+%%	\end{cases}
+%\end{eqnarray}
+%where $\bb{v}^*$ is interpolated using first-order upwinding.
+%For the first-order Euler scheme $\alpha_t = 1$, while for the second-order backward scheme $\alpha_t = \nicefrac{3}{2}$.
+%The off-diagonal coefficients as
+%\begin{eqnarray}
+%	 \left[ \tilde{\bb{J}}_{vm} \right]_{PQ} &=&
+%	 	 \frac{\alpha_t}{\Delta t} \left(J_m \bb{F}_m^{-T} \cdot \bb{\Gamma}_m \right)_{PQ}^{[m]} \otimes \bb{v}^*
+%%	 \begin{cases}
+%%		\left(J_m \bb{F}_m^{-T} \cdot \bb{\Gamma} \right)_{f_i}^{[m]} \otimes \bb{v}_P
+%%		& \text{if } \Phi > 0, \\
+%%		\left(J_m \bb{F}_m^{-T} \cdot \bb{\Gamma} \right)_{f_i}^{[m]} \otimes \bb{v}_Q
+%%		& \text{otherwise}.
+%%	\end{cases}
+%\end{eqnarray}
+%where subscript $PQ$ indicates a quantity associated with the internal face $f$ shared between cells $P$ and $Q$.
+%The flux $\Phi = \left(J_m \bb{F}_m^{-T} \cdot \bb{n}_0 \right)_{f_i}^{[m]} (\bb{v}^f_{f_i} - \frac{\partial \bb{d}_m}{\partial t})$
+
+%The coupling matrix $J_{pm} \equiv \partial R_{p}/\partial \bb{d}_m$, which accounts for the effect of the fluid mesh motion on the fluid continuity equation, contains mapping terms  $\bb{F}_m$ and $J_m$.
+%\hl{Try first by ignoring J-pm as it only relates to the moving mesh}
+%\hl{The pv and pp discretisations can use the old or previous-guess mesh fields, e.g. using F-old/previous}
+%\begin{eqnarray}
+%	 \left[ \tilde{J}_{pm} \right]_{PQ} &=& 0
+%%	  \sum_{f_i \in \mathcal{F}^{\text{int}}_P}  -\rho^f \left(J_m \bb{F}_m^{-T} \cdot \bb{\Gamma}_{f_i}^s\right)
+%\end{eqnarray}
+
+%%----------------------------%%
+%\subsubsection[Solid-to-Mesh Coupling Submatrix]{Solid-to-Mesh Coupling Submatrix $\bb{J}_{md}$}
+%%----------------------------%%
+%The true Jacobian $\bb{J}_{md} \equiv \partial \bb{R}_{m}/\partial \bb{d}$; in the current work, an approximate coupling matrix $\tilde{\bb{J}}_{md}$ is employed, where the fluid-solid interface displacement for the fluid mesh interface face is taken as the displacement of the adjacent solid cell centre.
+%This results in a small (one-cell) stencil, in contrast to the true Jacobian $\bb{J}_{md}$, which would require a larger stencil due to extrapolation from the adjacent solid cell centre using the solid cell centre displacement gradient.
+%
+%The block ($3\times3$ for 3-D, $2\times2$ for 2-D) coefficient for row $P$, column $Q$ can be expressed as \hl{ref or current?}
+%\begin{eqnarray}
+%	 \left[ \tilde{\bb{J}}_{md} \right]_{PQ} &=&
+%		\beta_m (2\mu_m + \lambda_m)  \frac{ \left| \bb{\Gamma}_{f_i} \right| }{\bb{n} \cdot \bb{d}_{f_i}}
+%\end{eqnarray}
+%for all pairs of fluid-solid cells at the fluid-solid interface, where $P$ indicates the fluid cell index (and row of $\bb{J}_{md}$) and $Q$ indicates the solid cell index (and column of $\bb{J}_{md}$).
+
+
+
+%%----------------------------%%
+%\subsubsection[Fluid-to-Solid Coupling Submatrix]{Fluid-to-Solid Coupling Submatrix $\bb{J}_{dp}$}
+%%----------------------------%%
+%The coupling matrix $\bb{J}_{dp} \equiv \partial \bb{R}_{d}/\partial p$ accounts for the effect of the fluid interface pressure on the solid deformation. 
+%The block ($3\times1$ for 3-D, $2\times1$ for 2-D) coefficient for row $P$, column $Q$ of the can be expressed as
+%\begin{eqnarray}
+%%	 \left[ \tilde{\bb{J}}_{dp} \right]_{PQ} &=& -\rho^f \bb{\Gamma}_{f_i}^s
+%	 \left[ \tilde{\bb{J}}_{dp} \right]_{PQ} &=& -\rho^f \left[ J^s (\bb{F}^s)^{-\text{T}} \cdot \hat{\bb{\Gamma}}_0^s \right] 
+%\end{eqnarray}
+%for all pairs of fluid-solid cells at the fluid-solid interface, where $P$ indicates the solid cell index (and row of $\bb{J}_{dp}$) and $Q$ indicates the fluid cell index (and column of $\bb{J}_{dp}$).
+%Note that the fluid density $\rho^f$ scales the fluid kinematic pressure to actual pressure.
 
 
 

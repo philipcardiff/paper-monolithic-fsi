@@ -46,12 +46,10 @@ performed outside the Newton vector.
 \label{sec:fv_discretisation}
 %%--------------------------------------------------------------------------------------------------------------------%%
 
-The fluid and solid domains are discretised using separate cell-centred
-finite-volume meshes. The set of fluid control volumes is denoted by
-$\mathcal{P}^f$ and the set of solid control volumes by $\mathcal{P}^s$. A
-generic cell is denoted by $P$, with volume $V_P$ and boundary faces
-$f \in \mathcal{F}_P$. The outward face area vector associated with face $f$ is
-denoted by $\bb{S}_f$.
+The fluid and solid domains are discretised using separate cell-centred finite-volume meshes.
+The set of fluid control volumes is denoted by $\mathcal{P}^f$ and the set of solid control volumes by $\mathcal{P}^s$.
+A generic cell is denoted by $P$, with volume $\Omega_P$ and faces $f \in \mathcal{F}_P$. The outward face area vector associated with face $f$ is
+denoted by $\bb{\Gamma}_f$.
 
 The primary unknowns are stored at cell centres. Volume integrals are
 approximated using midpoint quadrature,
@@ -60,10 +58,11 @@ approximated using midpoint quadrature,
     \bb{\phi}
     \, d\Omega
     \approx
-    V_P \bb{\phi}_P ,
+    \bb{\phi}_P \Omega_P ,
     \label{eqn:fv_volume_integral}
 \end{equation}
 where $\bb{\phi}_P$ is the value of $\bb{\phi}$ at the centroid of cell $P$.
+
 Surface integrals are approximated by sums over the cell faces,
 \begin{equation}
     \oint_{\Gamma_P}
@@ -92,7 +91,7 @@ relative face flux
 \begin{equation}
     \phi_f^\mathrm{rel}
     =
-    \bb{S}_f
+    \bb{\Gamma}_f
     \cdot
     \left(
     \bb{v}^f_f
@@ -122,10 +121,8 @@ formula. For a generic field $\bb{\phi}$,
     {2\Delta t}.
     \label{eqn:bdf2}
 \end{equation}
-The same temporal discretisation is used for the fluid velocity, pressure
-where required, solid velocity and stored auxiliary fields, unless otherwise
-stated. The update of the stored solid displacement, which is not an
-independent unknown in the coupled Newton system, is described separately in
+The same temporal discretisation is used for the fluid velocity, solid velocity and stored auxiliary fields, unless otherwise stated.
+The update of the stored solid displacement, which is not an independent unknown in the coupled Newton system, is described separately in
 Section~\ref{sec:auxiliary_solid_displacement_update}.
 
 
@@ -135,10 +132,11 @@ Section~\ref{sec:auxiliary_solid_displacement_update}.
 %%--------------------------------------------------------------------------------------------------------------------%%
 
 At each time step, the coupled nonlinear problem is formed in terms of the
-fluid velocity, fluid pressure and solid velocity. These are collected into the
-unknown vector
+fluid velocity, fluid pressure and solid velocity.
+Following the time-level convention of Liu et al.~\citep{Liu2014}, the coupled solve at time level $n$ determines $(\bb{U}_f^n,p^n,\bb{U}_s^n)$.
+These are collected into the unknown vector
 \begin{equation}
-    \bb{x}
+    \bb{\mathcal{U}}
     =
     \begin{bmatrix}
     \bb{U}_f \\
@@ -150,12 +148,17 @@ unknown vector
 where $\bb{U}_f$ and $p_f$ are the cell-centred fluid velocity and pressure
 unknowns, and $\bb{U}_s$ is the cell-centred solid velocity unknown. The solid
 displacement and the fluid mesh displacement are stored auxiliary fields, but
-they are not independent unknowns in $\bb{x}$.
+they are not independent unknowns in $\bb{\mathcal{U}}$.
 
 The discrete coupled problem is written in terms of the fluid momentum equation,
 the fluid pressure equation and the solid momentum equation as
-\begin{equation}
+\begin{eqnarray}
     \bb{R}(\bb{x})
+    =
+    \begin{bmatrix}
+    \bb{R}_f(\bb{U}_f,p_f;\bb{U}_s) \\
+    \bb{R}_s(\bb{U}_s;\bb{U}_f,p_f)
+    \end{bmatrix} \notag \\
     =
     \begin{bmatrix}
     \bb{R}_m(\bb{U}_f,p_f;\bb{U}_s) \\
@@ -165,13 +168,11 @@ the fluid pressure equation and the solid momentum equation as
     =
     \bb{0}.
     \label{eqn:coupled_residual}
-\end{equation}
-Here $\bb{R}_m$ denotes the discrete fluid momentum equation, $R_p$ denotes the
-discrete fluid pressure equation, and $\bb{R}_s$ denotes the discrete solid
-momentum equation. The dependence of the fluid equations on $\bb{U}_s$ arises
-through the interface velocity and the motion of the fluid mesh boundary. The
-dependence of the solid equation on $(\bb{U}_f,p_f)$ arises through the fluid
-traction applied to the solid interface.
+\end{eqnarray}
+Here $\bb{R}_f = \left[ \bb{R}_m; R_p \right]$ denotes the fluid equations residuals and $\bb{R}_s$ denotes the discrete solid
+momentum equation, where $\bb{R}_m$ denotes the discrete fluid momentum equation and $R_p$ denotes the discrete fluid pressure equation.
+The dependence of the fluid equations on $\bb{U}_s$ arises through the interface velocity and the motion of the fluid mesh boundary.
+The dependence of the solid equation on $(\bb{U}_f,p_f)$ arises through the fluid traction applied to the solid interface.
 
 Given a nonlinear trial state $(\bb{U}_f,p_f,\bb{U}_s)$, the residual is
 evaluated so that both sides of the interface are driven by the current trial
@@ -182,50 +183,118 @@ boundary condition in the solid equation. The current solid interface velocity
 is also imposed on the fluid velocity boundary condition before the fluid
 momentum and pressure equations are evaluated.
 
-For a fluid control volume of volume $V$, the discrete momentum equation has
-the form
-\begin{equation}
-    \bb{R}_m
+In the remainder of this subsection, the superscript $f$ denoting fluid quantities is omitted where no ambiguity arises; the subscript $f$ is reserved
+for face quantities.
+For a fluid control volume $P$ of volume $\Omega_P$, the discrete momentum residual is written as
+\begin{align}
+    \bb{R}_{m,P}
     =
-    V
+    \sum_{f \in \mathcal{F}_P}
+    \bigg[
+       \nu
+       \frac{\bb{U}_{N_f} - \bb{U}_{P}}
+            {\hat{\bb{n}}_f \cdot \bb{d}_f}
+       |\bb{\Gamma}_f|
+       +
+       \nu \bb{k}_f \cdot
+       \left( \bb{\nabla} \bb{U} \right)_f
+       -
+       \phi^\mathrm{rel}_f
+       \widetilde{\bb{U}}_f
+    \bigg]
+    -
+    \Omega_P
     \left[
-    \bb{\nabla} \cdot
-    \left(
-    \nu_\mathrm{eff}
-    \bb{\nabla} \bb{U}_f
-    \right)
-    -
-    \bb{\nabla} p_f
-    -
-    \frac{\partial \bb{U}_f}{\partial t}
-    -
-    \bb{\nabla} \cdot
-    \left(
-    \phi^\mathrm{rel} \bb{U}_f
-    \right)
+    \left( \bb{\nabla} p \right)_P
     +
-    \bb{S}_m
+    \left(
+    \frac{\partial \bb{U}}{\partial t}
+    \right)_P
     \right],
     \label{eqn:fluid_momentum_residual}
-\end{equation}
-where $\nu_\mathrm{eff}$ is the effective kinematic viscosity,
-$\phi^\mathrm{rel}$ is the ALE relative flux and $\bb{S}_m$ denotes any
-additional momentum stabilisation. The discrete pressure equation is
+\end{align}
+where $\bb{U}_P$ and $\bb{U}_{N_f}$ are the velocities in cell $P$ and in the neighbouring cell across face $f$, $\bb{d}_f$ is the vector joining the two cell centres, $\hat{\bb{n}}_f$ is the unit face normal, and $\bb{\Gamma}_f$ is the outward face area vector.
+
+The face summation contains the diffusion and convection contributions. The
+first term is the compact orthogonal contribution to the viscous diffusion
+flux. The second term is the non-orthogonal correction, where
 \begin{equation}
-    R_p
+    \bb{k}_f
     =
-    V
-    \left[
+    \bb{\Gamma}_f
     -
-    \bb{\nabla} \cdot \bb{U}_f
+    \frac{\bb{d}_f}
+         {\hat{\bb{n}}_f \cdot \bb{d}_f}
+    |\bb{\Gamma}_f|
+    \label{eqn:non_orthogonal_correction_vector}
+\end{equation}
+and $\left( \bb{\nabla} \bb{U} \right)_f$ is obtained by interpolating the
+cell-centred least-squares velocity gradients to the face. This correction
+introduces the usual extended stencil associated with non-orthogonal
+finite-volume diffusion terms.
+
+The third face term is the ALE convection contribution. The relative volumetric flux
+through face $f$ is
+\begin{equation}
+    \phi^\mathrm{rel}_f
+    =
+    \bb{\Gamma}_f \cdot
+    \left(
+    \bb{U}_f
+    -
+    \bb{v}^{\Gamma}_f
+    \right),
+    \label{eqn:discrete_relative_flux}
+\end{equation}
+where $\bb{U}_f$ is the linearly interpolated face velocity and $\bb{v}^{\Gamma}_f$ is the face mesh velocity.
+The convected velocity $\widetilde{\bb{U}}_f$ is evaluated using a second-order upwind scheme, in which the velocity is extrapolated from the upwind cell centre using the cell-centred velocity gradient.
+
+The remaining terms in Equation~\eqref{eqn:fluid_momentum_residual} are volume contributions.
+The pressure gradient $\left( \bb{\nabla} p \right)_P$ is computed using the first-neighbour least-squares gradient, while the local inertia term is discretised in time using the BDF2 approximation in Equation~\eqref{eqn:bdf2}.
+
+The discrete pressure residual for cell $P$ is
+\begin{equation}
+    R_{p,P}
+    =
+    -
+    \sum_{f \in \mathcal{F}_P}
+    \bb{\Gamma}_f \cdot \bb{U}_f
     +
-    S_p(p_f;r_{AU,f})
-    \right],
+    \Omega_P S_{p,P}(p;r_{AU}),
     \label{eqn:fluid_pressure_residual}
 \end{equation}
-where $S_p$ is the finite-volume pressure stabilisation operator and
-$r_{AU,f}$ is obtained from the reciprocal of an auxiliary momentum diagonal.
-Unless otherwise stated, $S_p$ is a Rhie--Chow-type pressure stabilisation.
+Here $S_{p,P}$ is the finite-volume pressure stabilisation contribution in cell
+$P$. Unless otherwise stated, this term is a Rhie--Chow-type stabilisation
+constructed using $r_{AU}$, the reciprocal of an auxiliary momentum diagonal,
+interpolated to the faces.
+
+Equations~\eqref{eqn:fluid_momentum_residual} and
+\eqref{eqn:fluid_pressure_residual} are written for notational simplicity as
+interior-cell expressions. For fluid cells adjacent to the fluid--solid
+interface, the corresponding interface-face terms are evaluated using the
+kinematic interface condition. The velocity prescribed on an interface face is
+obtained from the mapped solid velocity,
+\begin{equation}
+    \bb{U}_{\Gamma}
+    =
+    \mathcal{T}_{s\to f}(\bb{U}_s)
+    \qquad
+    \text{on } \Gamma_\mathrm{fsi},
+    \label{eqn:mapped_solid_velocity}
+\end{equation}
+where $\mathcal{T}_{s\to f}$ denotes the solid-to-fluid interface transfer
+operator. Consequently, the solid velocity enters the fluid momentum equation
+through the Dirichlet boundary contribution to the viscous diffusion operator,
+and it enters the pressure equation through the interface normal velocity flux.
+The ALE convective flux $\phi^\mathrm{rel}_f$ on the fluid--solid interface vanishes when the fluid
+interface velocity and mesh velocity are equal, consistent with the no-slip
+kinematic condition.
+
+The present implementation assumes a conformal fluid--solid interface, so the
+transfer operator $\mathcal{T}_{s\to f}$ reduces to a one-to-one mapping between
+corresponding solid and fluid interface faces. Extension to non-conformal
+interfaces is left for future work; possible approaches include arbitrary mesh
+interface methods or radial-basis-function interpolation.
 
 For compact notation, the two fluid equations may also be grouped as
 \begin{equation}
@@ -239,7 +308,7 @@ For compact notation, the two fluid equations may also be grouped as
 \end{equation}
 so that the coupled problem can be viewed as a top-level fluid--solid system,
 \begin{equation}
-    \bb{R}(\bb{x})
+    \bb{R}(\bb{\mathcal{U}})
     =
     \begin{bmatrix}
     \bb{R}_f \\
@@ -254,47 +323,84 @@ fluid--solid block preconditioner, while the separate momentum and pressure
 equations are retained when describing the nested fluid velocity--pressure
 split.
 
-The solid equation is evaluated using the trial solid velocity and the
-future-time displacement reconstructed in
-Equation~\eqref{eqn:solid_future_displacement}. The deformation gradient,
-stress and face forces are evaluated from this reconstructed displacement. For
-a solid control volume of volume $V$, the discrete solid equation has the form
+
+
+
+
+The solid displacement used to evaluate the total Lagrangian stress is a future-time quantity, denoted by $\bb{d}^{s,n+1}$, reconstructed from $\bb{U}_s^n$ and previously known solid velocities.
+ Thus, during the nonlinear solve, $\bb{d}^{s,n+1}$ is an implicit function of the current trial value of $\bb{U}_s^n$.
+Similar to above, the superscript $s$ denoting solid quantities is omitted where no ambiguity arises.
+
+Since the coupled nonlinear unknown contains $\bb{U}_s^n$ rather than the solid displacement, the future-time displacement is reconstructed as
 \begin{equation}
-    \bb{R}_s
+    \bb{d}^{n+1}
     =
-    V
-    \left[
-    \frac{1}{2}
-    \bb{\nabla} \cdot
-    \left(
-    \bb{f}^{\,n-1}
+    \bb{d}^{n}
     +
-    \bb{f}^{\,*}
+    \frac{\Delta t}{2}
+    \left(
+    3\bb{U}_s^{n}
+    -
+    \bb{U}_s^{n-1}
+    \right).
+    \label{eqn:solid_future_displacement}
+\end{equation}
+
+For a solid control volume $P$ of initial volume $\Omega^s_{0,P}$, the discrete
+solid equation is written as
+\begin{equation}
+    \bb{R}_{s,P}
+    =
+    \frac{1}{2}
+    \sum_{f \in \mathcal{F}_P}
+    \left(
+    \bb{f}^{\,n}_f
+    +
+    \bb{f}^{\,n+1}_f
     \right)
     +
-    \rho_s
-    \left(
+    \rho^s_0 \Omega^s_{0,P}
+    \left[
     \bb{g}
     -
+    \left(
     \frac{\partial \bb{U}_s}{\partial t}
+    \right)_P^{n}
     -
-    c_d \bb{U}_s
-    \right)
+    c_d \bb{U}_{s,P}^{n}
     \right],
     \label{eqn:solid_velocity_residual}
 \end{equation}
-where $\bb{f}^{\,n-1}$ and $\bb{f}^{\,*}$ are the old and trial future-time
-internal force fields, $\rho_s$ is the solid density, $\bb{g}$ is the body
-force and $c_d$ is an optional damping coefficient. The force field
-$\bb{f}^{\,*}$ is computed from the stress field evaluated using the
-trial future-time displacement. The interface traction from the fluid enters
-Equation~\eqref{eqn:solid_velocity_residual} through the traction boundary
-condition on $\Gamma_\mathrm{fsi}$.
+where $\rho^s_0$ is the solid density in the reference configuration,
+$\bb{g}$ is the body force per unit mass and $c_d$ is an optional damping
+coefficient. 
 
-The fluid and solid equation blocks may be multiplied by separate scale factors
-before forming the global coupled residual. These scale factors are used to
-improve conditioning and to balance the nonlinear residual norm. They do not
-alter the unscaled physical equations.
+The future-time face force is computed as
+\begin{equation}
+    \bb{f}^{\,n+1}_f
+    =
+    \left[
+    J^{n+1}_f
+    \left(\bb{F}^{n+1}_f\right)^{-T}
+    \cdot
+    \bb{\Gamma}^{s}_{0,f}
+    \right]
+    \cdot
+    \bb{\sigma}^{s,n+1}_f ,
+    \label{eqn:solid_future_face_force}
+\end{equation}
+where the future-time stress  $\bb{\sigma}^{s,n+1}$ is calculated from the cell-centred $\bb{d}^{n+1}$ field (via $\bb{F}^{n+1}$) before being linearly interpolated to the faces, with an analogous definition for $\bb{f}^{\,n-1}_f$.
+Here $\bb{\Gamma}^{s}_{0,f}$ is the outward reference face area vector, $\bb{F}^{*}_f$ and $J^{*}_f$ are the trial future-time deformation gradient and
+Jacobian interpolated to the face, and $\bb{\sigma}^{s,*}_f$ is the corresponding Cauchy stress.
+The cell-centred time derivative $\left(\partial \bb{U}_s/\partial t\right)_P$ is approximated using the BDF2 scheme in Equation~\eqref{eqn:bdf2}.
+
+For faces on the fluid--solid interface, the solid face force is replaced by the traction obtained from the fluid side.
+The mapped interface traction is computed from the current fluid pressure and viscous stress. Thus, the fluid variables enter Equation~\eqref{eqn:solid_velocity_residual} through the traction boundary condition on $\Gamma_\mathrm{fsi}$.
+
+%The fluid and solid equation blocks may be multiplied by separate scale factors
+%before forming the global coupled residual.
+%These scale factors are used to improve conditioning and to balance the nonlinear residual norm.
+%They do not alter the unscaled physical equations.
 
 
 %%--------------------------------------------------------------------------------------------------------------------%%
@@ -452,10 +558,10 @@ stress-divergence equation. In compact form, it may be written as
     \tilde{\bb{J}}_{ss}
     \approx
     \bb{\nabla} \cdot
-    \left(
-    1.5 K_{\mathrm{imp},f} \Delta t
+    \left[
+    (3/2) K_{\mathrm{imp},f} \Delta t
     \bb{\nabla} \bb{U}_s
-    \right)
+    \right]
     -
     \rho_s
     \frac{\partial \bb{U}_s}{\partial t},

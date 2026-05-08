@@ -131,50 +131,53 @@ Section~\ref{sec:auxiliary_solid_displacement_update}.
 \label{sec:discrete_coupled_residual}
 %%--------------------------------------------------------------------------------------------------------------------%%
 
+In this subsection, uppercase subscripts $F$ and $S$ denote fluid and solid region quantities, respectively, while lower-case subscript $f$ denotes a face
+quantity. Where no ambiguity arises, the region subscript is omitted for conciseness.
+
 At each time step, the coupled nonlinear problem is formed in terms of the
 fluid velocity, fluid pressure and solid velocity.
-Following the time-level convention of Liu et al.~\citep{Liu2014}, the coupled solve at time level $n$ determines $(\bb{U}_f^n,p^n,\bb{U}_s^n)$.
+Following the time-level convention of Liu et al.~\citep{Liu2014}, the coupled solve at time level $n$ determines $(\bb{U}_F^n,p_F^n,\bb{U}_S^n)$.
 These are collected into the unknown vector
 \begin{equation}
     \bb{\mathcal{U}}
     =
     \begin{bmatrix}
-    \bb{U}_f \\
-    p_f \\
-    \bb{U}_s
+    \bb{U}_F^n \\
+    p_F^n \\
+    \bb{U}_S^n
     \end{bmatrix},
     \label{eqn:coupled_unknown_vector}
 \end{equation}
-where $\bb{U}_f$ and $p_f$ are the cell-centred fluid velocity and pressure
-unknowns, and $\bb{U}_s$ is the cell-centred solid velocity unknown. The solid
+where $\bb{U}_F$ and $p_F$ are the cell-centred fluid velocity and pressure
+unknowns, and $\bb{U}_S$ is the cell-centred solid velocity unknown. The solid
 displacement and the fluid mesh displacement are stored auxiliary fields, but
 they are not independent unknowns in $\bb{\mathcal{U}}$.
 
 The discrete coupled problem is written in terms of the fluid momentum equation,
 the fluid pressure equation and the solid momentum equation as
 \begin{eqnarray}
-    \bb{R}(\bb{x})
-    =
+    \bb{R}(\bb{\mathcal{U}})
+    &=&
     \begin{bmatrix}
-    \bb{R}_f(\bb{U}_f,p_f;\bb{U}_s) \\
-    \bb{R}_s(\bb{U}_s;\bb{U}_f,p_f)
+    \bb{R}_F(\bb{U}_F,p_F;\bb{U}_S) \\
+    \bb{R}_S(\bb{U}_S;\bb{U}_F,p_F)
     \end{bmatrix} \notag \\
-    =
+    &=&
     \begin{bmatrix}
-    \bb{R}_m(\bb{U}_f,p_f;\bb{U}_s) \\
-    R_p(\bb{U}_f,p_f;\bb{U}_s) \\
-    \bb{R}_s(\bb{U}_s;\bb{U}_f,p_f)
+    \bb{R}_{F_m}(\bb{U}_F,p_F;\bb{U}_S) \\
+    R_{F_p}(\bb{U}_F,p_F;\bb{U}_S) \\
+    \bb{R}_S(\bb{U}_S;\bb{U}_F,p_F)
     \end{bmatrix}
     =
     \bb{0}.
     \label{eqn:coupled_residual}
 \end{eqnarray}
-Here $\bb{R}_f = \left[ \bb{R}_m; R_p \right]$ denotes the fluid equations residuals and $\bb{R}_s$ denotes the discrete solid
-momentum equation, where $\bb{R}_m$ denotes the discrete fluid momentum equation and $R_p$ denotes the discrete fluid pressure equation.
-The dependence of the fluid equations on $\bb{U}_s$ arises through the interface velocity and the motion of the fluid mesh boundary.
-The dependence of the solid equation on $(\bb{U}_f,p_f)$ arises through the fluid traction applied to the solid interface.
+Here $\bb{R}_F = \left[ \bb{R}_{F_m}; R_{F_p} \right]$ denotes the fluid equations residuals and $\bb{R}_S$ denotes the discrete solid
+momentum equation, where $\bb{R}_{F_m}$ denotes the discrete fluid momentum equation and $R_{F_p}$ denotes the discrete fluid pressure equation.
+The dependence of the fluid equations on $\bb{U}_S$ arises through the interface velocity and the motion of the fluid mesh boundary.
+The dependence of the solid equation on $(\bb{U}_F,p_F)$ arises through the fluid traction applied to the solid interface.
 
-Given a nonlinear trial state $(\bb{U}_f,p_f,\bb{U}_s)$, the residual is
+Given a nonlinear trial state $(\bb{U}_F,p_F,\bb{U}_S)$, the residual is
 evaluated so that both sides of the interface are driven by the current trial
 solution. The current solid interface motion is first used to update the fluid
 interface motion before the fluid traction is evaluated. The resulting fluid
@@ -409,33 +412,33 @@ The mapped interface traction is computed from the current fluid pressure and vi
 %%--------------------------------------------------------------------------------------------------------------------%%
 
 The discrete coupled residual in Equation~\eqref{eqn:coupled_residual} defines
-a nonlinear algebraic system for the unknown vector $\bb{x}$. This system is
+a nonlinear algebraic system for the unknown vector $\bb{\mathcal{U}}$. This system is
 solved using a Newton--Krylov method. At nonlinear iteration $k$, the Newton
-correction $\delta \bb{x}_k$ formally satisfies
+correction $\Delta \bb{\mathcal{U}}_k$ formally satisfies
 \begin{equation}
-    \bb{J}(\bb{x}_k)
-    \delta \bb{x}_k
+    \bb{J}(\bb{\mathcal{U}}_k)
+    \Delta \bb{\mathcal{U}}_k
     =
     -
-    \bb{R}(\bb{x}_k),
+    \bb{R}(\bb{\mathcal{U}}_k),
     \label{eqn:newton_linear_system}
 \end{equation}
 where
 \begin{equation}
-    \bb{J}(\bb{x}_k)
+    \bb{J}(\bb{\mathcal{U}}_k)
     =
     \left.
-    \frac{\partial \bb{R}}{\partial \bb{x}}
-    \right|_{\bb{x}_k}
+    \frac{\partial \bb{R}}{\partial \bb{\mathcal{U}}}
+    \right|_{\bb{\mathcal{U}}_k}
 \end{equation}
 is the Jacobian of the coupled residual. The nonlinear iterate is then updated
 as
 \begin{equation}
-    \bb{x}_{k+1}
+    \bb{\mathcal{U}}_{k+1}
     =
-    \bb{x}_k
+    \bb{\mathcal{U}}_k
     +
-    s_k \delta \bb{x}_k ,
+    s_k \Delta \bb{\mathcal{U}}_k ,
     \label{eqn:newton_update}
 \end{equation}
 where $s_k$ is a damping or line-search parameter.
@@ -446,12 +449,12 @@ the exact Jacobian matrix is not assembled. Instead, the action of the Jacobian
 on a Krylov vector is approximated by a finite-difference directional
 derivative of the residual,
 \begin{equation}
-    \bb{J}(\bb{x}_k) \bb{w}
+    \bb{J}(\bb{\mathcal{U}}_k) \bb{w}
     \approx
     \frac{
-    \bb{R}(\bb{x}_k + \epsilon \bb{w})
+    \bb{R}(\bb{\mathcal{U}}_k + \epsilon \bb{w})
     -
-    \bb{R}(\bb{x}_k)
+    \bb{R}(\bb{\mathcal{U}}_k)
     }
     {\epsilon},
     \label{eqn:jfnk_operator}
@@ -465,7 +468,7 @@ Although the exact Jacobian is not assembled, preconditioning remains essential
 for robustness and efficiency. An approximate block matrix is therefore
 assembled and supplied as the preconditioning operator for the Krylov solve.
 This matrix is not required to be a consistent linearisation of
-$\bb{R}(\bb{x})$; it only affects the convergence of the linear iterations, not
+$\bb{R}(\bb{\mathcal{U}})$; it only affects the convergence of the linear iterations, not
 the converged nonlinear solution, provided the nonlinear solve reaches the
 specified tolerances. The construction of this approximate block preconditioner
 is described in Section~\ref{sec:approximate_block_preconditioner}.
@@ -773,7 +776,7 @@ extrapolation from previous time levels or from the current trial velocity.
 \State Assemble or update the approximate Jacobian $\tilde{\bb{J}}$ used for
 preconditioning.
 \State Solve the coupled nonlinear system
-$\bb{R}(\bb{x})=\bb{0}$ for
+$\bb{R}(\bb{\mathcal{U}})=\bb{0}$ for
 $(\bb{U}_f,p_f,\bb{U}_s)$ using PETSc SNES.
 \State Extract the converged fluid velocity, fluid pressure and solid velocity
 from the PETSc vector.

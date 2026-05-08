@@ -2,28 +2,30 @@
 \section{Mathematical Models}\label{sec:math_model}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+Throughout this paper, the uppercase subscripts $F$ and $S$ are used to denote fluid- and solid-region quantities, respectively, and a trailing subscript $0$ denotes evaluation in the initial (reference) configuration. Where no ambiguity arises, the region subscript is omitted for conciseness.
+
 The present work considers the dynamic interaction between an incompressible
 Newtonian fluid and a deformable solid, as illustrated in
 Figure~\ref{fig:fsi_problem}. At time $t$, the coupled system occupies the
 moving domain
 \begin{equation}
-    \Omega(t) = \Omega^f(t) \cup \Omega^s(t),
+    \Omega(t) = \Omega_F(t) \cup \Omega_S(t),
 \end{equation}
-where $\Omega^f(t)$ and $\Omega^s(t)$ denote the fluid and solid domains,
-respectively. Their boundaries are denoted by $\Gamma^f(t)$ and
-$\Gamma^s(t)$, with outward-facing unit normals $\hat{\bb{n}}^f$ and
-$\hat{\bb{n}}^s$. The fluid--solid interface is the common boundary
+where $\Omega_F(t)$ and $\Omega_S(t)$ denote the fluid and solid domains,
+respectively. Their boundaries are denoted by $\Gamma_F(t)$ and
+$\Gamma_S(t)$, with outward-facing unit normals $\hat{\bb{n}}_F$ and
+$\hat{\bb{n}}_S$. The fluid--solid interface is the common boundary
 \begin{equation}
     \Gamma_\text{fsi}(t)
     =
-    \Gamma^f(t) \cap \Gamma^s(t),
+    \Gamma_F(t) \cap \Gamma_S(t),
 \end{equation}
 on which the fluid and solid satisfy kinematic compatibility and dynamic
 traction equilibrium.
 
 The solid is formulated in a total Lagrangian description with respect to its
-initial configuration $\Omega^s_0$, while the fluid is formulated on the
-current moving domain $\Omega^f(t)$ using an arbitrary Lagrangian--Eulerian
+initial configuration $\Omega_{S,0}$, while the fluid is formulated on the
+current moving domain $\Omega_F(t)$ using an arbitrary Lagrangian--Eulerian
 (ALE) description. For notational compactness, the explicit time dependence of
 moving domains and boundaries is omitted where no ambiguity arises.
 
@@ -39,7 +41,7 @@ moving domains and boundaries is omitted where no ambiguity arises.
         \label{fig:fsi_problem_current}
         \includegraphics[width=0.8\textwidth]{figures/fsi_problem_current}
     }
-    \caption{Representative fluid--solid interaction problem, where superscript $f$ represents fluid-domain quantities and superscript $s$ represents solid-domain quantities. Image adapted from \citet{OneraWebsite}.}
+    \caption{Representative fluid--solid interaction problem, where the subscript $F$ denotes fluid-domain quantities and the subscript $S$ denotes solid-domain quantities. Image adapted from \citet{OneraWebsite}.}
     \label{fig:fsi_problem}
 \end{figure}
 
@@ -51,78 +53,78 @@ moving domains and boundaries is omitted where no ambiguity arises.
 The motion of the solid is governed by conservation of linear momentum. In the
 current configuration, this may be written in integral form as
 \begin{equation}
-    \int_{\Omega^s}
-    \rho^s
-    \frac{\partial \bb{v}^s}{\partial t}
-    \, d\Omega^s
+    \int_{\Omega_S}
+    \rho_S
+    \frac{\partial \bb{v}_S}{\partial t}
+    \, d\Omega_S
     =
-    \oint_{\Gamma^s}
-    \hat{\bb{n}}^s \cdot \bb{\sigma}^s
-    \, d\Gamma^s
+    \oint_{\Gamma_S}
+    \hat{\bb{n}}_S \cdot \bb{\sigma}_S
+    \, d\Gamma_S
     +
-    \int_{\Omega^s}
-    \bb{f}_b^s
-    \, d\Omega^s ,
+    \int_{\Omega_S}
+    \bb{f}_{b,S}
+    \, d\Omega_S ,
     \label{eqn:solid_momentum_current}
 \end{equation}
-where $\rho^s$ is the current density, $\bb{v}^s$ is the solid velocity,
-$\bb{\sigma}^s$ is the true (Cauchy) stress tensor, and $\bb{f}_b^s$ is a body force
+where $\rho_S$ is the current density, $\bb{v}_S$ is the solid velocity,
+$\bb{\sigma}_S$ is the true (Cauchy) stress tensor, and $\bb{f}_{b,S}$ is a body force
 per unit current volume.
 
 The solid equations are solved in total Lagrangian form. Let
-$\bb{d}^s$ denote the solid displacement from the initial configuration
-$\Omega^s_0$ to the current configuration $\Omega^s(t)$. The deformation
+$\bb{d}_S$ denote the solid displacement from the initial configuration
+$\Omega_{S,0}$ to the current configuration $\Omega_S(t)$. The deformation
 gradient and its determinant are
 \begin{equation}
     \bb{F}
     =
     \bb{I}
     +
-    \left( \bb{\nabla}_0 \bb{d}^s \right)^T,
+    \left( \bb{\nabla}_0 \bb{d}_S \right)^T,
     \qquad
     J = \det \bb{F},
     \label{eqn:deformation_gradient}
 \end{equation}
 where $\bb{\nabla}_0$ denotes differentiation with respect to the initial
 solid coordinates. With the convention
-$(\nabla_0 d^s)_{ij} = \partial d^s_j / \partial X_i$, this corresponds in
+$(\nabla_0 d_S)_{ij} = \partial d_{S,j} / \partial X_i$, this corresponds in
 index notation to
 \begin{equation}
     F_{ij}
     =
     \delta_{ij}
     +
-    \frac{\partial d^s_i}{\partial X_j}.
+    \frac{\partial d_{S,i}}{\partial X_j}.
 \end{equation}
 
 Using Nanson's relation,
 \begin{equation}
-    \hat{\bb{n}}^s \, d\Gamma^s
+    \hat{\bb{n}}_S \, d\Gamma_S
     =
-    J \bb{F}^{-T} \cdot \hat{\bb{n}}^s_0 \, d\Gamma^s_0,
+    J \bb{F}^{-T} \cdot \hat{\bb{n}}_{S,0} \, d\Gamma_{S,0},
 \end{equation}
 the solid momentum equation may be expressed over the initial configuration as
 \begin{equation}
-    \int_{\Omega^s_0}
-    \rho^s_0
-    \frac{\partial^2 \bb{d}^s}{\partial t^2}
-    \, d\Omega^s_0
+    \int_{\Omega_{S,0}}
+    \rho_{S,0}
+    \frac{\partial^2 \bb{d}_S}{\partial t^2}
+    \, d\Omega_{S,0}
     =
-    \oint_{\Gamma^s_0}
+    \oint_{\Gamma_{S,0}}
     \left(
-    J \bb{F}^{-T} \cdot \hat{\bb{n}}^s_0
+    J \bb{F}^{-T} \cdot \hat{\bb{n}}_{S,0}
     \right)
     \cdot
-    \bb{\sigma}^s
-    \, d\Gamma^s_0
+    \bb{\sigma}_S
+    \, d\Gamma_{S,0}
     +
-    \int_{\Omega^s_0}
-    \bb{f}_{b0}^s
-    \, d\Omega^s_0 .
+    \int_{\Omega_{S,0}}
+    \bb{f}_{b0,S}
+    \, d\Omega_{S,0} .
     \label{eqn:solid_momentum_TL}
 \end{equation}
-Here $\rho^s_0$ is the initial density and $\bb{f}_{b0}^s$ is a body force per
-unit initial volume. The true (Cauchy) stress $\bb{\sigma}^s$ is supplied by the chosen
+Here $\rho_{S,0}$ is the initial density and $\bb{f}_{b0,S}$ is a body force per
+unit initial volume. The true (Cauchy) stress $\bb{\sigma}_S$ is supplied by the chosen
 mechanical law. In this work, the considered mechanical laws include linear
 elasticity and the hyperelastic laws described in Appendix~A of \citet{Cardiff2025JFNK}.
 \hl{UPDATE: we should at least state the names of the laws we use - do this when the test cases are all defined}
@@ -137,10 +139,10 @@ prescribed traction, and symmetry conditions.
 %%--------------------------------------------------------------------------------------------------------------------%%
 
 The fluid is modelled as laminar, incompressible, Newtonian and isothermal. It
-is formulated on the current moving domain $\Omega^f(t)$ using an arbitrary
-Lagrangian--Eulerian (ALE) description. Let $\bb{v}^f$ denote the fluid velocity
+is formulated on the current moving domain $\Omega_F(t)$ using an arbitrary
+Lagrangian--Eulerian (ALE) description. Let $\bb{v}_F$ denote the fluid velocity
 and let $\bb{v}^{\Gamma}$ denote the velocity of the moving fluid domain. The
-motion of $\Omega^f(t)$ is prescribed on the fluid--solid interface by the
+motion of $\Omega_F(t)$ is prescribed on the fluid--solid interface by the
 kinematic condition in Section~\ref{sec:fsi_interface}; its extension into the
 interior of the fluid domain is a numerical mesh-motion procedure described in
 Section~\ref{sec:numerical_method}.
@@ -149,16 +151,16 @@ For an incompressible fluid, conservation of mass over a moving control volume
 may be written as
 \begin{equation}
     \frac{d}{dt}
-    \int_{\Omega^f}
-    d\Omega^f
+    \int_{\Omega_F}
+    d\Omega_F
     +
-    \oint_{\Gamma^f}
-    \hat{\bb{n}}^f
+    \oint_{\Gamma_F}
+    \hat{\bb{n}}_F
     \cdot
     \left(
-    \bb{v}^f - \bb{v}^{\Gamma}
+    \bb{v}_F - \bb{v}^{\Gamma}
     \right)
-    \, d\Gamma^f
+    \, d\Gamma_F
     =
     0 .
     \label{eqn:fluid_continuity_ale_full}
@@ -167,25 +169,25 @@ may be written as
 The moving domain is required to satisfy the geometric conservation law,
 \begin{equation}
     \frac{d}{dt}
-    \int_{\Omega^f}
-    d\Omega^f
+    \int_{\Omega_F}
+    d\Omega_F
     -
-    \oint_{\Gamma^f}
-    \hat{\bb{n}}^f
+    \oint_{\Gamma_F}
+    \hat{\bb{n}}_F
     \cdot
     \bb{v}^{\Gamma}
-    \, d\Gamma^f
+    \, d\Gamma_F
     =
     0 ,
     \label{eqn:gcl}
 \end{equation}
 so that Equation~\eqref{eqn:fluid_continuity_ale_full} is equivalent to
 \begin{equation}
-    \oint_{\Gamma^f}
-    \hat{\bb{n}}^f
+    \oint_{\Gamma_F}
+    \hat{\bb{n}}_F
     \cdot
-    \bb{v}^f
-    \, d\Gamma^f
+    \bb{v}_F
+    \, d\Gamma_F
     =
     0 .
     \label{eqn:fluid_continuity_ale}
@@ -198,40 +200,40 @@ so that Equation~\eqref{eqn:fluid_continuity_ale_full} is equivalent to
 Conservation of linear momentum in ALE form is written as
 \begin{equation}
     \frac{d}{dt}
-    \int_{\Omega^f}
-    \bb{v}^f
-    \, d\Omega^f
+    \int_{\Omega_F}
+    \bb{v}_F
+    \, d\Omega_F
     +
-    \oint_{\Gamma^f}
-    \hat{\bb{n}}^f
+    \oint_{\Gamma_F}
+    \hat{\bb{n}}_F
     \cdot
     \left(
-    \bb{v}^f - \bb{v}^{\Gamma}
+    \bb{v}_F - \bb{v}^{\Gamma}
     \right)
-    \bb{v}^f
-    \, d\Gamma^f
+    \bb{v}_F
+    \, d\Gamma_F
     =
-    \oint_{\Gamma^f}
-    \hat{\bb{n}}^f
+    \oint_{\Gamma_F}
+    \hat{\bb{n}}_F
     \cdot
-    \bb{\sigma}^f
-    \, d\Gamma^f
+    \bb{\sigma}_F
+    \, d\Gamma_F
     +
-    \int_{\Omega^f}
-    \bb{f}_b^f
-    \, d\Omega^f ,
+    \int_{\Omega_F}
+    \bb{f}_{b,F}
+    \, d\Omega_F ,
     \label{eqn:fluid_momentum_ale}
 \end{equation}
-where $\bb{f}_b^f$ is a body force per unit mass. The use of a kinematic
+where $\bb{f}_{b,F}$ is a body force per unit mass. The use of a kinematic
 pressure gives the Newtonian stress tensor
 \begin{equation}
-    \bb{\sigma}^f
+    \bb{\sigma}_F
     =
     \nu
     \left[
-    \bb{\nabla} \bb{v}^f
+    \bb{\nabla} \bb{v}_F
     +
-    \left( \bb{\nabla} \bb{v}^f \right)^T
+    \left( \bb{\nabla} \bb{v}_F \right)^T
     \right]
     -
     p \bb{I},
@@ -255,13 +257,13 @@ fluid--solid interface $\Gamma_\text{fsi}(t)$. The kinematic condition enforces
 continuity of velocity between the fluid and solid and also prescribes the
 motion of the fluid-domain boundary:
 \begin{equation}
-    \bb{v}^f
+    \bb{v}_F
     =
-    \bb{v}^s
+    \bb{v}_S
     =
     \bb{v}^{\Gamma}
     =
-    \frac{\partial \bb{d}^s}{\partial t}
+    \frac{\partial \bb{d}_S}{\partial t}
     \qquad
     \text{on } \Gamma_\text{fsi}(t),
     \label{eqn:kinematic_interface}
@@ -274,9 +276,9 @@ Section~\ref{sec:numerical_method}.
 
 The dynamic condition enforces equilibrium of the fluid and solid tractions,
 \begin{equation}
-    \bb{t}^f
+    \bb{t}_F
     +
-    \bb{t}^s
+    \bb{t}_S
     =
     \bb{0}
     \qquad
@@ -285,22 +287,22 @@ The dynamic condition enforces equilibrium of the fluid and solid tractions,
 \end{equation}
 with
 \begin{equation}
-    \bb{t}^f
+    \bb{t}_F
     =
-    \hat{\bb{n}}^f \cdot \bb{\sigma}^f,
+    \hat{\bb{n}}_F \cdot \bb{\sigma}_F,
     \qquad
-    \bb{t}^s
+    \bb{t}_S
     =
-    \hat{\bb{n}}^s \cdot \bb{\sigma}^s,
+    \hat{\bb{n}}_S \cdot \bb{\sigma}_S,
     \qquad
-    \hat{\bb{n}}^f = -\hat{\bb{n}}^s .
+    \hat{\bb{n}}_F = -\hat{\bb{n}}_S .
 \end{equation}
 Equivalently,
 \begin{equation}
-    \hat{\bb{n}}^f \cdot \bb{\sigma}^f
+    \hat{\bb{n}}_F \cdot \bb{\sigma}_F
     =
     -
-    \hat{\bb{n}}^s \cdot \bb{\sigma}^s
+    \hat{\bb{n}}_S \cdot \bb{\sigma}_S
     \qquad
     \text{on } \Gamma_\text{fsi}(t).
     \label{eqn:dynamic_interface}
@@ -308,16 +310,16 @@ Equivalently,
 
 %Using Equation~\eqref{eqn:fluid_stress}, the fluid traction is
 %\begin{equation}
-%    \bb{t}^f
+%    \bb{t}_F
 %    =
-%    \hat{\bb{n}}^f
+%    \hat{\bb{n}}_F
 %    \cdot
 %    \left\{
 %    \nu
 %    \left[
-%    \bb{\nabla} \bb{v}^f
+%    \bb{\nabla} \bb{v}_F
 %    +
-%    \left( \bb{\nabla} \bb{v}^f \right)^T
+%    \left( \bb{\nabla} \bb{v}_F \right)^T
 %    \right]
 %    -
 %    p \bb{I}
@@ -346,7 +348,7 @@ Equivalently,
 %\begin{equation}
 %    \bb{d}^{\Gamma}
 %    =
-%    \bb{d}^s
+%    \bb{d}_S
 %    \qquad
 %    \text{on } \Gamma_\text{fsi}(t),
 %    \label{eqn:mesh_motion_interface_bc}
@@ -357,8 +359,8 @@ Equivalently,
 %In this work, the fluid mesh displacement is computed using a pseudo-solid
 %linear-elasticity equation,
 %\begin{equation}
-%    \oint_{\Gamma^f_0}
-%    \hat{\bb{n}}^f_0
+%    \oint_{\Gamma_{F,0}}
+%    \hat{\bb{n}}_{F,0}
 %    \cdot
 %    \left[
 %    \mu^\Gamma
@@ -375,7 +377,7 @@ Equivalently,
 %    \right)
 %    \bb{I}
 %    \right]
-%    \, d\Gamma^f_0
+%    \, d\Gamma_{F,0}
 %    =
 %    \bb{0}.
 %    \label{eqn:mesh_motion_pseudo_solid}
@@ -394,3 +396,4 @@ Equivalently,
 %\eqref{eqn:fluid_momentum_ale}. The discrete moving-mesh fluxes are constructed
 %so as to satisfy the geometric conservation law,
 %Equation~\eqref{eqn:gcl}.
+

@@ -25,6 +25,9 @@
 %
 The test cases are designed to assess the proposed monolithic solver from several complementary perspectives. First, \emph{accuracy} is examined by comparing against benchmark solutions and by checking mesh- and time-step-converged responses. Second, \emph{robustness} is assessed by considering strongly coupled problems for which partitioned procedures may require smaller stable time steps or may fail to converge. Third, \emph{efficiency} is evaluated in terms of wall-clock time, memory usage, and nonlinear/linear iteration counts. In addition, the suite is chosen to expose solver characteristics that are particularly relevant for a monolithic approach, including sensitivity to preconditioning, coupling strength and added-mass effects, scalability with problem size, and behaviour for both mildly and highly nonlinear structural and mesh deformations. Accordingly, each case adds a distinct challenge, spanning simple internal-flow verification problems, established FSI benchmarks, temporal-accuracy studies, and progressively more demanding two- and three-dimensional configurations.
 
+\hl{Should we examine the fluid convection linearisation option (extrapolate flux)?}
+\hl{If not, note this as a difference to the original Liu approach}
+
 %%--------------------------------------------------------------------------------------------------------------------%%
 \subsection{Case 1: Channel flow over a cavity with a flexible bottom} \label{sec:case1}
 %%--------------------------------------------------------------------------------------------------------------------%%

@@ -15,7 +15,7 @@ This section describes the discretisation and solution strategy used for the flu
 We distinguish between three aspects of the method. First, the governing equations are discretised using cell-centred finite volumes on separate fluid and solid meshes.
 The fluid equations are discretised on the current ALE mesh, while the solid equations are discretised in the reference configuration using a total Lagrangian formulation.
 Second, the resulting algebraic equations are solved using a quasi-monolithic nonlinear strategy in which the fluid velocity, fluid pressure and solid velocity are advanced in a single coupled nonlinear solve.
-Third, the method is implemented in solids4foam \citep{Cardiff2025} -- an open source toolbox for OpenFOAM -- using PETSc \citep{petsc} for the nonlinear and linear algebra operations.
+Third, the method is implemented in solids4foam \citep{Cardiff2025} -- an open source toolbox for OpenFOAM -- using PETSc \citep{PETSc} for the nonlinear and linear algebra operations.
 
 The approach is inspired by the quasi-monolithic interface treatment of Liu et al.~\citep{Liu2014} and Jaiman and Joshi~\citep{JaimanJoshi2022}.
 As in those formulations, the fluid and solid subproblems are coupled at the nonlinear level through the interface kinematic and dynamic conditions.
@@ -430,25 +430,14 @@ derivative of the residual,
     {\epsilon},
     \label{eqn:jfnk_operator}
 \end{equation}
-where $\bb{w}$ is a Krylov vector and $\epsilon$ is the finite-difference
-perturbation. Thus, the nonlinear residual evaluation described in
-Section~\ref{sec:discrete_coupled_residual} defines the Newton operator used by
-the Krylov solver.
+where $\bb{w}$ is a Krylov vector and $\epsilon$ is the finite-difference perturbation.
+Thus, the nonlinear residual evaluation described in Section~\ref{sec:discrete_coupled_residual} defines the Newton operator used by the Krylov solver.
 
-Although the exact Jacobian is not assembled, preconditioning remains essential
-for robustness and efficiency. An approximate block matrix is therefore
-assembled and supplied as the preconditioning operator for the Krylov solve.
-This matrix is not required to be a consistent linearisation of
-$\bb{R}(\bb{\mathcal{U}})$; it only affects the convergence of the linear iterations, not
-the converged nonlinear solution, provided the nonlinear solve reaches the
-specified tolerances. The construction of this approximate block preconditioner
-is described in Section~\ref{sec:approximate_block_preconditioner}.
+Although the exact Jacobian is not assembled, preconditioning remains essential for robustness and efficiency. An approximate block matrix is therefore assembled and supplied as the preconditioning operator for the Krylov solve.
+This matrix is not required to be a consistent linearisation of $\bb{R}(\bb{\mathcal{U}})$; it only affects the convergence of the linear iterations, not the converged nonlinear solution, provided the nonlinear solve reaches the specified tolerances. The construction of this approximate block preconditioner is described in Section~\ref{sec:approximate_block_preconditioner}.
 
-The nonlinear iterations are terminated when the coupled residual norm and/or
-the nonlinear correction satisfy prescribed tolerances. If the nonlinear solve
-does not converge for a given time step, the old fluid, solid and mesh fields
-are restored and the time step is retried, optionally with a reduced time-step
-size.
+The nonlinear iterations are terminated when the coupled residual norm and/or the nonlinear correction satisfy prescribed tolerances.
+%If the nonlinear solve does not converge for a given time step, the old fluid, solid and mesh fields are restored and the time step is retried, optionally with a reduced time-step size.
 
 
 %%--------------------------------------------------------------------------------------------------------------------%%
@@ -456,17 +445,11 @@ size.
 \label{sec:approximate_block_preconditioner}
 %%--------------------------------------------------------------------------------------------------------------------%%
 
-Although the Newton--Krylov operator is applied in a Jacobian-free manner, an
-assembled matrix is used to precondition the Krylov iterations. This matrix is
-not the exact Jacobian of the coupled residual in
-Equation~\eqref{eqn:coupled_residual}. Instead, it is an approximate Jacobian,
-denoted by $\tilde{\bb{J}}$, constructed from compact finite-volume
-linearisations of the fluid, solid and interface-coupling terms.
-Such a compact, approximate Jacobian was recently shown to efficiently precondition a lower and higher order cell-centred finite volume solid solver \citep{Cardiff2026, Batistic2026}.
+Although the Newton--Krylov operator is applied in a Jacobian-free manner, an assembled matrix is used to precondition the Krylov iterations.
+This matrix is not the exact Jacobian of the coupled residual in Equation~\eqref{eqn:coupled_residual}. Instead, it is an approximate Jacobian, denoted by $\tilde{\bb{J}}$, constructed from compact finite-volume linearisations of the fluid, solid and interface-coupling terms.
+Such a compact, approximate Jacobian was recently shown to efficiently precondition a second-order and higher-order cell-centred finite volume solid solvers \citep{Cardiff2026, Batistic2026}.
 
-Using the top-level fluid--solid grouping in
-Equation~\eqref{eqn:coupled_residual}, the approximate Jacobian has the
-block form
+Using the top-level fluid--solid grouping in Equation~\eqref{eqn:coupled_residual}, the approximate Jacobian has the block form
 \begin{equation}
     \tilde{\bb{J}}
     =
@@ -476,11 +459,8 @@ block form
     \end{bmatrix},
     \label{eqn:block_preconditioner}
 \end{equation}
-where $\tilde{\bb{J}}_{ff}$ is the approximate fluid velocity--pressure block,
-$\tilde{\bb{J}}_{ss}$ is the approximate solid velocity block, and
-$\tilde{\bb{J}}_{fs}$ and $\tilde{\bb{J}}_{sf}$ approximate the interface
-coupling derivatives. This matrix is used as the preconditioning operator for
-the Krylov method, not as an exact linearisation of the nonlinear residual.
+where $\tilde{\bb{J}}_{ff}$ is the approximate fluid velocity--pressure block, $\tilde{\bb{J}}_{ss}$ is the approximate solid velocity block, and $\tilde{\bb{J}}_{fs}$ and $\tilde{\bb{J}}_{sf}$ approximate the interface coupling derivatives.
+%This matrix is used as the preconditioning operator for the Krylov method, not as an exact linearisation of the nonlinear residual.
 
 The fluid block is itself a coupled velocity--pressure system. With the fluid
 momentum and pressure equations ordered as in
@@ -495,14 +475,9 @@ as
     \end{bmatrix},
     \label{eqn:fluid_block_preconditioner}
 \end{equation}
-where $\tilde{\bb{J}}_{mm}$ approximates the fluid momentum operator,
-$\tilde{\bb{J}}_{mp}$ the pressure-gradient coupling,
-$\tilde{\bb{J}}_{pm}$ the discrete continuity operator, and
-$\tilde{J}_{pp}$ the pressure-stabilisation operator. If the convective flux is
-extrapolated from previous time levels, this extrapolated flux is used in
-$\tilde{\bb{J}}_{mm}$. If the implicit-flux option is enabled, the flux is
-recomputed from the current trial velocity and an implicit convection
-contribution is included.
+where $\tilde{\bb{J}}_{mm}$ approximates the fluid momentum operator, $\tilde{\bb{J}}_{mp}$ the pressure-gradient coupling, $\tilde{\bb{J}}_{pm}$ the discrete continuity operator, and $\tilde{J}_{pp}$ the pressure-stabilisation operator.
+%If the convective flux is extrapolated from previous time levels, this extrapolated flux is used in $\tilde{\bb{J}}_{mm}$.
+%If the implicit-flux option is enabled, the flux is recomputed from the current trial velocity and an implicit convection contribution is included.
 
 This block form also permits nested velocity--pressure preconditioning within
 the fluid block. In particular, the exact pressure Schur complement associated
@@ -585,8 +560,7 @@ the dependence of the fluid viscous traction on the adjacent fluid velocity,
     \right),
     \label{eqn:viscous_coupling_approximation}
 \end{equation}
-where $\delta_f$ is the face normal-gradient coefficient, $\bb{\Gamma}_f$ is the
-interface face area vector, and $\bb{n}$ is the interface unit normal.
+where $\delta_f$ is the face normal-gradient coefficient (\hl{avoid the introduction of this and use d and n instead}), $\bb{\Gamma}_f$ is the interface face area vector, and $\bb{n}$ is the interface unit normal.
 
 The off-diagonal interface blocks are compact approximations to the coupling
 derivatives. They are used only in the preconditioner; the converged nonlinear
@@ -613,12 +587,12 @@ conservation law. Its purpose is to extend the displacement prescribed on the
 fluid--solid interface into the interior of the fluid domain while maintaining
 mesh quality.
 
-Let $\bb{d}^{\Gamma}$ denote the fluid mesh displacement. On the fluid--solid
+Let $\bb{D}^{\Gamma}$ denote the fluid mesh displacement. On the fluid--solid
 interface, this displacement is prescribed from the solid displacement,
 \begin{equation}
-    \bb{d}^{\Gamma}
+    \bb{D}^{\Gamma}
     =
-    \bb{d}^s
+    \bb{D}_S
     \qquad
     \text{on } \Gamma_\mathrm{fsi}.
     \label{eqn:mesh_displacement_interface}
@@ -629,45 +603,81 @@ remaining fluid-domain boundaries.
 The interior fluid mesh displacement is computed using a pseudo-solid
 linear-elastic problem posed on the fluid reference mesh,
 \begin{equation}
-    \oint_{\Gamma^f_0}
-    \hat{\bb{n}}^f_0
+    \oint_{\Gamma_{0,f}}
+    \delta_f
+    \hat{\bb{n}}_{0,f}
     \cdot
     \left[
     \mu^\Gamma
-    \bb{\nabla}_0 \bb{d}^{\Gamma}
+    \bb{\nabla}_0 \bb{D}^{\Gamma}
     +
     \mu^\Gamma
     \left(
-    \bb{\nabla}_0 \bb{d}^{\Gamma}
+    \bb{\nabla}_0 \bb{D}^{\Gamma}
     \right)^T
     +
     \lambda^\Gamma
     \left(
-    \bb{\nabla}_0 \cdot \bb{d}^{\Gamma}
+    \bb{\nabla}_0 \cdot \bb{D}^{\Gamma}
     \right)
     \bb{I}
     \right]
-    \, d\Gamma^f_0
+    \, d\Gamma_{0,f}
     =
     \bb{0}.
     \label{eqn:mesh_motion_pseudo_solid}
 \end{equation}
-Equation~\eqref{eqn:mesh_motion_pseudo_solid} is written here in compact integral form for a single fluid mesh control volume: it expresses the discrete equilibrium of the pseudo-elastic stress flux on the boundary $\Gamma^f_0$ of that control volume in the reference configuration, and is assembled cell-by-cell over the fluid mesh in the same cell-centred finite-volume framework as the fluid and solid momentum equations rather than as a single global statement.
+Equation~\eqref{eqn:mesh_motion_pseudo_solid} is written here in compact integral form for a single fluid mesh control volume: it expresses the discrete equilibrium of the pseudo-elastic stress flux on the boundary $\Gamma_{0,f}$ of that control volume in the reference configuration, and is assembled cell-by-cell over the fluid mesh in the same cell-centred finite-volume framework as the fluid and solid momentum equations rather than as a single global statement.
 The coefficients $\mu^\Gamma$ and $\lambda^\Gamma$ are artificial stiffness
 parameters used only to control the distribution of the mesh motion. They do
 not represent material properties of the fluid.
 
-In this work, the artificial stiffness is increased near the fluid--solid
-interface by scaling it inversely with the square of the distance from the
-interface. This makes the mesh comparatively stiff near the moving boundary and
-more compliant farther away, reducing distortion of interface-adjacent cells
-while allowing the displacement to decay smoothly through the fluid domain.
+The dimensionless scalar $\delta_f$ in Equation~\eqref{eqn:mesh_motion_pseudo_solid} is a per-face stiffness scale factor.
+Its purpose is to bias the artificial stiffness so that fluid cells close to moving boundaries translate almost rigidly with the boundary, while the bulk of the
+mesh deformation is absorbed by cells farther away.
+This reduces distortion of interface-adjacent cells, preserves boundary-layer mesh quality, and allows the prescribed interface displacement to decay smoothly through the fluid domain.
 
-After solving Equation~\eqref{eqn:mesh_motion_pseudo_solid}, the fluid mesh is
-updated and the mesh velocity $\bb{v}^{\Gamma}$ is obtained from the temporal
-change in $\bb{d}^{\Gamma}$. This velocity is used to construct the ALE
-relative fluxes in the fluid residual. The moving-mesh fluxes are constructed
-so as to satisfy the discrete geometric conservation law.
+In this work, $\delta_f$ is computed from the distance from the walls $\Gamma_F$ (or a subset of the walls).
+For each interior face $f$ of the fluid mesh, a base diffusivity is evaluated as the inverse square of the distance from the face centre to the nearest
+moving boundary,
+\begin{equation}
+    \tilde{\delta}_f
+    =
+    \frac{1}{\ell_f^2},
+    \qquad
+    \ell_f = \mathrm{dist}(\bb{x}_f, \Gamma_F),
+    \label{eqn:mesh_motion_diffusivity_raw}
+\end{equation}
+so that faces near walls carry a much larger stiffness than faces in the far field.
+To keep the conditioning of the mesh motion system bounded and to avoid arbitrary scaling of the stiffness with the absolute size of the domain,
+the raw values are clipped against the mesh-wide average and then normalised by that average,
+\begin{equation}
+    \delta_f
+    =
+    \frac{1}{\bar{\tilde{\delta}}}
+    \,
+    \min\!\left(
+        c_{\max}\,\bar{\tilde{\delta}},\;
+        \max\!\left(c_{\min}\,\bar{\tilde{\delta}},\,\tilde{\delta}_f\right)
+    \right),
+    \qquad
+    \bar{\tilde{\delta}}
+    =
+    \frac{1}{N_f}\sum_f \tilde{\delta}_f,
+    \label{eqn:mesh_motion_stiffness_scale}
+\end{equation}
+where $c_{\min}$ and $c_{\max}$ are user-specified clipping factors (with
+defaults $c_{\min}=0.1$ and $c_{\max}=100$ used in the present work). By
+construction $\delta_f$ is dimensionless and has unit mean over the fluid
+mesh, so the absolute magnitudes of $\mu^\Gamma$ and $\lambda^\Gamma$ are
+unchanged on average and only the spatial distribution of stiffness is
+altered.
+%Cell-centre values, where required (e.g.\ for output or for constructing the assembled stiffness), are obtained by face-to-cell averaging of $\delta_f$.
+ The field $\delta_f$ is recomputed each time the wall-distance field is updated, i.e.\ whenever the fluid mesh moves.
+
+After solving Equation~\eqref{eqn:mesh_motion_pseudo_solid}, the fluid mesh is updated and the mesh velocity $\bb{v}^{\Gamma}$ is obtained from the temporal change in $\bb{D}^{\Gamma}$.
+This velocity is used to construct the ALE relative fluxes in the fluid residual.
+The moving-mesh fluxes are constructed so as to satisfy the discrete geometric conservation law.
 
 
 %%--------------------------------------------------------------------------------------------------------------------%%
@@ -725,7 +735,7 @@ and velocity are mapped to the fluid mesh-motion and velocity boundary
 conditions. The fluid pressure traction and, when enabled, the viscous traction
 are mapped back to the solid traction boundary condition. The implementation
 therefore assumes a single conformal fluid--solid interface for the calculations
-reported here; however, future work will focus on extending the approach to non-conformal interfaces using \emph{arbitrary mesh interpolation} approaches \citep{https://doi.org/10.1016/j.cma.2010.07.015}.
+reported here; however, future work will focus on extending the approach to non-conformal interfaces using \emph{arbitrary mesh interpolation} approaches \citep{FarrellMaddison2011}.
 
 The time-step procedure is summarised in Algorithm~\ref{alg:quasi_monolithic_fsi}.
 The residual callback used inside the nonlinear solve is summarised in

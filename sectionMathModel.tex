@@ -4,9 +4,8 @@
 
 Throughout this paper, the uppercase subscripts $F$ and $S$ are used to denote fluid- and solid-region quantities, respectively, and a trailing subscript $0$ denotes evaluation in the initial (reference) configuration. Where no ambiguity arises, the region subscript is omitted for conciseness.
 
-The present work considers the dynamic interaction between an incompressible
-Newtonian fluid and a deformable solid, as illustrated in
-Figure~\ref{fig:fsi_problem}. At time $t$, the coupled system occupies the
+The present work considers the dynamic interaction between an incompressible Newtonian fluid and a deformable elastic solid, as illustrated in Figure~\ref{fig:fsi_problem}.
+At time $t$, the coupled system occupies the
 moving domain
 \begin{equation}
     \Omega(t) = \Omega_F(t) \cup \Omega_S(t),
@@ -41,7 +40,7 @@ moving domains and boundaries is omitted where no ambiguity arises.
         \label{fig:fsi_problem_current}
         \includegraphics[width=0.8\textwidth]{figures/fsi_problem_current}
     }
-    \caption{Representative fluid--solid interaction problem, where the subscript $F$ denotes fluid-domain quantities and the subscript $S$ denotes solid-domain quantities. Image adapted from \citet{OneraWebsite}.}
+    \caption{Representative fluid--solid interaction problem, where the subscript $F$ denotes fluid-domain quantities and the subscript $S$ denotes solid-domain quantities. Image adapted from \citet{OneraWebsite,Richter2012}. \hl{Update f to F and s to S}}
     \label{fig:fsi_problem}
 \end{figure}
 
@@ -71,30 +70,29 @@ where $\rho_S$ is the current density, $\bb{v}_S$ is the solid velocity,
 $\bb{\sigma}_S$ is the true (Cauchy) stress tensor, and $\bb{f}_{b,S}$ is a body force
 per unit current volume.
 
-The solid equations are solved in total Lagrangian form. Let
-$\bb{d}_S$ denote the solid displacement from the initial configuration
-$\Omega_{S,0}$ to the current configuration $\Omega_S(t)$. The deformation
-gradient and its determinant are
+The solid equations are solved in total Lagrangian form. Let $\bb{D}_S$ denote the solid displacement from the initial configuration
+$\Omega_{S,0}$ to the current configuration $\Omega_S(t)$.
+The deformation gradient and its determinant are
 \begin{equation}
     \bb{F}
     =
     \bb{I}
     +
-    \left( \bb{\nabla}_0 \bb{d}_S \right)^T,
+    \left( \bb{\nabla}_0 \bb{D}_S \right)^T,
     \qquad
     J = \det \bb{F},
     \label{eqn:deformation_gradient}
 \end{equation}
 where $\bb{\nabla}_0$ denotes differentiation with respect to the initial
 solid coordinates. With the convention
-$(\nabla_0 d_S)_{ij} = \partial d_{S,j} / \partial X_i$, this corresponds in
+$(\nabla_0 D_S)_{ij} = \partial D_{S,j} / \partial X_i$, this corresponds in
 index notation to
 \begin{equation}
     F_{ij}
     =
     \delta_{ij}
     +
-    \frac{\partial d_{S,i}}{\partial X_j}.
+    \frac{\partial D_{S,i}}{\partial X_j}.
 \end{equation}
 
 Using Nanson's relation,
@@ -107,7 +105,8 @@ the solid momentum equation may be expressed over the initial configuration as
 \begin{equation}
     \int_{\Omega_{S,0}}
     \rho_{S,0}
-    \frac{\partial^2 \bb{d}_S}{\partial t^2}
+%    \frac{\partial^2 \bb{d}_S}{\partial t^2}
+    \frac{\partial \bb{v}_S}{\partial t}
     \, d\Omega_{S,0}
     =
     \oint_{\Gamma_{S,0}}
@@ -123,11 +122,11 @@ the solid momentum equation may be expressed over the initial configuration as
     \, d\Omega_{S,0} .
     \label{eqn:solid_momentum_TL}
 \end{equation}
-Here $\rho_{S,0}$ is the initial density and $\bb{f}_{b0,S}$ is a body force per
-unit initial volume. The true (Cauchy) stress $\bb{\sigma}_S$ is supplied by the chosen
-mechanical law. In this work, the considered mechanical laws include linear
-elasticity and the hyperelastic laws described in Appendix~A of \citet{Cardiff2025JFNK}.
-\hl{UPDATE: we should at least state the names of the laws we use - do this when the test cases are all defined}
+Here $\rho_{S,0}$ is the initial density and $\bb{f}_{b0,S}$ is a body force per unit initial volume.
+The true (Cauchy) stress $\bb{\sigma}_S$ is supplied by the chosen mechanical law.
+In this work, the considered mechanical laws include linear elasticity and neo-Hookean and St Venant-Kirchhoff hyperelasticity.
+%escribed in Appendix~A of \citet{Cardiff2025JFNK}.
+%\hl{UPDATE: we should at least state the names of the laws we use - do this when the test cases are all defined}
 
 The solid boundary conditions considered are prescribed displacement,
 prescribed traction, and symmetry conditions.
@@ -145,7 +144,7 @@ and let $\bb{v}^{\Gamma}$ denote the velocity of the moving fluid domain. The
 motion of $\Omega_F(t)$ is prescribed on the fluid--solid interface by the
 kinematic condition in Section~\ref{sec:fsi_interface}; its extension into the
 interior of the fluid domain is a numerical mesh-motion procedure described in
-Section~\ref{sec:numerical_method}.
+Section~\ref{sec:fluid_mesh_motion}.
 
 For an incompressible fluid, conservation of mass over a moving control volume
 may be written as
@@ -252,10 +251,8 @@ defined in Section~\ref{sec:fsi_interface}.
 \label{sec:fsi_interface}
 %%--------------------------------------------------------------------------------------------------------------------%%
 
-The fluid and solid are coupled by kinematic and dynamic conditions on the
-fluid--solid interface $\Gamma_\text{fsi}(t)$. The kinematic condition enforces
-continuity of velocity between the fluid and solid and also prescribes the
-motion of the fluid-domain boundary:
+The fluid and solid are coupled by kinematic and dynamic conditions on the fluid--solid interface $\Gamma_\text{fsi}(t)$.
+The kinematic condition enforces continuity of velocity between the fluid and solid and also prescribes the motion of the fluid-domain boundary:
 \begin{equation}
     \bb{v}_F
     =
@@ -263,16 +260,14 @@ motion of the fluid-domain boundary:
     =
     \bb{v}^{\Gamma}
     =
-    \frac{\partial \bb{d}_S}{\partial t}
+    \frac{\partial \bb{D}_S}{\partial t}
     \qquad
     \text{on } \Gamma_\text{fsi}(t),
     \label{eqn:kinematic_interface}
 \end{equation}
-where $\bb{v}^{\Gamma}$ is the velocity of the moving fluid domain. This condition
-prevents slip, gap formation and overlap at the interface. Away from the
-interface, the extension of the boundary motion into the fluid domain is a
-numerical mesh-motion procedure and is described in
-Section~\ref{sec:numerical_method}.
+%where $\bb{v}^{\Gamma}$ is the velocity of the moving fluid domain.
+This condition prevents slip, gap formation and overlap at the interface.
+Away from the interface, the extension of the boundary motion into the fluid domain is a numerical mesh-motion procedure and is described in Section~\ref{sec:fluid_mesh_motion}.
 
 The dynamic condition enforces equilibrium of the fluid and solid tractions,
 \begin{equation}

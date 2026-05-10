@@ -11,35 +11,22 @@
 %\subsection{Fluid mesh motion}
 %\subsection{Implementation details}
 
-This section describes the discretisation and solution strategy used for the
-fluid--solid interaction problem defined in Section~\ref{sec:math_model}. We
-distinguish between three aspects of the method. First, the governing equations
-are discretised using cell-centred finite volumes on separate fluid and solid
-meshes. The fluid equations are discretised on the current ALE mesh, while the
-solid equations are discretised in the reference configuration using a total
-Lagrangian formulation. Second, the resulting algebraic equations are solved
-using a quasi-monolithic nonlinear strategy in which the fluid velocity, fluid
-pressure and solid velocity are advanced in a single coupled nonlinear solve.
-Third, the method is implemented in solids4foam/OpenFOAM using PETSc SNES for
-the nonlinear and linear algebra operations.
+This section describes the discretisation and solution strategy used for the fluid--solid interaction problem defined in Section~\ref{sec:math_model}.
+We distinguish between three aspects of the method. First, the governing equations are discretised using cell-centred finite volumes on separate fluid and solid meshes.
+The fluid equations are discretised on the current ALE mesh, while the solid equations are discretised in the reference configuration using a total Lagrangian formulation.
+Second, the resulting algebraic equations are solved using a quasi-monolithic nonlinear strategy in which the fluid velocity, fluid pressure and solid velocity are advanced in a single coupled nonlinear solve.
+Third, the method is implemented in solids4foam \citep{Cardiff2025} -- an open source toolbox for OpenFOAM -- using PETSc \citep{petsc} for the nonlinear and linear algebra operations.
 
-The approach is inspired by the quasi-monolithic interface treatment of
-Liu et al.~\citep{Liu2014} and Algorithm~2 of Jaiman and
-Joshi~\citep{JaimanJoshi2022}. As in those formulations, the fluid and solid
-subproblems are coupled at the nonlinear level through the interface kinematic
-and dynamic conditions. The present method differs in four main respects: the
-spatial discretisation is cell-centred finite volume rather than finite
-element; the fluid is solved using a standard ALE incompressible finite-volume
-formulation with Rhie--Chow-type pressure stabilisation; the coupled nonlinear
-unknown contains $(\bb{U}_f,p_f,\bb{U}_s)$, but not the fluid mesh displacement
-or the solid displacement; and the assembled matrix supplied to the Krylov
-solver is an approximate block preconditioner rather than the exact Jacobian of
-the coupled residual.
+The approach is inspired by the quasi-monolithic interface treatment of Liu et al.~\citep{Liu2014} and Jaiman and Joshi~\citep{JaimanJoshi2022}.
+As in those formulations, the fluid and solid subproblems are coupled at the nonlinear level through the interface kinematic and dynamic conditions.
+The present method differs in three main respects:
+the spatial discretisation is cell-centred finite volume rather than finite element;
+the fluid is solved using a standard ALE incompressible finite-volume formulation with Rhie--Chow-type pressure stabilisation;
+%the coupled nonlinear unknown contains $(\bb{v}_F,p_F,\bb{v}_S)$, but not the fluid mesh displacement or the solid displacement;
+and the assembled matrix supplied to the Krylov solver is an approximate block preconditioner rather than the exact Jacobian of the coupled residual.
 
-The method is therefore described as quasi-monolithic. The nonlinear residual
-is coupled in the fluid velocity, fluid pressure and solid velocity. However,
-the fluid mesh motion and the update of the stored solid displacement are
-performed outside the Newton vector.
+The method is therefore described as quasi-monolithic.
+The nonlinear residual is coupled in the fluid velocity, fluid pressure and solid velocity; however, the fluid mesh motion and the update of the stored solid displacement are performed outside the Newton vector.
 
 %%--------------------------------------------------------------------------------------------------------------------%%
 \subsection{Finite-volume discretisation}
@@ -51,8 +38,9 @@ The set of fluid control volumes is denoted by $\mathcal{P}^f$ and the set of so
 A generic cell is denoted by $P$, with volume $\Omega_P$ and faces $f \in \mathcal{F}_P$. The outward face area vector associated with face $f$ is
 denoted by $\bb{\Gamma}_f$.
 
-The primary unknowns are stored at cell centres. Volume integrals are
-approximated using midpoint quadrature,
+The primary unknowns are stored at cell centres, and represent the pointwise values at those locations.
+% as well as the volume-average of the quantity in the cell.
+Volume integrals are approximated using midpoint quadrature,
 \begin{equation}
     \int_{\Omega_P}
     \bb{\phi}
@@ -73,21 +61,15 @@ Surface integrals are approximated by sums over the cell faces,
     \bb{S}_f \cdot \bb{q}_f ,
     \label{eqn:fv_surface_integral}
 \end{equation}
-where $\bb{q}_f$ denotes the face value of $\bb{q}$. On internal faces, face
-values are obtained by interpolation from the adjacent cell centres. Gradients
-are evaluated using a first-neighbour least-squares procedure, which is exact
-for linear fields. These finite-volume operations are applied on the current
-moving mesh for the fluid equations and on the reference mesh for the total
-Lagrangian solid equations.
+where $\bb{q}_f$ denotes the face value of $\bb{q}$. On internal faces, face values are in general obtained by interpolation from the adjacent cell centres \hl{we should mention diffusion operator compact discretisation}.
+Gradients are evaluated using a first-neighbour least-squares procedure, which is exact for linear fields.
+These finite-volume operations are applied on the current moving mesh for the fluid equations and on the reference mesh for the total Lagrangian solid equations.
 
-The discretisation is constructed from nominally second-order finite-volume
-operators: midpoint volume quadrature, linear face interpolation and
-least-squares gradients that are exact for linear fields. The realised order of
-accuracy depends on the selected convection scheme, mesh regularity, boundary
-treatment and stabilisation terms, and is assessed in the numerical examples.
+The discretisation is constructed from nominally second-order finite-volume operators: midpoint volume quadrature, linear face interpolation and
+least-squares gradients that are exact for linear fields.
+The realised order of accuracy depends on the selected convection scheme, mesh regularity, boundary treatment and stabilisation terms, and is assessed in the numerical examples.
 
-For the fluid equations, the convective flux is written in ALE form using the
-relative face flux
+For the fluid equations, the convective flux is written in ALE form using the relative face flux
 \begin{equation}
     \phi_f^\mathrm{rel}
     =
@@ -104,26 +86,47 @@ where $\bb{v}^{\Gamma}_f$ is the face velocity of the moving fluid mesh. The
 moving-mesh fluxes are constructed consistently with the discrete geometric
 conservation law.
 
-Time derivatives are discretised using the second-order backward difference
-formula. For a generic field $\bb{\phi}$,
+The rate of change volume integral in the fluid momentum equation is approximated using the second-order backward difference (BDF2) formula applied to a moving cell $P$:
 \begin{equation}
     \left.
-    \frac{\partial \bb{\phi}}{\partial t}
-    \right|^{n}
+    \frac{d}{dt}
+    \int_{\Omega_F(t)}
+    \bb{v}_F
+    \, d\Omega_F
+    \right|_P^n
     \approx
     \frac{
-    3\bb{\phi}^{n}
+    3 \Omega_{F,P}^{n} \bb{v}_{F,P}^{n}
     -
-    4\bb{\phi}^{n-1}
+    4 \Omega_{F,P}^{n-1} \bb{v}_{F,P}^{n-1}
     +
-    \bb{\phi}^{n-2}
+    \Omega_{F,P}^{n-2} \bb{v}_{F,P}^{n-2}
     }
     {2\Delta t}.
+    \label{eqn:moving_mesh_bdf2_time_term}
+\end{equation}
+
+The same approximation is applied to the rate of change term in the solid momentum equation, but can be simplied, as the integration is performed over the initial (unchanging) reference volume:
+\begin{equation}
+    \left.
+    \int_{\Omega_{S,0}}
+    \frac{\partial \bb{v}_S}{\partial t}
+    \, d\Omega_{S,0}
+    \right|^{n}_P
+    \approx
+    \frac{
+    3\bb{v}^{n}_S
+    -
+    4\bb{v}^{n-1}_S
+    +
+    \bb{v}^{n-2}_S
+    }
+    {2\Delta t}
+    \Omega_{{S,0}_P}.
     \label{eqn:bdf2}
 \end{equation}
-The same temporal discretisation is used for the fluid velocity, solid velocity and stored auxiliary fields, unless otherwise stated.
-The update of the stored solid displacement, which is not an independent unknown in the coupled Newton system, is described separately in
-Section~\ref{sec:auxiliary_solid_displacement_update}.
+%The same temporal discretisation is used for the fluid velocity and solid velocity.
+The update of the stored solid displacement, which is not an independent unknown in the coupled Newton system, is described separately in the next section.
 
 
 %%--------------------------------------------------------------------------------------------------------------------%%
@@ -135,20 +138,20 @@ Following the convention introduced in Section~\ref{sec:math_model}, the upperca
 
 At each time step, the coupled nonlinear problem is formed in terms of the
 fluid velocity, fluid pressure and solid velocity.
-Following the time-level convention of Liu et al.~\citep{Liu2014}, the coupled solve at time level $n$ determines $(\bb{U}_F^n,p_F^n,\bb{U}_S^n)$.
+Following the time-level convention of Liu et al.~\citep{Liu2014}, the coupled solve at time level $n$ determines $(\bb{v}_F^n,p_F^n,\bb{v}_S^n)$.
 These are collected into the unknown vector
 \begin{equation}
     \bb{\mathcal{U}}
     =
     \begin{bmatrix}
-    \bb{U}_F^n \\
+    \bb{v}_F^n \\
     p_F^n \\
-    \bb{U}_S^n
+    \bb{v}_S^n
     \end{bmatrix},
     \label{eqn:coupled_unknown_vector}
 \end{equation}
-where $\bb{U}_F$ and $p_F$ are the cell-centred fluid velocity and pressure
-unknowns, and $\bb{U}_S$ is the cell-centred solid velocity unknown. The solid
+where $\bb{v}_F$ and $p_F$ are the cell-centred fluid velocity and pressure
+unknowns, and $\bb{v}_S$ is the cell-centred solid velocity unknown. The solid
 displacement and the fluid mesh displacement are stored auxiliary fields, but
 they are not independent unknowns in $\bb{\mathcal{U}}$.
 
@@ -158,21 +161,21 @@ the fluid pressure equation and the solid momentum equation as
     \bb{R}(\bb{\mathcal{U}})
     &=&
     \begin{bmatrix}
-    \bb{R}_F(\bb{U}_F,p_F;\bb{U}_S) \\
-    \bb{R}_S(\bb{U}_S;\bb{U}_F,p_F)
+    \bb{R}_F(\bb{v}_F,p_F;\bb{v}_S) \\
+    \bb{R}_S(\bb{v}_S;\bb{v}_F,p_F)
     \end{bmatrix} \notag \\
     &=&
     \begin{bmatrix}
-    \bb{R}_{F_m}(\bb{U}_F,p_F;\bb{U}_S) \\
-    R_{F_p}(\bb{U}_F,p_F;\bb{U}_S) \\
-    \bb{R}_S(\bb{U}_S;\bb{U}_F,p_F)
+    \bb{R}_{F_m}(\bb{v}_F,p_F;\bb{v}_S) \\
+    R_{F_p}(\bb{v}_F,p_F;\bb{v}_S) \\
+    \bb{R}_S(\bb{v}_S;\bb{v}_F,p_F)
     \end{bmatrix}
     =
     \bb{0}.
     \label{eqn:coupled_residual}
 \end{eqnarray}
 Here $\bb{R}_F = \left[ \bb{R}_{F_m};\, R_{F_p} \right]$ denotes the discrete fluid residuals, with $\bb{R}_{F_m}$ the (vector) momentum residual and $R_{F_p}$ the (scalar) pressure residual; $\bb{R}_S$ denotes the discrete solid momentum residual.
-The interface coupling is represented by the off-block arguments: $\bb{U}_S$ enters the fluid equations through the interface velocity boundary condition and the motion of the fluid mesh boundary, while $(\bb{U}_F,p_F)$ enters the solid equation through the fluid traction applied to the solid interface.
+The interface coupling is represented by the off-block arguments: $\bb{v}_S$ enters the fluid equations through the interface velocity boundary condition and the motion of the fluid mesh boundary, while $(\bb{v}_F,p_F)$ enters the solid equation through the fluid traction applied to the solid interface.
 Operationally, given a trial state, the current solid interface velocity is first imposed as the fluid velocity boundary condition and used to update the fluid mesh motion; the fluid momentum and pressure equations are then evaluated, and the resulting fluid traction is mapped to the solid interface and applied as a traction boundary condition before the solid residual is evaluated.
 
 In the remainder of this subsection, the region subscript $F$ on fluid quantities is omitted where no ambiguity arises; the lower-case subscript $f$ continues to denote a face quantity.
@@ -183,15 +186,15 @@ For a fluid control volume $P$ of volume $\Omega_P$, the discrete momentum resid
     \sum_{f \in \mathcal{F}_P}
     \bigg[
        \nu
-       \frac{\bb{U}_{N_f} - \bb{U}_{P}}
+       \frac{\bb{v}_{N_f} - \bb{v}_{P}}
             {\hat{\bb{n}}_f \cdot \bb{d}_f}
        |\bb{\Gamma}_f|
        +
        \nu \bb{k}_f \cdot
-       \left( \bb{\nabla} \bb{U} \right)_f
+       \left( \bb{\nabla} \bb{v} \right)_f
        -
        \phi^\mathrm{rel}_f
-       \widetilde{\bb{U}}_f
+       \widetilde{\bb{v}}_f
     \bigg]
     -
     \Omega_P
@@ -199,12 +202,12 @@ For a fluid control volume $P$ of volume $\Omega_P$, the discrete momentum resid
     \left( \bb{\nabla} p \right)_P
     +
     \left(
-    \frac{\partial \bb{U}}{\partial t}
+    \frac{\partial \bb{v}}{\partial t}
     \right)_P
     \right],
     \label{eqn:fluid_momentum_residual}
 \end{align}
-where $\bb{U}_P$ and $\bb{U}_{N_f}$ are the velocities in cell $P$ and in the neighbouring cell across face $f$, $\bb{d}_f$ is the vector joining the two cell centres, and $\bb{\Gamma}_f = |\bb{\Gamma}_f|\,\hat{\bb{n}}_f$ is the outward face area vector with unit normal $\hat{\bb{n}}_f$. The linearly interpolated face velocity, used in both the convective and continuity fluxes below, is denoted $\bb{U}_f$.
+where $\bb{v}_P$ and $\bb{v}_{N_f}$ are the velocities in cell $P$ and in the neighbouring cell across face $f$, $\bb{d}_f$ is the vector joining the two cell centres, and $\bb{\Gamma}_f = |\bb{\Gamma}_f|\,\hat{\bb{n}}_f$ is the outward face area vector with unit normal $\hat{\bb{n}}_f$. The linearly interpolated face velocity, used in both the convective and continuity fluxes below, is denoted $\bb{v}_f$.
 
 The face summation contains the diffusion and convection contributions. The
 first term is the compact orthogonal contribution to the viscous diffusion
@@ -219,7 +222,7 @@ flux. The second term is the non-orthogonal correction, where
     |\bb{\Gamma}_f|
     \label{eqn:non_orthogonal_correction_vector}
 \end{equation}
-and $\left( \bb{\nabla} \bb{U} \right)_f$ is obtained by interpolating the
+and $\left( \bb{\nabla} \bb{v} \right)_f$ is obtained by interpolating the
 cell-centred least-squares velocity gradients to the face. This correction
 introduces the usual extended stencil associated with non-orthogonal
 finite-volume diffusion terms.
@@ -231,14 +234,14 @@ through face $f$ is
     =
     \bb{\Gamma}_f \cdot
     \left(
-    \bb{U}_f
+    \bb{v}_f
     -
     \bb{v}^{\Gamma}_f
     \right),
     \label{eqn:discrete_relative_flux}
 \end{equation}
 where $\bb{v}^{\Gamma}_f$ is the face mesh velocity.
-The convected velocity $\widetilde{\bb{U}}_f$ is evaluated using a second-order upwind scheme, in which the velocity is extrapolated from the upwind cell centre using the cell-centred velocity gradient.
+In the current work, the convected velocity $\widetilde{\bb{v}}_f$ is evaluated using a second-order upwind scheme, in which the velocity is extrapolated from the upwind cell centre using the cell-centred velocity gradient.
 
 The remaining terms in Equation~\eqref{eqn:fluid_momentum_residual} are volume contributions.
 The pressure gradient $\left( \bb{\nabla} p \right)_P$ is computed using the first-neighbour least-squares gradient, while the local inertia term is discretised in time using the BDF2 approximation in Equation~\eqref{eqn:bdf2}.
@@ -249,18 +252,35 @@ The discrete pressure residual for cell $P$ is
     =
     -
     \sum_{f \in \mathcal{F}_P}
-    \bb{\Gamma}_f \cdot \bb{U}_f
-    +
-    \Omega_P S_{p,P}(p;r_{AU}),
+    \bb{\Gamma}_f \cdot \bb{v}_f
+    \;+\;
+    \mathcal{D}_{p,P},
     \label{eqn:fluid_pressure_residual}
 \end{equation}
-where $\bb{U}_f$ is again the linearly interpolated face velocity, and $S_{p,P}$ is the finite-volume pressure-stabilisation contribution in cell~$P$. Unless otherwise stated, $S_{p,P}$ is a Rhie--Chow-type stabilisation constructed from a face-interpolated coefficient $r_{AU}$, taken as the reciprocal of an auxiliary momentum-equation diagonal coefficient. Its detailed construction is given in Section~\ref{sec:approximate_block_preconditioner}.
+where $\bb{v}_f$ is again the linearly interpolated face velocity, and $\mathcal{D}_{p,P}$ is the finite-volume pressure-stabilisation contribution calculated as
+\begin{eqnarray} \label{eqn:rhie_chow}
+	\mathcal{D}_{p,P}
+	=
+	\sum_{f \in \mathcal{F}_P}
+	\frac{\alpha_p}{a_{P_f}}
+        \bigg[
+	\frac{\bb{v}_{N_f} - \bb{v}_{P}}{\bb{\hat{n}}_f \cdot \bb{d}_f}
+       -
+       \frac{\bb{d}_f}{\bb{\hat{n}}_f \cdot \bb{d}_f} \cdot \left( \bb{\nabla} \bb{v} \right)_f
+    \bigg]
+    |\bb{\Gamma}_f|
+\end{eqnarray}
+where $a_{P_f}$ is the momentum-equation diagonal coefficient, linearly interpolated to the face.
+The user-defined parameter $\alpha_p > 0$ globally scales the amount of stabilisation, and is chosen here to be 1.0 unless otherwise stated.
+%Its detailed construction is given in Section~\ref{sec:approximate_block_preconditioner}.
 
-Equations~\eqref{eqn:fluid_momentum_residual} and~\eqref{eqn:fluid_pressure_residual} are written as interior-cell expressions. For fluid cells adjacent to the fluid--solid interface, the corresponding interface-face terms use the kinematic interface condition: the prescribed interface velocity is obtained from the mapped solid velocity,
+Equations~\eqref{eqn:fluid_momentum_residual}, ~\eqref{eqn:fluid_pressure_residual} and ~\eqref{eqn:rhie_chow} are written as interior-cell expressions. For fluid cells adjacent to the fluid--solid interface, the corresponding interface-face terms use the kinematic interface condition: the prescribed interface velocity is obtained from the mapped solid velocity,
 \begin{equation}
-    \bb{U}_{\Gamma}
+    \bb{v}_{F}
     =
-    \mathcal{T}_{S\to F}(\bb{U}_S)
+    \bb{v}_{\Gamma}
+    =
+    \mathcal{T}_{S\to F}(\bb{v}_S)
     \qquad
     \text{on } \Gamma_\mathrm{fsi},
     \label{eqn:mapped_solid_velocity}
@@ -268,21 +288,21 @@ Equations~\eqref{eqn:fluid_momentum_residual} and~\eqref{eqn:fluid_pressure_resi
 where $\mathcal{T}_{S\to F}$ denotes the solid-to-fluid interface transfer operator. The ALE relative flux $\phi^\mathrm{rel}_f$ on $\Gamma_\mathrm{fsi}$ vanishes when the fluid interface velocity and mesh velocity coincide, consistent with the no-slip kinematic condition. The present implementation assumes a conformal fluid--solid interface, so $\mathcal{T}_{S\to F}$ reduces to a one-to-one mapping between corresponding interface faces; extension to non-conformal interfaces (e.g.\ via arbitrary mesh interface methods or radial-basis-function interpolation) is left for future work.
 
 
-In the remainder of this subsection, the region subscript $S$ on solid quantities is omitted where no ambiguity arises. Because the coupled unknown contains the solid velocity $\bb{U}_S^n$ rather than the solid displacement, the future-time displacement $\bb{d}^{n+1}$ required to evaluate the total Lagrangian stress is reconstructed from $\bb{U}_S^n$ and stored solid velocities as
+In the remainder of this subsection, the region subscript $S$ on solid quantities is omitted where no ambiguity arises. Because the coupled unknown contains the solid velocity $\bb{v}_S^n$ rather than the solid displacement, the future-time displacement $\bb{D}^{n+1}$ required to evaluate the total Lagrangian stress is reconstructed from $\bb{v}_S^n$ and stored solid velocities as
 \begin{equation}
-    \bb{d}^{n+1}
+    \bb{D}^{n+1}
     =
-    \bb{d}^{n}
+    \bb{D}^{n}
     +
     \frac{\Delta t}{2}
     \left(
-    3\bb{U}_S^{n}
+    3\bb{v}_S^{n}
     -
-    \bb{U}_S^{n-1}
+    \bb{v}_S^{n-1}
     \right),
     \label{eqn:solid_future_displacement}
 \end{equation}
-and is therefore an implicit function of the current trial value of $\bb{U}_S^n$ during the nonlinear solve.
+and is therefore an implicit function of the current trial value of $\bb{v}_S^n$ during the nonlinear solve.
 
 For a solid control volume $P$ of initial volume $\Omega_{0,P}$, the discrete
 solid equation is written as
@@ -292,9 +312,9 @@ solid equation is written as
     \frac{1}{2}
     \sum_{f \in \mathcal{F}_P}
     \left(
-    \bb{t}^{\,n}_f
+    \bb{T}^{\,n}_f
     +
-    \bb{t}^{\,n+1}_f
+    \bb{T}^{\,n+1}_f
     \right)
     +
     \rho_0 \Omega_{0,P}
@@ -302,18 +322,34 @@ solid equation is written as
     \bb{g}
     -
     \left(
-    \frac{\partial \bb{U}}{\partial t}
+    \frac{\partial \bb{v}}{\partial t}
     \right)_P^{n}
     -
-    c_d \bb{U}_{P}^{n}
-    \right],
+    c_d \bb{v}_{P}^{n}
+    \right]
+        \;+\;
+    \bb{\mathcal{D}}_{s,P},
     \label{eqn:solid_velocity_residual}
 \end{equation}
-where $\bb{t}^{\,n}_f$ and $\bb{t}^{\,n+1}_f$ are the area-weighted face force vectors at the previous and future time levels, $\rho_0$ is the solid density in the reference configuration, $\bb{g}$ is the body force per unit mass and $c_d$ is an optional damping coefficient.
+where $\bb{T}^{\,n}_f$ and $\bb{T}^{\,n+1}_f$ are the area-weighted face force (not traction) vectors at the previous and future time levels, $\rho_0$ is the solid density in the reference configuration, $\bb{g}$ is the body force per unit mass, $c_d$ is an optional damping coefficient, and $\bb{\mathcal{D}}_{s,P}$ is a stabilisation term -- similar to $\mathcal{D}_{p,P}$ -- calculated as
+\begin{eqnarray} \label{eqn:rhie_chow_s}
+	\bb{\mathcal{D}}_{s,P}
+	=
+	\sum_{f \in \mathcal{F}_P}
+	\alpha_d \bar{K}
+        \bigg[
+	\frac{\bb{D}^{n+1}_{N_f} - \bb{D}^{n+1}_{P}}{\bb{\hat{n}}_f \cdot \bb{d}_f}
+       -
+       \frac{\bb{d}_f}{\bb{\hat{n}}_f \cdot \bb{d}_f} \cdot \left( \bb{\nabla} \bb{D} \right)^{n+1}_f
+    \bigg]
+    |\bb{\Gamma}_f|
+\end{eqnarray}
+where $\bar{K} = 2\mu + \lambda$ is a stiffness-type parameter that gives the stabilisation term an appropriate scale and dimension, with $\mu$ being the shear modulus and $\lambda$ being the second Lamé parameter (or their linearised equivalent for finite strain formulations).
+The user-defined parameter $\alpha_d > 0$ globally scales the amount of stabilisation, and is chosen here to be 0.1 unless otherwise stated.
 
 The future-time face force is computed as
 \begin{equation}
-    \bb{t}^{\,n+1}_f
+    \bb{T}^{\,n+1}_f
     =
     \left[
     J^{n+1}_f
@@ -325,9 +361,10 @@ The future-time face force is computed as
     \bb{\sigma}^{n+1}_f,
     \label{eqn:solid_future_face_force}
 \end{equation}
-where $\bb{\Gamma}_{0,f}$ is the outward reference face area vector, $\bb{F}^{n+1}_f$ and $J^{n+1}_f = \det \bb{F}^{n+1}_f$ are the future-time deformation gradient and volume ratio interpolated to the face, and $\bb{\sigma}^{n+1}_f$ is the corresponding Cauchy stress. The cell-centred future-time stress is computed from the reconstructed displacement $\bb{d}^{n+1}$ (via $\bb{F}^{n+1}$) and then linearly interpolated to the faces; the previous-time face force $\bb{t}^{\,n}_f$ is defined analogously from stored solid fields. The cell-centred time derivative $\left(\partial \bb{U}/\partial t\right)_P$ is approximated using the BDF2 scheme in Equation~\eqref{eqn:bdf2}.
+where $\bb{\Gamma}_{0,f}$ is the outward reference face area vector, $\bb{F}^{n+1}_f$ and $J^{n+1}_f = \det \bb{F}^{n+1}_f$ are the future-time deformation gradient and volume ratio interpolated to the face, and $\bb{\sigma}^{n+1}_f$ is the corresponding Cauchy stress. The cell-centred future-time stress is computed from the reconstructed displacement $\bb{D}^{n+1}$ (via $\bb{F}^{n+1}$) and then linearly interpolated to the faces; the previous-time face force $\bb{T}^{\,n}_f$ is defined analogously from stored solid fields. The cell-centred time derivative $\left(\partial \bb{v}/\partial t\right)_P$ is approximated using the BDF2 scheme in Equation~\eqref{eqn:bdf2}.
 
-For faces on the fluid--solid interface, the solid face force is replaced by the area-weighted traction mapped from the fluid side, computed from the current fluid pressure and viscous stress. The fluid variables thus enter Equation~\eqref{eqn:solid_velocity_residual} through this traction boundary condition on $\Gamma_\mathrm{fsi}$.
+For faces on the fluid--solid interface, the solid face force is replaced by the area-weighted traction mapped from the fluid side, computed from the current fluid pressure and viscous stress, and the stabilisation contribution is set to zero.
+The fluid variables thus enter Equation~\eqref{eqn:solid_velocity_residual} through this traction boundary condition on $\Gamma_\mathrm{fsi}$.
 
 %The fluid and solid equation blocks may be multiplied by separate scale factors
 %before forming the global coupled residual.
@@ -492,11 +529,11 @@ stress-divergence equation. In compact form, it may be written as
     \bb{\nabla} \cdot
     \left[
     (3/2) K_{\mathrm{imp},f} \Delta t
-    \bb{\nabla} \bb{U}_s
+    \bb{\nabla} \bb{v}_S
     \right]
     -
-    \rho_s
-    \frac{\partial \bb{U}_s}{\partial t},
+    \rho_S
+    \frac{\partial \bb{v}_S}{\partial t},
     \label{eqn:solid_approximate_jacobian}
 \end{equation}
 with optional damping contributions. Here $K_{\mathrm{imp},f}$ is an
@@ -706,7 +743,7 @@ extrapolation from previous time levels or from the current trial velocity.
 preconditioning.
 \State Solve the coupled nonlinear system
 $\bb{R}(\bb{\mathcal{U}})=\bb{0}$ for
-$(\bb{U}_f,p_f,\bb{U}_s)$ using PETSc SNES.
+$(\bb{v}_F,p_F,\bb{v}_S)$ using PETSc SNES.
 \State Extract the converged fluid velocity, fluid pressure and solid velocity
 from the PETSc vector.
 \State If the nonlinear solve fails, restore the old fields and mesh state and
@@ -718,7 +755,7 @@ retry the time step, optionally with a reduced time step.
 \caption{Coupled residual evaluation}
 \label{alg:coupled_residual}
 \begin{algorithmic}[1]
-\State Extract $(\bb{U}_f,p_f,\bb{U}_s)$ from the current PETSc trial vector.
+\State Extract $(\bb{v}_F,p_F,\bb{v}_S)$ from the current PETSc trial vector.
 \State Map the current solid interface motion to the fluid interface.
 \State Compute the current fluid traction on the fluid--solid interface.
 \State Map the fluid traction to the solid interface and impose it as a solid
@@ -774,7 +811,7 @@ coupled PETSc residual vector.
 %%%--------------------------------------------------------------------------------------------------------------------%%
 %To facilitate the application of a Newton-type solution algorithm, the governing equations are expressed in \emph{residual} form as:
 %\begin{eqnarray} \label{eqn:residual}
-%	    \bb{R}(\bb{U}) =
+%	    \bb{R}(\bb{v}) =
 %	         \begin{pmatrix}
 %			\bb{R}_u  \\
 %			R_p \\
@@ -783,10 +820,10 @@ coupled PETSc residual vector.
 %		    \end{pmatrix}
 %		= \bb{0}
 %\end{eqnarray}
-%where $\bb{R}$ represents the \emph{residual} (imbalance) of the equations, which is a function of the primary unknowns field $\bb{U} = \left\{\bb{v}, p, \bb{d}_m, \bb{d} \right\}$.
+%where $\bb{R}$ represents the \emph{residual} (imbalance) of the equations, which is a function of the primary unknowns field $\bb{v} = \left\{\bb{v}, p, \bb{d}_m, \bb{d} \right\}$.
 %Concretely, the components of the residual are given as \hl{use on Omega f notation etc}
 %\begin{eqnarray} \label{eq:residuals}
-%    \bb{R}_u %(\bb{U})
+%    \bb{R}_u %(\bb{v})
 %    &=&
 %	\oint_{\Gamma^f_0}  \left[ J^\Gamma (\bb{F}^\Gamma)^{-\text{T}} \cdot \hat{\bb{n}}_0^f \right]
 %		\cdot \left[\nu (\bb{F}^\Gamma)^{-T} \cdot \left( \bb{\nabla}_0 \bb{v}^f \right) \right] \, d\Gamma^f_0
@@ -797,7 +834,7 @@ coupled PETSc residual vector.
 %	\notag \\
 %	&&+\; \bb{\mathcal{D}}_v
 %	\notag \\
-%    R_p %(\bb{U})
+%    R_p %(\bb{v})
 %    &=&	\oint_{\Gamma^f_0}  \left[ J^\Gamma (\bb{F}^\Gamma)^{-\text{T}}  \cdot \hat{\bb{n}}_0^f \right] \cdot \bb{v}^f \, d\Gamma^f_0 \;+\; \mathcal{D}_p
 %    \notag \\
 %    \bb{R}_m
@@ -810,7 +847,7 @@ coupled PETSc residual vector.
 %    \, d\Gamma_0^f
 %    \;+\; \bb{\mathcal{D}}_m
 %    \notag \\
-%    \bb{R}_d %(\bb{U})
+%    \bb{R}_d %(\bb{v})
 %    &=&
 %    \oint_{\Gamma_0^s} \left( J \bb{F}^{-\text{T}} \cdot \bb{n}_0^s \right) \cdot \bb{\sigma}^s \ d\Gamma_0^s
 %    + \int_{\Omega_0^s}  \bb{f}_{b_0}^s \, d\Omega_0^s
@@ -820,20 +857,20 @@ coupled PETSc residual vector.
 %where $\bb{\mathcal{D}}_v$, $\mathcal{D}_p$, $\bb{\mathcal{D}}_m$, and $\bb{\mathcal{D}}_d$ are stabilisation terms to be defined.
 %
 %The residuals $\bb{R}_v$, $R_p$ and $\bb{R}_m$ are applied to each cell in the fluid domain and discretised, while residual $\bb{R}_d$ is applied to each cell in the solid domain and discretised, as is described below.
-%The resulting system of coupled nonlinear equations in terms of $\bb{U}$ can be linearised and iteratively solved using a Newton-type method:
+%The resulting system of coupled nonlinear equations in terms of $\bb{v}$ can be linearised and iteratively solved using a Newton-type method:
 %%In Newton-type methods, a Taylor expansion about a current point $\bb{u}_k$ can be used to solve Equation \ref{eqn:residual} \cite{Knoll2004}:
 %%\begin{eqnarray}
 %%	\bb{R}(\bb{u}_{k+1}) = \bb{R}(\bb{u}_{k}) \;+\;  \bb{R}'(\bb{u}_{k}) (\bb{u}_{k+1} - \bb{u}_{k}) \;+\; \text{H.O.T.} = \bb{0}
 %%\end{eqnarray}
 %%Neglecting the higher-order terms ($\text{H.O.T.}$) yields the strict Newton method in terms of an iteration over a sequence of linear systems: 
 %\begin{eqnarray} \label{eq:NewtonRaphson}
-%	\bb{J}(\bb{U}_k) \delta \bb{U} &=& -\bb{R}(\bb{U}_k), \notag \\
-%	\bb{U}_{k+1} &=& \bb{U}_k + s \, \delta \bb{U}, \notag \\
+%	\bb{J}(\bb{v}_k) \delta \bb{v} &=& -\bb{R}(\bb{v}_k), \notag \\
+%	\bb{v}_{k+1} &=& \bb{v}_k + s \, \delta \bb{v}, \notag \\
 %	\quad
 %	k &=& 0,1,...
 %\end{eqnarray}
-%where $\bb{J} \equiv \bb{R}' \equiv \partial \bb{R}/\partial \bb{U}$ is the Jacobian matrix.
-%Starting the Newton procedure requires the specification of $\bb{U}_0$.
+%where $\bb{J} \equiv \bb{R}' \equiv \partial \bb{R}/\partial \bb{v}$ is the Jacobian matrix.
+%Starting the Newton procedure requires the specification of $\bb{v}_0$.
 %%is iteratively solved by linearisation about the current value of the solution, leading to a linear system and iterative update of the solution vector:
 %%\begin{eqnarray}
 %%    \label{eq:NewtonRaphsonA}
@@ -843,7 +880,7 @@ coupled PETSc residual vector.
 %%\end{eqnarray}
 %%where subscript $n$ indicates the outer (Newton) iteration index.
 %The scalar $s > 0$ can be chosen to improve convergence, for example, using a line search or under-relaxation/damping procedure, and is equal to unity in the classic Newton-Raphson approach.
-%Iterations are performed over this system until the residual $\bb{R}(\bb{U}_k)$ and solution correction $\delta \bb{U}$ are sufficiently small, with appropriate normalisation.
+%Iterations are performed over this system until the residual $\bb{R}(\bb{v}_k)$ and solution correction $\delta \bb{v}$ are sufficiently small, with appropriate normalisation.
 %
 %The linear system in Equation \ref{eq:NewtonRaphson} can be represented as
 %\begin{eqnarray} \label{eqn:jacobian}
@@ -870,7 +907,7 @@ coupled PETSc residual vector.
 %\bb{R}_d
 %\end{bmatrix}_k
 %\end{eqnarray}
-%where the subscript $k$ indicates that the Jacobian matrix and right-hand side vector are evaluated in terms of $\bb{U}_k$.
+%where the subscript $k$ indicates that the Jacobian matrix and right-hand side vector are evaluated in terms of $\bb{v}_k$.
 %\hl{Jvd and Jpd can be removed since this comes form Jvm and Jpm}
 %The submatrices $\bb{J}_{ab}$ represent the coupling in the residual $a$ coming from the unknown $b$.
 %Several types of coupling exist between the residual components:
@@ -1119,7 +1156,7 @@ coupled PETSc residual vector.
 %
 %The fluid equation linear momentum residual $\bb{R}_v$ repeated here is
 %\begin{eqnarray}
-%    \bb{R}_u %(\bb{U})
+%    \bb{R}_u %(\bb{v})
 %    &=&
 %	\oint_{\Gamma^f_0}  \left[ J^\Gamma (\bb{F}^\Gamma)^{-\text{T}} \cdot \hat{\bb{n}}_0^f \right]
 %		\cdot \left[\nu (\bb{F}^\Gamma)^{-T} \cdot \left( \bb{\nabla}_0 \bb{v}^f \right) \right] \, d\Gamma^f_0

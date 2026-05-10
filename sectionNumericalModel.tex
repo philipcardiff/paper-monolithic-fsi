@@ -28,6 +28,10 @@ and the assembled matrix supplied to the Krylov solver is an approximate block p
 The method is therefore described as quasi-monolithic.
 The nonlinear residual is coupled in the fluid velocity, fluid pressure and solid velocity; however, the fluid mesh motion and the update of the stored solid displacement are performed outside the Newton vector.
 
+\paragraph{Notation.}
+For conciseness, the same symbols ($\bb{v}_F$, $\bb{v}_S$, $p_F$, $\bb{D}_S$, etc.) are used for both the continuous fields introduced in Section~\ref{sec:math_model} and their discrete cell-centred counterparts in this section.
+This is a deliberate (mild) abuse of notation: in the continuous setting the symbols denote pointwise fields on $\Omega_F(t)$ or $\Omega_{S,0}$, whereas in the discrete setting they denote the corresponding cell-centred values stored at cell centroids; the intended meaning will always be clear from the context.
+
 %%--------------------------------------------------------------------------------------------------------------------%%
 \subsection{Finite-volume discretisation}
 \label{sec:fv_discretisation}
@@ -58,11 +62,12 @@ Surface integrals are approximated by sums over the cell faces,
     \, d\Gamma
     \approx
     \sum_{f \in \mathcal{F}_P}
-    \bb{S}_f \cdot \bb{q}_f ,
+    \bb{\Gamma}_f \cdot \bb{q}_f ,
     \label{eqn:fv_surface_integral}
 \end{equation}
-where $\bb{q}_f$ denotes the face value of $\bb{q}$. On internal faces, face values are in general obtained by interpolation from the adjacent cell centres \hl{we should mention diffusion operator compact discretisation}.
+where $\bb{q}_f$ denotes the face value of $\bb{q}$. On internal faces, face values are in general obtained by linear interpolation from the adjacent cell centres.
 Gradients are evaluated using a first-neighbour least-squares procedure, which is exact for linear fields.
+A specific exception is made for diffusive (Laplacian-type) face fluxes, which are split into a compact two-cell normal-gradient contribution along the line joining the two adjacent cell centres and an explicit non-orthogonal correction evaluated from the interpolated cell-centred gradient; this preserves a tight stencil for the implicit operator while retaining second-order accuracy on non-orthogonal meshes. The explicit form used in the fluid momentum residual is given in Equation~\eqref{eqn:fluid_momentum_residual}, and the same construction is used for diffusion-like terms elsewhere in the discretisation.
 These finite-volume operations are applied on the current moving mesh for the fluid equations and on the reference mesh for the total Lagrangian solid equations.
 
 The discretisation is constructed from nominally second-order finite-volume operators: midpoint volume quadrature, linear face interpolation and
@@ -76,7 +81,7 @@ For the fluid equations, the convective flux is written in ALE form using the re
     \bb{\Gamma}_f
     \cdot
     \left(
-    \bb{v}^f_f
+    \bb{v}_f
     -
     \bb{v}^{\Gamma}_f
     \right),
@@ -244,7 +249,7 @@ where $\bb{v}^{\Gamma}_f$ is the face mesh velocity.
 In the current work, the convected velocity $\widetilde{\bb{v}}_f$ is evaluated using a second-order upwind scheme, in which the velocity is extrapolated from the upwind cell centre using the cell-centred velocity gradient.
 
 The remaining terms in Equation~\eqref{eqn:fluid_momentum_residual} are volume contributions.
-The pressure gradient $\left( \bb{\nabla} p \right)_P$ is computed using the first-neighbour least-squares gradient, while the local inertia term is discretised in time using the BDF2 approximation in Equation~\eqref{eqn:bdf2}.
+The pressure gradient $\left( \bb{\nabla} p \right)_P$ is computed using the first-neighbour least-squares gradient, while the local inertia term is discretised in time using the moving-mesh BDF2 approximation in Equation~\eqref{eqn:moving_mesh_bdf2_time_term}.
 
 The discrete pressure residual for cell $P$ is
 \begin{equation}
@@ -278,7 +283,7 @@ Equations~\eqref{eqn:fluid_momentum_residual}, ~\eqref{eqn:fluid_pressure_residu
 \begin{equation}
     \bb{v}_{F}
     =
-    \bb{v}_{\Gamma}
+    \bb{v}^{\Gamma}
     =
     \mathcal{T}_{S\to F}(\bb{v}_S)
     \qquad
@@ -572,7 +577,7 @@ the dependence of the fluid viscous traction on the adjacent fluid velocity,
     \approx
     \rho_f \nu_\mathrm{eff}
     \delta_f
-    |\bb{S}_f|
+    |\bb{\Gamma}_f|
     \left(
     \delta_{ik}
     +
@@ -580,7 +585,7 @@ the dependence of the fluid viscous traction on the adjacent fluid velocity,
     \right),
     \label{eqn:viscous_coupling_approximation}
 \end{equation}
-where $\delta_f$ is the face normal-gradient coefficient, $\bb{S}_f$ is the
+where $\delta_f$ is the face normal-gradient coefficient, $\bb{\Gamma}_f$ is the
 interface face area vector, and $\bb{n}$ is the interface unit normal.
 
 The off-diagonal interface blocks are compact approximations to the coupling
@@ -647,6 +652,7 @@ linear-elastic problem posed on the fluid reference mesh,
     \bb{0}.
     \label{eqn:mesh_motion_pseudo_solid}
 \end{equation}
+Equation~\eqref{eqn:mesh_motion_pseudo_solid} is written here in compact integral form for a single fluid mesh control volume: it expresses the discrete equilibrium of the pseudo-elastic stress flux on the boundary $\Gamma^f_0$ of that control volume in the reference configuration, and is assembled cell-by-cell over the fluid mesh in the same cell-centred finite-volume framework as the fluid and solid momentum equations rather than as a single global statement.
 The coefficients $\mu^\Gamma$ and $\lambda^\Gamma$ are artificial stiffness
 parameters used only to control the distribution of the mesh motion. They do
 not represent material properties of the fluid.
@@ -731,7 +737,7 @@ Algorithm~\ref{alg:coupled_residual}.
 \begin{algorithmic}[1]
 \State Correct the fluid, solid and mesh-motion boundary conditions.
 \State Predict the solid displacement using
-Equation~\eqref{eqn:solid_displacement_prediction}.
+Equation~\eqref{eqn:solid_future_displacement}.
 \State Compute the solid displacement gradient and interpolate solid
 cell-centre displacements to the solid interface points.
 \State Map the solid interface displacement and velocity to the fluid

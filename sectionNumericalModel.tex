@@ -498,29 +498,53 @@ operator. This provides a nested split strategy in which the top-level
 preconditioner separates fluid and solid fields, while the fluid block is
 itself approximately split into velocity and pressure components.
 
-The solid block $\tilde{\bb{J}}_{ss}$ is a compact approximate Jacobian for the
-velocity-form total Lagrangian solid equation. It is based on the type of
-segregated finite-volume solid mechanics operator commonly used for implicit
-solid solves, rather than on a full consistent tangent of the nonlinear
-stress-divergence equation. In compact form, it may be written as
-\begin{equation}
+The solid block $\tilde{\bb{J}}_{ss}$ is approximated here using a compact diffusion term combined with the rate of change terms, extending the approach of displacement-based approach of \citet{cardiff2026} to a velocity formulation:
+%Jacobian for the
+%velocity-form total Lagrangian solid equation. It is based on the type of
+%segregated finite-volume solid mechanics operator commonly used for implicit
+%solid solves, rather than on a full consistent tangent of the nonlinear
+%stress-divergence equation. In compact form, it may be written as
+\begin{eqnarray} \label{eqn:J_ss}
     \tilde{\bb{J}}_{ss}
     \approx
-    \bb{\nabla} \cdot
-    \left[
-    (3/2) K_{\mathrm{imp},f} \Delta t
-    \bb{\nabla} \bb{v}_S
-    \right]
+	\sum_{f \in \mathcal{F}_P}
+	\alpha_d \frac{3 \Delta t \bar{K}}{2}
+        \bigg[
+	\frac{\bb{U}^{n+1}_{N_f} - \bb{U}^{n+1}_{P}}{\bb{\hat{n}}_f \cdot \bb{d}_f}
+        \bigg]
+        |\bb{\Gamma}_f|
+        \;-\;
+        \rho_S
+        %\frac{\partial \bb{v}_S}{\partial t},
+            \frac{
+    3\bb{v}^{n}_S
     -
-    \rho_S
-    \frac{\partial \bb{v}_S}{\partial t},
-    \label{eqn:solid_approximate_jacobian}
-\end{equation}
-with optional damping contributions. Here $K_{\mathrm{imp},f}$ is an
-implicit-stiffness-like face coefficient. This approximation provides a
-compact, sparse solid preconditioning block, but it is not a consistent
-linearisation of the nonlinear total Lagrangian constitutive response.
-Details of this approach are provided in \citet{Cardiff2026}.
+    4\bb{v}^{n-1}_S
+    +
+    \bb{v}^{n-2}_S
+    }
+    {2\Delta t}
+    \Omega_{P}
+    \;-\;
+    c_d \bb{v}^{n}_S,
+\end{eqnarray}
+%\begin{equation}
+%    \tilde{\bb{J}}_{ss}
+%    \approx
+%    \bb{\nabla} \cdot
+%    \left[
+%    (3/2) K_{\mathrm{imp},f} \Delta t
+%    \bb{\nabla} \bb{v}_S
+%    \right]
+%    -
+%    \rho_S
+%    \frac{\partial \bb{v}_S}{\partial t},
+%    \label{eqn:solid_approximate_jacobian}
+%\end{equation}
+where the $3\Delta t/2$ factors comes from expressing a displacement diffusion operator in terms of velocity.
+%Here $K_{\mathrm{imp},f}$ is an implicit-stiffness-like face coefficient.
+This approximation provides a compact (first face-neighbour), sparse solid preconditioning block, but it is not a consistent linearisation of the nonlinear total Lagrangian constitutive response.
+%Details of this approach are provided in \citet{Cardiff2026}.
 
 The off-diagonal block $\tilde{\bb{J}}_{fs}$ approximates the dependence of the
 fluid momentum and pressure equations on the solid velocity at the interface.
@@ -547,20 +571,20 @@ cell-centre pressure, with the density factor required by the kinematic
 pressure convention. When viscous-stress transfer is enabled, a compact
 normal-gradient approximation is also included in $\tilde{\bb{J}}_{sm}$ for
 the dependence of the fluid viscous traction on the adjacent fluid velocity,
+\hl{WIP}
 \begin{equation}
     \frac{\partial F_i}{\partial U_k}
     \approx
-    \rho_f \nu_\mathrm{eff}
-    \delta_f
+    \frac{\rho_F \nu}{\bb{\hat{n}}_f \cdot \bb{d}_f}
     |\bb{\Gamma}_f|
     \left(
-    \delta_{ik}
+    \textbf{I}
     +
-    n_i n_k
-    \right),
+    \bb{\hat{n}}_f \otimes \bb{\hat{n}}_f
+    \right).
     \label{eqn:viscous_coupling_approximation}
 \end{equation}
-where $\delta_f$ is the face normal-gradient coefficient (\hl{avoid the introduction of this and use d and n instead}), $\bb{\Gamma}_f$ is the interface face area vector, and $\bb{n}$ is the interface unit normal.
+%where $\bb{\Gamma}_f$ is the interface face area vector, and $\bb{n}$ is the interface unit normal.
 
 The off-diagonal interface blocks are compact approximations to the coupling
 derivatives. They are used only in the preconditioner; the converged nonlinear

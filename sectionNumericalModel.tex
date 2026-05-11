@@ -879,89 +879,68 @@ The moving-mesh fluxes are constructed so as to satisfy the discrete geometric c
 
 
 %%--------------------------------------------------------------------------------------------------------------------%%
-\subsection{Implementation details}
+\subsection{Implementation and solution algorithm}
 \label{sec:implementation_details}
 %%--------------------------------------------------------------------------------------------------------------------%%
 
 The method is implemented in solids4foam~\citep{Cardiff2025}, an
-OpenFOAM-based finite-volume toolbox, with PETSc used for the nonlinear and
-linear algebra operations. The coupled FSI algorithm is implemented through a
-fluid--solid coupling interface, which calls separate fluid and solid region
-models to evaluate the equation blocks and assemble the approximate Jacobian
-blocks used for preconditioning.
+OpenFOAM-based finite-volume toolbox, with PETSc~\citep{PETSc} used for the
+nonlinear and linear algebra operations. The coupled FSI algorithm is
+implemented through a fluid--solid coupling interface, which calls separate
+fluid and solid region models to evaluate the discrete equations and assemble
+the approximate Jacobian blocks described in
+Section~\ref{sec:approximate_block_preconditioner}.
 
-In the implementation, the coupled PETSc field is named \texttt{UpU}. The local
-vector layout consists of a contiguous fluid block followed by a contiguous
-solid block. In two dimensions, the fluid cell block is ordered as
-$(U_{fx},U_{fy},p_f)$ and the solid cell block as $(U_{sx},U_{sy})$. In three
-dimensions, the corresponding blocks are
-$(U_{fx},U_{fy},U_{fz},p_f)$ and $(U_{sx},U_{sy},U_{sz})$. PETSc index sets are
-constructed for the full fluid block, the fluid velocity sub-block, the fluid
-pressure sub-block and the solid block. These index sets are used to extract
-sub-vectors during equation evaluation and to define block and nested
-field-split preconditioners.
+The coupled unknown vector is stored as a fluid block followed by a solid
+block. The fluid block contains the velocity and pressure unknowns, while the
+solid block contains the solid velocity unknowns. Index sets are constructed
+for the top-level fluid and solid fields, and for the velocity and pressure
+sub-blocks within the fluid field. These index sets are used to extract
+sub-vectors during equation evaluation and to define block or nested
+field-split preconditioning strategies.
 
-The nonlinear residual is evaluated through a callback supplied to PETSc SNES.
-For each nonlinear trial vector, the trial values are copied into the
-corresponding OpenFOAM fields. Boundary conditions and interface mappings are
-then updated, and the fluid momentum equation, fluid pressure equation and
-solid momentum equation are inserted into the PETSc residual vector. In typical
-calculations, PETSc applies the Newton--Krylov operator in a matrix-free manner,
-while the approximate Jacobian $\tilde{\bb{J}}$ described in
-Section~\ref{sec:approximate_block_preconditioner} is supplied as the
-preconditioning matrix.
+The nonlinear residual is evaluated through callbacks supplied to the PETSc nonlinear solver \emph{SNES}.
+For each nonlinear trial vector, the trial values are copied into the corresponding OpenFOAM finite-volume fields.
+Boundary conditions and interface mappings are then updated, and the fluid momentum equation, fluid pressure equation and
+solid momentum equation are inserted into the coupled residual vector.
+In the typical configuration used in this work, PETSc applies the Newton--Krylov operator in a matrix-free manner, while the approximate Jacobian
+$\tilde{\bb{J}}$ is supplied as the preconditioning matrix.
 
-The approximate Jacobian is first assembled as a PETSc \texttt{MatNest},
-\begin{equation}
-    \tilde{\bb{J}}
-    =
-    \begin{bmatrix}
-    \tilde{\bb{J}}_{ff} & \tilde{\bb{J}}_{fs} \\
-    \tilde{\bb{J}}_{sf} & \tilde{\bb{J}}_{ss}
-    \end{bmatrix},
-\end{equation}
-and is then converted to a monolithic AIJ sparse matrix. This conversion allows
-standard PETSc preconditioners, including LU, ILU, additive Schwarz, block
-Jacobi and field-split methods, to be applied to the coupled system. When a
-nested fluid split is used, the fluid block $\tilde{\bb{J}}_{ff}$ is further
-split into velocity and pressure sub-blocks, enabling approximate
-Schur-complement preconditioning of the fluid velocity--pressure system.
+The approximate Jacobian may be used either as a monolithic sparse matrix or through field-split preconditioning. In the latter case, the outer split
+separates the fluid and solid fields, while the fluid block may be further
+split into velocity and pressure components using the approximate
+Schur-complement strategy described in
+Section~\ref{sec:approximate_block_preconditioner}.
 
-The interface transfer is currently performed using a direct conformal map
-between the fluid and solid interface patches. The solid interface displacement
-and velocity are mapped to the fluid mesh-motion and velocity boundary
-conditions. The fluid pressure traction and, when enabled, the viscous traction
-are mapped back to the solid traction boundary condition. The implementation
-therefore assumes a single conformal fluid--solid interface for the calculations
-reported here; however, future work will focus on extending the approach to non-conformal interfaces using \emph{arbitrary mesh interpolation} approaches \citep{FarrellMaddison2011}.
+The interface transfer is performed using the conformal map described in
+Section~\ref{sec:discrete_coupled_residual}. The solid interface displacement
+and velocity are mapped to the fluid mesh-motion and velocity boundary conditions.
+The fluid pressure traction and viscous traction are mapped back to the solid traction boundary condition.
+The calculations reported here therefore assume a single conformal fluid--solid interface.
+Extension to non-conformal interfaces, for example using arbitrary mesh interpolation methods~\citep{FarrellMaddison2011}, is left for future work.
 
-The time-step procedure is summarised in Algorithm~\ref{alg:quasi_monolithic_fsi}.
-The residual callback used inside the nonlinear solve is summarised in
-Algorithm~\ref{alg:coupled_residual}.
+The time-step procedure is summarised in Algorithm~\ref{alg:quasi_monolithic_fsi}, and the residual evaluation used inside the nonlinear solve is summarised in Algorithm~\ref{alg:coupled_residual}.
 
 \begin{algorithm}[htbp]
 \caption{Quasi-monolithic FSI solution procedure for one time step}
 \label{alg:quasi_monolithic_fsi}
 \begin{algorithmic}[1]
 \State Correct the fluid, solid and mesh-motion boundary conditions.
-\State Predict the solid displacement using
-Equation~\eqref{eqn:solid_future_displacement}.
-\State Compute the solid displacement gradient and interpolate solid
-cell-centre displacements to the solid interface points.
+\State Reconstruct the future-time solid displacement from the current solid
+velocity using Equation~\eqref{eqn:solid_future_displacement}.
 \State Map the solid interface displacement and velocity to the fluid
 mesh-motion model.
 \State Solve the fluid mesh-motion problem and update the ALE fluid mesh.
-\State Construct the fluid flux for the convection term, either by
-extrapolation from previous time levels or from the current trial velocity.
+\State Construct the ALE fluid fluxes.
 \State Assemble or update the approximate Jacobian $\tilde{\bb{J}}$ used for
 preconditioning.
 \State Solve the coupled nonlinear system
 $\bb{R}(\bb{\mathcal{U}})=\bb{0}$ for
-$(\bb{v}_F,p_F,\bb{v}_S)$ using PETSc SNES.
+$(\bb{U}_F,p_F,\bb{U}_S)$ using PETSc SNES.
 \State Extract the converged fluid velocity, fluid pressure and solid velocity
-from the PETSc vector.
-\State If the nonlinear solve fails, restore the old fields and mesh state and
-retry the time step, optionally with a reduced time step.
+from the coupled solution vector.
+%\State If the nonlinear solve fails, restore the old fields and mesh state and
+%retry the time step, optionally with a reduced time-step size.
 \end{algorithmic}
 \end{algorithm}
 
@@ -969,7 +948,7 @@ retry the time step, optionally with a reduced time step.
 \caption{Coupled residual evaluation}
 \label{alg:coupled_residual}
 \begin{algorithmic}[1]
-\State Extract $(\bb{v}_F,p_F,\bb{v}_S)$ from the current PETSc trial vector.
+\State Extract $(\bb{U}_F,p_F,\bb{U}_S)$ from the current nonlinear trial vector.
 \State Map the current solid interface motion to the fluid interface.
 \State Compute the current fluid traction on the fluid--solid interface.
 \State Map the fluid traction to the solid interface and impose it as a solid
@@ -977,8 +956,9 @@ traction boundary condition.
 \State Evaluate the solid momentum equation.
 \State Map the current solid velocity to the fluid velocity boundary condition.
 \State Evaluate the fluid momentum and pressure equations.
-\State Apply fluid and solid scale factors and insert the result into the
-coupled PETSc residual vector.
+%\State Apply fluid and solid scale factors and insert the result into the
+%coupled residual vector.
+\State Insert the result into the coupled residual vector.
 \end{algorithmic}
 \end{algorithm}
 

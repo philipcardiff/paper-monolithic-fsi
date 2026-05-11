@@ -168,7 +168,7 @@ the fluid pressure equation and the solid momentum equation as
     \begin{bmatrix}
     \bb{R}_F(\bb{v}_F,p_F;\bb{v}_S) \\
     \bb{R}_S(\bb{v}_S;\bb{v}_F,p_F)
-    \end{bmatrix} \notag \\
+    \end{bmatrix} \label{eqn:grouped_coupled_residual} \\
     &=&
     \begin{bmatrix}
     \bb{R}_{F_m}(\bb{v}_F,p_F;\bb{v}_S) \\
@@ -277,6 +277,27 @@ where $\bb{v}_f$ is again the linearly interpolated face velocity, and $\mathcal
 \end{eqnarray}
 where $a_{P_f}$ is the momentum-equation diagonal coefficient, linearly interpolated to the face.
 The user-defined parameter $\alpha_p > 0$ globally scales the amount of stabilisation, and is chosen here to be 1.0 unless otherwise stated.
+The cell-centred coefficient is defined as
+\begin{equation}
+    \frac{\alpha_p}{a_{P}}
+    =
+    \alpha_p
+    \left[
+    \frac{3}{2\Delta t}\Omega_{F,P}
+    +
+    \sum_{f \in \mathcal{F}^{\mathrm{int}}_P}
+    \nu
+    \frac{|\bb{\Gamma}_{F,f}|}
+         {\hat{\bb{n}}_{F,f} \cdot \bb{d}_{F,f}}
+    +
+    \sum_{f \in \mathcal{F}^{\mathrm{int}}_P}
+    \max\left(\phi^{\mathrm{rel}}_{F,f},0\right)
+    \right]^{-1},
+    \label{eqn:rAU_definition}
+\end{equation}
+i.e.\ the reciprocal of the compact (diagonal) part of the discrete fluid-momentum operator, comprising the temporal, diffusive and convective contributions. As shown above, a first-order upwind scheme is used for the convection coefficient in this stabilisation, in contrast to the second-order upwind scheme used in the fluid momentum residual calculation.
+The face value $\alpha_p/a_{P_f}$ used in Equation~\eqref{eqn:rhie_chow} is then obtained by linear interpolation of the two adjacent cell values.
+This Rhie-Chow-type stabilisation has been shown in \citet{Cardiff2026} to dissapear in the limit of mesh refinement atat a second-order rate.
 %Its detailed construction is given in Section~\ref{sec:approximate_block_preconditioner}.
 
 Equations~\eqref{eqn:fluid_momentum_residual}, ~\eqref{eqn:fluid_pressure_residual} and ~\eqref{eqn:rhie_chow} are written as interior-cell expressions. For fluid cells adjacent to the fluid--solid interface, the corresponding interface-face terms use the kinematic interface condition: the prescribed interface velocity is obtained from the mapped solid velocity,
@@ -445,11 +466,18 @@ The nonlinear iterations are terminated when the coupled residual norm and/or th
 \label{sec:approximate_block_preconditioner}
 %%--------------------------------------------------------------------------------------------------------------------%%
 
-Although the Newton--Krylov operator is applied in a Jacobian-free manner, an assembled matrix is used to precondition the Krylov iterations.
-This matrix is not the exact Jacobian of the coupled residual in Equation~\eqref{eqn:coupled_residual}. Instead, it is an approximate Jacobian, denoted by $\tilde{\bb{J}}$, constructed from compact finite-volume linearisations of the fluid, solid and interface-coupling terms.
-Such a compact, approximate Jacobian was recently shown to efficiently precondition a second-order and higher-order cell-centred finite volume solid solvers \citep{Cardiff2026, Batistic2026}.
+Although the Newton--Krylov operator is applied in a Jacobian-free manner, an
+assembled matrix is used to precondition the Krylov iterations. This matrix is
+not the exact Jacobian of the coupled residual in
+Equation~\eqref{eqn:coupled_residual}. Instead, it is an approximate Jacobian,
+denoted by $\tilde{\bb{J}}$, constructed from compact finite-volume
+linearisations of the fluid, solid and interface-coupling terms. Related
+compact approximate Jacobians were recently shown to provide effective
+preconditioners for second-order and higher-order cell-centred finite-volume
+solid mechanics solvers~\citep{Cardiff2026, Batistic2026}.
 
-Using the top-level fluid--solid grouping in Equation~\eqref{eqn:coupled_residual}, the approximate Jacobian has the block form
+Using the top-level fluid--solid grouping in Equation~\eqref{eqn:grouped_coupled_residual}, the approximate Jacobian has the
+block form
 \begin{equation}
     \tilde{\bb{J}}
     =
@@ -459,8 +487,10 @@ Using the top-level fluid--solid grouping in Equation~\eqref{eqn:coupled_residua
     \end{bmatrix},
     \label{eqn:block_preconditioner}
 \end{equation}
-where $\tilde{\bb{J}}_{ff}$ is the approximate fluid velocity--pressure block, $\tilde{\bb{J}}_{ss}$ is the approximate solid velocity block, and $\tilde{\bb{J}}_{fs}$ and $\tilde{\bb{J}}_{sf}$ approximate the interface coupling derivatives.
-%This matrix is used as the preconditioning operator for the Krylov method, not as an exact linearisation of the nonlinear residual.
+where $\tilde{\bb{J}}_{ff}$ is the approximate fluid velocity--pressure block,
+$\tilde{\bb{J}}_{ss}$ is the approximate solid velocity block, and
+$\tilde{\bb{J}}_{fs}$ and $\tilde{\bb{J}}_{sf}$ approximate the interface
+coupling derivatives.
 
 The fluid block is itself a coupled velocity--pressure system. With the fluid
 momentum and pressure equations ordered as in
@@ -475,129 +505,273 @@ as
     \end{bmatrix},
     \label{eqn:fluid_block_preconditioner}
 \end{equation}
-where $\tilde{\bb{J}}_{mm}$ approximates the fluid momentum operator, $\tilde{\bb{J}}_{mp}$ the pressure-gradient coupling, $\tilde{\bb{J}}_{pm}$ the discrete continuity operator, and $\tilde{J}_{pp}$ the pressure-stabilisation operator.
-%If the convective flux is extrapolated from previous time levels, this extrapolated flux is used in $\tilde{\bb{J}}_{mm}$.
-%If the implicit-flux option is enabled, the flux is recomputed from the current trial velocity and an implicit convection contribution is included.
+where $\tilde{\bb{J}}_{mm}$ approximates the fluid momentum operator,
+$\tilde{\bb{J}}_{mp}$ the pressure-gradient coupling,
+$\tilde{\bb{J}}_{pm}$ the discrete continuity operator, and
+$\tilde{J}_{pp}$ the pressure-stabilisation operator.
 
-This block form also permits nested velocity--pressure preconditioning within
-the fluid block. In particular, the exact pressure Schur complement associated
-with Equation~\eqref{eqn:fluid_block_preconditioner} is
+For a fluid cell $P$, the diagonal block of the approximate momentum operator
+is formed from the compact diffusion contribution, the BDF2 time derivative and
+a first-order upwind linearisation of the convection term,
+\begin{align}
+    \left[\tilde{\bb{J}}_{mm}\right]_{PP}
+    =
+    &-
+    \sum_{f \in \mathcal{F}^{\mathrm{int}}_P}
+    \nu
+    \frac{|\bb{\Gamma}_{F,f}|}
+         {\hat{\bb{n}}_{F,f} \cdot \bb{d}_{F,f}}
+    \bb{I}
+    -
+    \frac{3}{2\Delta t}
+    \Omega_{F,P}
+    \bb{I}
+    \notag \\
+    &-
+    \sum_{f \in \mathcal{F}^{\mathrm{int}}_P}
+    \max\left(\phi^{\mathrm{rel}}_{F,f},0\right)\bb{I},
+    \label{eqn:Jmm_diag}
+\end{align}
+while the off-diagonal block associated with a neighbouring fluid cell $Q$
+across face $f$ is
 \begin{equation}
-    \bb{S}_p
+    \left[\tilde{\bb{J}}_{mm}\right]_{PQ}
+    =
+    \nu
+    \frac{|\bb{\Gamma}_{F,f}|}
+         {\hat{\bb{n}}_{F,f} \cdot \bb{d}_{F,f}}
+    \bb{I}
+    -
+    \min\left(\phi^{\mathrm{rel}}_{F,f},0\right)\bb{I}.
+    \label{eqn:Jmm_offdiag}
+\end{equation}
+Here the convective contribution in the approximate Jacobian is always based on first-order upwinding, independently of the convection scheme used in the nonlinear residual (which is a second-order upwind scheme in the current work).
+
+The pressure-gradient coupling block is obtained by differentiating the cell-centred pressure-gradient term in the momentum equation with respect to the cell-centred pressure.
+If $\bb{g}_{P,Q}$ denotes the least-squares gradient coefficient multiplying the pressure in cell $Q$ when evaluating $(\bb{\nabla}p)_P$, then
+\begin{equation}
+    \left[\tilde{\bb{J}}_{mp}\right]_{P Q}
+    =
+    -
+    \Omega_{F,P}
+    \bb{g}_{P,Q},
+    \label{eqn:Jmp}
+\end{equation}
+which is a $d\times 1$ block in $d$ spatial dimensions.
+The continuity block is formed from the derivative of the discrete pressure
+equation with respect to the cell-centred velocity. For an internal face $f$
+shared by cells $P$ and $Q$, using the interpolation weight $w_f$ for the value
+from cell $P$,
+\begin{align}
+    \left[\tilde{\bb{J}}_{pm}\right]_{PP}
+    &=
+    -
+    \sum_{f \in \mathcal{F}^{\mathrm{int}}_P}
+    w_f \bb{\Gamma}_{F,f}^{T},
+    \label{eqn:Jpm_diag}
+    \\
+    \left[\tilde{\bb{J}}_{pm}\right]_{PQ}
+    &=
+    -
+    \left(1-w_f\right)\bb{\Gamma}_{F,f}^{T},
+    \label{eqn:Jpm_offdiag}
+\end{align}
+which are $1\times d$ blocks.
+
+The pressure block $\tilde{J}_{pp}$ is obtained from the pressure-stabilisation
+term. For a compact Laplacian-type representation of the stabilisation,
+\begin{align}
+    \left[\tilde{J}_{pp}\right]_{PP}
+    &=
+    -
+    \sum_{f \in \mathcal{F}^{\mathrm{int}}_P}
+    \frac{\alpha_p}{a_{P,f}}
+    \frac{|\bb{\Gamma}_{F,f}|}
+         {\hat{\bb{n}}_{F,f} \cdot \bb{d}_{F,f}},
+    \label{eqn:Jpp_diag}
+    \\
+    \left[\tilde{J}_{pp}\right]_{PQ}
+    &=
+    \frac{\alpha_p}{a_{P,f}}
+    \frac{|\bb{\Gamma}_{F,f}|}
+         {\hat{\bb{n}}_{F,f} \cdot \bb{d}_{F,f}},
+    \label{eqn:Jpp_offdiag}
+\end{align}
+where $\alpha_p/a_{P,f}$ is the face pressure-stabilisation coefficient arising
+from the Rhie--Chow stabilisation in Equation~\eqref{eqn:rhie_chow}. Here
+$a_{P,f}$ denotes the face-interpolated compact momentum diagonal coefficient.
+
+The block $\tilde{J}_{pp}$ is therefore a compact pressure--pressure coupling
+introduced by the finite-volume pressure stabilisation, rather than by a
+physical pressure diffusion term. Algebraically, it approximates the pressure
+coupling that would arise through the velocity block when the velocity is
+eliminated from the coupled momentum--pressure system. This connection motivates
+its use in the velocity--pressure split strategy discussed below.
+
+%The block $\tilde{J}_{pp}$ also provides a compact approximation to the
+%pressure Schur complement used in the nested fluid split preconditioner. For the
+%approximate fluid block in Equation~\eqref{eqn:fluid_block_preconditioner}, the
+%formal pressure Schur complement is
+%\begin{equation}
+%    \tilde{S}_p
+%    =
+%    \tilde{J}_{pp}
+%    -
+%    \tilde{\bb{J}}_{pm}
+%    \tilde{\bb{J}}_{mm}^{-1}
+%    \tilde{\bb{J}}_{mp}.
+%    \label{eqn:formal_pressure_schur_complement}
+%\end{equation}
+%Rather than forming this operator explicitly, the split preconditioner uses the
+%compact Rhie--Chow pressure-stabilisation operator $\tilde{J}_{pp}$, scaled by
+%$\alpha_p$, as an inexpensive approximation to the action of the pressure Schur
+%complement. This gives a nested preconditioning strategy: the outer split
+%separates the fluid and solid fields, while the fluid block is further split
+%into velocity and pressure components.
+
+The block
+$\tilde{\bb{J}}_{fs}
+=
+\left[\tilde{\bb{J}}_{ms};\tilde{\bb{J}}_{ps}\right]$
+represents the dependence of the fluid momentum and pressure equations on the
+mapped solid interface velocity. For an interface face $f$, the fluid
+momentum-row contribution arises from the Dirichlet boundary contribution to
+the compact diffusion operator and is approximated by
+\begin{equation}
+    \left[\tilde{\bb{J}}_{ms}\right]_{P Q}
+    =
+    \nu
+    \frac{|\bb{\Gamma}_{F,f}|}
+         {\hat{\bb{n}}_{F,f} \cdot \bb{d}_{F,f}}
+    \bb{I},
+    \label{eqn:fluid_solid_velocity_momentum_coupling}
+\end{equation}
+where $P$ is the fluid cell adjacent to the interface and $Q$ is the mapped
+solid cell. This is a $d\times d$ block in $d$ spatial dimensions. The
+pressure-equation contribution is the derivative of the interface normal
+velocity flux with respect to the mapped solid velocity,
+\begin{equation}
+    \left[\tilde{\bb{J}}_{ps}\right]_{P Q}
+    =
+    -
+    \bb{\Gamma}_{F,f}^{T},
+    \label{eqn:fluid_solid_velocity_pressure_coupling}
+\end{equation}
+which is a $1\times d$ block. The sign follows the pressure residual definition
+in Equation~\eqref{eqn:fluid_pressure_residual}.
+
+The solid block $\tilde{\bb{J}}_{ss}$ is approximated using a compact
+diffusion-like operator combined with the velocity time-derivative and damping
+terms. This extends the displacement-based approximate Jacobian of
+\citet{Cardiff2026} to the present velocity formulation. For a solid cell $P$,
+the diagonal block is
+\begin{align}
+    \left[\tilde{\bb{J}}_{ss}\right]_{PP}
+    =
+    &-
+    \sum_{f \in \mathcal{F}^{\mathrm{int}}_P}
+    \alpha_d
+    \frac{3\Delta t}{2}
+    \bar{K}_f
+    \frac{|\bb{\Gamma}_{S,0,f}|}
+         {\hat{\bb{n}}_{S,0,f} \cdot \bb{d}_{S,0,f}}
+    \bb{I}
+    \notag \\
+    &-
+    \frac{3}{2\Delta t}
+    \rho^s_0 \Omega^s_{0,P}
+    \bb{I}
+    -
+    c_d \rho^s_0 \Omega^s_{0,P}
+    \bb{I},
+    \label{eqn:Jss_diag}
+\end{align}
+while the off-diagonal block associated with a neighbouring solid cell $Q$
+across face $f$ is
+\begin{equation}
+    \left[\tilde{\bb{J}}_{ss}\right]_{PQ}
+    =
+    \alpha_d
+    \frac{3\Delta t}{2}
+    \bar{K}_f
+    \frac{|\bb{\Gamma}_{S,0,f}|}
+         {\hat{\bb{n}}_{S,0,f} \cdot \bb{d}_{S,0,f}}
+    \bb{I}.
+    \label{eqn:Jss_offdiag}
+\end{equation}
+The factor $3\Delta t/2$ arises from expressing the compact displacement
+diffusion operator in terms of the solid velocity unknown.
+This approximation provides a compact first-neighbour solid block for the
+approximate Jacobian, but it is not a consistent linearisation of the nonlinear
+total Lagrangian constitutive response.
+
+For an interface face $f$ associated with solid cell $P$ and adjacent fluid
+cell $Q$, the pressure part of
+$\tilde{\bb{J}}_{sf}
+=
+\left[\tilde{\bb{J}}_{sm},\tilde{\bb{J}}_{sp}\right]$
+gives the derivative of the solid momentum equation with respect to the
+adjacent fluid pressure. With the kinematic-pressure convention, the
+contribution is approximated as
+\begin{equation}
+    \left[\tilde{\bb{J}}_{sp}\right]_{P Q}
+    =
+    - \rho_F \bb{\Gamma}_{S,f},
+    \label{eqn:pressure_coupling_approximation}
+\end{equation}
+where $\bb{\Gamma}_{S,f}$ is the outward solid interface area vector. This is a
+$d\times 1$ block.
+
+When viscous tractions are transferred, the derivative of the solid interface
+force with respect to the adjacent fluid velocity is approximated by a compact
+normal-gradient contribution,
+\begin{equation}
+    \left[\tilde{\bb{J}}_{sm}\right]_{P Q}
+    =
+    \rho_F \nu
+    \frac{|\bb{\Gamma}_{S,f}|}
+         {\hat{\bb{n}}_{F,f} \cdot \bb{d}_{F,f}}
+    \left(
+    \bb{I}
+    +
+    \hat{\bb{n}}_{F,f} \otimes \hat{\bb{n}}_{F,f}
+    \right),
+    \label{eqn:viscous_coupling_approximation}
+\end{equation}
+which is a $d\times d$ block.
+
+The assembled approximate Jacobian $\tilde{\bb{J}}$ can be used in several
+preconditioning strategies. In the simplest case, the complete matrix in
+Equation~\eqref{eqn:block_preconditioner} is passed directly to an algebraic
+preconditioner. Alternatively, a nested field-split strategy can be used. At
+the outer level, the fluid and solid fields are split according to
+Equation~\eqref{eqn:block_preconditioner}. Within the fluid block, the
+velocity--pressure structure in Equation~\eqref{eqn:fluid_block_preconditioner}
+can be exploited through a pressure Schur-complement approximation. The formal
+pressure Schur complement of the approximate fluid block is
+\begin{equation}
+    \tilde{S}_p
     =
     \tilde{J}_{pp}
     -
     \tilde{\bb{J}}_{pm}
     \tilde{\bb{J}}_{mm}^{-1}
     \tilde{\bb{J}}_{mp}.
-    \label{eqn:pressure_schur_complement}
+    \label{eqn:formal_pressure_schur_complement}
 \end{equation}
-In practice, this Schur complement is replaced by an inexpensive approximation
-based on the finite-volume pressure equation and pressure-stabilisation
-operator. This provides a nested split strategy in which the top-level
-preconditioner separates fluid and solid fields, while the fluid block is
-itself approximately split into velocity and pressure components.
-
-The solid block $\tilde{\bb{J}}_{ss}$ is approximated here using a compact diffusion term combined with the rate of change terms, extending the approach of displacement-based approach of \citet{cardiff2026} to a velocity formulation:
-%Jacobian for the
-%velocity-form total Lagrangian solid equation. It is based on the type of
-%segregated finite-volume solid mechanics operator commonly used for implicit
-%solid solves, rather than on a full consistent tangent of the nonlinear
-%stress-divergence equation. In compact form, it may be written as
-\begin{eqnarray} \label{eqn:J_ss}
-    \tilde{\bb{J}}_{ss}
-    \approx
-	\sum_{f \in \mathcal{F}_P}
-	\alpha_d \frac{3 \Delta t \bar{K}}{2}
-        \bigg[
-	\frac{\bb{U}^{n+1}_{N_f} - \bb{U}^{n+1}_{P}}{\bb{\hat{n}}_f \cdot \bb{d}_f}
-        \bigg]
-        |\bb{\Gamma}_f|
-        \;-\;
-        \rho_S
-        %\frac{\partial \bb{v}_S}{\partial t},
-            \frac{
-    3\bb{v}^{n}_S
-    -
-    4\bb{v}^{n-1}_S
-    +
-    \bb{v}^{n-2}_S
-    }
-    {2\Delta t}
-    \Omega_{P}
-    \;-\;
-    c_d \bb{v}^{n}_S,
-\end{eqnarray}
-%\begin{equation}
-%    \tilde{\bb{J}}_{ss}
-%    \approx
-%    \bb{\nabla} \cdot
-%    \left[
-%    (3/2) K_{\mathrm{imp},f} \Delta t
-%    \bb{\nabla} \bb{v}_S
-%    \right]
-%    -
-%    \rho_S
-%    \frac{\partial \bb{v}_S}{\partial t},
-%    \label{eqn:solid_approximate_jacobian}
-%\end{equation}
-where the $3\Delta t/2$ factors comes from expressing a displacement diffusion operator in terms of velocity.
-%Here $K_{\mathrm{imp},f}$ is an implicit-stiffness-like face coefficient.
-This approximation provides a compact (first face-neighbour), sparse solid preconditioning block, but it is not a consistent linearisation of the nonlinear total Lagrangian constitutive response.
-%Details of this approach are provided in \citet{Cardiff2026}.
-
-The off-diagonal block $\tilde{\bb{J}}_{fs}$ approximates the dependence of the
-fluid momentum and pressure equations on the solid velocity at the interface.
-Since the fluid interface velocity is imposed through a prescribed value boundary
-condition, this block represents the effect of the mapped solid interface
-velocity on the adjacent fluid equations. The momentum contribution arises from
-the boundary part of the viscous operator, while the pressure-equation
-contribution arises from the normal velocity flux through the interface.
-
-The off-diagonal block $\tilde{\bb{J}}_{sf}$ approximates the dependence of the
-solid equation on the fluid traction. More explicitly, this block contains the
-approximate derivatives with respect to the fluid velocity and pressure,
-\begin{equation}
-    \tilde{\bb{J}}_{sf}
-    =
-    \begin{bmatrix}
-    \tilde{\bb{J}}_{sm} & \tilde{\bb{J}}_{sp}
-    \end{bmatrix}.
-    \label{eqn:solid_fluid_coupling_block}
-\end{equation}
-The pressure contribution $\tilde{\bb{J}}_{sp}$ assumes that the pressure
-traction on each solid interface face is determined by the adjacent fluid
-cell-centre pressure, with the density factor required by the kinematic
-pressure convention. When viscous-stress transfer is enabled, a compact
-normal-gradient approximation is also included in $\tilde{\bb{J}}_{sm}$ for
-the dependence of the fluid viscous traction on the adjacent fluid velocity,
-\hl{WIP}
-\begin{equation}
-    \frac{\partial F_i}{\partial U_k}
-    \approx
-    \frac{\rho_F \nu}{\bb{\hat{n}}_f \cdot \bb{d}_f}
-    |\bb{\Gamma}_f|
-    \left(
-    \textbf{I}
-    +
-    \bb{\hat{n}}_f \otimes \bb{\hat{n}}_f
-    \right).
-    \label{eqn:viscous_coupling_approximation}
-\end{equation}
-%where $\bb{\Gamma}_f$ is the interface face area vector, and $\bb{n}$ is the interface unit normal.
+Rather than forming this operator explicitly, the compact Rhie--Chow
+pressure-stabilisation block $\tilde{J}_{pp}$ is used as an inexpensive
+approximation to the pressure Schur-complement action. Thus, the nested split
+separates the fluid and solid fields at the outer level and separates velocity
+and pressure within the fluid block.
 
 The off-diagonal interface blocks are compact approximations to the coupling
 derivatives. They are used only in the preconditioner; the converged nonlinear
 solution is determined by the residual evaluation described in
-Section~\ref{sec:discrete_coupled_residual}. This distinction is important:
-the approximate Jacobian in Equation~\eqref{eqn:block_preconditioner} affects
-the efficiency and robustness of the Krylov iterations, but it does not define
-the nonlinear equations being solved.
-
-%In the implementation, $\tilde{\bb{J}}$ is first assembled as a nested block
-%matrix and is then converted to a monolithic sparse matrix before being passed
-%to the linear solver. This allows standard algebraic preconditioners and
-%field-split strategies to be applied to the coupled system.
+Section~\ref{sec:discrete_coupled_residual}. Thus, the approximate Jacobian in
+Equation~\eqref{eqn:block_preconditioner} affects the efficiency and robustness
+of the Krylov iterations, but it does not define the nonlinear equations being
+solved.
 
 
 %%--------------------------------------------------------------------------------------------------------------------%%

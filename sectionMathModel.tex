@@ -62,13 +62,13 @@ current configuration, this may be written in integral form as
     \, d\Gamma_S
     +
     \int_{\Omega_S}
-    \bb{f}_{b,S}
+    \rho_S \bb{g}_S %\bb{f}_{b,S}
     \, d\Omega_S ,
     \label{eqn:solid_momentum_current}
 \end{equation}
 where $\rho_S$ is the current density, $\bb{v}_S$ is the solid velocity,
-$\bb{\sigma}_S$ is the true (Cauchy) stress tensor, and $\bb{f}_{b,S}$ is a body force
-per unit current volume.
+$\bb{\sigma}_S$ is the true (Cauchy) stress tensor, and $\bb{g}_S$ is a body force per unit mass.
+% $\bb{f}_{b,S}$ is a body force per unit current volume.
 
 The solid equations are solved in total Lagrangian form. Let $\bb{D}_S$ denote the solid displacement from the initial configuration
 $\Omega_{S,0}$ to the current configuration $\Omega_S(t)$.
@@ -110,20 +110,24 @@ the solid momentum equation may be expressed over the initial configuration as
     \, d\Omega_{S,0}
     =
     \oint_{\Gamma_{S,0}}
-    \left(
-    J \bb{F}^{-T} \cdot \hat{\bb{n}}_{S,0}
-    \right)
-    \cdot
-    \bb{\sigma}_S
+    \hat{\bb{n}}_{S,0} \cdot \bb{P}_S^T
+%    \left(
+%    J \bb{F}^{-T} \cdot \hat{\bb{n}}_{S,0}
+%    \right)
+%    \cdot
+%    \bb{\sigma}_S
     \, d\Gamma_{S,0}
     +
     \int_{\Omega_{S,0}}
-    \bb{f}_{b0,S}
+    \rho_{S,0} \bb{g}_S
+    %\bb{f}_{b0,S}
     \, d\Omega_{S,0} .
     \label{eqn:solid_momentum_TL}
 \end{equation}
-Here $\rho_{S,0}$ is the initial density and $\bb{f}_{b0,S}$ is a body force per unit initial volume.
-The true (Cauchy) stress $\bb{\sigma}_S$ is supplied by the chosen mechanical law.
+Here $\rho_{S,0}$ is the initial density, % and $\bb{f}_{b0,S}$ is a body force per unit initial volume.
+and the first Piola-Kirchhoff stress tensor, $\bb{P}_S = J \bb{\sigma}_S \bb{F}^{-T}$, is supplied by the chosen mechanical law.
+%The true (Cauchy) stress $\bb{\sigma}_S$ is supplied by the chosen mechanical law, and the first Piola-Kirchhoff stress tensor $\bb{P}_S$ is 
+%  $    \left(    J \bb{F}^{-T} \cdot \hat{\bb{n}}_{S,0}     \right)     \cdot     \bb{\sigma}_S = \hat{\bb{n}}_{S,0}  \cdot \bb{P}^T$
 In this work, the considered mechanical laws include linear elasticity and neo-Hookean and St Venant-Kirchhoff hyperelasticity.
 %escribed in Appendix~A of \citet{Cardiff2025JFNK}.
 %\hl{UPDATE: we should at least state the names of the laws we use - do this when the test cases are all defined}
@@ -196,6 +200,28 @@ so that Equation~\eqref{eqn:fluid_continuity_ale_full} is equivalent to
 %discrete velocity fluxes, with the mesh-motion contribution treated through the
 %ALE relative flux.
 
+For an incompressible Newtonian fluid with kinematic pressure $p$, the kinematic stress tensor is defined as
+\begin{eqnarray}
+    \bb{\sigma}_F^*
+    &=&
+    2 \nu \; \text{symm}
+    \left[
+    \bb{\nabla} \bb{v}_F
+    \right]
+    -
+    p \bb{I} \notag \\
+    &=&
+    \nu
+    \left[
+    \bb{\nabla} \bb{v}_F
+    +
+    \left( \bb{\nabla} \bb{v}_F \right)^T
+    \right]
+    -
+    p \bb{I},
+    \label{eqn:fluid_stress}
+\end{eqnarray}
+where $\nu$ is the kinematic viscosity, and $\text{symm}[ \bullet ]$ is the symmetric component operator. The true (Cauchy) stress is recovered as $\bb{\sigma}_F = \rho_F \bb{\sigma}_F^*$.
 Conservation of linear momentum in ALE form is written as
 \begin{equation}
     \frac{d}{dt}
@@ -215,30 +241,31 @@ Conservation of linear momentum in ALE form is written as
     \oint_{\Gamma_F}
     \hat{\bb{n}}_F
     \cdot
-    \bb{\sigma}_F
+    \bb{\sigma}_F^*
     \, d\Gamma_F
     +
     \int_{\Omega_F}
-    \bb{f}_{b,F}
+    \bb{g}_{F}
     \, d\Omega_F ,
     \label{eqn:fluid_momentum_ale}
 \end{equation}
-where $\bb{f}_{b,F}$ is a body force per unit mass. The use of a kinematic
-pressure gives the Newtonian stress tensor
-\begin{equation}
-    \bb{\sigma}_F
-    =
-    \nu
-    \left[
-    \bb{\nabla} \bb{v}_F
-    +
-    \left( \bb{\nabla} \bb{v}_F \right)^T
-    \right]
-    -
-    p \bb{I},
-    \label{eqn:fluid_stress}
-\end{equation}
-where $\nu$ is the kinematic viscosity and $p$ is the kinematic pressure.
+where $\bb{g}_{F}$ is a body force per unit mass.
+%The use of a kinematic pressure gives the kinematic Newtonian stress tensor
+%\begin{equation}
+%    \bb{\sigma}_F^*
+%    =
+%    \nu
+%    \left[
+%    \bb{\nabla} \bb{v}_F
+%    +
+%    \left( \bb{\nabla} \bb{v}_F \right)^T
+%    \right]
+%    -
+%    p \bb{I},
+%    \label{eqn:fluid_stress}
+%\end{equation}
+%where $\nu$ is the kinematic viscosity and $p$ is the kinematic pressure.
+%The true (Cauchy) stress $\bb{\sigma}_F = \rho_F \bb{\sigma}_F^*$ is the kinematic Newtonian stress tensor scaled by the fluid density $\rho_F$.
 
 The fluid boundary conditions considered are inlet, outlet, no-slip wall and
 symmetry conditions. On the fluid--solid interface, the fluid velocity is
@@ -266,129 +293,21 @@ The kinematic condition enforces continuity of velocity between the fluid and so
     \label{eqn:kinematic_interface}
 \end{equation}
 %where $\bb{v}^{\Gamma}$ is the velocity of the moving fluid domain.
-This condition prevents slip, gap formation and overlap at the interface.
+Together with consistent initial conditions, this condition enforces no-slip and prevents gap formation or overlap at the interface.
 Away from the interface, the extension of the boundary motion into the fluid domain is a numerical mesh-motion procedure and is described in Section~\ref{sec:fluid_mesh_motion}.
 
 The dynamic condition enforces equilibrium of the fluid and solid tractions,
 \begin{equation}
-    \bb{t}_F
-    +
-    \bb{t}_S
-    =
-    \bb{0}
-    \qquad
-    \text{on } \Gamma_\text{fsi}(t),
-    \label{eqn:dynamic_interface_compact}
+	\boldsymbol{t}_F + \boldsymbol{t}_S = \boldsymbol{0} \qquad \text{on } \Gamma_\text{fsi}(t),
+	    \label{eqn:dynamic_interface_compact}
 \end{equation}
 with
 \begin{equation}
-    \bb{t}_F
-    =
-    \hat{\bb{n}}_F \cdot \bb{\sigma}_F,
-    \qquad
-    \bb{t}_S
-    =
-    \hat{\bb{n}}_S \cdot \bb{\sigma}_S,
-    \qquad
-    \hat{\bb{n}}_F = -\hat{\bb{n}}_S .
+	\boldsymbol{t}_F = \hat{\boldsymbol{n}}_F \cdot \boldsymbol{\sigma}_F = \rho_F \, \hat{\boldsymbol{n}}_F \cdot \boldsymbol{\sigma}_F^* ,
+	\qquad \boldsymbol{t}_S = \hat{\boldsymbol{n}}_S \cdot \boldsymbol{\sigma}_S,
+	\qquad \hat{\boldsymbol{n}}_F = -\hat{\boldsymbol{n}}_S.
 \end{equation}
-Equivalently,
+Equivalently, in terms of the kinematic fluid stress,
 \begin{equation}
-    \hat{\bb{n}}_F \cdot \bb{\sigma}_F
-    =
-    -
-    \hat{\bb{n}}_S \cdot \bb{\sigma}_S
-    \qquad
-    \text{on } \Gamma_\text{fsi}(t).
-    \label{eqn:dynamic_interface}
+	\rho_F \, \hat{\bb{n}}_F \cdot \bb{\sigma}_F^* = -\hat{\bb{n}}_S \cdot \bb{\sigma}_S \qquad \text{on } \Gamma_\text{fsi}(t).
 \end{equation}
-
-%Using Equation~\eqref{eqn:fluid_stress}, the fluid traction is
-%\begin{equation}
-%    \bb{t}_F
-%    =
-%    \hat{\bb{n}}_F
-%    \cdot
-%    \left\{
-%    \nu
-%    \left[
-%    \bb{\nabla} \bb{v}_F
-%    +
-%    \left( \bb{\nabla} \bb{v}_F \right)^T
-%    \right]
-%    -
-%    p \bb{I}
-%    \right\}.
-%    \label{eqn:fluid_interface_traction}
-%\end{equation}
-
-%In the implemented formulation, the traction passed from the fluid to the solid
-%may contain either the pressure contribution alone or the full fluid traction,
-%including the viscous contribution. Unless otherwise stated, the calculations
-%reported in this work transfer both pressure and viscous tractions.
-
-
-%%%--------------------------------------------------------------------------------------------------------------------%%
-%\subsection{Fluid mesh motion}
-%\label{sec:fluid_domain_motion}
-%%%--------------------------------------------------------------------------------------------------------------------%%
-%
-%The ALE fluid formulation requires the motion of the fluid mesh to be specified.
-%The mesh motion is not a physical conservation law; rather, it is an auxiliary
-%problem used to propagate the interface displacement smoothly into the fluid
-%domain while maintaining mesh quality.
-%
-%Let $\bb{d}^{\Gamma}$ denote the fluid mesh displacement. On the fluid--solid
-%interface, the mesh displacement is prescribed from the solid displacement,
-%\begin{equation}
-%    \bb{d}^{\Gamma}
-%    =
-%    \bb{d}_S
-%    \qquad
-%    \text{on } \Gamma_\text{fsi}(t),
-%    \label{eqn:mesh_motion_interface_bc}
-%\end{equation}
-%while appropriate prescribed or symmetry conditions are applied on the remaining
-%fluid boundaries.
-%
-%In this work, the fluid mesh displacement is computed using a pseudo-solid
-%linear-elasticity equation,
-%\begin{equation}
-%    \oint_{\Gamma_{F,0}}
-%    \hat{\bb{n}}_{F,0}
-%    \cdot
-%    \left[
-%    \mu^\Gamma
-%    \bb{\nabla}_0 \bb{d}^{\Gamma}
-%    +
-%    \mu^\Gamma
-%    \left(
-%    \bb{\nabla}_0 \bb{d}^{\Gamma}
-%    \right)^T
-%    +
-%    \lambda^\Gamma
-%    \left(
-%    \bb{\nabla}_0 \cdot \bb{d}^{\Gamma}
-%    \right)
-%    \bb{I}
-%    \right]
-%    \, d\Gamma_{F,0}
-%    =
-%    \bb{0}.
-%    \label{eqn:mesh_motion_pseudo_solid}
-%\end{equation}
-%The coefficients $\mu^\Gamma$ and $\lambda^\Gamma$ are artificial stiffness
-%parameters used only to control the distribution of mesh motion. They are
-%spatially varied so that the mesh is stiffer near the fluid--solid interface;
-%in the present implementation, the stiffness is scaled inversely with the
-%square of the distance from the interface. This reduces mesh distortion near
-%the moving boundary while allowing the displacement to decay smoothly into the
-%fluid domain.
-%
-%The mesh velocity is then obtained from the time derivative of
-%$\bb{d}^{\Gamma}$ and used in the ALE fluxes in
-%Equations~\eqref{eqn:fluid_continuity_ale_full} and
-%\eqref{eqn:fluid_momentum_ale}. The discrete moving-mesh fluxes are constructed
-%so as to satisfy the geometric conservation law,
-%Equation~\eqref{eqn:gcl}.
-

@@ -183,7 +183,9 @@ Here $\bb{R}_F = \left[ \bb{R}_{F_m};\, R_{F_p} \right]$ denotes the discrete fl
 The interface coupling is represented by the off-block arguments: $\bb{v}_S$ enters the fluid equations through the interface velocity boundary condition and the motion of the fluid mesh boundary, while $(\bb{v}_F,p_F)$ enters the solid equation through the fluid traction applied to the solid interface.
 Operationally, given a trial state, the current solid interface velocity is first imposed as the fluid velocity boundary condition and used to update the fluid mesh motion; the fluid momentum and pressure equations are then evaluated, and the resulting fluid traction is mapped to the solid interface and applied as a traction boundary condition before the solid residual is evaluated.
 
-In the remainder of this subsection, the region subscript $F$ on fluid quantities is omitted where no ambiguity arises; the lower-case subscript $f$ continues to denote a face quantity.
+In the remainder of this subsection, the region subscript $F$ on fluid quantities is omitted where no ambiguity arises.
+Recall from Section~\ref{sec:fv_discretisation} that $\mathcal{F}_P$ denotes the set of faces of cell $P$, with $\bb{\Gamma}_f = |\bb{\Gamma}_f|\, \hat{\bb{n}}_f$ the outward face area vector and $\bb{d}_f$ the vector joining the centroids of $P$ and its neighbour $N_f$ across face $f$.
+%; the lower-case subscript $f$ continues to denote a face quantity.
 For a fluid control volume $P$ of volume $\Omega_P$, the discrete momentum residual is written as
 \begin{align}
     \bb{R}_{m,P}
@@ -212,10 +214,10 @@ For a fluid control volume $P$ of volume $\Omega_P$, the discrete momentum resid
     \right],
     \label{eqn:fluid_momentum_residual}
 \end{align}
-where $\bb{v}_P$ and $\bb{v}_{N_f}$ are the velocities in cell $P$ and in the neighbouring cell across face $f$, $\bb{d}_f$ is the vector joining the two cell centres, and $\bb{\Gamma}_f = |\bb{\Gamma}_f|\,\hat{\bb{n}}_f$ is the outward face area vector with unit normal $\hat{\bb{n}}_f$. The linearly interpolated face velocity, used in both the convective and continuity fluxes below, is denoted $\bb{v}_f$.
+where $\bb{v}_P$ and $\bb{v}_{N_f}$ are the velocities in cell $P$ and in the neighbouring cell across face $f$.
+The linearly interpolated face velocity, used in both the convective and continuity fluxes below, is denoted $\bb{v}_f$.
 
-The face summation contains the diffusion and convection contributions. The
-first term is the compact orthogonal contribution to the viscous diffusion
+The face summation contains the diffusion and convection contributions. The first term is the compact orthogonal contribution to the viscous diffusion
 flux. The second term is the non-orthogonal correction, where
 \begin{equation}
     \bb{k}_f

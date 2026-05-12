@@ -272,7 +272,7 @@ The discrete pressure residual for cell $P$ is
     \mathcal{D}_{p,P},
     \label{eqn:fluid_pressure_residual}
 \end{equation}
-where $\bb{v}_f$ is again the linearly interpolated face velocity, and $\mathcal{D}_{p,P}$ is the finite-volume pressure-stabilisation contribution calculated as
+where $\bb{v}_f$ is again the linearly interpolated face velocity, and $\mathcal{D}_{p,P}$ is the finite-volume pressure-stabilisation contribution \citep{Rhie1983} calculated as
 \begin{eqnarray} \label{eqn:rhie_chow}
 	\mathcal{D}_{p,P}
 	=
@@ -824,7 +824,6 @@ remaining fluid-domain boundaries.
 
 The interior fluid mesh displacement is computed using a pseudo-solid linear-elastic problem.
 The unknown $\bb{D}^{\Gamma}$ is the total fluid mesh displacement relative to the initial fluid configuration, and satisfies
-\begin{equation} ... \end{equation}
 \begin{equation}
     \oint_{\Gamma_{P}^{n-1}}
     \delta \;

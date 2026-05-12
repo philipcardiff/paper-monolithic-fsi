@@ -103,55 +103,24 @@ textheight=24cm, % llncs has 19.3cm
 
 
 
-\abstract
-{
-WIP
+\abstract{
+Fluid--solid interaction (FSI) problems arising in engineering and biomedical applications often involve strong coupling and significant added-mass effects, regimes in which partitioned solution strategies can suffer from slow convergence or instability.
+Monolithic solution strategies provide an attractive alternative but have been developed almost exclusively in the finite element setting.
+This paper presents a quasi-monolithic cell-centred finite volume method for FSI, in which the fluid velocity and pressure (in arbitrary Lagrangian--Eulerian form) and solid velocity (in total Lagrangian form) momentum equations are coupled within a single nonlinear residual, with strong enforcement of the interface kinematic and dynamic conditions.
+The coupled nonlinear system is solved using a Jacobian-free Newton--Krylov procedure with an approximate block preconditioner, assembled from compact finite volume linearisations of the fluid, solid, and interface-coupling terms.
+The preconditioner supports both monolithic and nested field-split usage, with optional Schur-complement approximation of the velocity--pressure block via the Rhie--Chow pressure stabilisation.
+The method is implemented in the OpenFOAM-based toolbox solids4foam using PETSc for the nonlinear and linear algebra.
+Performance is assessed on a suite of established two- and three-dimensional FSI benchmarks, demonstrating second-order spatial and temporal accuracy, agreement with partitioned reference solutions, and robust convergence at time-step sizes for which partitioned coupling becomes inefficient or fails.
 }
 
-
-
-\keywords{Fluid-solid interaction, Monolithic, Jacobian-free Newton-Krylov, Finite volume method, solids4foam, OpenFOAM}
+\keywords{Fluid--solid interaction, Monolithic, Quasi-monolithic, Jacobian-free Newton--Krylov, Finite volume method, Added-mass effects, solids4foam, OpenFOAM}
 
 \maketitle
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Introduction}\label{sec:intro}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%Paper outline:
-%
-%Intro
-%	State the contribution of this paper
-%	Classify FSI methods => different classification, then focus on monolithic vs partitioned
-% 	To-date monolithic FSI is mostly FE
-%	FVM FSI methods are mostly partitioned => brief review
-%	Current paper proposes a novel monolithic, based on the JFNK method
-%		=> easy integration into segregated software, with good convergence
-
-
-Over the past four decades, immense progress has been made on methods for solving fluid-solid interaction problems \citep{belytschko1980quasi, donea1982arbitrary, van2021vanguard}. Modelling approaches for fluid-solid interaction can be classified by:
-
-\begin{itemize}
-	\item \textbf{Modelling viewpoint}: Eulerian vs Lagrangian vs mixed Eulerian-Lagrangian;
-	\item \textbf{Degree of coupling}: weakly vs strongly coupled;
-	\item \textbf{Solver structure}: partitioned vs monolithic.
-\end{itemize}
-
-Eulerian approaches treat both solid and fluid domains as ``fluid-like" (e.g. volume-of-fluid \citep{jain2019conservative}, level-set \citep{dunne2006eulerian, cottet2008eulerian}), easily allowing for arbitrarily large solid deformations. However, conservative, accurate interface descriptions and the inclusion of advanced solid constitutive laws are challenges. This would make the inclusion of heart valves particularly troublesome, for example. In contrast, Lagrangian (particle-type) approaches treat both domains as ``solid-like", e.g. smooth particle hydrodynamics (SPH), material point method (MPM) and the particle finite element method (PFEM) \citep{aubry2005particle, aubry2006fractional, cremonesi2020state}. Although promising for large deformation problems, Lagrangian methods typically come with a prohibitively expensive computational cost; this restriction would be fatal for cardiac xenotransplant simulations, which are already expected to be slow. Finally, mixed Eulerian-Lagrangian approaches treat the solid and interface as Lagrangian and the fluid as arbitrary Lagrangian-Eulerian (ALE). This approach is effective for small interface deformations but will eventually fail for large deformations \citep{wall2006large}. Consequently, significant attention has been focused on methods that allow the solid to "float over" the Eulerian fluid grid, e.g. immersed boundaries/domains \citep{peskin1977numerical, peskin2002immersed, iaccarino2003immersed}, Chimera/overset methods \citep{ge2003three, miller2014overset, li2021fluid, cane2021patient} and cut-cell methods \citep{pasquariello2016cut, tao2020new, xie2020cartesian}. Of these approaches, overset methods provide the same large deformation freedom but with the added advantage of maintaining orthogonal interface cells to capture fluid boundary layers.
-
-In cases where strict enforcement of kinematic and dynamic interface continuity conditions is not required, reasonable results can be attained when both the fluid and solid domains are solved once per time step \citep{farhat2000two}. However, this approach is unstable for strongly coupled systems, as is expected in cardiac xenotransplant simulations. In contrast, strongly coupled approaches strictly enforce the interface conditions at each time step. This strong coupling can be achieved in different ways, depending on the solver structure: partitioned vs monolithic.
-
-In partitioned (staggered/two-system) approaches, separate solvers (and potentially discretisations) are used for the fluid and solid \citep{Tukovic2018}. Consequently, outer iterations must be performed over the fluid and solid domains at each time step, e.g. using Aitken’s acceleration \citep{Degroote2009, bungartz2016precice, irons1969version, kuttler2008fixed}, quasi-Newton procedures \citep{santiago2020hpc, delaisse2022surrogate}, or Robin-type coupling \citep{Tukovic2019}. The main limitations of these approaches can be robustness and efficiency, whereas for highly nonlinear, tightly coupled systems, convergence may not be possible or may be prohibitively slow. This is of concern for a whole heart simulation with multiple deforming structures (valves, chambers, vessels) undergoing complex deformations. In contrast, monolithic approaches treat the entire solid-fluid domain as one system, where the discretised fluid and solid problems are solved concurrently in the same linearised system \citep{Degroote2009}. The primary advantage of monolithic methods is their ability to deal with tightly coupled nonlinear systems, as well as potentially being faster than partitioned approaches (fewer outer iterations). The disadvantages are related to the loss of modularity and the resulting poorly conditioned linear system being more challenging to solve.
-
-More references:
-\begin{itemize}
-	\item \citet{Gjertsen2017} masters thesis, \citep{Bergersen2020}
-	\item Wall papers: Gee
-	\item Heil UoM 2004 and 2008
-	\item Tandis thesis
-	\item Greenshields and related uniform FSI papers
-\end{itemize}
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{sectionIntro.tex}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \input{sectionMathModel.tex}

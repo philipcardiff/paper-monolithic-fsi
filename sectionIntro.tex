@@ -1,0 +1,66 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}\label{sec:intro}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Check these three are cited:
+%Eken => similar but their monolithic approach uses FEM for the solid and FVM for the fluid (and they include fluid mesh motion in the system)
+%Malan => vertex centred and uses split-step approach so not monolithic per se
+%Sulliman -> FVM but partitioned matrix free
+% and cite Demirdzic1995 as the seminal unstructured FVM for solids
+
+This paper presents a quasi-monolithic cell-centred finite volume method for fluid--solid interaction (FSI), implemented in the OpenFOAM-based toolbox solids4foam~\citep{Cardiff2025} and solved using a Jacobian-free Newton--Krylov (JFNK) procedure with an approximate block preconditioner.
+The remainder of this section places the method in the context of existing FSI approaches, identifies the gap addressed, and summarises the specific contributions.
+
+FSI methods can be classified along three axes: the modelling viewpoint (Eulerian, Lagrangian, or mixed), the degree of interface coupling (weak vs.\ strong), and the solver structure (partitioned vs.\ monolithic).
+
+Eulerian approaches treat both solid and fluid domains as ``fluid-like'' (e.g.\ volume-of-fluid~\citep{jain2019conservative}, level-set~\citep{dunne2006eulerian, cottet2008eulerian}), easily allowing arbitrarily large solid deformations, but conservative interface descriptions and the inclusion of advanced solid constitutive laws remain challenging.
+In contrast, Lagrangian (particle-type) approaches treat both domains as ``solid-like'', e.g.\ smooth-particle hydrodynamics, the material point method, and the particle finite element method (PFEM)~\citep{aubry2005particle, aubry2006fractional, cremonesi2020state}.
+These methods are promising for large-deformation problems but typically come with a prohibitive computational cost.
+Mixed Eulerian--Lagrangian approaches treat the solid (and interface) as Lagrangian and the fluid using an arbitrary Lagrangian--Eulerian (ALE) description.
+ALE is effective for small to moderate interface deformations but eventually fails for very large deformations~\citep{wall2006large}, motivating methods that allow the solid to ``float over'' an Eulerian fluid grid, such as immersed boundary/domain~\citep{peskin1977numerical, peskin2002immersed, iaccarino2003immersed}, Chimera/overset~\citep{ge2003three, miller2014overset, li2021fluid, cane2021patient}, and cut-cell methods~\citep{pasquariello2016cut, tao2020new, xie2020cartesian}.
+Of these, overset methods offer large-deformation freedom while retaining orthogonal interface cells suitable for resolving fluid boundary layers.
+
+In weakly coupled (loosely coupled) approaches, the fluid and solid are solved once per time step without iteration over the interface conditions~\citep{farhat2000two}.
+This is computationally inexpensive but unstable for strongly coupled systems with significant added-mass effects, such as incompressible flows interacting with light, flexible structures.
+Strongly coupled approaches strictly enforce the interface kinematic and dynamic conditions at each time step; the present work focuses on the strongly coupled case.
+
+Strong coupling can be enforced through either a partitioned or a monolithic solver structure.
+In partitioned (staggered, two-system) approaches, separate solvers --- and potentially separate discretisations --- are used for the fluid and solid~\citep{Tukovic2018}, and outer iterations are performed over the interface at each time step.
+These are accelerated using Aitken relaxation~\citep{Degroote2009, bungartz2016precice, irons1969version, kuttler2008fixed}, quasi-Newton schemes~\citep{santiago2020hpc, delaisse2022surrogate}, or Robin-type coupling~\citep{Tukovic2019}.
+The principal limitations are robustness and efficiency: for strongly coupled, highly nonlinear problems, outer-iteration convergence can be slow or fail entirely, particularly under strong added-mass loading.
+In contrast, monolithic approaches treat the fluid and solid as a single system, solved concurrently within the same linearised system~\citep{Degroote2009}.
+This avoids outer iterations and can handle tightly coupled nonlinear problems robustly, at the cost of reduced modularity and a poorly conditioned linear system that is more difficult to solve.
+
+Monolithic FSI methods have been developed predominantly in the finite element (FE) community.
+Early influential examples include \citet{Heil2004}, who first demonstrated that block-triangular approximations of the coupled Jacobian provide effective preconditioners for monolithic ALE FSI with GMRES, and the segregated/monolithic comparison of \citet{Heil2008}.
+The Munich line of \citet{Mayr2015, Schott2019} extended this with temporally consistent and cut-FEM-based formulations.
+The benchmark of \citet{Turek2006} (used as a test case in Section~\ref{sec:test_cases}) and the broader analyses of \citet{Richter2012, Richter2017} provided rigorous validation and goal-oriented frameworks.
+\citet{Liu2014} introduced a quasi-monolithic FE formulation specifically targeting strong added-mass effects, in which the fluid mesh motion is treated outside the coupled Newton vector --- the approach most closely related, in spirit, to the present work.
+Comprehensive treatments are available in the textbook of \citet{JaimanJoshi2022} and the recent open-source FEniCS-based turtleFSI solver~\citep{Bergersen2020, Gjertsen2017}.
+Most recently, fully coupled Newton--Krylov methods with exact Jacobians and multigrid/Schwarz preconditioning have been demonstrated in the FE setting~\citep{Aulisa2018}, alongside continued development of field-split and block preconditioners for added-mass-dominated FSI~\citep{Badia2008, Muddle2012, Deparis2016, Jodlbauer2019, Calandrini2020}.
+A common feature across this body of work is that the underlying spatial discretisation is finite element.
+
+In contrast, body-fitted cell-centred finite volume FSI methods --- particularly within the OpenFOAM ecosystem --- have largely followed partitioned coupling strategies.
+The standard reference here is \citet{Tukovic2018}, whose partitioned framework underpins the solids4foam toolbox and a substantial body of subsequent applied work.
+Cross-ecosystem coupling frameworks such as preCICE~\citep{bungartz2016precice} extend this paradigm but remain partitioned in nature.
+A smaller line of cell-centred FV work instead adopts unified or one-system formulations, beginning with \citet{Greenshields1999b} and \citet{Greenshields2005} and later continued by \citet{Giannopapa2006, Giannopapa2008} and \citet{Tandis2023}.
+These unified FV-FSI procedures solve common pressure--velocity-type equations across fluid and solid regions using segregated SIMPLE-type pressure--velocity splitting, rather than a fully coupled Newton or Newton--Krylov solve.
+Separate Eulerian FV one-continuum approaches have also emerged, notably the quadtree-based monolithic method of \citet{Bergmann2022}, in which fluid and structure phases are solved over a common Cartesian computational domain.
+These methods differ from a body-fitted cell-centred FV formulation in that they do not maintain distinct fluid and solid meshes coupled across an interface; recent VOF-based one-continuum FV work~\citep{Prajapati2025} continues in this direction.
+
+To the authors' knowledge, no prior work has presented a body-fitted cell-centred finite volume monolithic FSI formulation solved with a Jacobian-free Newton--Krylov procedure and an approximate fluid--solid block preconditioner.
+Monolithic Newton--Krylov and block-preconditioned FSI methods are well-established in the finite element literature, but an analogous cell-centred FV JFNK formulation appears to be absent.
+The present work fills this gap, building on the authors' recent JFNK methods for cell-centred FV solid mechanics~\citep{Cardiff2026, Batistic2026}, which are here extended to coupled FSI.
+
+The specific contributions are:
+\begin{enumerate}
+    \item A cell-centred finite volume formulation for incompressible Newtonian fluid--elastic solid interaction, in which the fluid (in ALE form), pressure, and solid (in total Lagrangian form) momentum equations are coupled within a single nonlinear residual, with strong enforcement of the interface kinematic and dynamic conditions. The fluid mesh motion is treated outside the coupled Newton vector --- a quasi-monolithic strategy closest in spirit to \citet{Liu2014}.
+    \item A Jacobian-free Newton--Krylov solution strategy supported by an approximate block preconditioner. The preconditioner is assembled from compact FV linearisations of the fluid, solid, and interface-coupling terms, and supports both monolithic and nested field-split usage --- outer fluid--solid split, with optional inner velocity--pressure Schur-complement approximation via the Rhie--Chow pressure-stabilisation block.
+    \item An open-source implementation in the solids4foam toolbox~\citep{Cardiff2025} interfaced with PETSc~\citep{PETSc}, demonstrating that monolithic FSI is achievable within a segregated finite volume framework without rewriting the underlying OpenFOAM discretisation.
+    \item A benchmark study covering established 2D and 3D FSI test cases, including verification of temporal accuracy, comparison against partitioned solutions, and assessment of solver robustness under strong added-mass conditions.
+\end{enumerate}
+
+Section~\ref{sec:math_model} presents the governing equations for the coupled fluid--solid problem.
+Section~\ref{sec:numerical_methods} develops the cell-centred FV discretisation, the JFNK solver, and the approximate block preconditioner; the fluid mesh-motion procedure and implementation in solids4foam/PETSc are also described.
+Section~\ref{sec:test_cases} presents numerical results across eight benchmark configurations.
+Section~\ref{sec:conclusion} concludes.

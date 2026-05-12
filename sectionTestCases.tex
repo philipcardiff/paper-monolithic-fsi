@@ -43,7 +43,7 @@ The test is used here to assess robustness and convergence behaviour for an inte
 
 The fluid domain has channel height $H = 1\,\mathrm{m}$ and is solved as incompressible, Newtonian, and isothermal, with density $\rho_f = 1\,\mathrm{kg/m^3}$ and kinematic viscosity $\nu_f = 0.01\,\mathrm{m^2/s}$. A parabolic inlet velocity profile with mean value $\bar{u}_{\mathrm{in}} = 1\,\mathrm{m/s}$ is imposed, corresponding to $Re = 100$ based on $H$. A fixed pressure of $0$ Pa is prescribed at the outlet, while no-slip conditions are applied on fluid walls and interface-consistent kinematic/dynamic coupling conditions are enforced at the fluid-solid boundary.
 The flexible cavity bottom is modelled as a Saint Venant--Kirchhoff solid with density $\rho_s = 1000\,\mathrm{kg/m^3}$, Young's modulus $E = 500$ Pa, and Poisson's ratio $\nu_s = 0.4$.
-To efficiently and robustly attain the steady-state solution, the simuilation is advanced in time until a steady response is obtained, where a damping coefficient (ADD TO FORMULATION ABOVE) of $0.2$ s$^{-1}$ is employed in the solid. 
+To efficiently and robustly attain the steady-state solution, the simuilation is advanced in time until a steady response is obtained, where a damping coefficient $c_d = 0.2$ s$^{-1}$ is employed in the solid. 
 
 \begin{table}[htbp]
 	\centering

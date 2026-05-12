@@ -2,7 +2,8 @@
 \section{Mathematical Models}\label{sec:math_model}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Throughout this paper, the uppercase subscripts $F$ and $S$ are used to denote fluid- and solid-region quantities, respectively, and a trailing subscript $0$ denotes evaluation in the initial (reference) configuration. Where no ambiguity arises, the region subscript is omitted for conciseness.
+%Throughout this paper, the uppercase subscripts $F$ and $S$ are used to denote fluid- and solid-region quantities, respectively, and a trailing subscript $0$ denotes evaluation in the initial (reference) configuration. Where no ambiguity arises, the region subscript is omitted for conciseness.
+Throughout this paper, bold symbols denote vectors and tensors (e.g.\ $\bb{v}_F$, $\bb{\sigma}_S$), while a hat denotes a unit vector (e.g.\ $\hat{\bb{n}}_F$). The uppercase subscripts $F$ and $S$ are used to denote fluid- and solid-region quantities, respectively, and a trailing subscript $0$ denotes evaluation in the initial (reference) configuration. Where no ambiguity arises, the region subscript is omitted for conciseness. The gradient operator $\bb{\nabla}$ is treated as a standard vector operator, consistent with the divergence $\bb{\nabla} \cdot$, curl $\bb{\nabla} \times$ and related operations, as adopted in OpenFOAM; with this convention, $(\bb{\nabla} \bb{a})_{ij} = \partial a_j / \partial x_i$ for a vector field $\bb{a}$, which is the transpose of the gradient tensor in the more usual continuum-mechanics convention. The subscript $0$ on the gradient, $\bb{\nabla}_0$, indicates differentiation with respect to the initial (reference) coordinates. Body forces are expressed per unit mass throughout.
 
 The present work considers the dynamic interaction between an incompressible Newtonian fluid and a deformable elastic solid, as illustrated in Figure~\ref{fig:fsi_problem}.
 At time $t$, the coupled system occupies the
@@ -46,7 +47,7 @@ moving domains and boundaries is omitted where no ambiguity arises.
 
 
 %%--------------------------------------------------------------------------------------------------------------------%%
-\subsection{Solid model}
+\subsection{Solid model} \label{sec:solid_model}
 %%--------------------------------------------------------------------------------------------------------------------%%
 
 The motion of the solid is governed by conservation of linear momentum. In the
@@ -62,12 +63,12 @@ current configuration, this may be written in integral form as
     \, d\Gamma_S
     +
     \int_{\Omega_S}
-    \rho_S \bb{g}_S %\bb{f}_{b,S}
+    \rho_S \bb{b}_S %\bb{f}_{b,S}
     \, d\Omega_S ,
     \label{eqn:solid_momentum_current}
 \end{equation}
 where $\rho_S$ is the current density, $\bb{v}_S$ is the solid velocity,
-$\bb{\sigma}_S$ is the true (Cauchy) stress tensor, and $\bb{g}_S$ is a body force per unit mass.
+$\bb{\sigma}_S$ is the true (Cauchy) stress tensor, and $\bb{b}_S$ is a body force per unit mass.
 % $\bb{f}_{b,S}$ is a body force per unit current volume.
 
 The solid equations are solved in total Lagrangian form. Let $\bb{D}_S$ denote the solid displacement from the initial configuration
@@ -83,10 +84,12 @@ The deformation gradient and its determinant are
     J = \det \bb{F},
     \label{eqn:deformation_gradient}
 \end{equation}
-where $\bb{\nabla}_0$ denotes differentiation with respect to the initial
-solid coordinates. With the convention
-$(\nabla_0 D_S)_{ij} = \partial D_{S,j} / \partial X_i$, this corresponds in
-index notation to
+where $\bb{\nabla}_0$ denotes differentiation with respect to the initial solid coordinates.
+The transpose reflects the gradient convention stated in the introduction to this section.
+%The transpose in Equation~\ref{eqn:deformation_gradient} arises from the chosen convention $(\bb{\nabla}_0 \bb{D}_S)_{ij} = \partial D_{S,j}/\partial X_i$, which treats $\bb{\nabla}_0$ as a standard vector operator consistent with $\bb{\nabla}_0 \cdot$, $\bb{\nabla}_0 \times$ and related operations, as adopted in OpenFOAM. With this convention, $\bb{\nabla}_0 \bb{D}_S$ is the transpose of the displacement gradient tensor in the more usual continuum-mechanics convention.
+%With the convention
+%$(\nabla_0 D_S)_{ij} = \partial D_{S,j} / \partial X_i$,
+This corresponds in index notation to
 \begin{equation}
     F_{ij}
     =
@@ -96,12 +99,12 @@ index notation to
 \end{equation}
 
 Using Nanson's relation,
-\begin{equation}
+\begin{equation} \label{eqn:nanson}
     \hat{\bb{n}}_S \, d\Gamma_S
     =
     J \bb{F}^{-T} \cdot \hat{\bb{n}}_{S,0} \, d\Gamma_{S,0},
 \end{equation}
-the solid momentum equation may be expressed over the initial configuration as
+and introducing the first Piola--Kirchhoff stress tensor $\bb{P}_S = J \bb{\sigma}_S \bb{F}^{-T}$, the solid momentum equation may be expressed over the initial configuration as
 \begin{equation}
     \int_{\Omega_{S,0}}
     \rho_{S,0}
@@ -119,21 +122,15 @@ the solid momentum equation may be expressed over the initial configuration as
     \, d\Gamma_{S,0}
     +
     \int_{\Omega_{S,0}}
-    \rho_{S,0} \bb{g}_S
+    \rho_{S,0} \bb{b}_S
     %\bb{f}_{b0,S}
     \, d\Omega_{S,0} .
     \label{eqn:solid_momentum_TL}
 \end{equation}
-Here $\rho_{S,0}$ is the initial density, % and $\bb{f}_{b0,S}$ is a body force per unit initial volume.
-and the first Piola-Kirchhoff stress tensor, $\bb{P}_S = J \bb{\sigma}_S \bb{F}^{-T}$, is supplied by the chosen mechanical law.
-%The true (Cauchy) stress $\bb{\sigma}_S$ is supplied by the chosen mechanical law, and the first Piola-Kirchhoff stress tensor $\bb{P}_S$ is 
-%  $    \left(    J \bb{F}^{-T} \cdot \hat{\bb{n}}_{S,0}     \right)     \cdot     \bb{\sigma}_S = \hat{\bb{n}}_{S,0}  \cdot \bb{P}^T$
-In this work, the considered mechanical laws include linear elasticity and neo-Hookean and St Venant-Kirchhoff hyperelasticity.
-%escribed in Appendix~A of \citet{Cardiff2025JFNK}.
-%\hl{UPDATE: we should at least state the names of the laws we use - do this when the test cases are all defined}
+Here $\rho_{S,0}$ is the initial density, and the reference-configuration traction is $\bb{t}_0 = \hat{\bb{n}}_{S,0} \cdot \bb{P}_S^T$.
+The Cauchy stress $\bb{\sigma}_S$ (and hence $\bb{P}_S$) is supplied by the chosen mechanical law; in this work, the considered laws include linear elasticity and two finite-strain hyperelastic laws (neo-Hookean and Saint Venant--Kirchhoff).
 
-The solid boundary conditions considered are prescribed displacement,
-prescribed traction, and symmetry conditions.
+The solid boundary conditions considered are prescribed displacement, prescribed traction, and symmetry conditions; interface conditions coupling the solid to the fluid are described in Section~\ref{sec:fsi_interface}.
 
 
 %%--------------------------------------------------------------------------------------------------------------------%%
@@ -141,17 +138,12 @@ prescribed traction, and symmetry conditions.
 \label{sec:fluid_governing_eqn}
 %%--------------------------------------------------------------------------------------------------------------------%%
 
-The fluid is modelled as laminar, incompressible, Newtonian and isothermal. It
-is formulated on the current moving domain $\Omega_F(t)$ using an arbitrary
-Lagrangian--Eulerian (ALE) description. Let $\bb{v}_F$ denote the fluid velocity
-and let $\bb{v}^{\Gamma}$ denote the velocity of the moving fluid domain. The
-motion of $\Omega_F(t)$ is prescribed on the fluid--solid interface by the
-kinematic condition in Section~\ref{sec:fsi_interface}; its extension into the
-interior of the fluid domain is a numerical mesh-motion procedure described in
-Section~\ref{sec:fluid_mesh_motion}.
+The fluid is assumed to be laminar, incompressible, Newtonian and isothermal.
+It is formulated on the current moving domain $\Omega_F(t)$ using an arbitrary Lagrangian--Eulerian (ALE) description. Let $\bb{v}_F$ denote the fluid velocity and let $\bb{v}^{\Gamma}$ denote the velocity of the moving fluid domain.
+The motion of $\Omega_F(t)$ is prescribed on the fluid--solid interface by the kinematic condition in Section~\ref{sec:fsi_interface}; its extension into the
+interior of the fluid domain is a numerical mesh-motion procedure described in Section~\ref{sec:fluid_mesh_motion}.
 
-For an incompressible fluid, conservation of mass over a moving control volume
-may be written as
+For an incompressible fluid, conservation of mass over a moving control volume may be written as
 \begin{equation}
     \frac{d}{dt}
     \int_{\Omega_F}
@@ -169,7 +161,7 @@ may be written as
     \label{eqn:fluid_continuity_ale_full}
 \end{equation}
 
-The moving domain is required to satisfy the geometric conservation law,
+The moving domain is required to satisfy the geometric conservation law:
 \begin{equation}
     \frac{d}{dt}
     \int_{\Omega_F}
@@ -184,7 +176,8 @@ The moving domain is required to satisfy the geometric conservation law,
     0 ,
     \label{eqn:gcl}
 \end{equation}
-so that Equation~\eqref{eqn:fluid_continuity_ale_full} is equivalent to
+
+Subtracting Equation~\eqref{eqn:gcl} from Equation~\eqref{eqn:fluid_continuity_ale_full}, the mass conservation equation reduces to
 \begin{equation}
     \oint_{\Gamma_F}
     \hat{\bb{n}}_F
@@ -204,12 +197,12 @@ For an incompressible Newtonian fluid with kinematic pressure $p$, the kinematic
 \begin{eqnarray}
     \bb{\sigma}_F^*
     &=&
-    2 \nu \; \text{symm}
+    2 \nu \; \text{sym}
     \left[
     \bb{\nabla} \bb{v}_F
     \right]
     -
-    p \bb{I} \notag \\
+    p_F \bb{I} \notag \\
     &=&
     \nu
     \left[
@@ -218,10 +211,11 @@ For an incompressible Newtonian fluid with kinematic pressure $p$, the kinematic
     \left( \bb{\nabla} \bb{v}_F \right)^T
     \right]
     -
-    p \bb{I},
+    p_F \bb{I},
     \label{eqn:fluid_stress}
 \end{eqnarray}
-where $\nu$ is the kinematic viscosity, and $\text{symm}[ \bullet ]$ is the symmetric component operator. The true (Cauchy) stress is recovered as $\bb{\sigma}_F = \rho_F \bb{\sigma}_F^*$.
+where $\nu$ is the kinematic viscosity, and $\text{sym}[ \bb{A} ] = \frac{1}{2} (\bb{A} + \bb{A}^T)$ denotes the symmetric part. The true (Cauchy) stress is recovered as $\bb{\sigma}_F = \rho_F \bb{\sigma}_F^*$.
+Following standard incompressible CFD practice, the pressure $p_F$ used throughout this paper is the kinematic pressure (the physical pressure divided by the fluid density $\rho_F$).
 Conservation of linear momentum in ALE form is written as
 \begin{equation}
     \frac{d}{dt}
@@ -245,11 +239,11 @@ Conservation of linear momentum in ALE form is written as
     \, d\Gamma_F
     +
     \int_{\Omega_F}
-    \bb{g}_{F}
+    \bb{b}_{F}
     \, d\Omega_F ,
     \label{eqn:fluid_momentum_ale}
 \end{equation}
-where $\bb{g}_{F}$ is a body force per unit mass.
+where $\bb{b}_{F}$ is a body force per unit mass.
 %The use of a kinematic pressure gives the kinematic Newtonian stress tensor
 %\begin{equation}
 %    \bb{\sigma}_F^*
@@ -267,10 +261,7 @@ where $\bb{g}_{F}$ is a body force per unit mass.
 %where $\nu$ is the kinematic viscosity and $p$ is the kinematic pressure.
 %The true (Cauchy) stress $\bb{\sigma}_F = \rho_F \bb{\sigma}_F^*$ is the kinematic Newtonian stress tensor scaled by the fluid density $\rho_F$.
 
-The fluid boundary conditions considered are inlet, outlet, no-slip wall and
-symmetry conditions. On the fluid--solid interface, the fluid velocity is
-constrained by the solid velocity through the kinematic interface condition
-defined in Section~\ref{sec:fsi_interface}.
+The fluid boundary conditions considered are inlet, outlet, no-slip wall and symmetry conditions; interface conditions coupling the fluid to the solid are described in Section~\ref{sec:fsi_interface}.
 
 
 %%--------------------------------------------------------------------------------------------------------------------%%
@@ -293,7 +284,7 @@ The kinematic condition enforces continuity of velocity between the fluid and so
     \label{eqn:kinematic_interface}
 \end{equation}
 %where $\bb{v}^{\Gamma}$ is the velocity of the moving fluid domain.
-Together with consistent initial conditions, this condition enforces no-slip and prevents gap formation or overlap at the interface.
+This condition enforces no-slip at all times; combined with consistent initial conditions, it also prevents gap formation or overlap at the interface.
 Away from the interface, the extension of the boundary motion into the fluid domain is a numerical mesh-motion procedure and is described in Section~\ref{sec:fluid_mesh_motion}.
 
 The dynamic condition enforces equilibrium of the fluid and solid tractions,
@@ -303,11 +294,13 @@ The dynamic condition enforces equilibrium of the fluid and solid tractions,
 \end{equation}
 with
 \begin{equation}
-	\boldsymbol{t}_F = \hat{\boldsymbol{n}}_F \cdot \boldsymbol{\sigma}_F = \rho_F \, \hat{\boldsymbol{n}}_F \cdot \boldsymbol{\sigma}_F^* ,
+	\boldsymbol{t}_F = \hat{\boldsymbol{n}}_F \cdot \boldsymbol{\sigma}_F = \rho_F \; \hat{\boldsymbol{n}}_F \cdot \boldsymbol{\sigma}_F^* ,
 	\qquad \boldsymbol{t}_S = \hat{\boldsymbol{n}}_S \cdot \boldsymbol{\sigma}_S,
 	\qquad \hat{\boldsymbol{n}}_F = -\hat{\boldsymbol{n}}_S.
 \end{equation}
 Equivalently, in terms of the kinematic fluid stress,
 \begin{equation}
-	\rho_F \, \hat{\bb{n}}_F \cdot \bb{\sigma}_F^* = -\hat{\bb{n}}_S \cdot \bb{\sigma}_S \qquad \text{on } \Gamma_\text{fsi}(t).
+	\rho_F \; \hat{\bb{n}}_F \cdot \bb{\sigma}_F^* = -\hat{\bb{n}}_S \cdot \bb{\sigma}_S \qquad \text{on } \Gamma_\text{fsi}(t).
 \end{equation}
+
+%The $\rho_F$ factor in the kinematic-to-Cauchy conversion will reappear in the discrete interface coupling in Section \ref{sec:numerical_methods} (e.g., Equation \ref{eqn:pressure_coupling_approximation}).

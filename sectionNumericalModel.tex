@@ -28,9 +28,7 @@ and the assembled matrix supplied to the Krylov solver is an approximate block p
 The method is therefore described as quasi-monolithic.
 The nonlinear residual is coupled in the fluid velocity, fluid pressure and solid velocity; however, the fluid mesh motion and the update of the stored solid displacement are performed outside the Newton vector.
 
-\paragraph{Notation.}
-For conciseness, the same symbols ($\bb{v}_F$, $\bb{v}_S$, $p_F$, $\bb{D}_S$, etc.) are used for both the continuous fields introduced in Section~\ref{sec:math_model} and their discrete cell-centred counterparts in this section.
-This is a deliberate (mild) abuse of notation: in the continuous setting the symbols denote pointwise fields on $\Omega_F(t)$ or $\Omega_{S,0}$, whereas in the discrete setting they denote the corresponding cell-centred values stored at cell centroids; the intended meaning will always be clear from the context.
+For conciseness, throughout this section the same symbols ($\bb{v}_F$, $\bb{v}_S$, $p_F$, $\bb{D}_S$, etc.) are used for both the continuous fields introduced in Section~\ref{sec:math_model} and their discrete cell-centred counterparts. This is a deliberate (mild) abuse of notation: in the continuous setting the symbols denote pointwise fields on $\Omega_F(t)$ or $\Omega_{S,0}$, whereas in the discrete setting they denote the corresponding cell-centred values stored at cell centroids; the intended meaning will always be clear from the context.
 
 %%--------------------------------------------------------------------------------------------------------------------%%
 \subsection{Finite-volume discretisation}
@@ -184,12 +182,12 @@ The interface coupling is represented by the off-block arguments: $\bb{v}_S$ ent
 Operationally, given a trial state, the current solid interface velocity is first imposed as the fluid velocity boundary condition and used to update the fluid mesh motion; the fluid momentum and pressure equations are then evaluated, and the resulting fluid traction is mapped to the solid interface and applied as a traction boundary condition before the solid residual is evaluated.
 
 In the remainder of this subsection, the region subscript $F$ on fluid quantities is omitted where no ambiguity arises.
-Recall from Section~\ref{sec:fv_discretisation} that $\mathcal{F}_P$ denotes the set of faces of cell $P$, with $\bb{\Gamma}_f = |\bb{\Gamma}_f|\, \hat{\bb{n}}_f$ the outward face area vector and $\bb{d}_f$ the vector joining the centroids of $P$ and its neighbour $N_f$ across face $f$.
+Recall from Section~\ref{sec:fv_discretisation} that $\mathcal{F}_P$ denotes the set of faces of cell $P$, with $\bb{\Gamma}_f = |\bb{\Gamma}_f|\, \hat{\bb{n}}_f$ the outward face area vector and $\bb{d}_f = \bb{x}_{N_f} - \bb{x}_P$ is the vector joining the centroids of $P$ and its neighbour $N_f$ across face $f$.
 %; the lower-case subscript $f$ continues to denote a face quantity.
 For a fluid control volume $P$ of volume $\Omega_P$, the discrete momentum residual is written as
-\begin{align}
+\begin{eqnarray}
     \bb{R}_{m,P}
-    =
+    &=&
     \sum_{f \in \mathcal{F}_P}
     \bigg[
        \nu
@@ -203,22 +201,29 @@ For a fluid control volume $P$ of volume $\Omega_P$, the discrete momentum resid
        \phi^\mathrm{rel}_f
        \widetilde{\bb{v}}_f
     \bigg]
+    \notag \\
+    &&-\;
+    %\Omega_P    \left( \bb{\nabla} p \right)_P
+    \Omega_P \sum_{f \in \mathcal{F}_P} \bb{g}_{P,f} \left( p_{N_f} - p_{P} \right)
+    \;-\;
+    \frac{
+    3 \Omega_{P} \bb{v}_{P}
     -
-    \Omega_P
-    \left[
-    \left( \bb{\nabla} p \right)_P
+    4 \Omega_{P}^{n-1} \bb{v}_{P}^{n-1}
     +
-    \left(
-    \frac{\partial \bb{v}}{\partial t}
-    \right)_P
-    \right],
+    \Omega_{P}^{n-2} \bb{v}_{P}^{n-2}
+    }
+    {2\Delta t},
     \label{eqn:fluid_momentum_residual}
-\end{align}
+\end{eqnarray}
 where $\bb{v}_P$ and $\bb{v}_{N_f}$ are the velocities in cell $P$ and in the neighbouring cell across face $f$.
 The linearly interpolated face velocity, used in both the convective and continuity fluxes below, is denoted $\bb{v}_f$.
+With the adopted convention, $\hat{\bb{n}}_f \cdot \bb{d}_f > 0$ on a properly oriented mesh, and the orthogonal diffusion term in Equation~\ref{eqn:fluid_momentum_residual} represents the flux into cell $P$ from its neighbour $N_f$.
 
-The face summation contains the diffusion and convection contributions. The first term is the compact orthogonal contribution to the viscous diffusion
-flux. The second term is the non-orthogonal correction, where
+
+The first face summation on the right-hand side contains the diffusion and convection contributions.
+Within this, the first term is the compact orthogonal contribution to the viscous diffusion flux.
+The second term is the non-orthogonal correction, where
 \begin{equation}
     \bb{k}_f
     =
@@ -229,9 +234,11 @@ flux. The second term is the non-orthogonal correction, where
     |\bb{\Gamma}_f|
     \label{eqn:non_orthogonal_correction_vector}
 \end{equation}
-and $\left( \bb{\nabla} \bb{v} \right)_f$ is obtained by interpolating the
-cell-centred least-squares velocity gradients to the face. This correction
-introduces the usual extended stencil associated with non-orthogonal
+and $\left( \bb{\nabla} \bb{v} \right)_f$ is obtained by interpolating the cell-centred least-squares velocity gradients to the face, where the velocity gradient at the centre of cell $P$ is calculated as
+\begin{equation} \label{eqn:least_squares_velocity}
+	\left( \bb{\nabla} \bb{v} \right)_P = \sum_{f \in \mathcal{F}_P} \bb{g}_{P,f} \otimes \left( \bb{v}_{N_f} - \bb{v}_{P} \right).
+\end{equation}
+This correction introduces the usual extended stencil associated with non-orthogonal
 finite-volume diffusion terms.
 
 The third face term is the ALE convection contribution. The relative volumetric flux
@@ -250,8 +257,9 @@ through face $f$ is
 where $\bb{v}^{\Gamma}_f$ is the face mesh velocity.
 In the current work, the convected velocity $\widetilde{\bb{v}}_f$ is evaluated using a second-order upwind scheme, in which the velocity is extrapolated from the upwind cell centre using the cell-centred velocity gradient.
 
-The remaining terms in Equation~\eqref{eqn:fluid_momentum_residual} are volume contributions.
-The pressure gradient $\left( \bb{\nabla} p \right)_P$ is computed using the first-neighbour least-squares gradient, while the local inertia term is discretised in time using the moving-mesh BDF2 approximation in Equation~\eqref{eqn:moving_mesh_bdf2_time_term}.
+The second face summation term on the right-hand side of Equation~\eqref{eqn:fluid_momentum_residual} is the volume integral of the pressure gradient $\left( \bb{\nabla} p \right)_P$ computed in terms of the first-neighbour least squares gradient coefficient $\bb{g}_{P,f}$ for cell $P$ at face $f$.
+
+The final term on the right-hand side of Equation~\eqref{eqn:fluid_momentum_residual} is the local inertia term, which has been discretised in time using the moving-mesh BDF2 approximation in Equation~\eqref{eqn:moving_mesh_bdf2_time_term}.
 
 The discrete pressure residual for cell $P$ is
 \begin{equation}
@@ -271,14 +279,16 @@ where $\bb{v}_f$ is again the linearly interpolated face velocity, and $\mathcal
 	\sum_{f \in \mathcal{F}_P}
 	\frac{\alpha_p}{a_{P_f}}
         \bigg[
-	\frac{\bb{v}_{N_f} - \bb{v}_{P}}{\bb{\hat{n}}_f \cdot \bb{d}_f}
+	\frac{p_{N_f} - p_{P}}{\bb{\hat{n}}_f \cdot \bb{d}_f}
        -
-       \frac{\bb{d}_f}{\bb{\hat{n}}_f \cdot \bb{d}_f} \cdot \left( \bb{\nabla} \bb{v} \right)_f
+       \frac{\bb{d}_f}{\bb{\hat{n}}_f \cdot \bb{d}_f} \cdot \left( \bb{\nabla} p \right)_f
     \bigg]
     |\bb{\Gamma}_f|
 \end{eqnarray}
-where $a_{P_f}$ is the momentum-equation diagonal coefficient, linearly interpolated to the face.
-The user-defined parameter $\alpha_p > 0$ globally scales the amount of stabilisation, and is chosen here to be 1.0 unless otherwise stated.
+where $\left( \bb{\nabla} p \right)_f$ is obtained by interpolating the cell-centred least-squares pressure gradients to the face, where the pressure gradient at the centre of cell $P$ is calculated as in Equation \ref{eqn:fluid_momentum_residual}.
+The term $a_{P_f}$ is the momentum-equation diagonal coefficient, linearly interpolated to the face.
+The user-defined parameter $\alpha_p > 0$ globally scales the amount of stabilisation and is set to 1.0 unless otherwise stated.
+
 The cell-centred coefficient is defined as
 \begin{equation}
     \frac{\alpha_p}{a_{P}}
@@ -299,7 +309,7 @@ The cell-centred coefficient is defined as
 \end{equation}
 i.e.\ the reciprocal of the compact (diagonal) part of the discrete fluid-momentum operator, comprising the temporal, diffusive and convective contributions. As shown above, a first-order upwind scheme is used for the convection coefficient in this stabilisation, in contrast to the second-order upwind scheme used in the fluid momentum residual calculation.
 The face value $\alpha_p/a_{P_f}$ used in Equation~\eqref{eqn:rhie_chow} is then obtained by linear interpolation of the two adjacent cell values.
-This Rhie-Chow-type stabilisation has been shown in \citet{Cardiff2026} to dissapear in the limit of mesh refinement atat a second-order rate.
+This Rhie-Chow-type stabilisation has been shown in \citet{Cardiff2026} to disappear in the limit of mesh refinement at a second-order rate.
 %Its detailed construction is given in Section~\ref{sec:approximate_block_preconditioner}.
 
 Equations~\eqref{eqn:fluid_momentum_residual}, ~\eqref{eqn:fluid_pressure_residual} and ~\eqref{eqn:rhie_chow} are written as interior-cell expressions. For fluid cells adjacent to the fluid--solid interface, the corresponding interface-face terms use the kinematic interface condition: the prescribed interface velocity is obtained from the mapped solid velocity,
@@ -324,72 +334,75 @@ In the remainder of this subsection, the region subscript $S$ on solid quantitie
     +
     \frac{\Delta t}{2}
     \left(
-    3\bb{v}_S^{n}
+    3\bb{v}_S
     -
     \bb{v}_S^{n-1}
     \right),
     \label{eqn:solid_future_displacement}
 \end{equation}
-and is therefore an implicit function of the current trial value of $\bb{v}_S^n$ during the nonlinear solve.
+and is therefore an implicit function of the current trial value of $\bb{v}_S \equiv \bb{v}_S^n$ during the nonlinear solve.
+This is the BDF2-consistent reconstruction that ensures $\partial \bb{D}/\partial t$ at time level $n$ equals the BDF2 approximation of $\bb{v}_S^n$ from $\bb{D}^{n+1}$, $\bb{D}^{n}$ and $\bb{D}^{n-1}$.
 
-For a solid control volume $P$ of initial volume $\Omega_{0,P}$, the discrete
-solid equation is written as
-\begin{equation}
+For a solid control volume $P$ of initial volume $\Omega_{0,P}$, the discrete solid equation is written as
+\begin{eqnarray}
     \bb{R}_{S,P}
-    =
+    &=&
     \frac{1}{2}
     \sum_{f \in \mathcal{F}_P}
     \left(
     \bb{T}^{\,n}_f
     +
     \bb{T}^{\,n+1}_f
-    \right)
-    +
+    \right) \notag \\
+    && 
+    +  \; \rho_0 \Omega_{0,P}   \bb{b}_S
+    \;-\;
     \rho_0 \Omega_{0,P}
-    \left[
-    \bb{g}
+        \frac{
+    3\bb{v}_P
     -
-    \left(
-    \frac{\partial \bb{v}}{\partial t}
-    \right)_P^{n}
-    -
-    c_d \bb{v}_{P}^{n}
-    \right]
+    4\bb{v}^{n-1}_P
+    +
+    \bb{v}^{n-2}_P
+    }
+    {2\Delta t} \notag \\
+    &&
+    - \; 
+    c_d \rho_0 \Omega_{0,P} \bb{v}_{P}
         \;+\;
     \bb{\mathcal{D}}_{s,P},
     \label{eqn:solid_velocity_residual}
-\end{equation}
-where $\bb{T}^{\,n}_f$ and $\bb{T}^{\,n+1}_f$ are the area-weighted face force (not traction) vectors at the previous and future time levels, $\rho_0$ is the solid density in the reference configuration, $\bb{g}$ is the body force per unit mass, $c_d$ is an optional damping coefficient, and $\bb{\mathcal{D}}_{s,P}$ is a stabilisation term -- similar to $\mathcal{D}_{p,P}$ -- calculated as
+\end{eqnarray}
+where $\bb{T}^{\,n}_f$ and $\bb{T}^{\,n+1}_f$ are the area-weighted face force (not traction) vectors at the previous and future time levels, $\rho_0$ is the solid density in the reference configuration, $\bb{g}$ is the body force per unit mass, 
+and $c_d$ is an optional mass-proportional Rayleigh-type damping coefficient (used in this work to accelerate convergence to steady-state solutions of nominally transient problems; see Section~\ref{sec:case1}).
+$\bb{\mathcal{D}}_{s,P}$ is a stabilisation term -- similar to $\mathcal{D}_{p,P}$ -- calculated as
 \begin{eqnarray} \label{eqn:rhie_chow_s}
 	\bb{\mathcal{D}}_{s,P}
 	=
 	\sum_{f \in \mathcal{F}_P}
 	\alpha_d \bar{K}
         \bigg[
-	\frac{\bb{D}^{n+1}_{N_f} - \bb{D}^{n+1}_{P}}{\bb{\hat{n}}_f \cdot \bb{d}_f}
+	\frac{\bb{D}^{n+1}_{N_f} - \bb{D}^{n+1}_{P}}{\bb{\hat{n}}_{f,0} \cdot \bb{d}_{f,0}}
        -
-       \frac{\bb{d}_f}{\bb{\hat{n}}_f \cdot \bb{d}_f} \cdot \left( \bb{\nabla} \bb{D} \right)^{n+1}_f
+       \frac{\bb{d}_{f,0}}{\bb{\hat{n}}_{f,0} \cdot \bb{d}_{f,0}} \cdot \left( \bb{\nabla}_0 \bb{D} \right)^{n+1}_f
     \bigg]
     |\bb{\Gamma}_f|
 \end{eqnarray}
 where $\bar{K} = 2\mu + \lambda$ is a stiffness-type parameter that gives the stabilisation term an appropriate scale and dimension, with $\mu$ being the shear modulus and $\lambda$ being the second Lamé parameter (or their linearised equivalent for finite strain formulations).
 The user-defined parameter $\alpha_d > 0$ globally scales the amount of stabilisation, and is chosen here to be 0.1 unless otherwise stated.
+The displacement gradient $\left( \bb{\nabla}_0 \bb{D} \right)^{n+1}_f$ is obtained by interpolating the cell-centred least-squares displacement gradients to the face.
 
 The future-time face force is computed as
 \begin{equation}
-    \bb{T}^{\,n+1}_f
-    =
-    \left[
-    J^{n+1}_f
-    \left(\bb{F}^{n+1}_f\right)^{-T}
-    \cdot
-    \bb{\Gamma}_{0,f}
-    \right]
-    \cdot
-    \bb{\sigma}^{n+1}_f,
-    \label{eqn:solid_future_face_force}
+\bb{T}_f^{n+1}
+= \bb{\Gamma}_f^{n+1} \cdot \bb{\sigma}_f^{n+1}
+= \bb{\Gamma}_{0,f} \cdot \left(\bb{P}_f^{n+1}\right)^T
+= \left(J_f^{n+1}\, \bb{F}_f^{-T,\,n+1} \cdot \bb{\Gamma}_{0,f}\right) \cdot \bb{\sigma}_f^{n+1},
+\label{eqn:face_force}
 \end{equation}
-where $\bb{\Gamma}_{0,f}$ is the outward reference face area vector, $\bb{F}^{n+1}_f$ and $J^{n+1}_f = \det \bb{F}^{n+1}_f$ are the future-time deformation gradient and volume ratio interpolated to the face, and $\bb{\sigma}^{n+1}_f$ is the corresponding Cauchy stress. The cell-centred future-time stress is computed from the reconstructed displacement $\bb{D}^{n+1}$ (via $\bb{F}^{n+1}$) and then linearly interpolated to the faces; the previous-time face force $\bb{T}^{\,n}_f$ is defined analogously from stored solid fields. The cell-centred time derivative $\left(\partial \bb{v}/\partial t\right)_P$ is approximated using the BDF2 scheme in Equation~\eqref{eqn:bdf2}.
+where $\bb{\Gamma}_f^{n+1}$ and $\bb{\Gamma}_{0,f}$ are the outward face area vectors in the future and reference configurations, related by Nanson's relation, $\bb{F}_f^{n+1}$ and $J_f^{n+1} = \det \bb{F}_f^{n+1}$ are the future-time deformation gradient and volume ratio interpolated to the face, $\bb{\sigma}_f^{n+1}$ is the corresponding Cauchy stress, and $\bb{P}_f^{n+1}$ is the first Piola--Kirchhoff stress (Section~\ref{sec:solid_model}). The third form is used in the present implementation, since the reference face area vector $\bb{\Gamma}_{0,f}$ is fixed and does not require updating as the solid deforms.
+%where $\bb{\Gamma}_{0,f}$ is the outward reference face area vector, $\bb{F}^{n+1}_f$ and $J^{n+1}_f = \det \bb{F}^{n+1}_f$ are the future-time deformation gradient and volume ratio interpolated to the face, and $\bb{\sigma}^{n+1}_f$ is the corresponding Cauchy stress.
+The cell-centred future-time stress is computed from the reconstructed displacement $\bb{D}^{n+1}$ (via $\bb{F}^{n+1}$) and then linearly interpolated to the faces; the previous-time face force $\bb{T}^{\,n}_f$ is defined analogously from stored solid fields.
 
 For faces on the fluid--solid interface, the solid face force is replaced by the area-weighted traction mapped from the fluid side, computed from the current fluid pressure and viscous stress, and the stabilisation contribution is set to zero.
 The fluid variables thus enter Equation~\eqref{eqn:solid_velocity_residual} through this traction boundary condition on $\Gamma_\mathrm{fsi}$.
@@ -605,10 +618,10 @@ $a_{P,f}$ denotes the face-interpolated compact momentum diagonal coefficient.
 
 The block $\tilde{J}_{pp}$ is therefore a compact pressure--pressure coupling
 introduced by the finite-volume pressure stabilisation, rather than by a
-physical pressure diffusion term. Algebraically, it approximates the pressure
-coupling that would arise through the velocity block when the velocity is
-eliminated from the coupled momentum--pressure system. This connection motivates
-its use in the velocity--pressure split strategy discussed below.
+physical pressure diffusion term.
+Algebraically, it approximates the pressure coupling that would arise through the velocity block when the velocity is
+eliminated from the coupled momentum--pressure system.
+This connection motivates its use in the velocity--pressure split strategy discussed below.
 
 %The block $\tilde{J}_{pp}$ also provides a compact approximation to the
 %pressure Schur complement used in the nested fluid split preconditioner. For the
@@ -742,30 +755,37 @@ normal-gradient contribution,
 \end{equation}
 which is a $d\times d$ block.
 
-The assembled approximate Jacobian $\tilde{\bb{J}}$ can be used in several
-preconditioning strategies. In the simplest case, the complete matrix in
-Equation~\eqref{eqn:block_preconditioner} is passed directly to an algebraic
-preconditioner. Alternatively, a nested field-split strategy can be used. At
-the outer level, the fluid and solid fields are split according to
-Equation~\eqref{eqn:block_preconditioner}. Within the fluid block, the
-velocity--pressure structure in Equation~\eqref{eqn:fluid_block_preconditioner}
-can be exploited through a pressure Schur-complement approximation. The formal
-pressure Schur complement of the approximate fluid block is
+Algebraically, $\tilde{\bb{J}}_{pp}$ approximates the pressure coupling that arises through the velocity block when the velocity is eliminated from the coupled momentum--pressure system. This motivates using $\tilde{\bb{J}}_{pp}$ as a cheap surrogate for the formal pressure Schur complement,
 \begin{equation}
-    \tilde{S}_p
-    =
-    \tilde{J}_{pp}
-    -
-    \tilde{\bb{J}}_{pm}
-    \tilde{\bb{J}}_{mm}^{-1}
-    \tilde{\bb{J}}_{mp}.
-    \label{eqn:formal_pressure_schur_complement}
+\tilde{\bb{S}}_p = \tilde{\bb{J}}_{pp} - \tilde{\bb{J}}_{pm}\tilde{\bb{J}}_{mm}^{-1}\tilde{\bb{J}}_{mp},
+\label{eqn:schur_complement}
 \end{equation}
-Rather than forming this operator explicitly, the compact Rhie--Chow
-pressure-stabilisation block $\tilde{J}_{pp}$ is used as an inexpensive
-approximation to the pressure Schur-complement action. Thus, the nested split
-separates the fluid and solid fields at the outer level and separates velocity
-and pressure within the fluid block.
+within the velocity--pressure split. Forming $\tilde{\bb{S}}_p$ explicitly would require inversion of $\tilde{\bb{J}}_{mm}$ and is avoided.
+
+%The assembled approximate Jacobian $\tilde{\bb{J}}$ can be used in several
+%preconditioning strategies. In the simplest case, the complete matrix in
+%Equation~\eqref{eqn:block_preconditioner} is passed directly to an algebraic
+%preconditioner. Alternatively, a nested field-split strategy can be used. At
+%the outer level, the fluid and solid fields are split according to
+%Equation~\eqref{eqn:block_preconditioner}. Within the fluid block, the
+%velocity--pressure structure in Equation~\eqref{eqn:fluid_block_preconditioner}
+%can be exploited through a pressure Schur-complement approximation. The formal
+%pressure Schur complement of the approximate fluid block is
+%\begin{equation}
+%    \tilde{S}_p
+%    =
+%    \tilde{J}_{pp}
+%    -
+%    \tilde{\bb{J}}_{pm}
+%    \tilde{\bb{J}}_{mm}^{-1}
+%    \tilde{\bb{J}}_{mp}.
+%    \label{eqn:formal_pressure_schur_complement}
+%\end{equation}
+%Rather than forming this operator explicitly, the compact Rhie--Chow
+%pressure-stabilisation block $\tilde{J}_{pp}$ is used as an inexpensive
+%approximation to the pressure Schur-complement action. Thus, the nested split
+%separates the fluid and solid fields at the outer level and separates velocity
+%and pressure within the fluid block.
 
 The off-diagonal interface blocks are compact approximations to the coupling
 derivatives. They are used only in the preconditioner; the converged nonlinear
@@ -783,9 +803,11 @@ solved.
 
 The ALE fluid formulation requires the motion of the fluid mesh to be specified.
 This mesh motion is an auxiliary numerical procedure rather than a physical
-conservation law. Its purpose is to extend the displacement prescribed on the
+conservation law: its purpose is to extend the displacement prescribed on the
 fluid--solid interface into the interior of the fluid domain while maintaining
 mesh quality.
+As the procedure is a numerical convenience, the choice of mesh on which to assemble the governing equation is free; here, the equation is assembled on the latest available fluid mesh (i.e.\ the mesh from the previous time step, denoted by the superscript $n-1$), which avoids accumulation of distortion in the assembly reference.
+Throughout this subsection, the superscript $n-1$ on geometric quantities and operators denotes evaluation on the fluid mesh at the previous time step.
 
 Let $\bb{D}^{\Gamma}$ denote the fluid mesh displacement. On the fluid--solid
 interface, this displacement is prescribed from the solid displacement,
@@ -800,84 +822,89 @@ interface, this displacement is prescribed from the solid displacement,
 Appropriate prescribed-displacement or symmetry conditions are applied on the
 remaining fluid-domain boundaries.
 
-The interior fluid mesh displacement is computed using a pseudo-solid
-linear-elastic problem posed on the fluid reference mesh,
+The interior fluid mesh displacement is computed using a pseudo-solid linear-elastic problem.
+The unknown $\bb{D}^{\Gamma}$ is the total fluid mesh displacement relative to the initial fluid configuration, and satisfies
+\begin{equation} ... \end{equation}
 \begin{equation}
-    \oint_{\Gamma_{0,f}}
-    \delta_f
-    \hat{\bb{n}}_{0,f}
+    \oint_{\Gamma_{P}^{n-1}}
+    \delta \;
+    \hat{\bb{n}}^{n-1}
     \cdot
     \left[
     \mu^\Gamma
-    \bb{\nabla}_0 \bb{D}^{\Gamma}
+    \bb{\nabla}^{n-1} \bb{D}^{\Gamma}
     +
     \mu^\Gamma
     \left(
-    \bb{\nabla}_0 \bb{D}^{\Gamma}
+    \bb{\nabla}^{n-1} \bb{D}^{\Gamma}
     \right)^T
     +
     \lambda^\Gamma
     \left(
-    \bb{\nabla}_0 \cdot \bb{D}^{\Gamma}
+    \bb{\nabla}^{n-1} \cdot \bb{D}^{\Gamma}
     \right)
     \bb{I}
     \right]
-    \, d\Gamma_{0,f}
+    \, d\Gamma_{P}^{n-1}
     =
     \bb{0}.
     \label{eqn:mesh_motion_pseudo_solid}
 \end{equation}
-Equation~\eqref{eqn:mesh_motion_pseudo_solid} is written here in compact integral form for a single fluid mesh control volume: it expresses the discrete equilibrium of the pseudo-elastic stress flux on the boundary $\Gamma_{0,f}$ of that control volume in the reference configuration, and is assembled cell-by-cell over the fluid mesh in the same cell-centred finite-volume framework as the fluid and solid momentum equations rather than as a single global statement.
-The coefficients $\mu^\Gamma$ and $\lambda^\Gamma$ are artificial stiffness
-parameters used only to control the distribution of the mesh motion. They do
-not represent material properties of the fluid.
 
-The dimensionless scalar $\delta_f$ in Equation~\eqref{eqn:mesh_motion_pseudo_solid} is a per-face stiffness scale factor.
+Equation~\eqref{eqn:mesh_motion_pseudo_solid} is written in compact integral form for a single fluid mesh control volume $P$, expressing the discrete equilibrium of the pseudo-elastic stress flux on its boundary $\Gamma_P^{n-1}$ on the mesh at the previous time step.
+It is assembled cell-by-cell over the fluid mesh in the same cell-centred finite-volume framework as the fluid and solid momentum equations.
+The coefficients $\mu^\Gamma$ and $\lambda^\Gamma$ are artificial stiffness parameters used only to control the distribution of the mesh motion; they do not represent material properties of the fluid.
+
+The dimensionless scalar $\delta$ in Equation~\eqref{eqn:mesh_motion_pseudo_solid} is a per-face stiffness scale factor.
 Its purpose is to bias the artificial stiffness so that fluid cells close to moving boundaries translate almost rigidly with the boundary, while the bulk of the
 mesh deformation is absorbed by cells farther away.
 This reduces distortion of interface-adjacent cells, preserves boundary-layer mesh quality, and allows the prescribed interface displacement to decay smoothly through the fluid domain.
 
-In this work, $\delta_f$ is computed from the distance from the walls $\Gamma_F$ (or a subset of the walls).
-For each interior face $f$ of the fluid mesh, a base diffusivity is evaluated as the inverse square of the distance from the face centre to the nearest
-moving boundary,
-\begin{equation}
-    \tilde{\delta}_f
-    =
-    \frac{1}{\ell_f^2},
-    \qquad
-    \ell_f = \mathrm{dist}(\bb{x}_f, \Gamma_F),
-    \label{eqn:mesh_motion_diffusivity_raw}
-\end{equation}
-so that faces near walls carry a much larger stiffness than faces in the far field.
-To keep the conditioning of the mesh motion system bounded and to avoid arbitrary scaling of the stiffness with the absolute size of the domain,
-the raw values are clipped against the mesh-wide average and then normalised by that average,
-\begin{equation}
-    \delta_f
-    =
-    \frac{1}{\bar{\tilde{\delta}}}
-    \,
-    \min\!\left(
-        c_{\max}\,\bar{\tilde{\delta}},\;
-        \max\!\left(c_{\min}\,\bar{\tilde{\delta}},\,\tilde{\delta}_f\right)
-    \right),
-    \qquad
-    \bar{\tilde{\delta}}
-    =
-    \frac{1}{N_f}\sum_f \tilde{\delta}_f,
-    \label{eqn:mesh_motion_stiffness_scale}
-\end{equation}
-where $c_{\min}$ and $c_{\max}$ are user-specified clipping factors (with
-defaults $c_{\min}=0.1$ and $c_{\max}=100$ used in the present work). By
-construction $\delta_f$ is dimensionless and has unit mean over the fluid
-mesh, so the absolute magnitudes of $\mu^\Gamma$ and $\lambda^\Gamma$ are
-unchanged on average and only the spatial distribution of stiffness is
-altered.
-%Cell-centre values, where required (e.g.\ for output or for constructing the assembled stiffness), are obtained by face-to-cell averaging of $\delta_f$.
- The field $\delta_f$ is recomputed each time the wall-distance field is updated, i.e.\ whenever the fluid mesh moves.
+In this work, $\delta$ is computed from the distance to the fluid--solid interface $\Gamma_\mathrm{fsi}$ (or, more generally, to any user-specified subset of the fluid boundary), so that faces near walls carry a much larger stiffness than faces in the far field.
+The field $\delta$ is constructed in three steps:
+\begin{enumerate}
+    \item For each interior face $f$, the raw diffusivity is evaluated from the distance $\ell_f = \mathrm{dist}(\bb{x}_f, \Gamma_\mathrm{fsi})$ to the nearest moving boundary,
+    \begin{equation}
+        \tilde{\delta}_f = \frac{1}{\ell_f^2 + \varepsilon},
+        \label{eqn:mesh_motion_diffusivity_raw}
+    \end{equation}
+    where $\varepsilon$ is a small positive constant preventing division by zero on the moving boundary itself.
 
-After solving Equation~\eqref{eqn:mesh_motion_pseudo_solid}, the fluid mesh is updated and the mesh velocity $\bb{v}^{\Gamma}$ is obtained from the temporal change in $\bb{D}^{\Gamma}$.
-This velocity is used to construct the ALE relative fluxes in the fluid residual.
-The moving-mesh fluxes are constructed so as to satisfy the discrete geometric conservation law.
+    \item The mesh-wide average is computed,
+    \begin{equation}
+        \bar{\tilde\delta} = \frac{1}{N_f}\sum_f \tilde\delta_f .
+        \label{eqn:delta_average}
+    \end{equation}
+
+    \item Each face value is clipped against bounded multiples of the average and then normalised by the average,
+    \begin{equation}
+        \delta_f = \frac{1}{\bar{\tilde\delta}}\,\min\!\left(c_\text{max}\bar{\tilde\delta},\, \max\!\left(c_\text{min}\bar{\tilde\delta},\, \tilde\delta_f\right)\right),
+        \label{eqn:delta_clip}
+    \end{equation}
+    where $c_{\min}$ and $c_{\max}$ are user-specified clipping factors (defaults $c_{\min} = 0.1$, $c_{\max} = 100$).
+\end{enumerate}
+
+The clipping bounds $\tilde\delta_f$ between $c_{\min} \bar{\tilde\delta}$ and $c_{\max} \bar{\tilde\delta}$, protecting against the extreme values that $1/(\ell_f^2 + \varepsilon)$ produces on or near the moving boundary.
+The subsequent normalisation by $\bar{\tilde\delta}$ ensures that $\delta_f$ is dimensionless with unit mean over the fluid mesh, so the absolute magnitudes of $\mu^\Gamma$ and $\lambda^\Gamma$ are unchanged on average; only the spatial distribution of stiffness is altered.
+
+Equation~\eqref{eqn:mesh_motion_pseudo_solid} is solved for the cell-centred fluid mesh displacement $\bb{D}^{\Gamma}$ using the same cell-centred JFNK finite volume linear-elastic discretisation described in \citet{Cardiff2026}, with two adaptations: the equation is assembled on the previous-step fluid mesh, and the elastic parameters $\mu^\Gamma$ and $\lambda^\Gamma$ are scaled by $\delta$.
+
+As the discrete displacement field is stored at cell centres, an interpolation to mesh points is required before the mesh can be moved.
+For each fluid mesh point, $\bb{D}^{\Gamma}$ is extrapolated from every adjacent cell centre using the cell-centred value and gradient $\bb{\nabla}^{n-1} \bb{D}^{\Gamma}$, and the resulting extrapolated values are averaged to give the point displacement.
+The fluid mesh points are then updated by adding the interpolated point displacement to the initial-configuration point positions.
+
+The mesh face flux $\phi^{\Gamma}_f$, which represents the volume swept by face $f$ as the mesh moves, is computed directly from the swept volumes between successive mesh configurations rather than by differentiating $\bb{D}^{\Gamma}$ in time and interpolating to faces.
+For the BDF2 time scheme used in the present work, the swept volume from two consecutive time steps is combined consistently with the temporal weights of the time derivative, giving
+\begin{equation}
+\phi^{\Gamma,n}_f
+=
+\tfrac{3}{2} \, \mathcal{V}^{n}_{f}
+-
+\tfrac{1}{2} \, \mathcal{V}^{n-1}_{f},
+    \label{eqn:gcl_swept_volume}
+\end{equation}
+where $\mathcal{V}^{n}_{f}$ and $\mathcal{V}^{n-1}_{f}$ are the volumes swept by face $f$ over the most recent and previous time steps, and the $\tfrac{3}{2}$ and $\tfrac{1}{2}$ weights are consistent with the BDF2 temporal discretisation.
+This construction enforces the discrete geometric conservation law: a uniform flow field passing through the moving mesh produces zero net contribution from the mesh motion, so spurious mass sources from the ALE convective flux are eliminated.
 
 
 %%--------------------------------------------------------------------------------------------------------------------%%
@@ -885,13 +912,7 @@ The moving-mesh fluxes are constructed so as to satisfy the discrete geometric c
 \label{sec:implementation_details}
 %%--------------------------------------------------------------------------------------------------------------------%%
 
-The method is implemented in solids4foam~\citep{Cardiff2025}, an
-OpenFOAM-based finite-volume toolbox, with PETSc~\citep{PETSc} used for the
-nonlinear and linear algebra operations. The coupled FSI algorithm is
-implemented through a fluid--solid coupling interface, which calls separate
-fluid and solid region models to evaluate the discrete equations and assemble
-the approximate Jacobian blocks described in
-Section~\ref{sec:approximate_block_preconditioner}.
+This section describes the implementation of the method outlined in Sections~\ref{sec:fv_discretisation}--\ref{sec:fluid_mesh_motion} and summarises the solution algorithm. The coupled FSI algorithm is implemented through a fluid--solid coupling interface, which calls separate fluid and solid region models to evaluate the discrete equations and assemble the approximate Jacobian blocks described in Section~\ref{sec:approximate_block_preconditioner}.
 
 The coupled unknown vector is stored as a fluid block followed by a solid
 block. The fluid block contains the velocity and pressure unknowns, while the
@@ -938,7 +959,7 @@ mesh-motion model.
 preconditioning.
 \State Solve the coupled nonlinear system
 $\bb{R}(\bb{\mathcal{U}})=\bb{0}$ for
-$(\bb{U}_F,p_F,\bb{U}_S)$ using PETSc SNES.
+$(\bb{v}_F,p_F,\bb{v}_S)$ using PETSc SNES.
 \State Extract the converged fluid velocity, fluid pressure and solid velocity
 from the coupled solution vector.
 %\State If the nonlinear solve fails, restore the old fields and mesh state and

@@ -109,7 +109,7 @@ The rate of change volume integral in the fluid momentum equation is approximate
     \label{eqn:moving_mesh_bdf2_time_term}
 \end{equation}
 
-The same approximation is applied to the rate of change term in the solid momentum equation, but can be simplied, as the integration is performed over the initial (unchanging) reference volume:
+The same approximation is applied to the rate of change term in the solid momentum equation, but can be simplified, as the integration is performed over the initial (unchanging) reference volume:
 \begin{equation}
     \left.
     \int_{\Omega_{S,0}}
@@ -216,9 +216,8 @@ For a fluid control volume $P$ of volume $\Omega_P$, the discrete momentum resid
     {2\Delta t},
     \label{eqn:fluid_momentum_residual}
 \end{eqnarray}
-where $\bb{v}_P$ and $\bb{v}_{N_f}$ are the velocities in cell $P$ and in the neighbouring cell across face $f$.
-The linearly interpolated face velocity, used in both the convective and continuity fluxes below, is denoted $\bb{v}_f$.
-With the adopted convention, $\hat{\bb{n}}_f \cdot \bb{d}_f > 0$ on a properly oriented mesh, and the orthogonal diffusion term in Equation~\ref{eqn:fluid_momentum_residual} represents the flux into cell $P$ from its neighbour $N_f$.
+where $\bb{v}_P$ and $\bb{v}_{N_f}$ are the velocities in cell $P$ and in the neighbouring cell across face $f$; the linearly interpolated face velocity is denoted $\bb{v}_f$ and is used in the convective and continuity fluxes introduced below.
+With the adopted convention, $\hat{\bb{n}}_f \cdot \bb{d}_f > 0$ on a properly oriented mesh, and the orthogonal diffusion term in Equation~\eqref{eqn:fluid_momentum_residual} represents the flux into cell $P$ from its neighbour $N_f$.
 
 
 The first face summation on the right-hand side contains the diffusion and convection contributions.
@@ -285,7 +284,7 @@ where $\bb{v}_f$ is again the linearly interpolated face velocity, and $\mathcal
     \bigg]
     |\bb{\Gamma}_f|
 \end{eqnarray}
-where $\left( \bb{\nabla} p \right)_f$ is obtained by interpolating the cell-centred least-squares pressure gradients to the face, where the pressure gradient at the centre of cell $P$ is calculated as in Equation \ref{eqn:fluid_momentum_residual}.
+where $\left( \bb{\nabla} p \right)_f$ is obtained by interpolating the cell-centred least-squares pressure gradients to the face, where the pressure gradient at the centre of cell $P$ is calculated as $\left( \bb{\nabla} p \right)_P = \sum_{f \in \mathcal{F}_P} \bb{g}_{P,f} \left( p_{N_f} - p_{P} \right)$.
 The term $a_{P_f}$ is the momentum-equation diagonal coefficient, linearly interpolated to the face.
 The user-defined parameter $\alpha_p > 0$ globally scales the amount of stabilisation and is set to 1.0 unless otherwise stated.
 
@@ -307,9 +306,9 @@ The cell-centred coefficient is defined as
     \right]^{-1},
     \label{eqn:rAU_definition}
 \end{equation}
-i.e.\ the reciprocal of the compact (diagonal) part of the discrete fluid-momentum operator, comprising the temporal, diffusive and convective contributions. As shown above, a first-order upwind scheme is used for the convection coefficient in this stabilisation, in contrast to the second-order upwind scheme used in the fluid momentum residual calculation.
+i.e.\ the reciprocal of the compact (diagonal) part of the discrete fluid-momentum operator, comprising the temporal, diffusive and convective contributions. Note that a first-order upwind scheme is used for the convection coefficient in this stabilisation, in contrast to the second-order upwind scheme used in the fluid momentum residual calculation.
 The face value $\alpha_p/a_{P_f}$ used in Equation~\eqref{eqn:rhie_chow} is then obtained by linear interpolation of the two adjacent cell values.
-This Rhie-Chow-type stabilisation has been shown in \citet{Cardiff2026} to disappear in the limit of mesh refinement at a second-order rate.
+This Rhie--Chow-type stabilisation has been shown in \citet{Cardiff2026} to disappear in the limit of mesh refinement at a second-order rate.
 %Its detailed construction is given in Section~\ref{sec:approximate_block_preconditioner}.
 
 Equations~\eqref{eqn:fluid_momentum_residual}, ~\eqref{eqn:fluid_pressure_residual} and ~\eqref{eqn:rhie_chow} are written as interior-cell expressions. For fluid cells adjacent to the fluid--solid interface, the corresponding interface-face terms use the kinematic interface condition: the prescribed interface velocity is obtained from the mapped solid velocity,
@@ -326,7 +325,7 @@ Equations~\eqref{eqn:fluid_momentum_residual}, ~\eqref{eqn:fluid_pressure_residu
 where $\mathcal{T}_{S\to F}$ denotes the solid-to-fluid interface transfer operator. The ALE relative flux $\phi^\mathrm{rel}_f$ on $\Gamma_\mathrm{fsi}$ vanishes when the fluid interface velocity and mesh velocity coincide, consistent with the no-slip kinematic condition. The present implementation assumes a conformal fluid--solid interface, so $\mathcal{T}_{S\to F}$ reduces to a one-to-one mapping between corresponding interface faces; extension to non-conformal interfaces (e.g.\ via arbitrary mesh interface methods or radial-basis-function interpolation) is left for future work.
 
 
-In the remainder of this subsection, the region subscript $S$ on solid quantities is omitted where no ambiguity arises. Because the coupled unknown contains the solid velocity $\bb{v}_S^n$ rather than the solid displacement, the future-time displacement $\bb{D}^{n+1}$ required to evaluate the total Lagrangian stress is reconstructed from $\bb{v}_S^n$ and stored solid velocities as
+As before, the region subscript $S$ on solid quantities is omitted where unambiguous. Because the coupled unknown contains the solid velocity $\bb{v}_S^n$ rather than the solid displacement, the future-time displacement $\bb{D}^{n+1}$ required to evaluate the total Lagrangian stress is reconstructed from $\bb{v}_S^n$ and stored solid velocities as
 \begin{equation}
     \bb{D}^{n+1}
     =
@@ -341,7 +340,6 @@ In the remainder of this subsection, the region subscript $S$ on solid quantitie
     \label{eqn:solid_future_displacement}
 \end{equation}
 and is therefore an implicit function of the current trial value of $\bb{v}_S \equiv \bb{v}_S^n$ during the nonlinear solve.
-This is the BDF2-consistent reconstruction that ensures $\partial \bb{D}/\partial t$ at time level $n$ equals the BDF2 approximation of $\bb{v}_S^n$ from $\bb{D}^{n+1}$, $\bb{D}^{n}$ and $\bb{D}^{n-1}$.
 
 For a solid control volume $P$ of initial volume $\Omega_{0,P}$, the discrete solid equation is written as
 \begin{eqnarray}
@@ -373,7 +371,7 @@ For a solid control volume $P$ of initial volume $\Omega_{0,P}$, the discrete so
     \bb{\mathcal{D}}_{s,P},
     \label{eqn:solid_velocity_residual}
 \end{eqnarray}
-where $\bb{T}^{\,n}_f$ and $\bb{T}^{\,n+1}_f$ are the area-weighted face force (not traction) vectors at the previous and future time levels, $\rho_0$ is the solid density in the reference configuration, $\bb{g}$ is the body force per unit mass, 
+where $\bb{T}^{\,n}_f$ and $\bb{T}^{\,n+1}_f$ are the area-weighted face force (not traction) vectors at the previous and future time levels, $\rho_0$ is the solid density in the reference configuration, $\bb{b}_S$ is the body force per unit mass, 
 and $c_d$ is an optional mass-proportional Rayleigh-type damping coefficient (used in this work to accelerate convergence to steady-state solutions of nominally transient problems; see Section~\ref{sec:case1}).
 $\bb{\mathcal{D}}_{s,P}$ is a stabilisation term -- similar to $\mathcal{D}_{p,P}$ -- calculated as
 \begin{eqnarray} \label{eqn:rhie_chow_s}

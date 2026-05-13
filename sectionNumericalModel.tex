@@ -64,7 +64,15 @@ Surface integrals are approximated by sums over the cell faces,
     \label{eqn:fv_surface_integral}
 \end{equation}
 where $\bb{q}_f$ denotes the face value of $\bb{q}$. On internal faces, face values are in general obtained by linear interpolation from the adjacent cell centres.
-Gradients are evaluated using a first-neighbour least-squares procedure, which is exact for linear fields.
+Cell-centred gradients are evaluated using a first-neighbour least-squares procedure, which is exact for linear fields. For a generic field $\bb{\phi}$, the gradient at the centre of cell $P$ is written as
+\begin{equation}
+    \left( \bb{\nabla} \bb{\phi} \right)_P
+    =
+    \sum_{f \in \mathcal{F}_P}
+    \bb{g}_{P,f} \otimes \left( \bb{\phi}_{N_f} - \bb{\phi}_{P} \right),
+    \label{eqn:least_squares_gradient}
+\end{equation}
+where $\bb{g}_{P,f}$ is the least-squares gradient coefficient associated with cell $P$ and face $f$; it depends only on the local mesh geometry and is computed once (or each time the mesh moves) following~\citet{Cardiff2026}. The tensor product $\otimes$ degenerates to scalar multiplication when $\bb{\phi}$ is a scalar (e.g.\ the pressure $p$).
 A specific exception is made for diffusive (Laplacian-type) face fluxes, which are split into a compact two-cell normal-gradient contribution along the line joining the two adjacent cell centres and an explicit non-orthogonal correction evaluated from the interpolated cell-centred gradient; this preserves a tight stencil for the implicit operator while retaining second-order accuracy on non-orthogonal meshes. The explicit form used in the fluid momentum residual is given in Equation~\eqref{eqn:fluid_momentum_residual}, and the same construction is used for diffusion-like terms elsewhere in the discretisation.
 These finite-volume operations are applied on the current moving mesh for the fluid equations and on the reference mesh for the total Lagrangian solid equations.
 
@@ -233,10 +241,7 @@ The second term is the non-orthogonal correction, where
     |\bb{\Gamma}_f|
     \label{eqn:non_orthogonal_correction_vector}
 \end{equation}
-and $\left( \bb{\nabla} \bb{v} \right)_f$ is obtained by interpolating the cell-centred least-squares velocity gradients to the face, where the velocity gradient at the centre of cell $P$ is calculated as
-\begin{equation} \label{eqn:least_squares_velocity}
-	\left( \bb{\nabla} \bb{v} \right)_P = \sum_{f \in \mathcal{F}_P} \bb{g}_{P,f} \otimes \left( \bb{v}_{N_f} - \bb{v}_{P} \right).
-\end{equation}
+and $\left( \bb{\nabla} \bb{v} \right)_f$ is obtained by interpolating the cell-centred least-squares velocity gradients (Equation~\eqref{eqn:least_squares_gradient}) to the face.
 This correction introduces the usual extended stencil associated with non-orthogonal
 finite-volume diffusion terms.
 
@@ -256,7 +261,7 @@ through face $f$ is
 where $\bb{v}^{\Gamma}_f$ is the face mesh velocity.
 In the current work, the convected velocity $\widetilde{\bb{v}}_f$ is evaluated using a second-order upwind scheme, in which the velocity is extrapolated from the upwind cell centre using the cell-centred velocity gradient.
 
-The second face summation term on the right-hand side of Equation~\eqref{eqn:fluid_momentum_residual} is the volume integral of the pressure gradient $\left( \bb{\nabla} p \right)_P$ computed in terms of the first-neighbour least squares gradient coefficient $\bb{g}_{P,f}$ for cell $P$ at face $f$.
+The second face summation term on the right-hand side of Equation~\eqref{eqn:fluid_momentum_residual} is the volume integral of the pressure gradient $\left( \bb{\nabla} p \right)_P$, computed from the least-squares formula in Equation~\eqref{eqn:least_squares_gradient}.
 
 The final term on the right-hand side of Equation~\eqref{eqn:fluid_momentum_residual} is the local inertia term, which has been discretised in time using the moving-mesh BDF2 approximation in Equation~\eqref{eqn:moving_mesh_bdf2_time_term}.
 
@@ -284,7 +289,7 @@ where $\bb{v}_f$ is again the linearly interpolated face velocity, and $\mathcal
     \bigg]
     |\bb{\Gamma}_f|
 \end{eqnarray}
-where $\left( \bb{\nabla} p \right)_f$ is obtained by interpolating the cell-centred least-squares pressure gradients to the face, where the pressure gradient at the centre of cell $P$ is calculated as $\left( \bb{\nabla} p \right)_P = \sum_{f \in \mathcal{F}_P} \bb{g}_{P,f} \left( p_{N_f} - p_{P} \right)$.
+where $\left( \bb{\nabla} p \right)_f$ is obtained by interpolating the cell-centred least-squares pressure gradients (Equation~\eqref{eqn:least_squares_gradient}) to the face.
 The term $a_{P_f}$ is the momentum-equation diagonal coefficient, linearly interpolated to the face.
 The user-defined parameter $\alpha_p > 0$ globally scales the amount of stabilisation and is set to 1.0 unless otherwise stated.
 
@@ -388,7 +393,7 @@ $\bb{\mathcal{D}}_{s,P}$ is a stabilisation term -- similar to $\mathcal{D}_{p,P
 \end{eqnarray}
 where $\bar{K} = 2\mu + \lambda$ is a stiffness-type parameter that gives the stabilisation term an appropriate scale and dimension, with $\mu$ being the shear modulus and $\lambda$ being the second Lamé parameter (or their linearised equivalent for finite strain formulations).
 The user-defined parameter $\alpha_d > 0$ globally scales the amount of stabilisation, and is chosen here to be 0.1 unless otherwise stated.
-The displacement gradient $\left( \bb{\nabla}_0 \bb{D} \right)^{n+1}_f$ is obtained by interpolating the cell-centred least-squares displacement gradients to the face.
+The displacement gradient $\left( \bb{\nabla}_0 \bb{D} \right)^{n+1}_f$ is obtained by interpolating the cell-centred least-squares displacement gradients (Equation~\eqref{eqn:least_squares_gradient}, evaluated on the reference mesh) to the face.
 
 The future-time face force is computed as
 \begin{equation}

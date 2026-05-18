@@ -5,30 +5,26 @@
 % Outline of subsections
 %\subsection{Overview}
 %\subsection{Finite-volume discretisation}
-%\subsection{Discrete coupled residual}
+%\subsection{Discrete coupled residual}\text{d}\Omega
 %\subsection{Jacobian-free Newton--Krylov solution}
 %\subsection{Approximate block preconditioner}
 %\subsection{Fluid mesh motion}
 %\subsection{Implementation details}
 
 This section describes the discretisation and solution strategy used for the fluid--solid interaction problem defined in Section~\ref{sec:math_model}.
-We distinguish between three aspects of the method. First, the governing equations are discretised using cell-centred finite volumes on separate fluid and solid meshes.
+We distinguish between three aspects of the method. First, the governing equations are discretised using cell-centred finite volumes.
 The fluid equations are discretised on the current ALE mesh, while the solid equations are discretised in the reference configuration using a total Lagrangian formulation.
 Second, the resulting algebraic equations are solved using a quasi-monolithic nonlinear strategy in which the fluid velocity, fluid pressure and solid velocity are advanced in a single coupled nonlinear solve.
 Third, the method is implemented in solids4foam \citep{Cardiff2025} -- an open source toolbox for OpenFOAM -- using PETSc \citep{PETSc} for the nonlinear and linear algebra operations.
 
 The approach is inspired by the quasi-monolithic interface treatment of Liu et al.~\citep{Liu2014} and Jaiman and Joshi~\citep{JaimanJoshi2022}.
 As in those formulations, the fluid and solid subproblems are coupled at the nonlinear level through the interface kinematic and dynamic conditions.
-The present method differs in three main respects:
-the spatial discretisation is cell-centred finite volume rather than finite element;
-the fluid is solved using a standard ALE incompressible finite-volume formulation with Rhie--Chow-type pressure stabilisation;
-%the coupled nonlinear unknown contains $(\bb{v}_F,p_F,\bb{v}_S)$, but not the fluid mesh displacement or the solid displacement;
-and the assembled matrix supplied to the Krylov solver is an approximate block preconditioner rather than the exact Jacobian of the coupled residual.
+The present method differs in three main respects: the spatial discretisation is cell-centred finite volume rather than finite element; the fluid is solved using a standard ALE incompressible finite-volume formulation with Rhie--Chow-type pressure stabilisation; and the assembled matrix supplied to the Krylov solver is an approximate block preconditioner rather than the exact Jacobian of the coupled residual.
 
 The method is therefore described as quasi-monolithic.
 The nonlinear residual is coupled in the fluid velocity, fluid pressure and solid velocity; however, the fluid mesh motion and the update of the stored solid displacement are performed outside the Newton vector.
 
-For conciseness, throughout this section the same symbols ($\bb{v}_F$, $\bb{v}_S$, $p_F$, $\bb{D}_S$, etc.) are used for both the continuous fields introduced in Section~\ref{sec:math_model} and their discrete cell-centred counterparts. This is a deliberate (mild) abuse of notation: in the continuous setting the symbols denote pointwise fields on $\Omega_F(t)$ or $\Omega_{S,0}$, whereas in the discrete setting they denote the corresponding cell-centred values stored at cell centroids; the intended meaning will always be clear from the context.
+For conciseness, throughout this section the same symbols ($\bb{v}_F$, $\bb{v}_S$, $p_F$, $\bb{D}_S$, etc.) are used for both the continuous fields introduced in Section~\ref{sec:math_model} and their discrete cell-centred counterparts. This is a deliberate (mild) abuse of notation: in the continuous setting, the symbols denote pointwise fields on $\Omega_F(t)$ or $\Omega_{S,0}$, whereas in the discrete setting, they denote the corresponding cell-centred values stored at cell centroids; the intended meaning will always be clear from the context.
 
 %%--------------------------------------------------------------------------------------------------------------------%%
 \subsection{Finite-volume discretisation}
@@ -40,13 +36,13 @@ The set of fluid control volumes is denoted by $\mathcal{P}^f$ and the set of so
 A generic cell is denoted by $P$, with volume $\Omega_P$ and faces $f \in \mathcal{F}_P$. The outward face area vector associated with face $f$ is
 denoted by $\bb{\Gamma}_f$.
 
-The primary unknowns are stored at cell centres, and represent the pointwise values at those locations.
+The primary unknowns are stored at cell centres and represent the pointwise values at those locations. \hl{do we mention equivalence with cell means?}
 % as well as the volume-average of the quantity in the cell.
 Volume integrals are approximated using midpoint quadrature,
 \begin{equation}
     \int_{\Omega_P}
     \bb{\phi}
-    \, d\Omega
+    \, \text{d}\Omega
     \approx
     \bb{\phi}_P \Omega_P ,
     \label{eqn:fv_volume_integral}
@@ -57,7 +53,7 @@ Surface integrals are approximated by sums over the cell faces,
 \begin{equation}
     \oint_{\Gamma_P}
     \bb{n} \cdot \bb{q}
-    \, d\Gamma
+    \, \text{d}\Gamma
     \approx
     \sum_{f \in \mathcal{F}_P}
     \bb{\Gamma}_f \cdot \bb{q}_f ,
@@ -103,7 +99,7 @@ The rate of change volume integral in the fluid momentum equation is approximate
     \frac{d}{dt}
     \int_{\Omega_F(t)}
     \bb{v}_F
-    \, d\Omega_F
+    \, \text{d}\Omega_F
     \right|_P^n
     \approx
     \frac{
@@ -122,15 +118,15 @@ The same approximation is applied to the rate of change term in the solid moment
     \left.
     \int_{\Omega_{S,0}}
     \frac{\partial \bb{v}_S}{\partial t}
-    \, d\Omega_{S,0}
+    \, \text{d}\Omega_{S,0}
     \right|^{n}_P
     \approx
     \frac{
-    3\bb{v}^{n}_S
+    3\bb{v}^{n}_{S,P}
     -
-    4\bb{v}^{n-1}_S
+    4\bb{v}^{n-1}_{S,P}
     +
-    \bb{v}^{n-2}_S
+    \bb{v}^{n-2}_{S,P}
     }
     {2\Delta t}
     \Omega_{{S,0}_P}.
@@ -246,19 +242,19 @@ This correction introduces the usual extended stencil associated with non-orthog
 finite-volume diffusion terms.
 
 The third face term is the ALE convection contribution. The relative volumetric flux
-through face $f$ is
-\begin{equation}
-    \phi^\mathrm{rel}_f
-    =
-    \bb{\Gamma}_f \cdot
-    \left(
-    \bb{v}_f
-    -
-    \bb{v}^{\Gamma}_f
-    \right),
-    \label{eqn:discrete_relative_flux}
-\end{equation}
-where $\bb{v}^{\Gamma}_f$ is the face mesh velocity.
+through face $f$ is defined by Equation~\eqref{eqn:relative_flux}.
+%\begin{equation}
+%    \phi^\mathrm{rel}_f
+%    =
+%    \bb{\Gamma}_f \cdot
+%    \left(
+%    \bb{v}_f
+%    -
+%    \bb{v}^{\Gamma}_f
+%    \right),
+%    \label{eqn:discrete_relative_flux}
+%\end{equation}
+%where $\bb{v}^{\Gamma}_f$ is the face mesh velocity.
 In the current work, the convected velocity $\widetilde{\bb{v}}_f$ is evaluated using a second-order upwind scheme, in which the velocity is extrapolated from the upwind cell centre using the cell-centred velocity gradient.
 
 The second face summation term on the right-hand side of Equation~\eqref{eqn:fluid_momentum_residual} is the volume integral of the pressure gradient $\left( \bb{\nabla} p \right)_P$, computed from the least-squares formula in Equation~\eqref{eqn:least_squares_gradient}.
@@ -338,7 +334,7 @@ As before, the region subscript $S$ on solid quantities is omitted where unambig
     +
     \frac{\Delta t}{2}
     \left(
-    3\bb{v}_S
+    3\bb{v}_S^n
     -
     \bb{v}_S^{n-1}
     \right),
@@ -847,7 +843,7 @@ The unknown $\bb{D}^{\Gamma}$ is the total fluid mesh displacement relative to t
     \right)
     \bb{I}
     \right]
-    \, d\Gamma_{P}^{n-1}
+    \, \text{d}\Gamma_{P}^{n-1}
     =
     \bb{0}.
     \label{eqn:mesh_motion_pseudo_solid}
@@ -1045,16 +1041,16 @@ traction boundary condition.
 %    \bb{R}_u %(\bb{v})
 %    &=&
 %	\oint_{\Gamma^f_0}  \left[ J^\Gamma (\bb{F}^\Gamma)^{-\text{T}} \cdot \hat{\bb{n}}_0^f \right]
-%		\cdot \left[\nu (\bb{F}^\Gamma)^{-T} \cdot \left( \bb{\nabla}_0 \bb{v}^f \right) \right] \, d\Gamma^f_0
-%	+ \int_{\Omega^f_0} J^\Gamma (\bb{F}^\Gamma)^{-T} \cdot \left( \bb{\nabla}_0 p \right) \, d\Omega^f_0 \notag \\
-%	&&+ \int_{\Omega^f_0} \bb{f}_{b_0}^f \, d\Omega^f_0
-%	- \int_{\Omega^f_0} J^\Gamma \frac{\partial \bb{v}^f}{\partial t} \, d\Omega^f_0 
-%	- \oint_{\Gamma^f_0}  \left[ J^\Gamma (\bb{F}^\Gamma)^{-\text{T}} \cdot \hat{\bb{n}}_0^f \right] \cdot \left(\bb{v}^f - \frac{\partial \bb{d}_m}{\partial t}\right) \bb{v}^f \, d\Gamma^f_0
+%		\cdot \left[\nu (\bb{F}^\Gamma)^{-T} \cdot \left( \bb{\nabla}_0 \bb{v}^f \right) \right] \, \text{d}\Gamma^f_0
+%	+ \int_{\Omega^f_0} J^\Gamma (\bb{F}^\Gamma)^{-T} \cdot \left( \bb{\nabla}_0 p \right) \, \text{d}\Omega^f_0 \notag \\
+%	&&+ \int_{\Omega^f_0} \bb{f}_{b_0}^f \, \text{d}\Omega^f_0
+%	- \int_{\Omega^f_0} J^\Gamma \frac{\partial \bb{v}^f}{\partial t} \, \text{d}\Omega^f_0 
+%	- \oint_{\Gamma^f_0}  \left[ J^\Gamma (\bb{F}^\Gamma)^{-\text{T}} \cdot \hat{\bb{n}}_0^f \right] \cdot \left(\bb{v}^f - \frac{\partial \bb{d}_m}{\partial t}\right) \bb{v}^f \, \text{d}\Gamma^f_0
 %	\notag \\
 %	&&+\; \bb{\mathcal{D}}_v
 %	\notag \\
 %    R_p %(\bb{v})
-%    &=&	\oint_{\Gamma^f_0}  \left[ J^\Gamma (\bb{F}^\Gamma)^{-\text{T}}  \cdot \hat{\bb{n}}_0^f \right] \cdot \bb{v}^f \, d\Gamma^f_0 \;+\; \mathcal{D}_p
+%    &=&	\oint_{\Gamma^f_0}  \left[ J^\Gamma (\bb{F}^\Gamma)^{-\text{T}}  \cdot \hat{\bb{n}}_0^f \right] \cdot \bb{v}^f \, \text{d}\Gamma^f_0 \;+\; \mathcal{D}_p
 %    \notag \\
 %    \bb{R}_m
 %    &=&
@@ -1063,14 +1059,14 @@ traction boundary condition.
 %    \mu^\Gamma \bb{\nabla}_0 \bb{d}_m + \mu^\Gamma \left(\bb{\nabla}_0 \bb{d}_m \right)^T
 %    + \lambda^\Gamma (\bb{\nabla}_0 \cdot \bb{d}_m) \textbf{I}
 %    \right]
-%    \, d\Gamma_0^f
+%    \, \text{d}\Gamma_0^f
 %    \;+\; \bb{\mathcal{D}}_m
 %    \notag \\
 %    \bb{R}_d %(\bb{v})
 %    &=&
-%    \oint_{\Gamma_0^s} \left( J \bb{F}^{-\text{T}} \cdot \bb{n}_0^s \right) \cdot \bb{\sigma}^s \ d\Gamma_0^s
-%    + \int_{\Omega_0^s}  \bb{f}_{b_0}^s \, d\Omega_0^s
-%    - \int_{\Omega_0^s} \rho_0 \frac{\partial^2 \bb{d} }{\partial t^2} \; d\Omega_0^s
+%    \oint_{\Gamma_0^s} \left( J \bb{F}^{-\text{T}} \cdot \bb{n}_0^s \right) \cdot \bb{\sigma}^s \ \text{d}\Gamma_0^s
+%    + \int_{\Omega_0^s}  \bb{f}_{b_0}^s \, \text{d}\Omega_0^s
+%    - \int_{\Omega_0^s} \rho_0 \frac{\partial^2 \bb{d} }{\partial t^2} \; \text{d}\Omega_0^s
 %    \;+\; \bb{\mathcal{D}}_d
 %\end{eqnarray}
 %where $\bb{\mathcal{D}}_v$, $\mathcal{D}_p$, $\bb{\mathcal{D}}_m$, and $\bb{\mathcal{D}}_d$ are stabilisation terms to be defined.
@@ -1209,7 +1205,7 @@ traction boundary condition.
 %%		&\approx& \int_{\mathrm{\Omega}}  \bb{\phi}_P d\mathrm{\Omega}  + \int_{\mathrm{\Omega}}  (\bb{x} - \bb{x}_P) \cdot \nabla \bb{\phi}_P d\mathrm{\Omega} \notag \\
 %		&\approx& \bb{\phi}_P \Omega_P
 %\end{eqnarray}
-%where subscript $P$ indicates a value at the centroid of the cell $P$, $\Omega_P$ is the volume of cell $P$ and $\int_{\Omega_P} (\bb{x} - \bb{x}_P) d\Omega_P \equiv 0$ by definition of the cell centroid.
+%where subscript $P$ indicates a value at the centroid of the cell $P$, $\Omega_P$ is the volume of cell $P$ and $\int_{\Omega_P} (\bb{x} - \bb{x}_P) \text{d}\Omega_P \equiv 0$ by definition of the cell centroid.
 %This approximation corresponds to the midpoint rule and one-point quadrature.
 %
 %
@@ -1220,7 +1216,7 @@ traction boundary condition.
 %%Surface integral terms require the surface integration of terms containing the derivative of a solution unknown in the deformed configuration (e.g., $\bb{\nabla} \bb{v}$), while advection-type terms contain solution unknown in the deformed configuration (e.g., $\bb{\nabla} \cdot \left(\bb{v} \otimes \bb{v}\right)$, $\bb{\nabla} \cdot \bb{v}$).
 %Surface integrals of generic integrand $\bb{q}$ can be discretised using one-point quadrature at each face as
 %\begin{eqnarray} \label{eq:diffusion_discret}
-%	\oint_{\Gamma_P} \bb{n} \cdot \bb{q}  \; d\Gamma_P
+%	\oint_{\Gamma_P} \bb{n} \cdot \bb{q}  \; \text{d}\Gamma_P
 %	&=& \sum_{f_i \in \mathcal{F}_P} \int_{\Gamma_{f_i}} \bb{n} \cdot \bb{q}  \,  d \Gamma_{f_i} \notag \\
 %	&\approx&
 %%	\sum_{f_i \in \mathcal{F}_P^{\text{int}} \cup \mathcal{F}_P^{\text{disp}} \cup \mathcal{F}_P^{\text{symm}}} \bb{\Gamma}_{f_i} \cdot \bb{q}_{f_i}
@@ -1278,7 +1274,7 @@ traction boundary condition.
 %
 %%An exception to the surface integral discretisation above is made for the advection term in the fluid linear momentum equation, which is instead discretised as \hl{fix}
 %%\begin{eqnarray} \label{eq:advect_discret}
-%%	\oint_{\Gamma_P} \bb{n} \cdot \left(\bb{v} - \frac{\partial \bb{d}_{m}}{\partial t}\right) \bb{v} \; d\Gamma_P
+%%	\oint_{\Gamma_P} \bb{n} \cdot \left(\bb{v} - \frac{\partial \bb{d}_{m}}{\partial t}\right) \bb{v} \; \text{d}\Gamma_P
 %%	&=& \sum_{f_i \in \mathcal{F}_P} \int_{\Gamma_{f_i}} \bb{n} \cdot  \left(\bb{v} - \frac{\partial \bb{d}_{m}}{\partial t}\right) \bb{v}   \,  d \Gamma_{f_i} \notag \\
 %%	&\approx&
 %%	\sum_{f_i \in \mathcal{F}_P^{\text{int}}} \bb{\Gamma}_{f_i} \cdot \left( \bb{v}_{f_i} - \frac{\partial \bb{d}_{m,f_i}}{\partial t} \right) \tilde{\bb{v}}_{f_i} \notag \\
@@ -1378,19 +1374,19 @@ traction boundary condition.
 %    \bb{R}_u %(\bb{v})
 %    &=&
 %	\oint_{\Gamma^f_0}  \left[ J^\Gamma (\bb{F}^\Gamma)^{-\text{T}} \cdot \hat{\bb{n}}_0^f \right]
-%		\cdot \left[\nu (\bb{F}^\Gamma)^{-T} \cdot \left( \bb{\nabla}_0 \bb{v}^f \right) \right] \, d\Gamma^f_0
-%	+ \int_{\Omega^f_0} J^\Gamma (\bb{F}^\Gamma)^{-T} \cdot \left( \bb{\nabla}_0 p \right) \, d\Omega^f_0 \notag \\
-%	&&+ \int_{\Omega^f_0} \bb{f}_{b_0}^f \, d\Omega^f_0
-%	- \int_{\Omega^f_0} J^\Gamma \frac{\partial \bb{v}^f}{\partial t} \, d\Omega^f_0 
-%	- \oint_{\Gamma^f_0}  \left[ J^\Gamma (\bb{F}^\Gamma)^{-\text{T}} \cdot \hat{\bb{n}}_0^f \right] \cdot \left(\bb{v}^f - \frac{\partial \bb{d}_m}{\partial t}\right) \bb{v}^f \, d\Gamma^f_0
+%		\cdot \left[\nu (\bb{F}^\Gamma)^{-T} \cdot \left( \bb{\nabla}_0 \bb{v}^f \right) \right] \, \text{d}\Gamma^f_0
+%	+ \int_{\Omega^f_0} J^\Gamma (\bb{F}^\Gamma)^{-T} \cdot \left( \bb{\nabla}_0 p \right) \, \text{d}\Omega^f_0 \notag \\
+%	&&+ \int_{\Omega^f_0} \bb{f}_{b_0}^f \, \text{d}\Omega^f_0
+%	- \int_{\Omega^f_0} J^\Gamma \frac{\partial \bb{v}^f}{\partial t} \, \text{d}\Omega^f_0 
+%	- \oint_{\Gamma^f_0}  \left[ J^\Gamma (\bb{F}^\Gamma)^{-\text{T}} \cdot \hat{\bb{n}}_0^f \right] \cdot \left(\bb{v}^f - \frac{\partial \bb{d}_m}{\partial t}\right) \bb{v}^f \, \text{d}\Gamma^f_0
 %\end{eqnarray}
 %
 %The three volume integrals are approximated to second-order accuracy using the mid-point rule (Equation \ref{eq:volume_integral}):
 %\begin{eqnarray}
-%	\int_{\Omega^f_0} J^\Gamma (\bb{F}^\Gamma)^{-T} \cdot \left( \bb{\nabla}_0 p \right) \, d\Omega^f_0
+%	\int_{\Omega^f_0} J^\Gamma (\bb{F}^\Gamma)^{-T} \cdot \left( \bb{\nabla}_0 p \right) \, \text{d}\Omega^f_0
 %		&\approx& J^\Gamma_P (\bb{F}^\Gamma_P)^{-T} \cdot \left( \bb{\nabla}_0 p \right)_P  \Omega_{0,P} \\
-%	\int_{\Omega^f_0} \bb{f}_{b_0}^f \, d\Omega^f_0	&\approx&		\left( \bb{f}_{b_0}^f \right)_P  \Omega_{0,P} \\
-%	\int_{\Omega^f_0} J^\Gamma \frac{\partial \bb{v}^f}{\partial t} \, d\Omega^f_0
+%	\int_{\Omega^f_0} \bb{f}_{b_0}^f \, \text{d}\Omega^f_0	&\approx&		\left( \bb{f}_{b_0}^f \right)_P  \Omega_{0,P} \\
+%	\int_{\Omega^f_0} J^\Gamma \frac{\partial \bb{v}^f}{\partial t} \, \text{d}\Omega^f_0
 %		&\approx& 	J^\Gamma_P  \frac{3 \bb{v}_P - 4 \bb{v}_P^{[t]} + \bb{v}_P^{[t-1]}}{2\Delta t}  \Omega_{0,P}
 %\end{eqnarray}
 %where the second-order in time backwards differencing scheme is used for the time derivative;
@@ -1401,7 +1397,7 @@ traction boundary condition.
 %The diffusion (viscous stresses) surface integral is approximated as \hl{FSI-term}
 %\begin{align}
 %	\oint_{\Gamma^f_0}  \left[ J^\Gamma (\bb{F}^\Gamma)^{-\text{T}} \cdot \hat{\bb{n}}_0^f \right]
-%		\cdot & \left[\nu (\bb{F}^\Gamma)^{-T} \cdot \left( \bb{\nabla}_0 \bb{v}^f \right) \right] \, d\Gamma^f_0
+%		\cdot & \left[\nu (\bb{F}^\Gamma)^{-T} \cdot \left( \bb{\nabla}_0 \bb{v}^f \right) \right] \, \text{d}\Gamma^f_0
 %		\approx \notag \\
 %		& \sum_{f_i \in \mathcal{F}^{\text{int}}_P}
 %		\left[ J^\Gamma_{f_i} (\bb{F}^\Gamma_{f_i})^{-\text{T}} \cdot \hat{\bb{\Gamma}}_{0, f_i}^f \right]
@@ -1416,7 +1412,7 @@ traction boundary condition.
 %The advection surface integral is approximated as \hl{FSI-term}
 %\begin{align}
 %	\oint_{\Gamma^f_0}  \left[ J^\Gamma (\bb{F}^\Gamma)^{-\text{T}} \cdot \hat{\bb{n}}_0^f \right]
-%		& \cdot \left(\bb{v}^f - \frac{\partial \bb{d}_m}{\partial t}\right) \bb{v}^f \, d\Gamma^f_0
+%		& \cdot \left(\bb{v}^f - \frac{\partial \bb{d}_m}{\partial t}\right) \bb{v}^f \, \text{d}\Gamma^f_0
 %		\approx \notag \\
 %		& \sum_{f_i \in \mathcal{F}_P^{\text{int}}}
 %	\left[ J^\Gamma_{f_i} (\bb{F}^\Gamma_{f_i})^{-\text{T}} \cdot \hat{\bb{\Gamma}}_{0, f_i}^f \right]
@@ -1528,12 +1524,12 @@ traction boundary condition.
 %
 %Moving to the pressure equation, the fluid continuity equation residual $R_p$ repeated here is
 %\begin{eqnarray}
-%    R_p    &=&	\oint_{\Gamma^f_0}  \left[ J^\Gamma (\bb{F}^\Gamma)^{-\text{T}}  \cdot \hat{\bb{n}}_0^f \right] \cdot \bb{v}^f \, d\Gamma^f_0 \;+\; \mathcal{D}_p
+%    R_p    &=&	\oint_{\Gamma^f_0}  \left[ J^\Gamma (\bb{F}^\Gamma)^{-\text{T}}  \cdot \hat{\bb{n}}_0^f \right] \cdot \bb{v}^f \, \text{d}\Gamma^f_0 \;+\; \mathcal{D}_p
 %\end{eqnarray}
 %
 %The velocity divergence term is approximated for cell $P$ as
 %\begin{eqnarray}
-%	\oint_{\Gamma^f}  \left[ J_m \bb{F}_m^{-\text{T}}  \cdot \hat{\bb{n}}_0 \right] \cdot \bb{v} \, d\Gamma_0
+%	\oint_{\Gamma^f}  \left[ J_m \bb{F}_m^{-\text{T}}  \cdot \hat{\bb{n}}_0 \right] \cdot \bb{v} \, \text{d}\Gamma_0
 %	&\approx&
 %		\sum_{f_i \in \mathcal{F}^{\text{int}}_P}
 %		\left( J_m \bb{F}_m^{-\text{T}}  \cdot \hat{\bb{\Gamma}}_0 \right)
@@ -1589,15 +1585,15 @@ traction boundary condition.
 %\begin{eqnarray}
 %    \bb{R}_d
 %    &=&
-%    \oint_{\Gamma_0^s} \left( J \bb{F}^{-\text{T}} \cdot \bb{n}_0^s \right) \cdot \bb{\sigma}^s \ d\Gamma_0^s
-%    + \int_{\Omega_0^s}  \bb{f}_{b_0}^s \, d\Omega_0^s
-%    - \int_{\Omega_0^s} \rho_0 \frac{\partial^2 \bb{d} }{\partial t^2} \; d\Omega_0^s
+%    \oint_{\Gamma_0^s} \left( J \bb{F}^{-\text{T}} \cdot \bb{n}_0^s \right) \cdot \bb{\sigma}^s \ \text{d}\Gamma_0^s
+%    + \int_{\Omega_0^s}  \bb{f}_{b_0}^s \, \text{d}\Omega_0^s
+%    - \int_{\Omega_0^s} \rho_0 \frac{\partial^2 \bb{d} }{\partial t^2} \; \text{d}\Omega_0^s
 %    \;+\; \bb{\mathcal{D}}_d
 %\end{eqnarray}
 %
 %The two volume integrals are approximated to second-order accuracy using the mid-point rule (Equation \ref{eq:volume_integral}):
 %\begin{eqnarray}
-%	\int_{\Omega_0^s} \rho_0 \frac{\partial^2 \bb{d} }{\partial t^2} \; d\Omega_0^s
+%	\int_{\Omega_0^s} \rho_0 \frac{\partial^2 \bb{d} }{\partial t^2} \; \text{d}\Omega_0^s
 %		\;&\approx&\; \frac{\rho_{0,P}}{2\Delta t}
 %		\left[
 %			3\left( 
@@ -1605,7 +1601,7 @@ traction boundary condition.
 %			\right) 
 %			- 4\boldsymbol{v}_P^{[t]} + \boldsymbol{v}_P^{[t-1]}
 %		\right] \Omega_{0,P} \\
-%	\int_{\Omega_0^s}  \bb{f}_{b_0}^s \, d\Omega_0^s
+%	\int_{\Omega_0^s}  \bb{f}_{b_0}^s \, \text{d}\Omega_0^s
 %		\;&\approx&\;  \rho_{0,P} \left(\bb{f}^s_{b_0}\right)_P \Omega_{0,P}
 %\end{eqnarray}
 %where the acceleration term has been approximated using the second-order in time backwards differencing (BDF2) scheme.
@@ -1619,7 +1615,7 @@ traction boundary condition.
 %
 %The surface integral term, corresponding to the divergence of stress is discretised as
 %\begin{align} \label{eq:divStressDiscret}
-%	\oint_{\Gamma_0^s} \left( J \bb{F}^{-\text{T}} \cdot \bb{n}_0^s \right) \cdot \bb{\sigma}^s & \, d\Gamma_0^s
+%	\oint_{\Gamma_0^s} \left( J \bb{F}^{-\text{T}} \cdot \bb{n}_0^s \right) \cdot \bb{\sigma}^s & \, \text{d}\Gamma_0^s
 %	\approx  \sum_{f_i \in \mathcal{F}_P^{\text{int}}} \left( J_{f_i} \bb{F}^{-\text{T}}_{f_i} \cdot \bb{\Gamma}_{0,f_i}^s \right) \cdot \bb{\sigma}_{f_i} \notag \\
 %	&+ \sum_{d_i \in \mathcal{F}_P^{\text{disp}}} \bb{\Gamma}_{d_i} \cdot \bb{\sigma}_{P}
 %%	+ \sum_{s_i \in \mathcal{F}_P^{\text{symm}}} \bb{\Gamma}_{s_i} \cdot \bb{\sigma}_{s_i}
@@ -1681,8 +1677,8 @@ traction boundary condition.
 %%\begin{eqnarray}
 %%	\tilde{\bb{J}}_{dd}
 %%	&=&
-%%	\frac{\partial}{\partial \bb{u}} \left[ \oint_{\Gamma_P} \alpha \bar{K} \, \bb{n} \cdot \bb{\nabla} \bb{u} \; d\Gamma_P
-%%	 \; -\;  \int_{\Omega_P} \rho \frac{\partial^2 \bb{u} }{\partial t^2} \, d\Omega_P \right]
+%%	\frac{\partial}{\partial \bb{u}} \left[ \oint_{\Gamma_P} \alpha \bar{K} \, \bb{n} \cdot \bb{\nabla} \bb{u} \; \text{d}\Gamma_P
+%%	 \; -\;  \int_{\Omega_P} \rho \frac{\partial^2 \bb{u} }{\partial t^2} \, \text{d}\Omega_P \right]
 %%\end{eqnarray}
 %%The linearised system (Equation \ref{eq:Seg}) is formed for each cell in the domain, resulting in a system of algebraic equations:
 %%\begin{eqnarray} \label{eq:SegSys}
@@ -1736,7 +1732,7 @@ traction boundary condition.
 %    \mu^\Gamma \bb{\nabla}_0 \bb{d}_m + \mu^\Gamma \left(\bb{\nabla}_0 \bb{d}_m \right)^T
 %    + \lambda^\Gamma (\bb{\nabla}_0 \cdot \bb{d}_m) \textbf{I}
 %    \right]
-%    \, d\Gamma_0^f
+%    \, \text{d}\Gamma_0^f
 %    \;+\; \bb{\mathcal{D}}_m
 %\end{eqnarray}
 %
@@ -1746,7 +1742,7 @@ traction boundary condition.
 %    &\left[
 %    \mu^\Gamma \bb{\nabla}_0 \bb{d}_m + \mu^\Gamma \left(\bb{\nabla}_0 \bb{d}_m \right)^T
 %    + \lambda^\Gamma (\bb{\nabla}_0 \cdot \bb{d}_m) \textbf{I}
-%    \right]    \, d\Gamma_0^f
+%    \right]    \, \text{d}\Gamma_0^f
 %	\approx \notag \\
 %	&\sum_{f_i \in \mathcal{F}_P^{\text{int}}}
 %	\bb{\Gamma}_{0,f_i}
@@ -1796,7 +1792,7 @@ traction boundary condition.
 %The approximate Jacobian $\tilde{\bb{J}}_{mm}$ is derived from the compact stencil component of the stabilisation term $\bb{\mathcal{D}}_m$.
 %%:
 %%\begin{eqnarray}
-%%	\tilde{\bb{J}} &=& \frac{\partial}{\partial \bb{d}_m} \left[ \oint_{\Gamma_P} \alpha \bar{K} \, \bb{n} \cdot \bb{\nabla} \bb{d}_m \; d\Gamma_P \right]
+%%	\tilde{\bb{J}} &=& \frac{\partial}{\partial \bb{d}_m} \left[ \oint_{\Gamma_P} \alpha \bar{K} \, \bb{n} \cdot \bb{\nabla} \bb{d}_m \; \text{d}\Gamma_P \right]
 %%\end{eqnarray}
 %The $M_m \times M_m$ matrix $\left[ \bb{\tilde{J}}_{mm} \right]$ is symmetric and strongly diagonally dominant (due to Dirichlet conditions), where $M_m = 3|\mathcal{P}^f|$ in 3-D and $M_m = 2|\mathcal{P}^f|$ in 2-D.
 %The block ($3\times3$ for 3-D, $2\times2$ for 2-D) diagonal coefficient for cell $P$ (row $P$, column $P$) can be expressed as \hl{notation}

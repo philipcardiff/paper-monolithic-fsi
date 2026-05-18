@@ -56,15 +56,15 @@ current configuration, this may be written in integral form as
     \int_{\Omega_S}
     \rho_S
     \frac{\partial \bb{v}_S}{\partial t}
-    \, d\Omega_S
+    \, \text{d}\Omega_S
     =
     \oint_{\Gamma_S}
     \hat{\bb{n}}_S \cdot \bb{\sigma}_S
-    \, d\Gamma_S
+    \, \text{d}\Gamma_S
     +
     \int_{\Omega_S}
     \rho_S \bb{b}_S %\bb{f}_{b,S}
-    \, d\Omega_S ,
+    \, \text{d}\Omega_S ,
     \label{eqn:solid_momentum_current}
 \end{equation}
 where $\rho_S$ is the current density, $\bb{v}_S$ is the solid velocity,
@@ -84,7 +84,7 @@ The deformation gradient and its determinant are
     J = \det \bb{F},
     \label{eqn:deformation_gradient}
 \end{equation}
-where $\bb{\nabla}_0$ denotes differentiation with respect to the initial solid coordinates.
+where $\bb{\nabla}_0$ denotes differentiation with respect to the initial solid coordinates, and $\bb{I}$ is the second-order identity tensor.
 The transpose reflects the gradient convention stated in the introduction to this section.
 %The transpose in Equation~\ref{eqn:deformation_gradient} arises from the chosen convention $(\bb{\nabla}_0 \bb{D}_S)_{ij} = \partial D_{S,j}/\partial X_i$, which treats $\bb{\nabla}_0$ as a standard vector operator consistent with $\bb{\nabla}_0 \cdot$, $\bb{\nabla}_0 \times$ and related operations, as adopted in OpenFOAM. With this convention, $\bb{\nabla}_0 \bb{D}_S$ is the transpose of the displacement gradient tensor in the more usual continuum-mechanics convention.
 %With the convention
@@ -100,9 +100,9 @@ This corresponds in index notation to
 
 Using Nanson's relation,
 \begin{equation} \label{eqn:nanson}
-    \hat{\bb{n}}_S \, d\Gamma_S
+    \hat{\bb{n}}_S \, \text{d}\Gamma_S
     =
-    J \bb{F}^{-T} \cdot \hat{\bb{n}}_{S,0} \, d\Gamma_{S,0},
+    J \bb{F}^{-T} \cdot \hat{\bb{n}}_{S,0} \, \text{d}\Gamma_{S,0},
 \end{equation}
 and introducing the first Piola--Kirchhoff stress tensor $\bb{P}_S = J \bb{\sigma}_S \bb{F}^{-T}$, the solid momentum equation may be expressed over the initial configuration as
 \begin{equation}
@@ -110,7 +110,7 @@ and introducing the first Piola--Kirchhoff stress tensor $\bb{P}_S = J \bb{\sigm
     \rho_{S,0}
 %    \frac{\partial^2 \bb{d}_S}{\partial t^2}
     \frac{\partial \bb{v}_S}{\partial t}
-    \, d\Omega_{S,0}
+    \, \text{d}\Omega_{S,0}
     =
     \oint_{\Gamma_{S,0}}
     \hat{\bb{n}}_{S,0} \cdot \bb{P}_S^T
@@ -119,18 +119,19 @@ and introducing the first Piola--Kirchhoff stress tensor $\bb{P}_S = J \bb{\sigm
 %    \right)
 %    \cdot
 %    \bb{\sigma}_S
-    \, d\Gamma_{S,0}
+    \, \text{d}\Gamma_{S,0}
     +
     \int_{\Omega_{S,0}}
     \rho_{S,0} \bb{b}_S
     %\bb{f}_{b0,S}
-    \, d\Omega_{S,0} .
+    \, \text{d}\Omega_{S,0} .
     \label{eqn:solid_momentum_TL}
 \end{equation}
 Here $\rho_{S,0}$ is the initial density, and the reference-configuration traction is $\bb{t}_0 = \hat{\bb{n}}_{S,0} \cdot \bb{P}_S^T$.
 The Cauchy stress $\bb{\sigma}_S$ (and hence $\bb{P}_S$) is supplied by the chosen mechanical law; in this work, the considered laws include linear elasticity and two finite-strain hyperelastic laws (neo-Hookean and Saint Venant--Kirchhoff).
 
 The solid boundary conditions considered are prescribed displacement, prescribed traction, and symmetry conditions; interface conditions coupling the solid to the fluid are described in Section~\ref{sec:fsi_interface}.
+\hl{See note on fluid BCs}
 
 
 %%--------------------------------------------------------------------------------------------------------------------%%
@@ -147,7 +148,7 @@ For an incompressible fluid, conservation of mass over a moving control volume m
 \begin{equation}
     \frac{d}{dt}
     \int_{\Omega_F}
-    d\Omega_F
+    \text{d}\Omega_F
     +
     \oint_{\Gamma_F}
     \hat{\bb{n}}_F
@@ -155,7 +156,7 @@ For an incompressible fluid, conservation of mass over a moving control volume m
     \left(
     \bb{v}_F - \bb{v}^{\Gamma}
     \right)
-    \, d\Gamma_F
+    \, \text{d}\Gamma_F
     =
     0 .
     \label{eqn:fluid_continuity_ale_full}
@@ -165,13 +166,13 @@ The moving domain is required to satisfy the geometric conservation law:
 \begin{equation}
     \frac{d}{dt}
     \int_{\Omega_F}
-    d\Omega_F
+    \text{d}\Omega_F
     -
     \oint_{\Gamma_F}
     \hat{\bb{n}}_F
     \cdot
     \bb{v}^{\Gamma}
-    \, d\Gamma_F
+    \, \text{d}\Gamma_F
     =
     0 ,
     \label{eqn:gcl}
@@ -183,7 +184,7 @@ Subtracting Equation~\eqref{eqn:gcl} from Equation~\eqref{eqn:fluid_continuity_a
     \hat{\bb{n}}_F
     \cdot
     \bb{v}_F
-    \, d\Gamma_F
+    \, \text{d}\Gamma_F
     =
     0 .
     \label{eqn:fluid_continuity_ale}
@@ -221,7 +222,7 @@ Conservation of linear momentum in ALE form is written as
     \frac{d}{dt}
     \int_{\Omega_F}
     \bb{v}_F
-    \, d\Omega_F
+    \, \text{d}\Omega_F
     +
     \oint_{\Gamma_F}
     \hat{\bb{n}}_F
@@ -230,17 +231,17 @@ Conservation of linear momentum in ALE form is written as
     \bb{v}_F - \bb{v}^{\Gamma}
     \right)
     \bb{v}_F
-    \, d\Gamma_F
+    \, \text{d}\Gamma_F
     =
     \oint_{\Gamma_F}
     \hat{\bb{n}}_F
     \cdot
     \bb{\sigma}_F^*
-    \, d\Gamma_F
+    \, \text{d}\Gamma_F
     +
     \int_{\Omega_F}
     \bb{b}_{F}
-    \, d\Omega_F ,
+    \, \text{d}\Omega_F ,
     \label{eqn:fluid_momentum_ale}
 \end{equation}
 where $\bb{b}_{F}$ is a body force per unit mass.
@@ -262,7 +263,10 @@ where $\bb{b}_{F}$ is a body force per unit mass.
 %The true (Cauchy) stress $\bb{\sigma}_F = \rho_F \bb{\sigma}_F^*$ is the kinematic Newtonian stress tensor scaled by the fluid density $\rho_F$.
 
 The fluid boundary conditions considered are inlet, outlet, no-slip wall and symmetry conditions; interface conditions coupling the fluid to the solid are described in Section~\ref{sec:fsi_interface}.
-
+\hl{Fluid boundary conditions, i.e. inlet, outlet, no-slip and symmetry, are mentioned but not explained. I would not}
+\hl{necessarily add this explanation in the main text, but perhaps we could consider adding a short explanation in the}
+\hl{appendix, describing what is specified for these boundary conditions and guiding the reader to the solids4foam}
+\hl{repository and/or other papers.}
 
 %%--------------------------------------------------------------------------------------------------------------------%%
 \subsection{Interface conditions}

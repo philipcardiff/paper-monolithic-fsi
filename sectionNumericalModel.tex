@@ -754,12 +754,12 @@ normal-gradient contribution,
 \end{equation}
 which is a $d\times d$ block.
 
-Algebraically, $\tilde{\bb{J}}_{pp}$ approximates the pressure coupling that arises through the velocity block when the velocity is eliminated from the coupled momentum--pressure system. This motivates using $\tilde{\bb{J}}_{pp}$ as a cheap surrogate for the formal pressure Schur complement,
+Algebraically, $\tilde{J}_{pp}$ approximates the pressure coupling that arises through the velocity block when the velocity is eliminated from the coupled momentum--pressure system. This motivates using $\tilde{J}_{pp}$ as a cheap surrogate for the formal pressure Schur complement,
 \begin{equation}
-\tilde{\bb{S}}_p = \tilde{\bb{J}}_{pp} - \tilde{\bb{J}}_{pm}\tilde{\bb{J}}_{mm}^{-1}\tilde{\bb{J}}_{mp},
+\tilde{S}_p = \tilde{J}_{pp} - \tilde{\bb{J}}_{pm}\tilde{\bb{J}}_{mm}^{-1}\tilde{\bb{J}}_{mp},
 \label{eqn:schur_complement}
 \end{equation}
-within the velocity--pressure split. Forming $\tilde{\bb{S}}_p$ explicitly would require inversion of $\tilde{\bb{J}}_{mm}$ and is avoided.
+within the velocity--pressure split. Forming $\tilde{S}_p$ explicitly would require inversion of $\tilde{\bb{J}}_{mm}$ and is avoided.
 
 %The assembled approximate Jacobian $\tilde{\bb{J}}$ can be used in several
 %preconditioning strategies. In the simplest case, the complete matrix in
@@ -929,16 +929,14 @@ $\tilde{\bb{J}}$ is supplied as the preconditioning matrix.
 
 The approximate Jacobian may be used either as a monolithic sparse matrix or through field-split preconditioning. In the latter case, the outer split
 separates the fluid and solid fields, while the fluid block may be further
-split into velocity and pressure components using the approximate
-Schur-complement strategy described in
-Section~\ref{sec:approximate_block_preconditioner}.
+split into velocity and pressure components using the approximate Schur-complement strategy described in Section~\ref{sec:approximate_block_preconditioner}.
 
 The interface transfer is performed using the conformal map described in
 Section~\ref{sec:discrete_coupled_residual}. The solid interface displacement
 and velocity are mapped to the fluid mesh-motion and velocity boundary conditions.
-The fluid pressure traction and viscous traction are mapped back to the solid traction boundary condition.
-The calculations reported here therefore assume a single conformal fluid--solid interface.
-Extension to non-conformal interfaces, for example using arbitrary mesh interpolation methods~\citep{FarrellMaddison2011}, is left for future work.
+The fluid pressure and viscous traction are mapped back to the solid traction boundary condition.
+The calculations reported here therefore assume a single conformal fluid--solid interface, as noted in Section \ref{sec:discrete_coupled_residual}.
+%Extension to non-conformal interfaces, for example, using arbitrary mesh interpolation methods~\citep{FarrellMaddison2011}, is left for future work.
 
 The time-step procedure is summarised in Algorithm~\ref{alg:quasi_monolithic_fsi}, and the residual evaluation used inside the nonlinear solve is summarised in Algorithm~\ref{alg:coupled_residual}.
 

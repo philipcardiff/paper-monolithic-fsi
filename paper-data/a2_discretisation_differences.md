@@ -341,8 +341,12 @@ Part: womersley `linearGeometryTotalDisplacement` with backward `d2dt2`
 (WOM `system/solid/fvSchemes`; the README notes that it "applies the backward
 ddt twice", hence `D_0_0_0`). Cavity `nonLinearGeometryTotalLagrangianTotalDisplacement`
 `implicitSegregated` with Euler `d2dt2` (CAV `system/solid/fvSchemes`).
-If `U^k := BDF2(D)^k` for all k, as mono enforces at each step, then
-`a^n = BDF2(U)^n` is the same on both sides. So for the linear womersley
+The backward `d2dt2` is the BDF2 combination of the backward `ddt` of
+`D`, `D.oldTime()` and `D.oldTime().oldTime()`
+(`src/solids4FoamModels/numerics/backwardD2dt2Scheme/backwardD2dt2Scheme.C:187-243`),
+i.e. `a^n = BDF2(V)^n` with `V^k = BDF2(D)^k`. Mono enforces
+`U^k = BDF2(D)^k` at every step, so `a^n = BDF2(U)^n` is the same on both
+sides. So for the linear womersley
 solid the two schemes are algebraically identical once started consistently.
 They differ only in start-up (D17) and in damping (D14). Not a candidate for
 either offset.
@@ -354,10 +358,11 @@ either offset.
 stabilisation acts on the displacement. Part: the same `impKf*` stabilisation
 on `D` (TDS:493-494; LDS:351-352). The scale factors are the same: cavity 0.1
 on both, womersley 0.5 on both (`constant/solid/solidProperties*`). The
-operators are identical, except that the nonlinear velocity solid forms the
-traction with the deformed normal `nNew` and the segregated TDS with its own
-deformed area treatment; the two agree at convergence to O(h^2) at most. Not
-a candidate.
+operators are identical. In the nonlinear cavity case both form the
+traction in the deformed configuration (VS:949-978 with `J F^-T Sf`; TDS
+`currentSf`, TDS:57); I did not compare the two expressions term by term.
+Not a candidate for (a) at steady state beyond O(h^2), and not used in (b)
+(linear geometry).
 
 **D14 Solid damping (cavity).** Mono: `-dampingCoeff*rho*U` (VS:994);
 part: `dampingCoeff*rho*fvm::ddt(D)` (TDS:537-540), both 0.1 s^-1. Zero at

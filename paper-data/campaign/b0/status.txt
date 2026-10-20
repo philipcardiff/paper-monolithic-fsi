@@ -1,0 +1,11 @@
+run_id                      np status       t_last  steps   newt  max  ksp/nw    exec_s clock_s allrun_s
+b0-cal-cav-p4-r1             4 completed       200    400   2.03    5  36.793     65.54    72.0   99.192
+b0-cal-cav-p4-r2             4 completed       200    400   2.03    5  36.793     65.53    75.0   104.32
+b0-cal-cav-p4-r3             4 completed       200    400   2.03    5  36.793     65.73    77.0  107.995
+b0-cal-ram-s1-r1             1 completed        14    400    2.0    2  18.621     37.43    46.0   60.911
+b0-cal-ram-s1-r2             1 completed        14    400    2.0    2  18.621     37.24    45.0   59.394
+b0-cal-ram-s1-r3             1 completed        14    400    2.0    2  18.621     37.15    47.0   63.422
+b0-cav-p4                    4 completed       200    400   2.03    5  36.793      65.2    71.0   93.565
+b0-cav-s1                    1 completed       200    400  2.025    5  35.162    111.21   138.0  155.831
+b0-ram-p4                    4 completed        14    400    2.0    2  19.017     28.09    33.0   74.017
+b0-ram-s1                    1 completed        14    400    2.0    2  18.621     37.35    49.0   75.634

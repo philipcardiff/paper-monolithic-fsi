@@ -7,7 +7,7 @@ Last updated: 2026-10-20
 
 ## Current phase
 
-**B0 (environment and smoke test)**, with **B2** started in parallel.
+**B0 done** (MeluXina). Next: **B1** (solid-block preconditioner). **B2** running.
 Gate G1 not reached. No main-campaign (R1–R7) runs.
 
 ## Status by stream
@@ -15,7 +15,7 @@ Gate G1 not reached. No main-campaign (R1–R7) runs.
 | Stream | State | Jobs (MeluXina unless noted) | Next action |
 |---|---|---|---|
 | B0 build | done on MeluXina; queued on XenoSim | MeluXina 5364171 COMPLETED; XenoSim 12759 pending | none on MeluXina |
-| B0 smoke | ringAddedMass passed; cavity L1 + timing repeats running | 5364272 | check cavity Newton counts, serial vs 4-rank QoIs, timing spread |
+| B0 smoke | **done, passed** (`paper-data/campaign/b0/findings.md`) | 5364272 COMPLETED | – |
 | B1 solid PC | not started | – | set up restart windows after B0 |
 | B2 collapsibleChannel AMI | step 1 done (640×8 chosen); step 2 queued | 5364293 static COMPLETED; 5364295 conformal L2 baseline; 5364354 AMI 640×8 | compare trough error and cost, AMI vs conformal |
 | B3 Jaiman/Liu estimate | not started | – | estimate only, no runs |
@@ -27,8 +27,15 @@ Gate G1 not reached. No main-campaign (R1–R7) runs.
 |---|---:|---|---:|---:|---:|---|
 | b0-ram-s1 (ringAddedMass, monolithic) | 1 | completed | 400 | 2.00 (max 2) | 18.6 | `status.py runs/b0` on MeluXina |
 | b0-ram-p4 | 4 | completed | 400 | 2.00 (max 2) | 19.0 | same |
+| b0-cav-s1 (cavity L1) | 1 | completed | 400 | 2.025 (max 5) | 35.2 | `paper-data/campaign/b0/status.txt` |
+| b0-cav-p4 | 4 | completed | 400 | 2.03 (max 5) | 36.8 | same |
 
 ringAddedMass matches the README's expected 2.00 Newton iterations per step.
+Cavity L1 Dy = −0.201546 m, Fy = −5.122611 N in serial, 4 ranks and all
+repeats, equal to the post-#597 XenoSim value (`paper-data/campaign/b0/b0_compare.csv`).
+Timing spread over 3 repeats: solver ExecutionTime ≤ 0.8%, ClockTime 4–7%,
+Allrun 7–8%. Decision: 3 repeats, median, wall time over a fixed in-solver
+window from a restart.
 
 B2 step 1, partitioned static wall, linear solid, wall-midpoint error against
 the README reference −0.14362832 m (source:
@@ -67,6 +74,7 @@ resolution.
 - `campaign/scripts/parse_log.py`: per-step Newton/Krylov counts of the `Up` system; status classification.
 - `campaign/scripts/status.py`: one line per run.
 - `campaign/jobs/b0_smoke.sh`: B0 smoke and timing calibration.
+- `campaign/scripts/b0_compare.py`: B0 serial/parallel QoI comparison.
 - `paper-data/campaign/b2/`: B2 jobs, scripts and `runs.csv` (subagent β).
 
 ## Deviations from the handoff
@@ -89,6 +97,11 @@ resolution.
 - None yet beyond those in the A1–A4 audits.
 
 ## Log
+
+- **2026-10-20** B0 complete (5364272, 16.7 min, exclusive node): all 10 runs
+  completed; serial and 4-rank QoIs identical; cross-machine agreement with
+  the XenoSim post-#597 cavity L1 value. Findings in
+  `paper-data/campaign/b0/findings.md`. Starting B1 set-up.
 
 - **2026-10-20** B2 static wall completed (5364293, 5.9 min): 640×8 is the
   coarsest solid mesh within 1% (−0.22%). Submitted the monolithic AMI run,

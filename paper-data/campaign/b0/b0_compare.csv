@@ -1,0 +1,16 @@
+run_id,qoi,value,ref_run,rel_diff
+b0-cal-ram-s1-r1,ram_Dy_history_maxdiff,0.00027498615,b0-cal-ram-s1-r1,0.000e+00
+b0-cal-ram-s1-r2,ram_Dy_history_maxdiff,0.00027498615,b0-cal-ram-s1-r1,0.000e+00
+b0-cal-ram-s1-r3,ram_Dy_history_maxdiff,0.00027498615,b0-cal-ram-s1-r1,0.000e+00
+b0-cav-s1,cav_Dy_final,-0.201546,b0-cav-s1,0.000e+00
+b0-cav-s1,cav_Fy_final,-5.122611,b0-cav-s1,0.000e+00
+b0-ram-s1,ram_Dy_history_maxdiff,0.00027498615,b0-cal-ram-s1-r1,0.000e+00
+b0-cal-cav-p4-r1,cav_Dy_final,-0.201546,b0-cav-s1,0.000e+00
+b0-cal-cav-p4-r1,cav_Fy_final,-5.122611,b0-cav-s1,0.000e+00
+b0-cal-cav-p4-r2,cav_Dy_final,-0.201546,b0-cav-s1,0.000e+00
+b0-cal-cav-p4-r2,cav_Fy_final,-5.122611,b0-cav-s1,0.000e+00
+b0-cal-cav-p4-r3,cav_Dy_final,-0.201546,b0-cav-s1,0.000e+00
+b0-cal-cav-p4-r3,cav_Fy_final,-5.122611,b0-cav-s1,0.000e+00
+b0-cav-p4,cav_Dy_final,-0.201546,b0-cav-s1,0.000e+00
+b0-cav-p4,cav_Fy_final,-5.122611,b0-cav-s1,0.000e+00
+b0-ram-p4,ram_Dy_history_maxdiff,0.0002749861,b0-cal-ram-s1-r1,2.345e-07

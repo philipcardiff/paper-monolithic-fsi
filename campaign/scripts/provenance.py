@@ -24,7 +24,8 @@ import subprocess
 def run(cmd, cwd=None):
     try:
         out = subprocess.run(cmd, cwd=cwd, shell=isinstance(cmd, str),
-                             capture_output=True, text=True, timeout=60)
+                             stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                             universal_newlines=True, timeout=60)
         return out.stdout.strip() if out.returncode == 0 else None
     except (OSError, subprocess.TimeoutExpired):
         return None

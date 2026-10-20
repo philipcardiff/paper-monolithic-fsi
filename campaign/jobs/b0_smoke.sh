@@ -12,8 +12,9 @@
 #   QM_RUNS     directory for the run cases
 #   QM_SCRIPTS  campaign/scripts directory (provenance.py)
 
-set -u
+# OpenFOAM's bashrc reads unset variables, so enable -u only after it
 source "${QM_ENV:?}"
+set -u
 mkdir -p "${QM_RUNS:?}"
 
 # Rank placement used for every campaign run: map and bind each rank to a

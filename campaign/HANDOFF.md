@@ -82,7 +82,7 @@ M's sections and the streams that feed them:
 | 4. Verification against exact solutions (ringAddedMass, womersleyTube) and ablations | R1 |
 | 5. Consistency with partitioned coupling (cavityFlexibleBottom) | R2 |
 | 6. Robustness (density ratio × Δt maps) | R3 |
-| 7. Accuracy and cost on benchmarks (Hron–Turek FSI3; Jaiman/Liu cases if approved) | R4, R6 |
+| 7. Accuracy and cost on benchmarks (Hron–Turek FSI3; Liu half-cylinder = blobInTreacle; block with tail if approved) | R4, R6 |
 | 8. 3D performance and scaling (3dTube) | R5 |
 | 9. Limitations (foilInWind time-step limit) | R7 |
 
@@ -204,12 +204,19 @@ Steps:
    Section 6 reports accuracy as well as robustness for this case, with AMI.
    Otherwise the case is robustness-only.
 
-### B3. Effort estimate only (no runs)
+### B3. Jaiman/Liu cases (decided at G1; no new runs in phase B)
 
-Using A1's findings, say whether cases exist for the Jaiman and Joshi (2022)
-/ Liu et al. (2014) elastic half-cylinder temporal-accuracy benchmark and for
-the 2D block with a flexible tail, and estimate the set-up effort. Do not
-build them before G1.
+A1 found:
+- The Liu, Jaiman and Gurugubelli (2014) elastic half-cylinder **is
+  `blobInTreacle`**. Its temporal-accuracy study (Δt from 0.25 to
+  0.03125 s) exists only for partitioned coupling. Adding the monolithic
+  arm is cheap and needs no new case (stream R6).
+- No 2D block-with-flexible-tail case exists on any branch. foilInWind is
+  the only 3D block-with-flag case, and its README cites no benchmark.
+
+For G1, estimate the cost of the blobInTreacle monolithic temporal study
+and the effort of building the block-with-tail case from Jaiman and Joshi
+(2022). Do not build the block-with-tail case unless Philip approves it.
 
 ### Gate G1
 
@@ -226,7 +233,18 @@ Push the branch, tell Philip, and **stop**.
 
 ## 4. Phase R: the main campaign (only after G2)
 
-At G2, Philip merges PR #233 and creates a tag.
+At G2, Philip merges PR #233 and creates a tag. The A3 audit found the
+following; check them in the G1 report so Philip can act before tagging:
+- The tag should contain `f356c3242` (the cavityFlexibleBottom rerun, on
+  `verification/cavityflexiblebottom-partitioned-fine`) and `b157ecaf3`
+  (foilInWind at Δt/4, on `fix/foilInWind-monolithic-timestep`). Neither is
+  on the PR branch yet.
+- The physics-preconditioner code and the "Physics PC inner solvers" blocks
+  in the `fvSolution.monolithic` files should be removed before tagging.
+- The existing tag v2.4 does not contain the coupling.
+- The verification drivers record file hashes but not the git commit or the
+  PETSc, HYPRE and MUMPS versions, so `provenance.py` is required.
+
 1. Rebuild from the tag on every machine and record `git describe`.
 2. Rerun the B0 smoke test and confirm the Newton counts are unchanged.
 
@@ -249,6 +267,27 @@ Every run below comes from the tag, with the settings frozen at G1.
   each case. Each case lists which ones are needed.
 - *Failure statuses:* `completed`, `diverged` (NaN, inverted cell, solver
   failure), `stalled` (maximum iterations without convergence), `timeout`.
+- *Stale results (A1).* Only three recorded monolithic results include the
+  #597 continuity fix: the cavityFlexibleBottom rerun, the blobInTreacle mesh
+  study and foilInWind at Δt = 0.0025 s. Treat everything else as needing a
+  rerun from the tag: ringAddedMass, womersleyTube, collapsibleChannel,
+  mokLidDrivenCavity, TurekHron2006 FSI1/FSI3, 3dTube, beamInCrossFlow,
+  membraneRoof and perpendicularFlap. #597 moved the rigid-plate lift by
+  about 10 percentage points, so FSI3 has priority.
+- *Iteration counts.* No driver records Krylov counts, and only some record
+  Newton counts. Extract both from the logs (`snes_monitor`,
+  `ksp_converged_reason`) with your parsing scripts.
+- *Drivers.* These cases have a monolithic option in their driver:
+  - ringAddedMass: `--study monolithic` (time steps only) and
+    `--study nonconformal` (refined meshes);
+  - womersleyTube and mokLidDrivenCavity: `--monolithic`;
+  - cavityFlexibleBottom: `--variants monolithic`;
+  - TurekHron2006: `--coupling monolithic --levels 1,2,4`, adding
+    `--benchmark fsi1` for FSI1.
+
+  collapsibleChannel, blobInTreacle, beamInCrossFlow, 3dTube, foilInWind,
+  membraneRoof and perpendicularFlap have none, so write job scripts for
+  them.
 
 ### R4. Hron–Turek FSI3 work–precision (longest; submit first)
 
@@ -323,17 +362,21 @@ Every run below comes from the tag, with the settings frozen at G1.
   in code they use.
 - **Timings** on the same node: the monolithic coupling against IQN-ILS and
   Robin–Neumann.
-- **Ablations, following A4's routes:**
-  - route A: an option on the tag; run it;
-  - route B: an older commit; build that commit in a separate install and
-    record its hash;
-  - route C: cite the recorded numbers, with their source.
+- **Ablations, following A4's routes** (details and file:line references
+  in `a4_ablation_reproducibility.md`). Route A is an option on the tag;
+  route B is an older commit built in a separate install, with its hash
+  recorded; route C cites the recorded before/after numbers.
 
-  Expected ablations: zero-gradient against normal-momentum interface
-  pressure; `devReff` against wall-flux traction; force lag against no lag;
-  `div(U)` against face-flux continuity; conservative against interpolated
-  AMI traction (the force and power balance from `interfaceFluxDiagnostics
-  yes`). Use the smallest case that shows each effect, as A4 recommends.
+  | Ablation | Route | How |
+  |---|---|---|
+  | Interface pressure: zero gradient against normal-momentum gradient | A | ringAddedMass: change the interface `type` in `0/fluid/p.monolithic`. The coupler only warns. Report the frequency error and the amplitude loss per period: the zero-gradient state also adds coupling damping. The historical numbers in `3e93daef6` mix this with solid-velocity extrapolation, so use the rerun |
+  | Traction: `devReff` against wall flux | C | blobInTreacle README. The traction-only change is order 1.4 → 2.0; the current 1.9 also includes #597 |
+  | Solid force lag | C | 2.0, 10.6, 18.3% → 0.17, 0.71, 1.26% loss per period (`dcbe04505` → `c008e8dd1`). Use route B at `dcbe04505` only if Philip asks |
+  | Continuity: `div(U)` against face flux (#597) | B | At `98211d90e`, two arms in one build. First confirm that `div(U) Gauss skewCorrected linear` reproduces the current code on one run |
+  | Jacobian: matrix-free against assembled | A | Remove `snes_mf_operator`. No numbers are recorded, so record the Newton residual histories (part of R5) |
+  | Preconditioner and lagging | A | PETSc options (R5) |
+  | Conservative against interpolated AMI traction | A | `ringAddedMass --study nonconformal`, once with each `conservativeTractionTransfer` setting, with `interfaceFluxDiagnostics yes` |
+  | Mesh-motion stiffening | C | TurekHron2006 README. Ask Philip which level inverted at t = 2.76 s |
 
 ### R2. cavityFlexibleBottom consistency
 
@@ -350,9 +393,18 @@ Every run below comes from the tag, with the settings frozen at G1.
   question for the Womersley wall-amplitude offset (3.4e-4 against
   Robin–Neumann), run those as well.
 
-### R6. Jaiman/Liu cases (only if Philip approves at G1)
+### R6. Liu half-cylinder (blobInTreacle) and, if approved, block with tail
 
-Set up and run as specified in the G1 decision.
+- **blobInTreacle, monolithic:**
+  - Rerun the mesh study at x1, x2 and x4 from the tag.
+  - Add the Liu et al. (2014) temporal-accuracy study with the monolithic
+    coupling: Δt from 0.25 to 0.03125 s, with the same error metric and
+    reference Δt as the partitioned study in its verification README.
+  - Time both couplings.
+  - This is M's direct comparison with the finite element formulation the
+    solver is based on. In V, the same case only appears as a spatial
+    self-convergence study.
+- **Block with flexible tail:** only if Philip approves it at G1.
 
 ### R7. foilInWind time-step limit (supplementary)
 
@@ -373,7 +425,7 @@ After G2:
   submit R4 accuracy runs and R5 L3 runs first (longest queue time)
   then R3 array jobs, R1, R2, R7 (short) while R4/R5 are queued or running
   then R4/R5 timing windows (need restarts from the accuracy runs)
-  R6 only if approved
+  R6 blobInTreacle with the short runs; block with tail only if approved
 ```
 
 Suggested subagent use (two at a time at most):
@@ -381,7 +433,7 @@ Suggested subagent use (two at a time at most):
 - **Subagent α (heavy cases):** R4 and then R5. Case preparation, job
   scripts and post-processing scripts; it submits and leaves. A later
   invocation runs the analysis.
-- **Subagent β (many small runs):** B2, then R3, then R1, R2 and R7.
+- **Subagent β (many small runs):** B2, then R3, then R1, R2, R6 and R7.
 - **You (the coordinator):** B0 and B1 yourself, since they decide the
   settings; queue submission and `status.py`; merging results into the
   CSVs; the gate reports and the final summary.

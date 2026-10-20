@@ -529,3 +529,30 @@ Write `paper-data/campaign/<stream>/issue_<short-name>.md` containing:
 
 Stop that stream and tell Philip. Do not open GitHub issues yourself; Philip
 decides.
+
+## 10. Decisions log (read again before the G1 report)
+
+**20 October 2026 (Philip):**
+
+- **Interface viscous traction:** this will be fixed in a solids4foam PR into
+  `feature-petsc-snes-quasi-monolithic` (branch
+  `fix/monolithic-deforming-wall-traction`). The fix changes every
+  monolithic result on a deforming wall. Do not start the R-stream reruns
+  that use moving walls until the tag includes it. B1 and B2 may run before
+  then; for B2, say in the G1 report which code you used.
+- **Ablations:** do not show an older, poorer option for completeness. Keep
+  an ablation only if it is cheap (an option on the tag) and insightful:
+  - keep: interface pressure, conservative AMI traction, matrix-free
+    against assembled Jacobian, and the preconditioner and lagging
+    settings;
+  - drop route B reruns from old commits (the continuity arm at
+    `98211d90e`, the force lag at `dcbe04505`);
+  - the recorded before/after numbers may be cited in a sentence; they need
+    no runs.
+- **PR #581** (the `foamPetscSnesHelper` split) will be merged into the
+  solver branch before the tag. Also pending: #602 (foilInWind Δt/4), #609
+  (the cavity rerun), the PR removing the coupler's physics preconditioner
+  (branch `chore/monolithic-pr233-cleanup`), #604 (3dTube) and #608
+  (TurekHron2006 on the tutorial meshes). The tag comes after these.
+- **Release:** a named tag plus Zenodo, decided near submission. Record the
+  commit hash for every run in the meantime.

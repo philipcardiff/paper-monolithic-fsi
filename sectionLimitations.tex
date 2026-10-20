@@ -1,0 +1,98 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Limitations}\label{sec:limitations}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Stream feeding this section: R7 (foilInWind), with B1 (solid-block
+% preconditioner) and B2 (collapsibleChannel solid resolution).
+
+This section reports where the method, as implemented and released, is limited: a case in which the time step must be reduced for Newton to converge, the treatment of the solid block in the preconditioner, the accuracy of the velocity solid on thin structures, and the software on which the implementation runs.
+
+%%--------------------------------------------------------------------------------------------------------------------%%
+\subsection{Time-step limit in a three-dimensional flag}\label{sec:lim_foil}
+%%--------------------------------------------------------------------------------------------------------------------%%
+% Set-up: solids4foam origin/fix/foilInWind-monolithic-timestep @ b157ecaf3
+% (solids4foam PR #602), tutorials/fluidSolidInteraction/foilInWind/README.md
+% and system/controlDict.monolithic (dt = 0.0025 s); case summary from A1
+% Section 1.10. The README cites no benchmark; the flapping "has not been
+% verified".
+
+A thin flexible foil attached behind a rigid block in a uniform air stream (Figure~\ref{fig:foil_geom_m}) undergoes a three-dimensional flapping motion.
+The block is $1\,\mathrm{cm}$ square in cross-section and $3\,\mathrm{cm}$ long; the foil is $4\,\mathrm{cm}$ long, $3\,\mathrm{cm}$ wide and $0.6\,\mathrm{mm}$ thick, a St Venant--Kirchhoff solid with $E = 2\,\mathrm{MPa}$ and $\rho_s = 2000\,\mathrm{kg/m^3}$, in air at $1\,\mathrm{m/s}$.
+The fluid mesh has 176\,248 cells and the solid mesh $32\times6\times24$ cells.
+No reference solution exists; the case is used to compare the time step and cost needed by the two couplings.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[scale=1]{figures/foilInWind-geometry}
+	\caption{Flexible foil behind a rigid block: geometry and base mesh in side and top view (dimensions in cm).}
+	\label{fig:foil_geom_m}
+\end{figure}
+
+\paragraph{Measured.}
+The quasi-monolithic coupling is run with $\Delta t = 0.01$, $0.005$ and $0.0025\,\mathrm{s}$ to $t = 0.2\,\mathrm{s}$, and partitioned IQN-ILS with $\Delta t = 0.01\,\mathrm{s}$.
+For each run the Newton residual history, the line-search step lengths and the step at which Newton stalls, if it does, are recorded, together with the cost to $t = 0.2\,\mathrm{s}$ and the trailing-edge displacement and drag histories.
+
+\todo{Figure: foilInWind. (a) Newton residual norm against Newton iteration in the first step that stalls at $\Delta t = 0.01\,\mathrm{s}$, with the line-search step length on a second axis, against the same time interval at $\Delta t = 0.0025\,\mathrm{s}$. (b) Streamwise trailing-edge displacement against time to $t = 0.2\,\mathrm{s}$: quasi-monolithic at the working time step(s), IQN-ILS at $0.01\,\mathrm{s}$.}
+
+\todo{Table: foilInWind to $t = 0.2\,\mathrm{s}$. Rows: quasi-monolithic at $\Delta t = 0.01$, $0.005$, $0.0025\,\mathrm{s}$; IQN-ILS at $0.01\,\mathrm{s}$. Columns: outcome; time of the first stalled step; Newton or coupling iterations per step; Krylov iterations per Newton iteration; processes; wall time; core-hours.}
+
+With $\Delta t = 0.01\,\mathrm{s}$, the time step at which IQN-ILS converges, Newton stagnates in the early part of the start-up: the line search reduces the step and the residual stalls \tbd{at a fraction of its initial value}, in serial and in parallel.
+% Recorded at b157ecaf3 (commit message and README): stagnation in the step to
+% t = 0.05 s; residual 646 -> 530, line search stalls at about 150; right
+% preconditioning, unlimited convection and other matrix-free differencing
+% parameters stall the same way; at 0.0025 s every step converges in 2-4
+% Newton iterations; ~55 min on 2 processes against 13 min for IQN-ILS
+% (Apple M1 Ultra). Confirm all of this from the tag (R7).
+Right preconditioning, unlimited convection and other differencing parameters of the matrix-free product stall in the same way, so the stagnation is attributed to the nonlinearity of the coupled problem over a large step rather than to the linear solver: \tbd{evidence from R7, e.g.\ the Newton direction is accurate but the full step increases the residual}.
+With $\Delta t = 0.0025\,\mathrm{s}$, a quarter of the partitioned step, every step converges in \tbd{range} Newton iterations, and the run to $t = 0.2\,\mathrm{s}$ costs \tbd{factor} as much as IQN-ILS.
+The method has no globalisation beyond a backtracking line search, and adaptive time stepping on Newton failure, which the implementation provides (\texttt{adjustTimeStep}), \tbd{was not used for this comparison}.
+\todo{Check that adaptive time stepping (\texttt{adjustTimeStep}, \texttt{maxTimeStepRetries}) is off in the R7 runs, and decide whether one run with it on belongs here. Decide whether pseudo-transient continuation or another globalisation is mentioned as future work in Section~\ref{sec:conclusion}.}
+
+%%--------------------------------------------------------------------------------------------------------------------%%
+\subsection{Solid block of the preconditioner}\label{sec:lim_solid_pc}
+%%--------------------------------------------------------------------------------------------------------------------%%
+% Background: campaign/HANDOFF.md B1; A4 Section 6; method section
+% (origin/manuscript/d1-method) Section "Field-split preconditioner".
+% Historical (April 2026, commit 2f99ea065): per-process bjacobi+LU on the
+% solid block changed the foilInWind solid response with the process count;
+% a preconditioner must not change a converged answer, so the Newton
+% tolerance was too loose then. Ask Philip whether to mention it.
+
+In every case of this paper except \tbd{list}, the solid block of the preconditioner is factorised exactly with a sparse LU factorisation after gathering it onto a single process.
+This is robust, and affordable because the solid block is small compared with the fluid block in these cases, but it is a serial step whose cost and memory grow with the size of the solid, and it limits the parallel scaling of cases with large solids (Section~\ref{sec:tube3d_scaling}).
+Algebraic multigrid (BoomerAMG) on the solid block \tbd{reproduces the converged solution and costs \ldots / did not converge acceptably / changed the solution beyond the iterative floor} (check B1), and \tbd{is / is not} used as the default.
+\todo{Fill from the G1 report (B1: S0 redundant+LU, S1 BoomerAMG, S2 bjacobi+LU, on ringAddedMass, cavityFlexibleBottom level 3 and 3dTube level 2). If BoomerAMG is adopted, rewrite this subsection as a note on its acceptance test.}
+
+%%--------------------------------------------------------------------------------------------------------------------%%
+\subsection{Velocity solid on thin structures}\label{sec:lim_thin_solid}
+%%--------------------------------------------------------------------------------------------------------------------%%
+% Source: companion paper sectionBenchmarkSuite.tex, "Collapsible channel"
+% (Solid bullet) and "Ring added-mass problem" (Solid discretisation bullet);
+% collapsibleChannel/verification/README.md "Quasi-monolithic coupling".
+% The high-order (MLS) solid is not available for velocity solids and will
+% not be added for this paper (Philip's decision).
+
+The velocity solids use the standard second-order cell-centred discretisation with linear reconstruction.
+For thin, bending-dominated structures meshed with few, elongated cells across the thickness, this discretisation is too stiff: in the companion paper, the same discretisation of the collapsible-channel wall in a static test is between $16.7\%$ and $0.22\%$ too stiff over the solid meshes used there, whereas a high-order reconstruction is within $0.25\%$ on every mesh~\citetodo{companion verification paper}.
+The high-order reconstruction is not available for the velocity solids, so the accuracy of the quasi-monolithic coupling on such cases is limited by the solid unless the solid is refined along its length; with a non-conformal interface the solid can be refined independently of the fluid (Section~\ref{sec:robustness_collapsible}) \tbd{at a cost of \ldots, from check B2}.
+The wet/dry frequency ratio of the ring problem is insensitive to this error, because the wet and dry runs share it (Section~\ref{sec:ring_m}).
+
+%%--------------------------------------------------------------------------------------------------------------------%%
+\subsection{Fluid mesh motion}\label{sec:lim_mesh_motion}
+%%--------------------------------------------------------------------------------------------------------------------%%
+
+The fluid mesh is moved once per step to a displacement extrapolated from the solid (Section~\ref{sec:fluid_mesh_motion}), outside the Newton system.
+For large steps during a rapid deformation, the extrapolated displacement can invert fluid cells next to the interface before the coupled solve corrects it, \tbd{as in the collapsible channel at $\Delta t = \ldots$ (Section~\ref{sec:robustness_collapsible})}; and, as for partitioned coupling, large interface motion requires a stiffened mesh-motion law (Section~\ref{sec:fsi3_m}).
+\todo{Keep this subsection only if the R3 maps show quasi-monolithic failures caused by mesh inversion; otherwise fold the FSI3 stiffening sentence into Section~\ref{sec:fsi3_m}.}
+
+%%--------------------------------------------------------------------------------------------------------------------%%
+\subsection{Software}\label{sec:lim_platform}
+%%--------------------------------------------------------------------------------------------------------------------%%
+% Source: A3 Section 4 (paper-data/a3_pr233_merge_readiness.md): the coupler
+% source is inside #ifdef USE_PETSC / #ifdef OPENFOAM_COM; CI on 257b2e564
+% builds OpenFOAM v2312, v2412, v2512, OpenFOAM-9 and foam-extend-4.1, with and
+% without PETSc; the monolithic tutorials stop on OpenFOAM.org and
+% foam-extend.
+
+The quasi-monolithic coupling requires the OpenFOAM.com (ESI) line of OpenFOAM and PETSc; solids4foam builds without it on the other OpenFOAM lines and without PETSc.
+The results of this paper were obtained with OpenFOAM \tbd{v2512} and PETSc \tbd{version}; the coupling also builds with OpenFOAM v2312 and v2412 with PETSc.
+The partitioned couplings with which it is compared are available on all supported OpenFOAM lines.

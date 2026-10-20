@@ -83,9 +83,19 @@ textheight=24cm, % llncs has 19.3cm
 %\newcommand{\magRV}{\bbit{\psi}}
 \newcommand{\diag}{\rm diag}
 
+%% Author notes for drafting (remove before submission).
+%% \todo{...}     conspicuous block note; breaks across pages
+%% \citetodo{...} placeholder for a citation not yet in bibliography.bib
+%% \tbd{...}      inline placeholder for a number still to come from the results
+\newcommand{\todo}[1]{\par\noindent\textcolor{red}{\rule{\linewidth}{0.8pt}}\par\nopagebreak
+	\noindent{\small\color{red!70!black}\textbf{AUTHOR NOTE:} #1\par}\nopagebreak
+	\noindent\textcolor{red}{\rule{\linewidth}{0.8pt}}\par}
+\newcommand{\citetodo}[1]{\textcolor{red}{[\textbf{cite:}~#1]}}
+\newcommand{\tbd}[1]{\textcolor{red}{[\textbf{TBD:}~#1]}}
+
 \begin{document}
 
-\title[Article Title]{A quasi-monolithic cell-centred finite volume approach for fluid-solid interaction}
+\title[Quasi-monolithic JFNK for finite volume FSI]{A quasi-monolithic Jacobian-free Newton--Krylov method for fluid--solid interaction with cell-centred finite volumes}
 
 \author*[1]{\fnm{Philip} \sur{Cardiff}}\email{philip.cardiff@ucd.ie}
 %\author*[1,2,3]{\fnm{Philip} \sur{Cardiff}}\email{philip.cardiff@ucd.ie}
@@ -104,18 +114,22 @@ textheight=24cm, % llncs has 19.3cm
 
 
 \abstract{
-Fluid--solid interaction (FSI) problems arising in engineering and biomedical applications often involve strong coupling and significant added-mass effects, regimes in which partitioned solution strategies can suffer from slow convergence or instability.
-Monolithic solution strategies provide an attractive alternative but have been developed almost exclusively in the finite element setting.
-This paper presents a quasi-monolithic cell-centred finite volume method for FSI, in which the fluid velocity and pressure (in arbitrary Lagrangian--Eulerian form) and solid velocity (in total Lagrangian form) momentum equations are coupled within a single nonlinear residual, with strong enforcement of the interface kinematic and dynamic conditions.
-The coupled nonlinear system is solved using a Jacobian-free Newton--Krylov procedure with an approximate block preconditioner, assembled from compact finite volume linearisations of the fluid, solid, and interface-coupling terms.
-The preconditioner supports both monolithic and nested field-split usage, with optional Schur-complement approximation of the velocity--pressure block via the Rhie--Chow pressure stabilisation.
-The method is implemented in the OpenFOAM-based toolbox solids4foam using PETSc for the nonlinear and linear algebra.
-Performance is assessed on a suite of established two- and three-dimensional FSI benchmarks, demonstrating second-order spatial and temporal accuracy, agreement with partitioned reference solutions, and robust convergence at time-step sizes for which partitioned coupling becomes inefficient or fails.
+Partitioned coupling dominates finite volume fluid--solid interaction (FSI), but its outer iterations converge slowly or fail when the added mass of the fluid is large.
+This paper presents a quasi-monolithic cell-centred finite volume method in which the arbitrary Lagrangian--Eulerian fluid momentum and continuity equations and the total Lagrangian solid momentum equation, written in terms of velocity, form a single nonlinear residual with the fluid mesh motion treated outside the Newton system.
+The residual is solved by a Jacobian-free Newton--Krylov method; an approximate Jacobian assembled from compact finite volume linearisations is used only to build a fluid--solid field-split preconditioner.
+The interface treatment is examined by ablation against exact solutions for an added-mass ring and a thick-walled Womersley tube: an interface pressure gradient taken from the normal momentum equation and an interface traction taken from the discrete momentum flux are each needed for second-order accuracy, and a second-order velocity-based solid without force lag adds no coupling damping.
+For non-matching interface meshes, a conservative transfer balances the total interface force and power to round-off.
+On the same discretisation the method agrees with the partitioned solver to within \tbd{difference}, and it converges over \tbd{range of density ratios and time steps} where Dirichlet--Neumann coupling with Aitken or IQN-ILS acceleration and Robin--Neumann coupling \tbd{fail or need more than N iterations}.
+Using the reference solutions and the strict coupling convergence test of a companion verification study, costs are compared at equal verified accuracy: on the Hron--Turek FSI3 benchmark the method is \tbd{factor} times \tbd{faster/slower} than the best partitioned scheme at \tbd{error level}.
+A three-dimensional pressure-pulse tube shows \tbd{parallel efficiency} on up to \tbd{N} cores, and a case requiring a reduced time step is reported as a limitation.
+The implementation, built on solids4foam and PETSc, and all case set-ups are released as open source.
 }
 
-\keywords{Fluid--solid interaction, Monolithic, Quasi-monolithic, Jacobian-free Newton--Krylov, Finite volume method, Added-mass effects, solids4foam, OpenFOAM}
+\keywords{Fluid--solid interaction, Quasi-monolithic coupling, Jacobian-free Newton--Krylov, Cell-centred finite volume method, Added mass, Partitioned coupling, Code verification, solids4foam}
 
 \maketitle
+
+\todo{Title, abstract and Introduction revised (October 2026) for the 10-section structure. All \texttt{TBD} values in the abstract are to be filled from the results sections; every qualitative claim in the abstract (second order with the interface treatment, first order without it, round-off force and power balance) must be checked against the final ablation results.}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

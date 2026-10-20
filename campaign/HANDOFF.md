@@ -274,6 +274,12 @@ Every run below comes from the tag, with the settings frozen at G1.
   mokLidDrivenCavity, TurekHron2006 FSI1/FSI3, 3dTube, beamInCrossFlow,
   membraneRoof and perpendicularFlap. #597 moved the rigid-plate lift by
   about 10 percentage points, so FSI3 has priority.
+- *Schemes.* Several monolithic tutorials use Euler for the fluid `ddt(U)`,
+  and the convection schemes and solid stabilisation factor (0.1 or 0.5)
+  differ between cases. Add the `ddt`, `div(phi,U)` and stabilisation
+  settings of every case to its `runs.csv` notes. Use second-order time
+  integration (`backward`) wherever a temporal order is claimed, and list
+  any case that cannot in the G1 report.
 - *Iteration counts.* No driver records Krylov counts, and only some record
   Newton counts. Extract both from the logs (`snes_monitor`,
   `ksp_converged_reason`) with your parsing scripts.

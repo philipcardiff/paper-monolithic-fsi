@@ -556,3 +556,35 @@ decides.
   (TurekHron2006 on the tutorial meshes). The tag comes after these.
 - **Release:** a named tag plus Zenodo, decided near submission. Record the
   commit hash for every run in the meantime.
+
+**20 October 2026, later (Philip):**
+
+- **Fluid time scheme:** use `backward` for the fluid `ddt(U)` in every case
+  that reports a temporal order or a time-step study, and preferably in all
+  paper cases. At 257b2e564, blobInTreacle, 3dTube, collapsibleChannel and
+  cavityFlexibleBottom use Euler. Add a `ddt_U` column (or note) to
+  `runs.csv`.
+- **blobInTreacle parameters:** the tutorial has radius 0.5, λ = 500 and
+  μ = 50. An older draft of the paper had radius 0.1 and E = 1e5. Use the
+  tutorial values, and record the radius, λ, μ, density and inlet profile
+  in the R6 findings, so the paper and its geometry figure can be checked
+  against them.
+- **All paper results come from one code version with every fix in it,**
+  including the long cases run to the end. Fixes to wait for:
+  - solids4foam#611 (viscous traction on deforming walls);
+  - the dedicated mesh-motion solid model (`meshMotionTotalDisplacement`,
+    branch `feature/fsi-displacement-mesh-motion`) and `diffusionElastic`.
+    These avoid the FSI3 mesh inversion, so the mesh-motion stiffening
+    ablation is dropped;
+  - any similar fix found before the tag.
+
+  B1 and B2 are only checks and may use the current build. Do not start any
+  R stream until G2.
+- **Solid-block preconditioner:** in Philip's experience BoomerAMG is
+  usually better than `bjacobi`. In B1, treat BoomerAMG as the expected
+  default, and keep `bjacobi`+LU only as the parallel answer-invariance
+  check.
+- **Cases not used in M Sections 4–9** (mokLidDrivenCavity, beamInCrossFlow,
+  membraneRoof, perpendicularFlap) go to an appendix for the first full
+  draft. Give them no campaign runs beyond what is already recorded, unless
+  Philip asks.

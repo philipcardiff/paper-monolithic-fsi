@@ -81,8 +81,9 @@ The wet/dry frequency ratio of the ring problem is insensitive to this error, be
 %%--------------------------------------------------------------------------------------------------------------------%%
 
 The fluid mesh is moved once per step to a displacement extrapolated from the solid (Section~\ref{sec:fluid_mesh_motion}), outside the Newton system.
-For large steps during a rapid deformation, the extrapolated displacement can invert fluid cells next to the interface before the coupled solve corrects it, \tbd{as in the collapsible channel at $\Delta t = \ldots$ (Section~\ref{sec:robustness_collapsible})}; and, as for partitioned coupling, large interface motion requires a stiffened mesh-motion law (Section~\ref{sec:fsi3_m}).
-\todo{Keep this subsection only if the R3 maps show quasi-monolithic failures caused by mesh inversion; otherwise fold the FSI3 stiffening sentence into Section~\ref{sec:fsi3_m}.}
+For large steps during a rapid deformation, the extrapolated displacement could in principle invert fluid cells next to the interface before the coupled solve corrects it.
+With the stiffened pseudo-solid mesh-motion laws used here (\texttt{diffusionElastic} and the dedicated mesh-motion solid model), no inversion occurred in the campaign \tbd{confirm from R3/R4}.
+\todo{Keep this subsection only if the R3 maps show quasi-monolithic failures caused by mesh inversion; otherwise reduce it to one sentence in Section~\ref{sec:fluid_mesh_motion}. Earlier uniform pseudo-solid runs of FSI3 inverted the mesh; that history is not reported.}
 
 %%--------------------------------------------------------------------------------------------------------------------%%
 \subsection{Software}\label{sec:lim_platform}

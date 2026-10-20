@@ -76,10 +76,14 @@ def main():
         name = os.path.basename(d)
         _, kind, config, p = name.split("-")
         meta = {}
+        win = os.path.join(d, "b1_window.json")
+        ddt_u = json.load(open(win)).get("ddt_U") if os.path.isfile(win) \
+            else None
         if os.path.isfile(os.path.join(d, "run_meta.json")):
             meta = json.load(open(os.path.join(d, "run_meta.json")))
         log = os.path.join(d, "log.solids4Foam")
         s = parse(log)[0] if os.path.isfile(log) else {}
+        meta["ddt_U"] = ddt_u
         runs[(kind, config, int(p[1:]))] = (name, d, s, meta,
                                             histories(d))
 
@@ -100,6 +104,7 @@ def main():
         clock = s.get("clock_s")
         rows.append({
             "run_id": name, "case": kind, "config": config, "ranks": ranks,
+            "ddt_U": meta.get("ddt_U"),
             "n_steps": n, "newton_mean": s.get("iters_mean"),
             "ksp_per_newton": s.get("ksp_per_newton_mean"),
             "exec_s": s.get("exec_s"), "clock_s": clock,

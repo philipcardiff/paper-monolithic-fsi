@@ -1,7 +1,8 @@
 #!/bin/bash -l
 # B1: solid-block preconditioner check (campaign handoff, Section 3, B1).
 #
-#   B1_STAGE=spinup B1_KIND=cav|tube   serial spin-up to the developed state
+#   B1_STAGE=spinup B1_KIND=cav|tube   spin-up to the developed state
+#       (cav serial; tube on 32 ranks, so request --ntasks=32)
 #   B1_STAGE=windows B1_KIND=ring|cav|tube
 #       every configuration and rank count of the case, one after another on
 #       the allocated (exclusive) node; cav and tube restart from the spin-up
@@ -60,16 +61,19 @@ EOF
 
 spinup()
 {
-    local kind="$1" d="$QM_RUNS/spin-$1"
+    local kind="$1" d="$QM_RUNS/spin-$1" ranks=1
+    # b1_setup.py runs the tube spin-up on 32 ranks (SPINUP_RANKS)
+    [ "$kind" = tube ] && ranks=32
     python3 "$SETUP" spinup "$kind" "$d" || exit 1
     cd "$d" || exit 1
     local t0 rc
     t0=$(now)
     ./Allrun monolithic > log.Allrun 2>&1
     rc=$?
-    python3 "$QM_SCRIPTS/provenance.py" "$d" --ranks 1 \
+    python3 "$QM_SCRIPTS/provenance.py" "$d" --ranks "$ranks" \
         --run-id "b1-spin-$kind" > /dev/null
-    write_meta "b1-spin-$kind" "$kind" S0 1 "$rc" "$(elapsed "$t0" "$(now)")"
+    write_meta "b1-spin-$kind" "$kind" S0 "$ranks" "$rc" \
+        "$(elapsed "$t0" "$(now)")"
     echo "spin-$kind rc=$rc"
 }
 

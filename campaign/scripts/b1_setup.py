@@ -12,7 +12,10 @@ spinup  copies the tutorial and sets the level and time controls; the job
         cav  cavityFlexibleBottom level 3 (factor 4), Δt 0.5 s, inlet ramp
              20 s (as the verification driver), to t = 100 s;
         tube 3dTube level 2 (factor 2), Δt 1.25e-5 s, with the driver's
-             monitors, to t = 2 ms (160 steps).
+             monitors, to t = 2 ms (160 steps), on 32 ranks
+             (decomposeParMonolithic), reconstructed at the end.
+Both set the fluid ddt(U) of the monolithic variant (--ddt-u, default
+backward; the cavity spin-up of 20 October ran with the tutorial's Euler).
 window  copies a completed spin-up (latest time only), restarts from it for
         --steps steps, writes fields only at the end, and applies the
         solid-block configuration and rank count.
@@ -68,6 +71,7 @@ CONFIGS = {
 }
 CONFIGS["S0tight"] = CONFIGS["S0"]
 TIGHTEN = 0.01
+SPINUP_RANKS = 32
 
 SPINUP = {
     "cav": {"tutorial": "cavityFlexibleBottom", "factor": 4,
@@ -141,7 +145,18 @@ def apply_config(case, config):
     path.write_text(text[:o.end()] + body + text[i - 1:])
 
 
-def spinup(kind, dest):
+def set_ddt_u(case, scheme):
+    """Set the fluid ddt(U) scheme of the monolithic variant (decision of
+    20 October: backward wherever possible)."""
+    path = case / "system/fluid/fvSchemes.monolithic"
+    text, count = re.subn(r"(ddt\(U\)\s+)\w+;", rf"\g<1>{scheme};",
+                          path.read_text())
+    if count != 1:
+        sys.exit(f"Expected one ddt(U) in {path}, found {count}")
+    path.write_text(text)
+
+
+def spinup(kind, dest, ddt_u):
     s = SPINUP[kind]
     src = TUT / s["tutorial"]
     if dest.exists():
@@ -164,13 +179,30 @@ def spinup(kind, dest):
         drv.refine_mesh(drv.block_mesh_dict(dest, "fluid"), s["factor"])
         drv.refine_mesh(drv.block_mesh_dict(dest, "solid"), s["factor"])
         drv.add_monitors(dest, ref)
+        # The tutorial Allrun is serial; a whole node is billed anyway, so
+        # the spin-up runs on SPINUP_RANKS ranks and is reconstructed
+        set_ranks(dest, SPINUP_RANKS)
+        allrun = dest / "Allrun"
+        serial = "solids4Foam::runApplication solids4Foam\n"
+        text = allrun.read_text()
+        if text.count(serial) != 1:
+            sys.exit(f"Expected one serial solver call in {allrun}")
+        allrun.write_text(text.replace(
+            serial,
+            "solids4Foam::runApplication decomposeParMonolithic -force\n"
+            "solids4Foam::runParallel solids4Foam || exit 1\n"
+            "solids4Foam::runApplication -s fluid reconstructPar "
+            "-region fluid -latestTime\n"
+            "solids4Foam::runApplication -s solid reconstructPar "
+            "-region solid -latestTime\n"))
     control = dest / "system/controlDict"
     set_entry(control, "deltaT", f"{s['deltaT']:.10g}")
     set_entry(control, "endTime", f"{s['endTime']:.10g}")
     # Both tutorials use writeControl runTime
     set_entry(control, "writeInterval", f"{s['endTime']:.10g}")
+    set_ddt_u(dest, ddt_u)
     (dest / "b1_spinup.json").write_text(json.dumps(
-        dict(s, kind=kind), indent=1))
+        dict(s, kind=kind, ddt_U=ddt_u), indent=1))
 
 
 def latest_time(case):
@@ -183,7 +215,7 @@ def latest_time(case):
     return max(times)
 
 
-def window(src, dest, config, ranks, steps):
+def window(src, dest, config, ranks, steps, ddt_u):
     if dest.exists():
         shutil.rmtree(dest)
     t0, name = latest_time(src)
@@ -211,9 +243,11 @@ def window(src, dest, config, ranks, steps):
     set_entry(control, "writeInterval", f"{t1 - t0:.10g}")
     apply_config(dest, config)
     set_ranks(dest, ranks)
+    set_ddt_u(dest, ddt_u)
     (dest / "b1_window.json").write_text(json.dumps(dict(
         spinup=str(src), kind=meta["kind"], config=config, ranks=ranks,
-        steps=steps, t0=t0, t1=t1, deltaT=dt), indent=1))
+        steps=steps, t0=t0, t1=t1, deltaT=dt, ddt_U=ddt_u,
+        spinup_ddt_U=meta.get("ddt_U", "Euler")), indent=1))
 
 
 def ring(dest, config, ranks):
@@ -235,7 +269,8 @@ def ring(dest, config, ranks):
     apply_config(dest, config)
     set_ranks(dest, ranks)
     (dest / "b1_window.json").write_text(json.dumps(dict(
-        kind="ring", config=config, ranks=ranks, spec=spec), indent=1))
+        kind="ring", config=config, ranks=ranks, spec=spec,
+        ddt_U="backward (tutorial)"), indent=1))
 
 
 def main():
@@ -244,22 +279,24 @@ def main():
     p = sub.add_parser("spinup")
     p.add_argument("kind", choices=sorted(SPINUP))
     p.add_argument("dest", type=Path)
+    p.add_argument("--ddt-u", default="backward")
     p = sub.add_parser("window")
     p.add_argument("spinup", type=Path)
     p.add_argument("dest", type=Path)
     p.add_argument("--config", choices=sorted(CONFIGS), required=True)
     p.add_argument("--ranks", type=int, required=True)
     p.add_argument("--steps", type=int, default=50)
+    p.add_argument("--ddt-u", default="backward")
     p = sub.add_parser("ring")
     p.add_argument("dest", type=Path)
     p.add_argument("--config", choices=sorted(CONFIGS), required=True)
     p.add_argument("--ranks", type=int, required=True)
     args = ap.parse_args()
     if args.cmd == "spinup":
-        spinup(args.kind, args.dest.resolve())
+        spinup(args.kind, args.dest.resolve(), args.ddt_u)
     elif args.cmd == "window":
         window(args.spinup.resolve(), args.dest.resolve(), args.config,
-               args.ranks, args.steps)
+               args.ranks, args.steps, args.ddt_u)
     else:
         ring(args.dest.resolve(), args.config, args.ranks)
 

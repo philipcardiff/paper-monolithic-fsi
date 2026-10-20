@@ -95,6 +95,17 @@ evidence. S2 is 4× the floor.
 - `campaign/scripts/b0_compare.py`: B0 serial/parallel QoI comparison.
 - `paper-data/campaign/b2/`: B2 jobs, scripts and `runs.csv` (subagent β).
 
+## Philip's decisions (HANDOFF §10, branch `campaign/handoff`) and how they are applied
+
+| Decision | Applied |
+|---|---|
+| Fluid `ddt(U)` = `backward` wherever possible (Euler at 257b2e564 in blobInTreacle, 3dTube, collapsibleChannel, cavityFlexibleBottom) | B1 cav/tube windows and the tube spin-up now set `ddt(U) backward` (`b1_setup.py --ddt-u`); the cav windows restart from the Euler spin-up of 20 Oct (recorded as `spinup_ddt_U`). `ddt_U` column in `b1_windows.csv`; will be a `runs.csv` column in every stream. B2 runs (submitted before the decision) keep the tutorial's Euler — to be stated in G1. |
+| blobInTreacle: tutorial values (R 0.5, λ 500, μ 50), record R, λ, μ, ρ, inlet profile in R6 findings | noted for R6 |
+| One tagged code version for all R results (incl. #611 deforming-wall traction, `meshMotionTotalDisplacement`, `diffusionElastic`); B1, B2 are checks on the current build (`257b2e564`); no R stream before G2 | B1/B2 continue at `257b2e564`; no R runs |
+| Drop mesh-motion stiffening ablation; drop route-B old-commit ablations | removed from the plan |
+| BoomerAMG is the expected solid-block default; `bjacobi`+LU only as the parallel answer-invariance check | see B1 note below: the ring evidence so far goes against it; cav/tube (the cases where LU's cost matters) are held |
+| mokLidDrivenCavity, beamInCrossFlow, membraneRoof, perpendicularFlap → appendix, no runs | removed from the plan |
+
 ## B1 design (as submitted)
 
 - Configurations of the UpU solid block: S0 `redundant`+LU; S1 BoomerAMG
@@ -142,12 +153,22 @@ evidence. S2 is 4× the floor.
    on XenoSim, timings only on MeluXina; (d) request more hours.
    Rough need to finish phase B on MeluXina: about 10–15 node-hours
    (B1 cav ~2, tube spin-up + windows ~6–8, B2 two runs ~2–4).
-2. **B1 acceptance test.** On the ring, S1 and S2 fail S0's iterative floor
-   at the tutorial tolerances (`snes_rtol 1e-6`, `ksp_rtol 1e-4`). Compare
-   each preconditioner with its own tight run instead, or tighten the
-   tolerances campaign-wide?
+2. **B1 acceptance test vs the BoomerAMG default.** On the ring, S1
+   (BoomerAMG) differs from the tight reference by 18–30× S0's floor and
+   costs 1.4–1.9× S0 (the ring's solid block is tiny, so the gathered LU is
+   cheap there). The decision for the default rests on cav L3 and 3dTube L2
+   at 16–32 ranks, which are held. Should the acceptance test compare each
+   preconditioner with its own tight run (its own floor), or should the
+   tolerances be tightened campaign-wide so the QoIs become
+   preconditioner-independent?
 
 ## Log
+
+- **2026-10-20** Received Philip's decisions (HANDOFF §10). B1 set-up now
+  uses `ddt(U) backward` for cav/tube windows and runs the tube spin-up on 32
+  ranks (whole-node billing). Held jobs pick the updated scripts up when
+  released; the tube windows job 5364391 depends on the cancelled spin-up and
+  must be resubmitted with a new spin-up.
 
 - **2026-10-20** B1 ring windows done (job 5364389): S1 and S2 exceed the S0
   iterative floor (Section 8 trigger; findings in `paper-data/campaign/b1/`).

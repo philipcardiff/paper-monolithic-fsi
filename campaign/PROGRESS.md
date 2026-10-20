@@ -17,7 +17,7 @@ Gate G1 not reached. No main-campaign (R1–R7) runs.
 | B0 build | done on MeluXina; queued on XenoSim | MeluXina 5364171 COMPLETED; XenoSim 12759 pending | none on MeluXina |
 | B0 smoke | ringAddedMass passed; cavity L1 + timing repeats running | 5364272 | check cavity Newton counts, serial vs 4-rank QoIs, timing spread |
 | B1 solid PC | not started | – | set up restart windows after B0 |
-| B2 collapsibleChannel AMI | submitted, not started | 5364293 static wall; 5364295 conformal L2 baseline | pick coarsest solid mesh within 1%, submit AMI run (`b2_mono.sh`) |
+| B2 collapsibleChannel AMI | step 1 done (640×8 chosen); step 2 queued | 5364293 static COMPLETED; 5364295 conformal L2 baseline; 5364354 AMI 640×8 | compare trough error and cost, AMI vs conformal |
 | B3 Jaiman/Liu estimate | not started | – | estimate only, no runs |
 | G1 report | not started | – | – |
 
@@ -29,6 +29,23 @@ Gate G1 not reached. No main-campaign (R1–R7) runs.
 | b0-ram-p4 | 4 | completed | 400 | 2.00 (max 2) | 19.0 | same |
 
 ringAddedMass matches the README's expected 2.00 Newton iterations per step.
+
+B2 step 1, partitioned static wall, linear solid, wall-midpoint error against
+the README reference −0.14362832 m (source:
+`runs/b2/<run_id>/static_result.json` on MeluXina, job 5364293):
+
+| Solid mesh | wallMid (m) | Error | wallQuarter error | Clock (s) |
+|---|---:|---:|---:|---:|
+| 320×8 | −0.1420235 | −1.12% | −2.51% | 20 |
+| 640×8 | −0.1433111 | −0.22% | −0.58% | 48 |
+| 1280×8 | −0.1434100 | −0.15% | −0.42% | 98 |
+| 640×16 | −0.1432258 | −0.28% | −0.72% | 99 |
+
+Coarsest mesh within 1%: **640×8** (320×8 is just outside, consistent with
+the 1.1% recorded in the case README). The error stalls at about −0.15% to
+−0.2% from 640×8 to 1280×8, and doubling the cells through the thickness does
+not reduce it (640×16 is −0.28%), so the remaining 0.2% is not wall-length
+resolution.
 
 ## Environment
 
@@ -72,6 +89,10 @@ ringAddedMass matches the README's expected 2.00 Newton iterations per step.
 - None yet beyond those in the A1–A4 audits.
 
 ## Log
+
+- **2026-10-20** B2 static wall completed (5364293, 5.9 min): 640×8 is the
+  coarsest solid mesh within 1% (−0.22%). Submitted the monolithic AMI run,
+  fluid level 2 with the 640×8 solid (5364354, serial, exclusive node).
 
 - **2026-10-20** Read handoff and A1–A4. Built PR #233 head on MeluXina
   (6.6 min) and queued it on XenoSim. Wrote provenance, log parser and status

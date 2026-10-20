@@ -1,0 +1,7 @@
+run_id,case,study,coupling,level,solid_mesh,interface,dt,rho_ratio,ranks,exclusive,code_commit,status,t_end,n_steps,iters_mean,wall_s,notes
+b2-static-S320x8-linear,collapsibleChannel static wall,static,solid only (partitioned linear solid),,320x8,,,,1,no,257b2e564,submitted,20 load steps,,,,Slurm 5364293 (qm-b2-static; four static cases in sequence)
+b2-static-S640x8-linear,collapsibleChannel static wall,static,solid only (partitioned linear solid),,640x8,,,,1,no,257b2e564,submitted,20 load steps,,,,Slurm 5364293
+b2-static-S1280x8-linear,collapsibleChannel static wall,static,solid only (partitioned linear solid),,1280x8,,,,1,no,257b2e564,submitted,20 load steps,,,,Slurm 5364293
+b2-static-S640x16-linear,collapsibleChannel static wall,static,solid only (partitioned linear solid),,640x16,,,,1,no,257b2e564,submitted,20 load steps,,,,Slurm 5364293
+b2-mono-F2-S160x8-directMap,collapsibleChannel,mono,NewtonQuasiMonolithic,2,160x8,directMap,0.00625,1,1,yes,257b2e564,submitted,,,,,Slurm 5364295 (qm-b2-conf); conformal baseline; README records 2008 s on macOS
+b2-mono-F2-S<NX>x<NY>-AMI,collapsibleChannel,mono,NewtonQuasiMonolithic,2,TBD,AMI+conservative,0.00625,1,1,yes,257b2e564,not submitted,,,,,awaiting static result; submit jobs/b2_mono.sh with SOLID_NX/SOLID_NY of the coarsest static mesh within 1%

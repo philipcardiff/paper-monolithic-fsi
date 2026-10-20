@@ -16,7 +16,7 @@ Gate G1 not reached. No main-campaign (R1–R7) runs.
 |---|---|---|---|
 | B0 build | done on MeluXina; queued on XenoSim | MeluXina 5364171 COMPLETED; XenoSim 12759 pending | none on MeluXina |
 | B0 smoke | **done, passed** (`paper-data/campaign/b0/findings.md`) | 5364272 COMPLETED | – |
-| B1 solid PC | not started | – | set up restart windows after B0 |
+| B1 solid PC | submitted | spin-ups 5364387 (cav L3), 5364388 (tube L2); windows 5364389 (ring), 5364390 (cav), 5364391 (tube) | check ring windows first, then cav/tube; decide S0 vs S1 |
 | B2 collapsibleChannel AMI | step 1 done (640×8 chosen); step 2 queued | 5364293 static COMPLETED; 5364295 conformal L2 baseline; 5364354 AMI 640×8 | compare trough error and cost, AMI vs conformal |
 | B3 Jaiman/Liu estimate | not started | – | estimate only, no runs |
 | G1 report | not started | – | – |
@@ -77,6 +77,29 @@ resolution.
 - `campaign/scripts/b0_compare.py`: B0 serial/parallel QoI comparison.
 - `paper-data/campaign/b2/`: B2 jobs, scripts and `runs.csv` (subagent β).
 
+## B1 design (as submitted)
+
+- Configurations of the UpU solid block: S0 `redundant`+LU; S1 BoomerAMG
+  with the membraneRoof solid settings; S2 `bjacobi`+`sub_pc_type lu`
+  (parallel only); S0tight = S0 with `snes_rtol`, `snes_stol` ×0.01
+  (iterative floor). S1n (nodal coarsening) only if S1 converges poorly.
+- ringAddedMass: moderate added mass, mesh factor 2, 50 steps/period,
+  2 periods from t = 0 (no developed state needed: free vibration from the
+  initial velocity); ranks 1, 4.
+- cavityFlexibleBottom L3 (factor 4), Δt 0.5, inlet ramp 20 s: serial
+  spin-up to t = 100 s, windows t = 100 → 125 (50 steps); ranks 1, 4, 16;
+  per-region `decomposePar`.
+- 3dTube L2 (factor 2), Δt 1.25e-5, tutorial schemes: serial spin-up to
+  t = 2 ms (160 steps), windows of 50 steps; ranks 4, 16, 32;
+  `decomposeParMonolithic`.
+- S0tight is run at every rank count, which also tests rank independence.
+- One run per configuration (B0 shows solver time repeats to < 1%).
+- Peak memory per rank from `/usr/bin/time` (`run_meta.json`), not for
+  ring (run through its Allrun).
+- Scripts: `campaign/scripts/b1_setup.py`, `campaign/jobs/b1.sh`.
+- Note: 3dTube's monolithic tutorial uses `snes_rtol 1e-4` (other cases
+  1e-6), so its S0tight floor is at 1e-6.
+
 ## Deviations from the handoff
 
 1. Timing machine is MeluXina (per `~/.claude/CLAUDE.md`), not ICHEC/Sonic:
@@ -97,6 +120,9 @@ resolution.
 - None yet beyond those in the A1–A4 audits.
 
 ## Log
+
+- **2026-10-20** B1 set up and submitted (design above). Spin-ups 5364387,
+  5364388; windows 5364389–5364391.
 
 - **2026-10-20** B0 complete (5364272, 16.7 min, exclusive node): all 10 runs
   completed; serial and 4-rank QoIs identical; cross-machine agreement with

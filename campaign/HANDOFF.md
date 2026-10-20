@@ -393,11 +393,29 @@ Every run below comes from the tag, with the settings frozen at G1.
   case, only time them.
 - **Records.** Newton counts and wall time; these columns are blank in the
   existing CSV.
-- **Discriminating runs.** Run those proposed in A2 to explain why the
-  monolithic–partitioned u_y offset (0.14%, 0.08%, 0.05% on levels 2 to 4)
-  shrinks by only about 1.5 to 1.8 per halving. If A2 lists the same kind of
-  question for the Womersley wall-amplitude offset (3.4e-4 against
-  Robin–Neumann), run those as well.
+- **Discriminating runs** (from `a2_discretisation_differences.md`):
+  - *Cavity offset* (0.14%, 0.08%, 0.05% on levels 2 to 4; this is the #597
+    shift itself, since before #597 the couplings agreed to 0.008–0.02%).
+    The leading candidate is the continuity-flux interpolation: the
+    monolithic coupling uses `skewCorrected linear`, `pimpleFluid` uses
+    `linear`. Run the monolithic coupling on levels 2 and 3 with
+    `interpolate(U) linear`. Also run `checkMesh` on the existing final
+    states of both couplings to compare skewness; the two couplings use
+    different mesh-motion solvers.
+  - *Womersley offset* (wall radial amplitude −3.3e-4 against
+    Robin–Neumann; fluid quantities agree to within 7e-5). The leading
+    candidate is the interface viscous traction:
+    - the monolithic coupling passes `nuEff*snGrad(U)`, the partitioned one
+      `n & devReff`;
+    - on a deforming wall they differ by a physical term, μ grad(u·n), which
+      is not a discretisation error and does not refine away.
+
+    First redo the Fourier analysis over periods 4–5 to rule out a start-up
+    transient; this needs no new run. A run that confirms the cause needs a
+    traction variant in the code, so **raise it at G1. Philip decides
+    whether a traction change is in scope.** Until then, the claim that the
+    `devReff` traction is first order applies to stationary walls
+    (blobInTreacle) only.
 
 ### R6. Liu half-cylinder (blobInTreacle) and, if approved, block with tail
 

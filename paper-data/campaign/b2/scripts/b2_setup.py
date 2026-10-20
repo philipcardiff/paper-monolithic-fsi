@@ -23,6 +23,18 @@ Usage (inside a job, after sourcing env.sh):
       useUndeformedArea yes (solid D, interface patch).
 """
 
+import os
+import sys
+
+# The tutorial driver needs Python >= 3.7; MeluXina's /usr/bin/python3 is
+# 3.6, so re-execute with a newer system interpreter when needed
+if sys.version_info < (3, 8):
+    for candidate in ("/usr/bin/python3.12", "/usr/bin/python3.11",
+                      "/usr/bin/python3.8"):
+        if os.access(candidate, os.X_OK):
+            os.execv(candidate, [candidate] + sys.argv)
+    sys.exit("b2: Python >= 3.8 is required")
+
 import argparse
 import importlib.util
 import json
@@ -130,7 +142,8 @@ def cmd_fsi(args, driver):
 def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     parser.add_argument("--tutorial", default=DEFAULT_TUTORIAL)
-    sub = parser.add_subparsers(dest="cmd", required=True)
+    sub = parser.add_subparsers(dest="cmd")
+    sub.required = True
     p = sub.add_parser("static")
     p.add_argument("runs_dir")
     p.add_argument("run_id")

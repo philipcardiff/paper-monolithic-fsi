@@ -20,6 +20,18 @@ the tutorial's verification driver, so the metric is the README's.
 Usage: b2_post.py <runs_dir> [--tutorial DIR] [--csv OUT] [--commit SHA]
 """
 
+import os
+import sys
+
+# The tutorial driver needs Python >= 3.7; MeluXina's /usr/bin/python3 is
+# 3.6, so re-execute with a newer system interpreter when needed
+if sys.version_info < (3, 8):
+    for candidate in ("/usr/bin/python3.12", "/usr/bin/python3.11",
+                      "/usr/bin/python3.8"):
+        if os.access(candidate, os.X_OK):
+            os.execv(candidate, [candidate] + sys.argv)
+    sys.exit("b2: Python >= 3.8 is required")
+
 import argparse
 import csv
 import importlib.util

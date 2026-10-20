@@ -7,7 +7,14 @@ Last updated: 2026-10-20
 
 ## Current phase
 
-**B0 done** (MeluXina). Next: **B1** (solid-block preconditioner). **B2** running.
+**BLOCKED on MeluXina budget — waiting for Philip.** B0 done; B1 ring done;
+everything else held. Project p201287 has used 1376 of 1389 CPU node-hours
+this month (99.1%, `myquota`, 2026-10-20); every job is billed a whole node,
+even with 1 core. My jobs today used about 1.1 node-hours; the budget was
+already almost spent. Held (not cancelled): 5364390, 5364391, 5364295,
+5364354. Cancelled: 5364388 (serial 3dTube spin-up, 3 min in).
+**Handoff Section 8 triggered** by B1 ring (preconditioner changes a QoI by
+more than the floor) — see `paper-data/campaign/b1/findings.md`.
 Gate G1 not reached. No main-campaign (R1–R7) runs.
 
 ## Status by stream
@@ -16,8 +23,8 @@ Gate G1 not reached. No main-campaign (R1–R7) runs.
 |---|---|---|---|
 | B0 build | done on MeluXina; queued on XenoSim | MeluXina 5364171 COMPLETED; XenoSim 12759 pending | none on MeluXina |
 | B0 smoke | **done, passed** (`paper-data/campaign/b0/findings.md`) | 5364272 COMPLETED | – |
-| B1 solid PC | submitted | spin-ups 5364387 (cav L3), 5364388 (tube L2); windows 5364389 (ring), 5364390 (cav), 5364391 (tube) | check ring windows first, then cav/tube; decide S0 vs S1 |
-| B2 collapsibleChannel AMI | step 1 done (640×8 chosen); step 2 queued | 5364293 static COMPLETED; 5364295 conformal L2 baseline; 5364354 AMI 640×8 | compare trough error and cost, AMI vs conformal |
+| B1 solid PC | ring done (S1, S2 fail the floor); cav spin-up done; rest held | 5364389, 5364387 COMPLETED; 5364390, 5364391 held; 5364388 cancelled | Philip: budget route and acceptance-test question |
+| B2 collapsibleChannel AMI | step 1 done (640×8 chosen); step 2 held | 5364293 COMPLETED; 5364295, 5364354 held | resume when budget allows |
 | B3 Jaiman/Liu estimate | not started | – | estimate only, no runs |
 | G1 report | not started | – | – |
 
@@ -53,6 +60,17 @@ the 1.1% recorded in the case README). The error stalls at about −0.15% to
 −0.2% from 640×8 to 1280×8, and doubling the cells through the thickness does
 not reduce it (640×16 is −0.28%), so the remaining 0.2% is not wall-length
 resolution.
+
+B1 ringAddedMass (moderate, factor 2, 100 steps; `paper-data/campaign/b1/b1_windows.csv`):
+
+| Config | Ranks | Newton/step | Krylov/Newton | Clock (s) | QoI diff vs S0tight |
+|---|---:|---:|---:|---:|---:|
+| S0 redundant LU | 1 / 4 | 2.00 / 2.00 | 23.9 / 24.5 | 39 / 17 | 9.4e-7 / 1.8e-6 (floor) |
+| S1 BoomerAMG | 1 / 4 | 2.00 / 2.00 | 47.4 / 53.4 | 54 / 33 | 1.7e-5 / 5.5e-5 |
+| S2 bjacobi LU | 4 | 2.00 | 56.6 | 32 | 6.9e-6 |
+
+S1 is 18–30× the S0 floor and costs 1.4–1.9× more: not adopted on this
+evidence. S2 is 4× the floor.
 
 ## Environment
 
@@ -117,9 +135,25 @@ resolution.
 
 ## Open questions for Philip
 
-- None yet beyond those in the A1–A4 audits.
+1. **Budget.** p201287 has ~13 CPU node-hours left this month. Options:
+   (a) wait for the monthly reset (1 Nov); (b) charge B1/B2 to p201136
+   (~228 h left) or p201141 (~222 h left) — your call, I have not used
+   them; (c) run non-timing work (spin-ups, accuracy runs, B2 serial runs)
+   on XenoSim, timings only on MeluXina; (d) request more hours.
+   Rough need to finish phase B on MeluXina: about 10–15 node-hours
+   (B1 cav ~2, tube spin-up + windows ~6–8, B2 two runs ~2–4).
+2. **B1 acceptance test.** On the ring, S1 and S2 fail S0's iterative floor
+   at the tutorial tolerances (`snes_rtol 1e-6`, `ksp_rtol 1e-4`). Compare
+   each preconditioner with its own tight run instead, or tighten the
+   tolerances campaign-wide?
 
 ## Log
+
+- **2026-10-20** B1 ring windows done (job 5364389): S1 and S2 exceed the S0
+  iterative floor (Section 8 trigger; findings in `paper-data/campaign/b1/`).
+  Cavity L3 spin-up done (5364387). Found the MeluXina budget at 99.1%;
+  cancelled the serial 3dTube spin-up and held all pending jobs. Waiting for
+  Philip.
 
 - **2026-10-20** B1 set up and submitted (design above). Spin-ups 5364387,
   5364388; windows 5364389–5364391.

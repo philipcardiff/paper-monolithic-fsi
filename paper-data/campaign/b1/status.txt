@@ -1,0 +1,9 @@
+run_id                      np status       t_last  steps   newt  max  ksp/nw    exec_s clock_s allrun_s
+b1-ring-S0-p1                1 completed 6.96385640546    100    2.0    2  23.875     30.47    39.0         
+b1-ring-S0-p4                4 completed 6.96385640546    100    2.0    2    24.5     15.44    17.0         
+b1-ring-S0tight-p1           1 completed 6.96385640546    100   2.99    3   28.92     45.69    56.0         
+b1-ring-S0tight-p4           4 completed 6.96385640546    100    3.0    3   29.49      25.0    30.0         
+b1-ring-S1-p1                1 completed 6.96385640546    100    2.0    2   47.36     46.31    54.0         
+b1-ring-S1-p4                4 completed 6.96385640546    100    2.0    2   53.35     28.31    33.0         
+b1-ring-S2-p4                4 completed 6.96385640546    100    2.0    2  56.575     27.97    32.0         
+b1-spin-cav                  1 completed       100    200  2.245    3  69.588   1342.58  1484.0         

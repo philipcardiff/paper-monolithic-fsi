@@ -1,0 +1,69 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Three-dimensional performance and parallel scaling}\label{sec:scaling_3d}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Stream feeding this section: R5 (campaign/HANDOFF.md), and pre-campaign
+% check B1 (solid-block preconditioner).
+% Set-up: companion paper sectionBenchmarkSuite.tex "Three-dimensional
+% elastic tube"; solids4foam 257b2e564 tutorials/fluidSolidInteraction/
+% 3dTube: monolithic files *.monolithic, solid linearGeometryVelocity,
+% interfaceTransferMethod directMap (constant/fsiProperties.monolithic),
+% PETSc options system/fvSolution.monolithic (lagged Jacobian and
+% preconditioner every 8 Newton iterations, ksp_rtol 1e-3, LGMRES, full
+% Schur factorisation, redundant+LU solid block; from #599, 873a8d0e4).
+% No monolithic driver and no recorded monolithic study (A1 Section 1.9).
+
+A pressure pulse travelling through a fluid-filled elastic tube (Figure~\ref{fig:tube3d_geom_m}) is the standard three-dimensional test of strongly coupled FSI under strong added mass, with $\rho_s/\rho_f = 1.2$~\citep{kuttler2008fixed, Degroote2009}; its set-up, the partitioned three-level study and the literature references are given in the companion paper~\citetodo{companion verification paper}.
+It is used here to check the quasi-monolithic coupling against the partitioned one in three dimensions and to measure how the cost of the method and of its preconditioner grows with problem size and process count.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[scale=1]{figures/3dTube-geometry}
+	\caption{Three-dimensional elastic tube: geometry and base mesh (dimensions in mm), and monitoring point A.}
+	\label{fig:tube3d_geom_m}
+\end{figure}
+
+%%--------------------------------------------------------------------------------------------------------------------%%
+\subsection{Consistency on three levels}\label{sec:tube3d_consistency}
+%%--------------------------------------------------------------------------------------------------------------------%%
+
+A quarter of the tube is computed with symmetry planes, on the three geometrically similar mesh levels of the companion paper (16\,000, 128\,000 and 1\,024\,000 fluid cells) with the time step halved with the mesh ($2.5\times10^{-5}$, $1.25\times10^{-5}$ and $6.25\times10^{-6}\,\mathrm{s}$), to the end of the response.
+The solid is the geometrically linear velocity solid.
+\todo{Two set-up differences from the companion paper's partitioned runs to resolve before the comparison: (i) the quasi-monolithic variant uses a conformal interface (direct map), the partitioned runs an AMI interface; (ii) the quasi-monolithic variant uses Euler for the fluid \texttt{ddt(U)} (\texttt{system/fluid/fvSchemes.monolithic} at \texttt{257b2e564}), the partitioned runs BDF2. Run with \texttt{backward}, and state the interface treatment of each.}
+
+\paragraph{Measured.}
+The maximum radial displacement $u_{r,\max}$ and minimum axial displacement $u_{z,\min}$ at point A, the arrival time $t_\mathrm{arr}$ of the pulse and its wave speed $c_p$, compared level by level with the partitioned Robin--Neumann and IQN-ILS results.
+
+\todo{Table: 3dTube, quasi-monolithic minus partitioned. Rows: levels 1--3. Columns: relative difference in $u_{r,\max}$, $u_{z,\min}$, $t_\mathrm{arr}$ and $c_p$ against Robin--Neumann; the same against IQN-ILS; Newton iterations per step; Krylov iterations per Newton iteration; coupling iterations per step (Robin--Neumann).}
+
+Expected claims: the differences decrease from \tbd{value} on level 1 to \tbd{value} on level 3.
+
+%%--------------------------------------------------------------------------------------------------------------------%%
+\subsection{Strong scaling}\label{sec:tube3d_scaling}
+%%--------------------------------------------------------------------------------------------------------------------%%
+
+Level 2 is run on 1, 2, 4, 8, 16, 32 and 64 processes and level 3 on 16, 32, 64 and \tbd{128} processes, over a fixed window of 50 steps from a restart, with the quasi-monolithic coupling and with Robin--Neumann coupling.
+The fluid and solid regions are decomposed together by the \texttt{decomposeParMonolithic} utility of solids4foam, which partitions the fluid and solid cells as one graph, with extra edges across the interface face pairs, so that a process may own fluid cells, solid cells or both; the graph is partitioned with \tbd{decomposition method}.
+% Source: applications/utilities/decomposeParMonolithic/README.md at 257b2e564.
+The solid block is preconditioned by \tbd{the choice made in check B1: exact LU gathered on one process, or BoomerAMG}.
+
+\paragraph{Measured.}
+Wall time per step and parallel efficiency relative to the smallest process count of each level, Newton iterations per step and Krylov iterations per Newton iteration as functions of the process count, and peak memory per process.
+
+\todo{Figure: 3dTube strong scaling. (a) Wall time per step against number of processes (log--log), levels 2 and 3, quasi-monolithic (filled) and Robin--Neumann (open), with ideal-scaling lines. (b) Parallel efficiency against number of processes. (c) Krylov iterations per Newton iteration against number of processes (quasi-monolithic), showing the effect of the block-Jacobi ILU(0) velocity block and of the solid-block preconditioner.}
+
+Expected claims: the quasi-monolithic coupling reaches a parallel efficiency of \tbd{value} on \tbd{N} processes on level \tbd{level}, against \tbd{value} for Robin--Neumann; the Krylov iterations per Newton iteration grow by \tbd{factor} from 1 to \tbd{N} processes; the wall time per step of the quasi-monolithic coupling is \tbd{factor} that of Robin--Neumann at \tbd{N} processes.
+
+%%--------------------------------------------------------------------------------------------------------------------%%
+\subsection{Preconditioner and Jacobian ablation}\label{sec:tube3d_pc_ablation}
+%%--------------------------------------------------------------------------------------------------------------------%%
+% All variants are PETSc options on the tag (A4 Sections 5 and 6, route A).
+
+The default solver settings (Table~\ref{tab:solver_settings}) are examined by changing one setting at a time on level 2 with 8 processes over the same 50-step window.
+Each variant must reproduce the quantities of interest of the default run to within the iterative floor (Section~\ref{sec:protocol}); a variant that does not is reported as such.
+The variants are: an upper-triangular instead of a full Schur factorisation of the fluid block; the Jacobian and preconditioner rebuilt every Newton iteration instead of every eighth; a Krylov tolerance of $10^{-4}$ instead of $10^{-3}$; \tbd{the alternative solid-block preconditioner to the one chosen in check B1}; BoomerAMG instead of block-Jacobi ILU(0) for the fluid velocity block; and the assembled approximate Jacobian used as the Newton operator instead of the matrix-free operator (Section~\ref{sec:jfnk_solution}).
+
+\todo{Table: 3dTube preconditioner ablation, level 2, 8 processes, 50 steps. Rows: default; Schur upper; lag 1; \texttt{ksp\_rtol} $10^{-4}$; solid block alternative; velocity block BoomerAMG; assembled Jacobian as operator (no \texttt{snes\_mf\_operator}). Columns: Newton iterations per step; Krylov iterations per Newton iteration; wall time per step; peak memory; largest change of a QoI against the default (relative to the iterative floor); outcome.}
+
+\todo{Figure: Newton residual norm against Newton iteration for one representative time step, matrix-free operator against assembled approximate Jacobian, on 3dTube level 2 and on ringAddedMass (moderate level, factor 2, 100 steps per period), with \texttt{snes\_max\_it} high enough for the assembled-Jacobian run to converge. Reference slopes for linear and quadratic convergence.}
+
+Expected claims: with the assembled approximate Jacobian as the operator, Newton converges linearly with a contraction factor of \tbd{value} per iteration and needs \tbd{factor} as many iterations as with the matrix-free operator, so the approximate Jacobian is suited to building the preconditioner but not to defining the Newton step; lagging the preconditioner over eight iterations reduces the wall time by \tbd{factor} at \tbd{change} in Krylov iterations; \tbd{findings for the Schur factorisation, Krylov tolerance and block preconditioners}.

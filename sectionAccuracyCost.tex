@@ -1,0 +1,96 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Accuracy and cost on benchmark problems}\label{sec:accuracy_cost}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Streams feeding this section: R4 (Hron-Turek FSI3) and R6 (blobInTreacle).
+% The 2D block with a flexible tail (Jaiman and Joshi 2022) has no case in
+% solids4foam (A1 Section 1.14); it is added only if Philip approves it at G1.
+
+A coupling is more efficient than another only if it reaches the same accuracy at lower cost.
+This section compares the quasi-monolithic coupling with partitioned IQN-ILS coupling on the same meshes and time steps, so that differences in error and cost are due to the coupling and not to the discretisation, and reports the error against the reference together with the cost, as a work--precision relation.
+
+%%--------------------------------------------------------------------------------------------------------------------%%
+\subsection{Hron--Turek FSI3}\label{sec:fsi3_m}
+%%--------------------------------------------------------------------------------------------------------------------%%
+% Set-up: companion paper sectionBenchmarkSuite.tex "Hron--Turek family";
+% solids4foam 257b2e564 tutorials/fluidSolidInteraction/TurekHron2006/
+% verification/README.md section "Quasi-monolithic coupling" (lines 551-592):
+% conformal meshes with a quarter of the tutorial's solid cells (5 x 30 on the
+% plate at 1x); dt 0.001 / 0.0005 / 0.00025 s at 1x / 2x / 4x (driver level
+% table, A1 Section 1.7); diffusionHyperElastic pseudo-solid stiffened near
+% the plate and cylinder. Monolithic solid:
+% nonLinearGeometryTotalLagrangianVelocity, direct map.
+% Driver: verification/Allverify --coupling monolithic --levels 1,2,4.
+
+The FSI3 problem of~\citet{Turek2006}, an elastic flag behind a rigid cylinder oscillating at a low solid-to-fluid density ratio (Figure~\ref{fig:fsi3_geom_m}), is the most widely used test of strongly coupled FSI solvers, and its Featflow reference values carry an uncertainty of about $3$--$5\%$ in the displacement and force amplitudes and less than $0.3\%$ in the frequency and mean drag~\citetodo{companion verification paper}.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[scale=1]{figures/HronTurek3-geometry}
+	\caption{Hron--Turek FSI3: geometry and monitoring point A.}
+	\label{fig:fsi3_geom_m}
+\end{figure}
+\todo{Replace the mesh in Figure~\ref{fig:fsi3_geom_m} with the conformal-interface mesh used here (carried over from the earlier draft).}
+
+\paragraph{Set-up.}
+Both couplings are run on the conformal meshes of the quasi-monolithic set-up at refinement factors 1, 2 and 4, with $\Delta t = 0.001$, $0.0005$ and $0.00025\,\mathrm{s}$ respectively, to $t = \tbd{7}\,\mathrm{s}$; these meshes have a quarter of the solid cells of the companion paper's meshes at each factor.
+The flag is computed with the geometrically nonlinear velocity solid (quasi-monolithic) and the displacement solid with IQN-ILS under the strict convergence test (partitioned).
+The fluid mesh is moved by a pseudo-solid stiffened near the flag and the cylinder (Section~\ref{sec:fluid_mesh_motion}); with uniform stiffness the fluid mesh inverts during the start-up overshoot at $t = 2.76\,\mathrm{s}$ with either coupling.
+% Source of the mesh-inversion statement: TurekHron2006/verification/README.md
+% lines 557-562 and commit 415ee9a6d (A4 Section 8, route C). Mesh level not
+% stated; ask Philip.
+\todo{State the mesh level at which the uniform pseudo-solid inverted (A4 open question 4).}
+
+\paragraph{Measured.}
+The mean and amplitude of $u_x$(A), the amplitude and frequency of $u_y$(A), the mean and amplitude of the drag and the amplitude of the lift, over the last \tbd{second}, with the lift smoothed as in the companion paper, and their errors against the Featflow level-4 values.
+The cost is timed over two oscillation periods from a periodic restart, with the same number of processes for both couplings at each level.
+On the factor-2 mesh the iterative side of the work--precision relation is measured by a tolerance sweep: \texttt{snes\_rtol} of $10^{-4}$, $10^{-6}$ and $10^{-8}$ for the quasi-monolithic coupling and strict coupling tolerances of $10^{-4}$, $10^{-5}$ and $10^{-6}$ for IQN-ILS.
+
+\todo{Figure: FSI3 work--precision, one panel per quantity ($u_x$ mean, $u_y$ amplitude, drag amplitude, lift amplitude; optionally $u_y$ frequency and drag mean). Horizontal axis: core-hours per simulated second (log). Vertical axis: relative error against Featflow level 4 (log). Filled markers: quasi-monolithic; open markers: IQN-ILS; marker shape: refinement factor (1, 2, 4), joined by a line per coupling; small markers on the factor-2 point: tolerance sweep. Shaded horizontal band: reference uncertainty of the companion paper, below which errors cannot be distinguished. Data: R4 \texttt{runs.csv}, \texttt{qois.csv}.}
+
+\todo{Table: FSI3 on the conformal meshes. Rows: factor 1, 2, 4 for each coupling. Columns: fluid and solid cells; $\Delta t$; processes; errors in $u_x$ mean, $u_y$ amplitude, $u_y$ frequency, drag mean, drag amplitude, lift amplitude; Newton or coupling iterations per step; Krylov iterations per Newton iteration; wall time per step; core-hours per simulated second.}
+
+Expected claims: on the same meshes the two couplings give errors that differ by \tbd{value} and approach each other under refinement; at equal error the quasi-monolithic coupling costs \tbd{factor} times \tbd{more/less} than IQN-ILS, and below an error of \tbd{value} the reference uncertainty, not the coupling, limits the comparison.
+The observed order of the quasi-monolithic $u_x$ mean between factors 2 and 4 is \tbd{order}, which shows whether the first-order sequence of the companion paper comes from the coupling or from the discretisation and set-up.
+% HANDOFF R4 "Order check for V": V cites one sentence on this. Pre-#597
+% (stale) errors were 11.5% and 5.9% (README table), about order 1.
+
+%%--------------------------------------------------------------------------------------------------------------------%%
+\subsection{Elastic half-cylinder in a viscous channel flow}\label{sec:blob_m}
+%%--------------------------------------------------------------------------------------------------------------------%%
+% Set-up: solids4foam 257b2e564 tutorials/fluidSolidInteraction/
+% blobInTreacle/README.md (case overview and parameter table) and
+% verification/README.md (time and mesh studies; "Quasi-monolithic
+% coupling", lines 195-227); companion paper "Blob in treacle".
+% Monolithic solid: linearGeometryVelocity, direct map. No monolithic
+% driver: job scripts (A1 Section 1.6). blobInTreacle IS the Liu, Jaiman and
+% Gurugubelli (2014) temporal-accuracy case (A1 Section 1.14).
+
+\citet{Liu2014} proposed an elastic half-cylinder attached to the floor of a highly viscous channel flow (Figure~\ref{fig:blob_geom_m}) to measure the temporal order of their quasi-monolithic finite element formulation, on which the present method is based~\citep{JaimanJoshi2022}.
+Repeating their temporal study with the present cell-centred finite volume formulation is therefore the most direct comparison with the finite element method; the companion paper uses the case only for a partitioned self-convergence study~\citetodo{companion verification paper}.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[scale=1]{figures/blobInTreacle-geometry}
+	\caption{Elastic half-cylinder in a viscous channel flow: geometry (in m), boundary conditions and top point A.}
+	\label{fig:blob_geom_m}
+\end{figure}
+\todo{Check Figure~\ref{fig:blob_geom_m} against the tutorial: half-cylinder radius $0.5\,\mathrm{m}$ centred at $(1.5, -0.5)\,\mathrm{m}$ in the channel $[0, 6.5]\times[-0.5, 1]\,\mathrm{m}$ (blobInTreacle README). The earlier draft of this section gave other dimensions and material values; these are superseded.}
+
+\paragraph{Set-up.}
+A linear elastic half-cylinder of radius $0.5\,\mathrm{m}$ ($\lambda_s = 500\,\mathrm{Pa}$, $\mu_s = 50\,\mathrm{Pa}$, $\rho_s = 1\,\mathrm{kg/m^3}$) is attached to the floor of a channel carrying a fluid of the same density and kinematic viscosity $1\,\mathrm{m^2/s}$, so that the Reynolds number is of order one and the added mass is strong.
+A parabolic inlet velocity is ramped up over $2\,\mathrm{s}$, after which the flow settles to a steady state.
+The solid is the geometrically linear velocity solid, and both regions use BDF2 in time.
+% The monolithic tutorial variant at 257b2e564 sets ddt(U) Euler in
+% system/fluid/fvSchemes.monolithic; the temporal study must use backward.
+\todo{The quasi-monolithic tutorial variant uses Euler for the fluid \texttt{ddt(U)} (\texttt{system/fluid/fvSchemes.monolithic} at \texttt{257b2e564}); the temporal study must be run with \texttt{backward}, and the mesh study should use the same scheme.}
+
+\paragraph{Measured.}
+The temporal study follows~\citet{Liu2014} and the partitioned study of the companion paper: $\Delta t = 0.25$ to $0.03125\,\mathrm{s}$, halved each time, to $t = 1\,\mathrm{s}$, with the self-convergence of the top-point displacement $u_x$(A) and of the $\ell_2$ norm of the change in the interface position.
+The mesh study repeats the steady $u_x$(A) on mesh factors 1, 2 and 4 to $t = \tbd{3}\,\mathrm{s}$ for both couplings.
+Both couplings are timed over the temporal study.
+
+\todo{Figure: blobInTreacle temporal self-convergence. Horizontal axis: $\Delta t$ (log). Vertical axis: successive change in $u_x$(A) at $t = 1\,\mathrm{s}$ and in the interface $\ell_2$ norm (log). Quasi-monolithic and partitioned (IQN-ILS) on the same axes, with a slope-2 triangle and the iterative floor of each coupling marked. Source of the partitioned arm: rerun from the tag, not the companion paper's table.}
+
+\todo{Table: blobInTreacle mesh study. Columns: mesh factor; steady $u_x$(A) quasi-monolithic; partitioned; relative difference; observed order (each coupling); extrapolated value; wall time (both). Keep the companion paper's partitioned-only table separate: this table reports the difference between the couplings.}
+
+Expected claims: the quasi-monolithic coupling converges in time at order \tbd{order} over the steps used, against \tbd{order} for the partitioned coupling and \tbd{order} reported by~\citet{Liu2014}, at \tbd{factor} of the partitioned cost; the steady displacements of the two couplings differ by \tbd{values} on the three meshes and extrapolate to within \tbd{value} of each other.

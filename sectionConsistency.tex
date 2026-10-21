@@ -37,7 +37,10 @@ The traction of the quasi-monolithic coupling has been corrected to include this
 	\small
 	\caption{Differences between the quasi-monolithic (\texttt{newtonIcoFluid}, velocity solid) and partitioned (\texttt{pimpleFluid}, displacement solid) discretisations, and how each difference behaves under refinement.}
 	\label{tab:discretisation_differences}
+	% threeparttable (sn-jnl) prints the caption only with a tabular
+	\begin{tabular}{p{0.9\linewidth}}
 	\todo{Table: condensed from the A2 difference catalogue (items D1--D17). Columns: item; quasi-monolithic; partitioned; behaviour of the difference (vanishes at $O(h^2)$, $O(h)$, $O(\Delta t^2)$, zero at steady state, identical). Rows: convection flux and linearisation; continuity flux interpolation; Rhie--Chow term; interface pressure condition; interface velocity and wall flux; mesh motion (solver, and when the mesh is moved); solid time integration; solid spatial operator and stabilisation; convergence test. Keep only the rows that a reader needs to interpret Sections~\ref{sec:cavity_m} and~\ref{sec:womersley_consistency}; the traction row reads ``identical after the correction''.}
+	\end{tabular}
 \end{table}
 
 %%--------------------------------------------------------------------------------------------------------------------%%

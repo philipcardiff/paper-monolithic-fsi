@@ -386,7 +386,7 @@ $\bb{\mathcal{D}}_{s,P}$ is a stabilisation term -- similar to $\mathcal{D}_{p,P
 \end{eqnarray}
 where $\bar{K}$ is a stiffness-type parameter that gives the stabilisation term an appropriate scale and dimension: $\bar{K} = 2\mu_S + \lambda_S$ for a linear elastic solid, with $\mu_S$ and $\lambda_S$ the Lam\'e parameters, and the equivalent scalar tangent stiffness, evaluated at the start of the analysis, for finite strain laws.
 The user-defined parameter $\alpha_d > 0$ globally scales the amount of stabilisation.
-\todo{Fix alpha_d per case: the solids4foam monolithic tutorials use 0.5 (ringAddedMass, womersleyTube, TurekHron2006, perpendicularFlap, beamInCrossFlow, foilInWind) or 0.1 (cavityFlexibleBottom, collapsibleChannel, 3dTube, membraneRoof, mokLidDrivenCavity).}
+\todo{Fix $\alpha_d$ per case: the solids4foam monolithic tutorials use 0.5 (ringAddedMass, womersleyTube, TurekHron2006, perpendicularFlap, beamInCrossFlow, foilInWind) or 0.1 (cavityFlexibleBottom, collapsibleChannel, 3dTube, membraneRoof, mokLidDrivenCavity).}
 The displacement gradient $\left( \bb{\nabla}_0 \bb{D} \right)^{n}_f$ is obtained by interpolating the cell-centred least-squares displacement gradients (Equation~\eqref{eqn:least_squares_gradient}, evaluated on the reference mesh) to the face.
 As the stabilisation is formed from the new-time displacement in Equation~\eqref{eqn:solid_bdf2_displacement}, it is also a function of the trial solid velocity.
 

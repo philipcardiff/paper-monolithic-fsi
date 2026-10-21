@@ -588,3 +588,27 @@ decides.
   membraneRoof, perpendicularFlap) go to an appendix for the first full
   draft. Give them no campaign runs beyond what is already recorded, unless
   Philip asks.
+
+**21 October 2026 (Philip): no release lock; get every case running first.**
+
+This **replaces** the earlier rules that no R stream may start before G2 and
+that all paper results must come from one tag.
+
+- **Current goal:** get every paper case running with the quasi-monolithic
+  solver and fix every monolithic issue found on the way. Run from the head of
+  `feature-petsc-snes-quasi-monolithic` (rebuild when it moves). Record the
+  commit of every run, as before.
+- **Consistent version later:** once it is clear that every case runs,
+  Philip will fix the version, and the cases whose results are affected by
+  later fixes are rerun. No tag or release is made before then.
+- **G2 is dropped as a gate.** G1 (the campaign specification, B1/B2
+  answers) still applies to decisions, not to running cases.
+- **viscousStressTranspose:** #611 was merged, then its default was set to
+  `no` on the solver branch (`021affbc4`), because the term moved the steady
+  blobInTreacle result 2% away from the partitioned one (suspected
+  first-order wall error). Runs use the default. The blobInTreacle (x1/x2/x4)
+  and womersleyTube (m2) comparisons with `viscousStressTranspose yes` and
+  `no` are still wanted; see solids4foam#611.
+- **Budget:** run correctness work wherever capacity exists (XenoSim, Sonic,
+  MeluXina when the budget allows). Keep timing runs to one machine with
+  exclusive nodes, and leave them until the cases run.

@@ -25,7 +25,7 @@ Gate G1 not reached. No main-campaign (R1–R7) runs.
 | B0 smoke | **done, passed** (`paper-data/campaign/b0/findings.md`) | 5364272 COMPLETED | – |
 | B1 solid PC | ring done; cav and tube spin-ups redone on XenoSim (first attempt failed, see log) | 5364389 COMPLETED; XenoSim 13027 (cav spin-up, serial) → 13028 (cav windows, 1/4/16 ranks); 13029 (tube spin-up, 16 ranks) → 13030 (tube windows, 4/16 ranks); 13021–13023 failed in set-up | analyse; pick the cheapest PC per case |
 | B2 collapsibleChannel AMI | step 1 done (640×8 chosen); step 2 on XenoSim | 5364293 COMPLETED; XenoSim 13024 (conformal), 13025 (AMI 640×8) | compare trough error and cost |
-| B3 Jaiman/Liu estimate | not started | – | estimate only, no runs |
+| B3 Jaiman/Liu estimate | **done** (`paper-data/campaign/b3/estimate.md`): blobInTreacle monolithic temporal study < 0.1 core-h, R6 total 2–12 core-h; block with tail 3–3.5 person-days + ~20–60 core-h (unverified guess) | – | decision at G1 |
 | G1 report | not started | – | – |
 
 ## Results so far (each number has its source)
@@ -163,6 +163,9 @@ evidence. S2 is 4× the floor.
 None open (budget and acceptance test answered 21 Oct, see decisions).
 
 ## Log
+
+- **2026-10-21** B3 estimate written (no runs). blobInTreacle monolithic
+  fluid uses `ddt(U) Euler` at 257b2e564; R6 must switch it to `backward`.
 
 - **2026-10-21** First XenoSim B1 jobs failed in set-up, no results lost:
   (a) cav windows 13021: the solid model refuses a restart because the

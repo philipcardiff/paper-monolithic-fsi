@@ -13,7 +13,7 @@ The present work uses a body-fitted ALE fluid and a total Lagrangian solid.
 Weakly coupled (loosely coupled) schemes solve each field once per time step~\citep{farhat2000two} and are unstable when the added mass is large~\citep{Causin2005, Forster2006}, as for incompressible flow interacting with light, flexible solids.
 Strongly coupled schemes enforce the interface kinematic and dynamic conditions at each time step, either by iterating between separate fluid and solid solvers (partitioned coupling) or by solving the fields as one system (monolithic coupling).
 Partitioned schemes keep the field solvers and their discretisations separate~\citep{Tukovic2018} and are accelerated by Aitken relaxation~\citep{irons1969version, kuttler2008fixed}, interface quasi-Newton methods such as IQN-ILS~\citep{Degroote2009, bungartz2016precice, santiago2020hpc, delaisse2022surrogate}, or Robin-type interface conditions~\citep{Tukovic2018b}.
-Their convergence deteriorates as the added mass grows, and Dirichlet--Neumann iterations cannot converge for an incompressible fluid fully enclosed by Dirichlet boundaries and the interface~\citetodo{K\"uttler et al.\ 2006, the dilemma of incompressibility in partitioned FSI}.
+Their convergence deteriorates as the added mass grows, and Dirichlet--Neumann iterations cannot converge for an incompressible fluid fully enclosed by Dirichlet boundaries and the interface~\citep{Kuttler2006}.
 Monolithic schemes avoid outer iterations and are more robust under strong added mass, at the cost of modularity and of a large, poorly conditioned linear system~\citep{Degroote2009, Heil2008}.
 
 Monolithic FSI has been developed predominantly with finite elements.

@@ -87,13 +87,13 @@ def main():
             s, status = {}, "pending" if not meta else "no-log"
         if meta.get("allrun_rc") not in (None, 0) and status == "completed":
             status = "allrun-rc%s" % meta["allrun_rc"]
-        print(fmt.format(
+        print(fmt.format(*("" if v is None else v for v in (
             (prov.get("run_id") or os.path.basename(d))[:26],
             prov.get("ranks", meta.get("ranks", "")), status,
             str(s.get("t_last", "")), s.get("n_steps", ""),
             s.get("iters_mean", ""), s.get("iters_max", ""),
             s.get("ksp_per_newton_mean", ""), s.get("exec_s", ""),
-            s.get("clock_s", ""), meta.get("allrun_wall_s", "")))
+            s.get("clock_s", ""), meta.get("allrun_wall_s", "")))))
 
 
 if __name__ == "__main__":

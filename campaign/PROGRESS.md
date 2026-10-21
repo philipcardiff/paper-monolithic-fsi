@@ -7,12 +7,12 @@ Last updated: 2026-10-20
 
 ## Current phase
 
-**BLOCKED on MeluXina budget — waiting for Philip.** B0 done; B1 ring done;
-everything else held. Project p201287 has used 1376 of 1389 CPU node-hours
-this month (99.1%, `myquota`, 2026-10-20); every job is billed a whole node,
-even with 1 core. My jobs today used about 1.1 node-hours; the budget was
-already almost spent. Held (not cancelled): 5364390, 5364391, 5364295,
-5364354. Cancelled: 5364388 (serial 3dTube spin-up, 3 min in).
+**Phase B continues on XenoSim** (Philip, 21 Oct: while MeluXina is out of
+hours, move work to XenoSim; phase B checks that the cases work, no fine
+meshes). B0 done; B1 ring done. Running/queued on XenoSim: B1 cav windows
+13021, tube spin-up 13022 → tube windows 13023, B2 conformal 13024 and AMI
+13025. MeluXina held jobs 5364390, 5364391, 5364295, 5364354 cancelled
+(superseded); p201287 used 1376 of 1389 node-hours in October.
 **Handoff Section 8 triggered** by B1 ring (preconditioner changes a QoI by
 more than the floor) — see `paper-data/campaign/b1/findings.md`.
 Gate G1 not reached. No main-campaign (R1–R7) runs.
@@ -21,10 +21,10 @@ Gate G1 not reached. No main-campaign (R1–R7) runs.
 
 | Stream | State | Jobs (MeluXina unless noted) | Next action |
 |---|---|---|---|
-| B0 build | done on MeluXina; queued on XenoSim | MeluXina 5364171 COMPLETED; XenoSim 12759 pending | none on MeluXina |
+| B0 build | done on MeluXina and XenoSim | MeluXina 5364171 COMPLETED; XenoSim 12759 completed (no build errors, `v2.2-1692-g257b2e564`) | – |
 | B0 smoke | **done, passed** (`paper-data/campaign/b0/findings.md`) | 5364272 COMPLETED | – |
-| B1 solid PC | ring done (S1, S2 fail the floor); cav spin-up done; rest held | 5364389, 5364387 COMPLETED; 5364390, 5364391 held; 5364388 cancelled | Philip: budget route and acceptance-test question |
-| B2 collapsibleChannel AMI | step 1 done (640×8 chosen); step 2 held | 5364293 COMPLETED; 5364295, 5364354 held | resume when budget allows |
+| B1 solid PC | ring done; cav spin-up done (MeluXina); cav windows and tube on XenoSim | 5364389, 5364387 COMPLETED; XenoSim 13021 (cav windows, 1/4/16 ranks), 13022 (tube spin-up, 16 ranks) → 13023 (tube windows, 4/16 ranks) | analyse; pick the cheapest PC per case |
+| B2 collapsibleChannel AMI | step 1 done (640×8 chosen); step 2 on XenoSim | 5364293 COMPLETED; XenoSim 13024 (conformal), 13025 (AMI 640×8) | compare trough error and cost |
 | B3 Jaiman/Liu estimate | not started | – | estimate only, no runs |
 | G1 report | not started | – | – |
 
@@ -103,7 +103,9 @@ evidence. S2 is 4× the floor.
 | blobInTreacle: tutorial values (R 0.5, λ 500, μ 50), record R, λ, μ, ρ, inlet profile in R6 findings | noted for R6 |
 | One tagged code version for all R results (incl. #611 deforming-wall traction, `meshMotionTotalDisplacement`, `diffusionElastic`); B1, B2 are checks on the current build (`257b2e564`); no R stream before G2 | B1/B2 continue at `257b2e564`; no R runs |
 | Drop mesh-motion stiffening ablation; drop route-B old-commit ablations | removed from the plan |
-| BoomerAMG is the expected solid-block default; `bjacobi`+LU only as the parallel answer-invariance check | see B1 note below: the ring evidence so far goes against it; cav/tube (the cases where LU's cost matters) are held |
+| BoomerAMG is the expected solid-block default; `bjacobi`+LU only as the parallel answer-invariance check | superseded 21 Oct (below) |
+| (21 Oct) Use the cheapest solid-block PC per case; hypre is probably only useful for 3D meshes that are not small | B1 criterion = cost (Krylov iterations and clock); QoI difference to S0tight reported, not a gate. Ring: S0 is cheapest. |
+| (21 Oct) While MeluXina is out of hours, move work to XenoSim; phase B checks the cases work, not fine meshes | done: B1 cav/tube and B2 step 2 resubmitted on XenoSim (see Deviations 6) |
 | mokLidDrivenCavity, beamInCrossFlow, membraneRoof, perpendicularFlap → appendix, no runs | removed from the plan |
 
 ## B1 design (as submitted)
@@ -143,26 +145,30 @@ evidence. S2 is 4× the floor.
 5. B2 runs are serial: the collapsibleChannel Allrun has no parallel path, and
    the recorded 2008 s baseline is serial; the baseline is rerun on MeluXina
    for a same-machine cost comparison.
+6. **XenoSim for the rest of phase B (21 Oct).** XenoSim's Slurm has
+   `TaskPlugin=task/none` (no cpusets): jobs are not confined to their cores
+   and the node runs at load ~185/192, so runs use `QM_BIND=none` (no
+   mpirun binding) and are not exclusive (`QM_EXCLUSIVE=false` in B2
+   `run_meta.json`; `--exclusive` stripped at submission). Clock times there
+   are indicative only; iteration counts and QoIs are not affected. Rank
+   counts capped at 16 (3dTube spin-up on 16 ranks, windows at 4 and 16; the
+   32-rank windows dropped). Build: PETSc 3.24.1 / HYPRE 2.33.0 / MUMPS 5.8.1,
+   `-O3`, same commit `257b2e564`. The cav windows restart from the MeluXina
+   spin-up (copied). B2 step 2 keeps the tutorial's Euler `ddt(U)` (same as
+   step 1 and the recorded 2008 s baseline).
 
 ## Open questions for Philip
 
-1. **Budget.** p201287 has ~13 CPU node-hours left this month. Options:
-   (a) wait for the monthly reset (1 Nov); (b) charge B1/B2 to p201136
-   (~228 h left) or p201141 (~222 h left) — your call, I have not used
-   them; (c) run non-timing work (spin-ups, accuracy runs, B2 serial runs)
-   on XenoSim, timings only on MeluXina; (d) request more hours.
-   Rough need to finish phase B on MeluXina: about 10–15 node-hours
-   (B1 cav ~2, tube spin-up + windows ~6–8, B2 two runs ~2–4).
-2. **B1 acceptance test vs the BoomerAMG default.** On the ring, S1
-   (BoomerAMG) differs from the tight reference by 18–30× S0's floor and
-   costs 1.4–1.9× S0 (the ring's solid block is tiny, so the gathered LU is
-   cheap there). The decision for the default rests on cav L3 and 3dTube L2
-   at 16–32 ranks, which are held. Should the acceptance test compare each
-   preconditioner with its own tight run (its own floor), or should the
-   tolerances be tightened campaign-wide so the QoIs become
-   preconditioner-independent?
+None open (budget and acceptance test answered 21 Oct, see decisions).
 
 ## Log
+
+- **2026-10-21** Philip: use XenoSim while MeluXina is out of hours; pick
+  the cheapest solid PC. XenoSim build 12759 finished cleanly. Job scripts
+  made portable (`QM_BIND`, `QM_EXCLUSIVE`, `B1_SPINUP_RANKS`, `B1_LIST`,
+  B2 tutorial path from `QM_ROOT`). Submitted on XenoSim: 13021 cav windows,
+  13022 → 13023 tube, 13024 / 13025 B2. Cancelled MeluXina 5364390, 5364391,
+  5364295, 5364354.
 
 - **2026-10-20** Received Philip's decisions (HANDOFF §10). B1 set-up now
   uses `ddt(U) backward` for cav/tube windows and runs the tube spin-up on 32

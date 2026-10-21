@@ -71,7 +71,7 @@ CONFIGS = {
 }
 CONFIGS["S0tight"] = CONFIGS["S0"]
 TIGHTEN = 0.01
-SPINUP_RANKS = 32
+SPINUP_RANKS = int(os.environ.get("B1_SPINUP_RANKS", "32"))
 
 SPINUP = {
     "cav": {"tutorial": "cavityFlexibleBottom", "factor": 4,

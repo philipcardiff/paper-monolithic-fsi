@@ -42,9 +42,16 @@ SCRIPTS="$QM_ROOT/campaign/scripts"
 d="$RUNS/$RUN_ID"
 mkdir -p "$RUNS"
 
-export OMPI_MCA_rmaps_base_mapping_policy=core
-export OMPI_MCA_hwloc_base_binding_policy=core
-export OMPI_MCA_hwloc_base_report_bindings=1
+# QM_BIND=none on a shared node without Slurm cpusets (XenoSim), where
+# binding to cores 0..N-1 would stack ranks on other users' processes
+if [ "${QM_BIND:-core}" = core ]
+then
+    export OMPI_MCA_rmaps_base_mapping_policy=core
+    export OMPI_MCA_hwloc_base_binding_policy=core
+    export OMPI_MCA_hwloc_base_report_bindings=1
+else
+    export OMPI_MCA_hwloc_base_binding_policy=none
+fi
 
 extra=()
 [ "$SOLID_NX" -ne $((80*LEVEL)) ] && extra=(--conservative)
@@ -77,7 +84,7 @@ python3 "$SCRIPTS/provenance.py" "$d" --ranks 1 --run-id "$RUN_ID" > /dev/null
 cat > run_meta.json <<EOF
 {"run_id": "$RUN_ID", "study": "mono", "level": $LEVEL,
  "solid_mesh": "${SOLID_NX}x${SOLID_NY}", "dt": $DT, "end_time": $END,
- "ranks": 1, "exclusive": true, "node": "$(hostname)",
+ "ranks": 1, "exclusive": ${QM_EXCLUSIVE:-true}, "node": "$(hostname)",
  "slurm_job_id": "$SLURM_JOB_ID", "allrun_rc": $rc, "timeout_s": $limit_s,
  "allrun_wall_s": $(python3 -c "print(round($t1 - $t0, 3))")}
 EOF

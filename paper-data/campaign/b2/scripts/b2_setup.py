@@ -46,9 +46,9 @@ from pathlib import Path
 
 sys.dont_write_bytecode = True
 
-DEFAULT_TUTORIAL = (
-    "/project/home/p201287/philip/qm-paper/solids4foam/tutorials/"
-    "fluidSolidInteraction/collapsibleChannel"
+DEFAULT_TUTORIAL = os.path.join(
+    os.environ.get("QM_ROOT", "/project/home/p201287/philip/qm-paper"),
+    "solids4foam/tutorials/fluidSolidInteraction/collapsibleChannel",
 )
 
 

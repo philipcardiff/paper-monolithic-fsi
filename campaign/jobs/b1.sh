@@ -2,23 +2,31 @@
 # B1: solid-block preconditioner check (campaign handoff, Section 3, B1).
 #
 #   B1_STAGE=spinup B1_KIND=cav|tube   spin-up to the developed state
-#       (cav serial; tube on 32 ranks, so request --ntasks=32)
+#       (cav serial; tube on B1_SPINUP_RANKS ranks, default 32)
 #   B1_STAGE=windows B1_KIND=ring|cav|tube
 #       every configuration and rank count of the case, one after another on
 #       the allocated (exclusive) node; cav and tube restart from the spin-up
 #
 # Required environment: QM_ENV, QM_RUNS (stream directory, e.g. runs/b1),
-# QM_SCRIPTS (campaign/scripts).
+# QM_SCRIPTS (campaign/scripts). Optional: QM_BIND (core|none),
+# B1_SPINUP_RANKS, B1_LIST ("CONFIG:RANKS ...").
 
 source "${QM_ENV:?}"
 set -u
 mkdir -p "${QM_RUNS:?}"
 SETUP="${QM_SCRIPTS:?}/b1_setup.py"
 
-# Rank placement used for every campaign run
-export OMPI_MCA_rmaps_base_mapping_policy=core
-export OMPI_MCA_hwloc_base_binding_policy=core
-export OMPI_MCA_hwloc_base_report_bindings=1
+# Rank placement used for every campaign run on MeluXina
+# QM_BIND=none on a shared node without Slurm cpusets (XenoSim), where
+# binding to cores 0..N-1 would stack ranks on other users' processes
+if [ "${QM_BIND:-core}" = core ]
+then
+    export OMPI_MCA_rmaps_base_mapping_policy=core
+    export OMPI_MCA_hwloc_base_binding_policy=core
+    export OMPI_MCA_hwloc_base_report_bindings=1
+else
+    export OMPI_MCA_hwloc_base_binding_policy=none
+fi
 
 now() { date +%s.%N; }
 elapsed() { python3 -c "print(round($2 - $1, 3))"; }
@@ -42,7 +50,7 @@ write_meta()
 {
     local id="$1" kind="$2" config="$3" ranks="$4" rc="$5" wall="$6"
     python3 - "$id" "$kind" "$config" "$ranks" "$rc" "$wall" <<'EOF'
-import glob, json, sys
+import glob, json, os, sys
 run_id, kind, config, ranks, rc, wall = sys.argv[1:]
 mem = []
 for f in glob.glob("mem.*"):
@@ -54,7 +62,7 @@ json.dump({"run_id": run_id, "case": kind, "config": config,
            "ranks": int(ranks), "rc": int(rc), "wall_s": float(wall),
            "peak_rss_max_rank_gb": round(max(mem) / 2**20, 3) if mem else None,
            "peak_rss_sum_gb": round(sum(mem) / 2**20, 3) if mem else None,
-           "binding": "mpirun map-by core bind-to core"},
+           "binding": "%s" % ("mpirun map-by core bind-to core" if os.environ.get("QM_BIND", "core") == "core" else "none (shared node)")},
           open("run_meta.json", "w"), indent=1)
 EOF
 }
@@ -62,8 +70,8 @@ EOF
 spinup()
 {
     local kind="$1" d="$QM_RUNS/spin-$1" ranks=1
-    # b1_setup.py runs the tube spin-up on 32 ranks (SPINUP_RANKS)
-    [ "$kind" = tube ] && ranks=32
+    # b1_setup.py runs the tube spin-up on B1_SPINUP_RANKS ranks (default 32)
+    [ "$kind" = tube ] && ranks="${B1_SPINUP_RANKS:-32}"
     python3 "$SETUP" spinup "$kind" "$d" || exit 1
     cd "$d" || exit 1
     local t0 rc
@@ -138,6 +146,8 @@ case "${B1_STAGE:?}" in
             tube) list="S0:4 S1:4 S2:4 S0tight:4 S0:16 S1:16 S2:16
                         S0tight:16 S0:32 S1:32 S2:32 S0tight:32" ;;
         esac
+        # B1_LIST overrides the list, e.g. on a node with fewer free cores
+        list="${B1_LIST:-$list}"
         for item in $list
         do
             window "$B1_KIND" "${item%%:*}" "${item##*:}"

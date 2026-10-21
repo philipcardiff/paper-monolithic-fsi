@@ -9,9 +9,9 @@ Last updated: 2026-10-20
 
 **Phase B continues on XenoSim** (Philip, 21 Oct: while MeluXina is out of
 hours, move work to XenoSim; phase B checks that the cases work, no fine
-meshes). B0 done; B1 ring done. Running/queued on XenoSim: B1 cav windows
-13021, tube spin-up 13022 → tube windows 13023, B2 conformal 13024 and AMI
-13025. MeluXina held jobs 5364390, 5364391, 5364295, 5364354 cancelled
+meshes). B0 done; B1 ring done. Running/queued on XenoSim: B1 cav spin-up
+13027 → cav windows 13028, tube spin-up 13029 → tube windows 13030, B2
+conformal 13024 and AMI 13025 (running). MeluXina held jobs 5364390, 5364391, 5364295, 5364354 cancelled
 (superseded); p201287 used 1376 of 1389 node-hours in October.
 **Handoff Section 8 triggered** by B1 ring (preconditioner changes a QoI by
 more than the floor) — see `paper-data/campaign/b1/findings.md`.
@@ -23,7 +23,7 @@ Gate G1 not reached. No main-campaign (R1–R7) runs.
 |---|---|---|---|
 | B0 build | done on MeluXina and XenoSim | MeluXina 5364171 COMPLETED; XenoSim 12759 completed (no build errors, `v2.2-1692-g257b2e564`) | – |
 | B0 smoke | **done, passed** (`paper-data/campaign/b0/findings.md`) | 5364272 COMPLETED | – |
-| B1 solid PC | ring done; cav spin-up done (MeluXina); cav windows and tube on XenoSim | 5364389, 5364387 COMPLETED; XenoSim 13021 (cav windows, 1/4/16 ranks), 13022 (tube spin-up, 16 ranks) → 13023 (tube windows, 4/16 ranks) | analyse; pick the cheapest PC per case |
+| B1 solid PC | ring done; cav and tube spin-ups redone on XenoSim (first attempt failed, see log) | 5364389 COMPLETED; XenoSim 13027 (cav spin-up, serial) → 13028 (cav windows, 1/4/16 ranks); 13029 (tube spin-up, 16 ranks) → 13030 (tube windows, 4/16 ranks); 13021–13023 failed in set-up | analyse; pick the cheapest PC per case |
 | B2 collapsibleChannel AMI | step 1 done (640×8 chosen); step 2 on XenoSim | 5364293 COMPLETED; XenoSim 13024 (conformal), 13025 (AMI 640×8) | compare trough error and cost |
 | B3 Jaiman/Liu estimate | not started | – | estimate only, no runs |
 | G1 report | not started | – | – |
@@ -153,8 +153,9 @@ evidence. S2 is 4× the floor.
    are indicative only; iteration counts and QoIs are not affected. Rank
    counts capped at 16 (3dTube spin-up on 16 ranks, windows at 4 and 16; the
    32-rank windows dropped). Build: PETSc 3.24.1 / HYPRE 2.33.0 / MUMPS 5.8.1,
-   `-O3`, same commit `257b2e564`. The cav windows restart from the MeluXina
-   spin-up (copied). B2 step 2 keeps the tutorial's Euler `ddt(U)` (same as
+   `-O3`, same commit `257b2e564`. Both spin-ups now run on XenoSim with
+   `ddt(U) backward` and `restart yes` (the MeluXina cav spin-up could not be
+   restarted, see log), so the earlier Euler-spin-up caveat no longer applies. B2 step 2 keeps the tutorial's Euler `ddt(U)` (same as
    step 1 and the recorded 2008 s baseline).
 
 ## Open questions for Philip
@@ -162,6 +163,18 @@ evidence. S2 is 4× the floor.
 None open (budget and acceptance test answered 21 Oct, see decisions).
 
 ## Log
+
+- **2026-10-21** First XenoSim B1 jobs failed in set-up, no results lost:
+  (a) cav windows 13021: the solid model refuses a restart because the
+  spin-up never wrote the restart fields (`restart false` default;
+  "Continuing from time 100, but the fields a consistent restart needs were
+  never written"); (b) tube spin-up 13022: `decomposeParMonolithic` needs a
+  `monolithicCoeffs` block (regions, weights, interface patches) that the
+  3dTube decomposeParDict lacks. Fixed in `b1_setup.py` (`set_restart`,
+  `MONOLITHIC_DECOMPOSITION` with fluid `wall` / solid `inner-wall`).
+  Failed directories kept in `runs/b1/failed-20261021/` on XenoSim. Both
+  spin-ups resubmitted (13027, 13029), now with `ddt(U) backward`; windows
+  chained (13028, 13030).
 
 - **2026-10-21** Philip: use XenoSim while MeluXina is out of hours; pick
   the cheapest solid PC. XenoSim build 12759 finished cleanly. Job scripts

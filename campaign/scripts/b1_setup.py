@@ -14,8 +14,9 @@ spinup  copies the tutorial and sets the level and time controls; the job
         tube 3dTube level 2 (factor 2), Δt 1.25e-5 s, with the driver's
              monitors, to t = 2 ms (160 steps), on 32 ranks
              (decomposeParMonolithic), reconstructed at the end.
-Both set the fluid ddt(U) of the monolithic variant (--ddt-u, default
-backward; the cavity spin-up of 20 October ran with the tutorial's Euler).
+Both set `restart yes` in the solid model's coefficients (a restart needs
+the fields it writes) and the fluid ddt(U) of the monolithic variant (--ddt-u, default
+backward).
 window  copies a completed spin-up (latest time only), restarts from it for
         --steps steps, writes fields only at the end, and applies the
         solid-block configuration and rank count.
@@ -145,6 +146,49 @@ def apply_config(case, config):
     path.write_text(text[:o.end()] + body + text[i - 1:])
 
 
+def set_restart(case):
+    """Ask the solid model to write the fields a consistent restart needs
+    (the windows restart from the spin-up)."""
+    path = case / "constant/solid/solidProperties.monolithic"
+    text = path.read_text()
+    model = re.search(r"^solidModel\s+(\w+);", text, flags=re.MULTILINE)
+    if not model:
+        sys.exit(f"No solidModel in {path}")
+    coeffs = re.search(rf"^{model.group(1)}Coeffs\s*\{{", text,
+                       flags=re.MULTILINE)
+    if not coeffs:
+        sys.exit(f"No {model.group(1)}Coeffs in {path}")
+    if re.search(r"^\s*restart\s", text, flags=re.MULTILINE):
+        sys.exit(f"{path} already sets restart")
+    path.write_text(text[:coeffs.end()] + "\n    restart yes;"
+                    + text[coeffs.end():])
+
+
+MONOLITHIC_DECOMPOSITION = """
+monolithicCoeffs
+{
+    regions (fluid solid);
+
+    // DOF-based, as decomposeParMonolithic's README: fluid 4, solid 3
+    regionWeights
+    {
+        fluid   4;
+        solid   3;
+    }
+
+    interfaces
+    (
+        {
+            regionA     fluid;
+            patchA      wall;
+            regionB     solid;
+            patchB      inner-wall;
+        }
+    );
+}
+"""
+
+
 def set_ddt_u(case, scheme):
     """Set the fluid ddt(U) scheme of the monolithic variant (decision of
     20 October: backward wherever possible)."""
@@ -182,6 +226,11 @@ def spinup(kind, dest, ddt_u):
         # The tutorial Allrun is serial; a whole node is billed anyway, so
         # the spin-up runs on SPINUP_RANKS ranks and is reconstructed
         set_ranks(dest, SPINUP_RANKS)
+        # decomposeParMonolithic reads one graph over both regions,
+        # joined across the FSI interface (3dTube: fluid wall/solid inner-wall)
+        dpd = dest / "system/decomposeParDict"
+        dpd.write_text(dpd.read_text().rstrip() + "\n"
+                       + MONOLITHIC_DECOMPOSITION)
         allrun = dest / "Allrun"
         serial = "solids4Foam::runApplication solids4Foam\n"
         text = allrun.read_text()
@@ -201,6 +250,7 @@ def spinup(kind, dest, ddt_u):
     # Both tutorials use writeControl runTime
     set_entry(control, "writeInterval", f"{s['endTime']:.10g}")
     set_ddt_u(dest, ddt_u)
+    set_restart(dest)
     (dest / "b1_spinup.json").write_text(json.dumps(
         dict(s, kind=kind, ddt_U=ddt_u), indent=1))
 

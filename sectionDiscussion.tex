@@ -1,0 +1,36 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Discussion}\label{sec:discussion}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Interprets Sections 4-8; adds no new results. Every \tbd is filled from the
+% campaign (R1-R7) once the sections it refers to are filled.
+
+\todo{Keep as a separate section or merge into Conclusions after the results are in.}
+
+Sections~\ref{sec:verification_exact} to~\ref{sec:scaling_3d} compare the quasi-monolithic and partitioned couplings at equal verified accuracy, so the remaining differences between them are differences of cost, robustness and scope.
+This section interprets those differences as guidance on when the quasi-monolithic coupling is worth using; it is limited to the two implementations compared, which share the solid discretisation and much of the fluid discretisation (Section~\ref{sec:fluid_differences}).
+
+\paragraph{Cost per step and number of iterations.}
+A Newton iteration of the quasi-monolithic coupling solves a preconditioned linear system for all fluid and solid unknowns, whereas a coupling iteration of the partitioned schemes performs one segregated fluid solve and one solid solve.
+A Newton iteration is therefore the more expensive of the two, and the quasi-monolithic coupling is cheaper per step only when the partitioned scheme needs sufficiently many coupling iterations.
+In the cases of this paper the quasi-monolithic coupling needs \tbd{number} Newton iterations per step independently of the added-mass ratio (Sections~\ref{sec:ring_m} and~\ref{sec:robustness_ring}), whereas the coupling iterations of IQN-ILS and Robin--Neumann grow with it, and the cost of the two couplings is equal at \tbd{added-mass ratio or iteration count at the crossover}.
+Below this point, which includes \tbd{cases}, the accelerated partitioned schemes are the cheaper choice at equal accuracy; above it, the quasi-monolithic coupling is cheaper by \tbd{factor}.
+On the Hron--Turek FSI3 benchmark, the only case of the paper with an established external reference and a work--precision comparison, the quasi-monolithic coupling costs \tbd{factor} times \tbd{more/less} than IQN-ILS at equal error (Section~\ref{sec:fsi3_m}).
+
+\paragraph{Robustness.}
+Robustness with respect to the added mass and robustness with respect to the time step are distinct properties.
+Solving the interface conditions within the Newton iteration removes the dependence of convergence on the added mass, including the enclosed-fluid and massless-wall configurations in which Dirichlet--Neumann iterations cannot converge~\citep{Kuttler2006} (Section~\ref{sec:robustness_collapsible}).
+It does not remove the dependence on the nonlinearity of the coupled problem over one step: in the flag of Section~\ref{sec:lim_foil}, Newton stagnates at the time step at which IQN-ILS converges, and the quasi-monolithic coupling converges only with \tbd{a quarter} of that step.
+The quasi-monolithic coupling is therefore expected to be the more reliable choice where the added mass is strong and the step is limited by accuracy rather than by the nonlinearity, as in \tbd{cases}, and not necessarily where large steps through strongly nonlinear transients are wanted.
+The robustness of the partitioned couplings, in turn, depends on settings such as the Robin coefficient and the IQN-ILS history, which are those of the companion paper~\citetodo{companion verification paper} for every case (Section~\ref{sec:protocol}); the maps of Section~\ref{sec:robustness} do not measure how far other settings would extend them.
+
+\paragraph{Parallel cost of the coupled solve.}
+The coupled linear system brings a preconditioner whose cost is not present in partitioned coupling.
+In the present implementation the solid block is \tbd{factorised on one process / preconditioned by algebraic multigrid} (Section~\ref{sec:lim_solid_pc}), and the three-dimensional tube reaches a parallel efficiency of \tbd{value} on \tbd{N} processes against \tbd{value} for Robin--Neumann (Section~\ref{sec:tube3d_scaling}).
+The joint decomposition of the fluid and solid cells is a further difference: partitioned coupling decomposes each region separately, whereas the coupled residual is distributed as one graph, and the balance of fluid and solid work per process \tbd{did / did not} affect the scaling.
+
+\paragraph{Scope and modularity.}
+Partitioned coupling in solids4foam combines any of its fluid and solid models, including displacement-based solids with high-order reconstruction, and runs on every supported OpenFOAM line~\citep{Tukovic2018, Cardiff2025}.
+The quasi-monolithic coupling is restricted to the \texttt{newtonIcoFluid} fluid model and the velocity solids (Section~\ref{sec:numerical_methods}), to the OpenFOAM.com line with PETSc (Section~\ref{sec:lim_platform}), and to the standard second-order solid reconstruction, which limits its accuracy on thin structures (Section~\ref{sec:lim_thin_solid}).
+A new physical model enters the quasi-monolithic coupling only with its contribution to the residual and to the approximate Jacobian, whereas it enters partitioned coupling through its interface data alone.
+Where both couplings apply, the choice is thus between a solver that converges independently of the added mass at a higher cost per iteration, and a modular solver whose cost and reliability depend on the added mass and on its acceleration settings.
+\todo{Check every \tbd above against Sections 4--8 once filled; delete any sentence whose claim the results do not support (in particular the crossover in the first paragraph, which needs the cost tables of Sections~\ref{sec:ring_m} and~\ref{sec:fsi3_m}).}

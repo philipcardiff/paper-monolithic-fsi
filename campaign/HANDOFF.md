@@ -612,3 +612,40 @@ that all paper results must come from one tag.
 - **Budget:** run correctness work wherever capacity exists (XenoSim, Sonic,
   MeluXina when the budget allows). Keep timing runs to one machine with
   exclusive nodes, and leave them until the cases run.
+
+**21 October 2026, later: answer to the B1 question (Section 8 trigger on ringAddedMass).**
+
+Philip asked the coordinating session to decide, and the decision is as follows.
+
+- **Revised acceptance test.** The trigger came from the test, not the
+  solvers. At the tutorial tolerances (`snes_rtol` 1e-6, `ksp_rtol` 1e-4)
+  each preconditioner leaves a different iterative error after two Newton
+  iterations, so "within S0's floor" is a test only S0 can pass. Instead:
+  - compare every configuration with a **tightly converged reference**
+    (`snes_rtol` and `snes_stol` 1e-10, `ksp_rtol` 1e-8; preconditioner
+    irrelevant at that tolerance; check that S0tight and S1tight agree to
+    round-off level);
+  - **accept** a configuration if its QoI difference from that reference is
+    at most **5% of the case's discretisation error** (for the ring: of the
+    finest-level wet/dry error in the verification README; for cases without
+    an exact solution: of the finest-level change between the two finest
+    meshes).
+- **Per-case solver tolerances.** For every paper case, set `snes_rtol`
+  (and `ksp_rtol` where needed) so that the default configuration meets the
+  5% rule. Record the tolerance in `runs.csv`. Expect tighter values for
+  ringAddedMass and womersleyTube (about `snes_rtol` 1e-8, about +40% cost)
+  and the tutorial values elsewhere. Timing comparisons with partitioned
+  coupling use these tolerances, with the strict coupling test on the
+  partitioned side, so that both run at equal verified accuracy.
+- **Solid-block preconditioner.** Do not choose it on the ring: a small 2-D
+  solid block is where an exact LU is cheapest. Decide on 3dTube (and the
+  cavity) from cost at equal accuracy under the rule above, and per case if
+  needed: LU for small 2-D solid blocks, BoomerAMG where it is cheaper. The
+  ring result (S1 BoomerAMG about 2× Krylov iterations, 1.4–1.9× time) is
+  reported as such.
+- **Not a defect.** No issue file is needed. The rank-count difference for
+  S0 (at the floor) is fine.
+- **Code version.** Rebuild from the current head of
+  `feature-petsc-snes-quasi-monolithic` before the B1 cavity/tube analysis
+  is reused for the paper. It now includes #609–#611, the physics-PC
+  removal and `viscousStressTranspose no`.

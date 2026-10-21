@@ -1,0 +1,78 @@
+% One time step t^{n-1} -> t^n of the quasi-monolithic algorithm
+% (Algorithms in Section 3). Drawn for a single column (8.5 cm). Needs the
+% TikZ libraries positioning, arrows.meta, calc and shapes.geometric, and \bb
+% (\boldsymbol).
+\begin{tikzpicture}[
+    % explicit size, independent of the class and of setspace
+    font={\def\baselinestretch{1}\fontsize{7}{8.4}\selectfont},
+    >={Stealth[length=1.8mm]},
+    node distance=0.32cm,
+    stepbox/.style={draw, thin, rounded corners=1.5pt, align=center,
+        text width=4.5cm, inner sep=2.5pt, fill=white,
+        execute at begin node={\hyphenpenalty=10000}},
+    newton/.style={stepbox, fill=black!10},
+    test/.style={draw, thin, diamond, aspect=2.4, align=center,
+        inner sep=0.3pt, fill=white},
+    lab/.style={inner sep=1pt},
+]
+\coordinate (loopx) at (-2.6,0);
+\coordinate (sidex) at (2.85,0);
+\node[stepbox] (store) {store the fields at $t^{n-1}$ (for a retry)};
+\node[stepbox, below=of store] (pred)
+    {predict the solid displacement\\[1pt]
+    \mbox{$\bb{D}_S^{n,*}=\bb{D}_S^{n-1}+\tfrac{\Delta t}{2}
+    (3\bb{v}_S^{n-1}-\bb{v}_S^{n-2})$}};
+\node[stepbox, below=of pred] (mesh)
+    {move the fluid mesh once: transfer $\bb{D}_S^{n,*}$ to
+    $\Gamma_\mathrm{fsi}$, solve the mesh-motion pseudo-solid; $\Omega_F^n$
+    and swept-volume fluxes};
+\node[stepbox, below=of mesh] (init)
+    {initialise \mbox{$\bb{\mathcal{U}}_0=(\bb{v}_F,p_F,\bb{v}_S)$}
+    from the current fields};
+% Newton loop
+\node[newton, below=0.75cm of init] (res)
+    {residual $\bb{R}(\bb{\mathcal{U}}_k)$ (Algorithm~\ref{alg:coupled_residual}): interface
+    velocity, pressure gradient and traction; $\bb{R}_{F_m}$, $R_{F_p}$,
+    $\bb{R}_S$ on the fixed $\Omega_F^n$};
+\node[newton, below=of res] (ksp)
+    {assemble $\tilde{\bb{J}}$ and build the field-split preconditioner
+    (unless lagged); solve \mbox{$\bb{J}\,\Delta\bb{\mathcal{U}}_k
+    =-\bb{R}(\bb{\mathcal{U}}_k)$} by LGMRES, $\bb{J}$ matrix-free};
+\node[newton, below=of ksp] (ls)
+    {line search:
+    \mbox{$\bb{\mathcal{U}}_{k+1}=\bb{\mathcal{U}}_k
+    +s_k\,\Delta\bb{\mathcal{U}}_k$}};
+\node[test, below=of ls] (conv) {converged?};
+\draw[thin, densely dashed, rounded corners=2pt]
+    ($(res.north -| loopx)+(-0.2,0.15)$) rectangle
+    ($(conv.south -| res.east)+(0.2,-0.1)$);
+\node[lab, anchor=south west] at ($(res.north -| loopx)+(-0.2,0.17)$)
+    {Newton loop ($k=0,1,\dots$)};
+% after convergence
+\node[stepbox, below=0.6cm of conv] (extract)
+    {extract $(\bb{v}_F^n,p_F^n,\bb{v}_S^n)$; update the interface
+    conditions};
+\node[stepbox, below=of extract] (disp)
+    {set $\bb{D}_S^n$ from $\bb{v}_S^n$ (BDF2); update the solid stress};
+\node[stepbox, below=of disp] (dt)
+    {adaptive $\Delta t$: select the next $\Delta t$ from the number of
+    Newton iterations};
+\node[lab, below=0.25cm of dt] (next) {next time step};
+% retry branch
+\node[stepbox, text width=1.95cm, anchor=west] (retry)
+    at (sidex |- conv)
+    {restore the fields at $t^{n-1}$; retry with\\[1pt]
+    \mbox{$\max(\Delta t/4,\Delta t_{\min})$}};
+\node[lab, align=center, text width=2.0cm, anchor=north]
+    at ([yshift=-0.1cm]retry.south)
+    {(adaptive $\Delta t$ only;\\ otherwise stop)};
+% arrows of the main path
+\foreach \a/\b in {store/pred, pred/mesh, mesh/init, init/res, res/ksp,
+    ksp/ls, ls/conv, extract/disp, disp/dt, dt/next}
+    \draw[->] (\a) -- (\b);
+\draw[->] (conv) -- node[lab, right, pos=0.7] {yes} (extract);
+\draw[->] (conv.west) -- node[lab, above] {no} (conv.west -| loopx)
+    |- (res.west);
+\draw[->] (conv.east) -- node[lab, above] {failed} (retry.west);
+\draw[->] (retry.north) |- (store.east);
+\end{tikzpicture}

@@ -1,0 +1,106 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Consistency with partitioned coupling}\label{sec:consistency_partitioned}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Stream feeding this section: R2 (campaign/HANDOFF.md), plus the
+% womersleyTube runs of R1. Source of the discretisation comparison: audit
+% A2, paper-data/a2_discretisation_differences.md (origin/evidence/
+% a2-fluid-discretisation-differences), whose draft text is adapted below.
+
+The quasi-monolithic and partitioned couplings in solids4foam solve the same continuum problem with different fluid solvers (\texttt{newtonIcoFluid} and \texttt{pimpleFluid}) and different solid formulations (velocity and displacement), so their solutions should differ only by discretisation error and should approach each other under refinement.
+This section states where the two discretisations differ and tests the expectation on a steady and a transient case.
+It is a consistency check between two formulations that share much of their code, not an independent verification.
+
+%%--------------------------------------------------------------------------------------------------------------------%%
+\subsection{Differences between the discretisations}\label{sec:fluid_differences}
+%%--------------------------------------------------------------------------------------------------------------------%%
+% Adapted from the draft text at the end of A2. Changes: (i) the traction
+% difference (A2 item D6) is presented as an inconsistency that has been
+% corrected (solids4foam branch fix/monolithic-deforming-wall-traction,
+% Philip's decision of 20 Oct 2026); (ii) recorded pre-tag numbers replaced by
+% \tbd placeholders (A2 quotes 0.14/0.08/0.05% for the cavity from
+% verification/cavityflexiblebottom-partitioned-fine @ f356c3242).
+
+The two couplings share the solid discretisation, the face interpolation of the stresses and the solid stabilisation, and, for the linear solid, their time integration: the BDF2 velocity formulation with BDF2 kinematics is algebraically identical to the backward second time derivative used by the displacement solid.
+They differ in the fluid and at the interface (Table~\ref{tab:discretisation_differences}).
+In the fluid, \texttt{newtonIcoFluid} solves the convection with the flux of the current iterate, adds the Rhie--Chow term to the continuity residual as a stabilisation without a time-step correction, and builds the continuity flux from the same interpolated velocity that convects momentum, whereas \texttt{pimpleFluid} convects with the flux of the previous pressure corrector and imposes continuity on the Rhie--Chow-corrected flux.
+At the interface, the quasi-monolithic fluid sets the normal pressure gradient from the normal momentum equation, receives the solid velocity extrapolated to the interface faces, and moves its mesh once per step to the extrapolated interface displacement with a pseudo-solid, whereas the partitioned fluid uses a zero-gradient or Robin pressure condition, takes its wall velocity from the motion of its own mesh, and moves the mesh with a Laplacian smoother to the current solid displacement in every coupling iteration.
+All of these differences vanish under mesh and time-step refinement.
+
+One difference did not.
+The quasi-monolithic interface traction was the wall flux of the viscous term of the momentum equation, $\mu\,\partial\bb{v}/\partial n$, whereas the partitioned traction is $\hat{\bb{n}}\cdot 2\mu\bb{D}(\bb{v})$.
+On a stationary or rigidly moving wall the two are equal at the continuum level, but on a deforming wall the former omits $\mu\bb{\nabla}(\bb{v}\cdot\hat{\bb{n}})$, a physical part of the traction whose size relative to the pressure is about $\mu\omega R/(Eh)$ for a compliant tube of radius $R$, wall thickness $h$ and angular frequency $\omega$; it is not a discretisation error and does not vanish under refinement.
+The traction of the quasi-monolithic coupling has been corrected to include this term \tbd{form adopted}, and the results below use the corrected traction.
+\todo{Pending solids4foam PR from branch \texttt{fix/monolithic-deforming-wall-traction} into \texttt{feature-petsc-snes-quasi-monolithic} (no commits on the branch as of 20 Oct 2026). Once merged: (i) describe the form adopted (A2 recommendation 1 lists two: the \texttt{pimpleFluid} route, adding $\nabla\cdot(\nu\,\mathrm{dev2}((\nabla\bb{v})^T))$ to the residual and using $\hat{\bb{n}}\cdot$\texttt{devReff} as the traction, or adding the surface-gradient terms from the interface velocity to both the traction and the momentum wall flux); (ii) update Equation~\eqref{eqn:interface_fluid_traction} and the traction paragraph of Section~\ref{sec:interface_conditions}, and the traction claim in the abstract, the Introduction (contribution 2) and Section~\ref{sec:interface_ablations}, which currently state the stationary-wall result; (iii) rerun womersleyTube (R1) and confirm that the cavity and blobInTreacle results do not change beyond the iterative floor.}
+
+\begin{table}[htbp]
+	\centering
+	\small
+	\caption{Differences between the quasi-monolithic (\texttt{newtonIcoFluid}, velocity solid) and partitioned (\texttt{pimpleFluid}, displacement solid) discretisations, and how each difference behaves under refinement.}
+	\label{tab:discretisation_differences}
+	% threeparttable (sn-jnl) prints the caption only with a tabular
+	\begin{tabular}{p{0.9\linewidth}}
+	\todo{Table: condensed from the A2 difference catalogue (items D1--D17). Columns: item; quasi-monolithic; partitioned; behaviour of the difference (vanishes at $O(h^2)$, $O(h)$, $O(\Delta t^2)$, zero at steady state, identical). Rows: convection flux and linearisation; continuity flux interpolation; Rhie--Chow term; interface pressure condition; interface velocity and wall flux; mesh motion (solver, and when the mesh is moved); solid time integration; solid spatial operator and stabilisation; convergence test. Keep only the rows that a reader needs to interpret Sections~\ref{sec:cavity_m} and~\ref{sec:womersley_consistency}; the traction row reads ``identical after the correction''.}
+	\end{tabular}
+\end{table}
+
+%%--------------------------------------------------------------------------------------------------------------------%%
+\subsection{Channel flow over a cavity with a flexible bottom}\label{sec:cavity_m}
+%%--------------------------------------------------------------------------------------------------------------------%%
+% Set-up: companion paper sectionBenchmarkSuite.tex "Flexible-bottom cavity";
+% solids4foam origin/verification/cavityflexiblebottom-partitioned-fine @
+% f356c3242, tutorials/fluidSolidInteraction/cavityFlexibleBottom/
+% verification/README.md (four-level rerun after #597): dt = 0.5 s, inlet
+% ramp 20 s, end time 300 s; levels 1-3 serial, level 4 on 4 ranks.
+% Monolithic solid: nonLinearGeometryTotalLagrangianVelocity, direct map.
+% Driver: verification/Allverify --variants monolithic --levels 1,2,3,4
+% --end-time 300 (A1 Section 1.3).
+
+Steady laminar flow in a channel over a cavity whose floor is a flexible plate~\citep{Juretic2010, Tukovic2018} (Figure~\ref{fig:cavity_geom_m}) is the steady internal-flow case of the companion paper, where the full set-up and the comparison with published and independent references are given~\citetodo{companion verification paper}.
+At steady state the time-dependent differences between the couplings vanish, so the comparison isolates the spatial differences of Table~\ref{tab:discretisation_differences}.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[scale=1]{figures/cavityFlexibleBottom-geometry}
+	\caption{Channel flow over a cavity with a flexible bottom: geometry, boundary conditions and monitoring point A.}
+	\label{fig:cavity_geom_m}
+\end{figure}
+
+\paragraph{Set-up.}
+The flow is at $Re = 100$ and the plate is a St Venant--Kirchhoff solid, computed with the geometrically nonlinear velocity solid (\texttt{nonLinearGeometryTotalLagrangianVelocity}) on a conformal interface.
+The steady state is reached by time stepping with $\Delta t = \tbd{0.5}\,\mathrm{s}$ after an inlet ramp.
+Four uniformly refined levels ($\Delta x = 0.1$, $0.05$, $0.025$ and $0.0125\,\mathrm{m}$) are computed with the quasi-monolithic coupling and with partitioned Aitken coupling under the strict convergence test.
+\todo{Check the monitoring-point definition (top surface of the plate, solids4foam PR \#584) and the geometry figure against it.}
+
+\paragraph{Measured.}
+The steady vertical displacement $u_y$ of point A and the vertical interface force $F_y$ on each level for both couplings, their difference, its rate of decrease with $\Delta x$, and the Richardson-extrapolated values of each coupling; Newton iterations per step, coupling iterations per step and wall time to steady state.
+A further pair of runs on levels 2 and 3 uses for the quasi-monolithic continuity flux the same face interpolation as the partitioned solver (\texttt{linear} rather than \texttt{skewCorrected linear}), which A2 identifies as the leading candidate for the remaining difference.
+% A2 (a), run A1: interpolate(U) linear in system/fluid/fvSchemes.monolithic;
+% also checkMesh on the final states of both couplings (run A0).
+
+\todo{Figure: cavityFlexibleBottom. (a) Relative difference quasi-monolithic minus partitioned in $u_y$(A) and in $F_y$ (log scale) against $\Delta x$ (levels 1--4), with slope-1 and slope-2 triangles; (b) the same for the quasi-monolithic runs with \texttt{linear} continuity-flux interpolation on levels 2 and 3.}
+
+\todo{Table: cavityFlexibleBottom. Columns: level; $\Delta x$; $u_y$(A) quasi-monolithic; $u_y$(A) partitioned; relative difference; $F_y$ quasi-monolithic; $F_y$ partitioned; relative difference; Newton iterations per step; Aitken coupling iterations per step; wall time to steady state (both). Final row: extrapolated values ($p = 2$, levels 3--4). The companion paper reports the partitioned convergence and the reference comparison; this table reports the difference only.}
+
+Expected claims: the difference between the couplings decreases from \tbd{value} on level 2 to \tbd{value} on level 4, at a rate of \tbd{factor} per halving of $\Delta x$, and the extrapolated values agree to \tbd{value}; with the same continuity-flux interpolation the difference on levels 2 and 3 \tbd{falls to / remains at} \tbd{value}, which \tbd{confirms / rules out} the interpolation as its cause.
+
+%%--------------------------------------------------------------------------------------------------------------------%%
+\subsection{Pulsatile compliant tube}\label{sec:womersley_consistency}
+%%--------------------------------------------------------------------------------------------------------------------%%
+% Data: the R1 womersleyTube runs (Section 4.3) and the partitioned
+% Robin-Neumann and IQN-ILS runs of the companion paper, both from the tag.
+% A2 (b): before the correction, the monolithic wall radial amplitude differed
+% from Robin-Neumann by -3.2e-4 to -3.5e-4 (relative) on mesh factors 2 and 4
+% at every step, the fluid quantities by 7e-5 or less (production CSVs
+% womersleyTube_results{,_monolithic}.csv at 54a5c6916, pre-#597).
+
+In the womersleyTube problem (Section~\ref{sec:womersley_m}) the wall deforms, so the uncorrected traction would show as a difference that does not vanish under refinement.
+Both couplings are compared on mesh factors 1, 2 and 4 at 200 steps per period and on 50 to 400 steps per period on the factor-2 mesh, before and after the traction correction.
+
+\paragraph{Measured.}
+Differences between the quasi-monolithic and the Robin--Neumann and IQN-ILS solutions in every quantity of Section~\ref{sec:womersley_m}, as functions of mesh factor and time step; the difference between Robin--Neumann and IQN-ILS sets the scale of the partitioned spread.
+The Fourier analysis is repeated over periods 4--5 to exclude a start-up transient.
+
+\todo{Figure: womersleyTube, quasi-monolithic minus Robin--Neumann. Relative difference in wall radial displacement amplitude, wall phase, axial displacement amplitude and flow-rate amplitude (four markers) against mesh factor (left) and steps per period (right); open symbols before the traction correction, filled after; horizontal band for the IQN-ILS minus Robin--Neumann spread.}
+
+Expected claims: before the correction, the wall amplitude differs by a constant \tbd{value} on every mesh and time step while the fluid quantities agree to \tbd{value}; after it, every difference \tbd{decreases under refinement / is below the partitioned spread}.
+\todo{Pending reruns with the corrected traction (R1). If the correction does not remove the whole offset, report the remainder and the next candidate from A2 (partitioned coupling tolerance, run B3).}

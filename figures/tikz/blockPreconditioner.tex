@@ -1,0 +1,130 @@
+% Block structure of the approximate Jacobian and the field-split
+% preconditioner. Drawn for the full text width (15 cm). Needs the TikZ
+% library arrows.meta, and \bb (\boldsymbol).
+\begin{tikzpicture}[
+    % explicit sizes, independent of the class and of setspace
+    font={\def\baselinestretch{1}\fontsize{8}{9.5}\selectfont},
+    small/.style={font={\def\baselinestretch{1}\fontsize{7}{8.4}\selectfont}},
+    panel/.style={font={\def\baselinestretch{1}\fontsize{9}{10.8}\selectfont}},
+    >={Stealth[length=2mm]},
+    lbl/.style={inner sep=1pt},
+    pcbox/.style={draw, thin, rounded corners=1.5pt, align=center,
+        execute at begin node={\hyphenpenalty=10000},
+        inner sep=3pt, fill=white},
+    pcleaf/.style={pcbox, fill=black!10},
+    note/.style={align=left, inner sep=0pt, small,
+        execute at begin node={\hyphenpenalty=10000}},
+    tree/.style={thin},
+]
+% ---------------------------------------------------------------- (a) matrix
+% row/column extents: momentum [0,\xm], pressure [\xm,\xp], solid [\xp,\xs]
+\def\xm{2.0}\def\xp{2.85}\def\xs{4.35}
+\def\xv{4.6}\def\xvv{5.4}
+\def\xr{6.1}\def\xrr{6.9}
+\begin{scope}[yscale=-1]
+    \fill[black!10] (0,0) rectangle (\xp,\xp);
+    \fill[black!10] (\xp,\xp) rectangle (\xs,\xs);
+    \draw[thin] (0,0) rectangle (\xs,\xs);
+    \draw[thin] (\xm,0) -- (\xm,\xp);
+    \draw[thin] (0,\xm) -- (\xp,\xm);
+    \draw[thin, densely dotted] (\xp,\xm) -- (\xs,\xm);
+    \draw[thin, densely dotted] (\xm,\xp) -- (\xm,\xs);
+    \draw[semithick] (\xp,0) -- (\xp,\xs);
+    \draw[semithick] (0,\xp) -- (\xs,\xp);
+    % block labels
+    \node[lbl] at ({\xm/2},{\xm/2}) {$\tilde{\bb{J}}_{mm}$};
+    \node[lbl] at ({(\xm+\xp)/2},{\xm/2}) {$\tilde{\bb{J}}_{mp}$};
+    \node[lbl] at ({\xm/2},{(\xm+\xp)/2}) {$\tilde{\bb{J}}_{pm}$};
+    \node[lbl] at ({(\xm+\xp)/2},{(\xm+\xp)/2}) {$\tilde{J}_{pp}$};
+    \node[lbl] at ({(\xp+\xs)/2},{\xm/2}) {$\tilde{\bb{J}}_{ms}$};
+    \node[lbl] at ({(\xp+\xs)/2},{(\xm+\xp)/2}) {$\tilde{\bb{J}}_{ps}$};
+    \node[lbl] at ({\xm/2},{(\xp+\xs)/2}) {$\tilde{\bb{J}}_{sm}$};
+    \node[lbl] at ({(\xm+\xp)/2},{(\xp+\xs)/2}) {$\tilde{\bb{J}}_{sp}$};
+    \node[lbl] at ({(\xp+\xs)/2},{(\xp+\xs)/2}) {$\tilde{\bb{J}}_{ss}$};
+    % fluid/solid brackets above and to the left
+    \draw[thin] (0.05,-0.08) -- ++(0,-0.08) -- (\xp-0.05,-0.16) -- ++(0,0.08);
+    \draw[thin] (\xp+0.05,-0.08) -- ++(0,-0.08) -- (\xs-0.05,-0.16) -- ++(0,0.08);
+    \node[lbl, anchor=south] at ({\xp/2},-0.2) {fluid};
+    \node[lbl, anchor=south] at ({(\xp+\xs)/2},-0.2) {solid};
+    \draw[thin] (-0.08,0.05) -- ++(-0.08,0) -- (-0.16,\xp-0.05) -- ++(0.08,0);
+    \draw[thin] (-0.08,\xp+0.05) -- ++(-0.08,0) -- (-0.16,\xs-0.05) -- ++(0.08,0);
+    \node[lbl, anchor=east] at (-0.2,{\xp/2}) {fluid};
+    \node[lbl, anchor=east] at (-0.2,{(\xp+\xs)/2}) {solid};
+    % unknown vector
+    \draw[thin] (\xv,0) rectangle (\xvv,\xs);
+    \draw[thin] (\xv,\xm) -- (\xvv,\xm);
+    \draw[semithick] (\xv,\xp) -- (\xvv,\xp);
+    \node[lbl] at ({(\xv+\xvv)/2},{\xm/2}) {$\Delta\bb{v}_F$};
+    \node[lbl] at ({(\xv+\xvv)/2},{(\xm+\xp)/2}) {$\Delta p_F$};
+    \node[lbl] at ({(\xv+\xvv)/2},{(\xp+\xs)/2}) {$\Delta\bb{v}_S$};
+    % right-hand side
+    \node[lbl] at ({(\xvv+\xr)/2},{\xs/2}) {$\approx\,-$};
+    \draw[thin] (\xr,0) rectangle (\xrr,\xs);
+    \draw[thin] (\xr,\xm) -- (\xrr,\xm);
+    \draw[semithick] (\xr,\xp) -- (\xrr,\xp);
+    \node[lbl] at ({(\xr+\xrr)/2},{\xm/2}) {$\bb{R}_{F_m}$};
+    \node[lbl] at ({(\xr+\xrr)/2},{(\xm+\xp)/2}) {$R_{F_p}$};
+    \node[lbl] at ({(\xr+\xrr)/2},{(\xp+\xs)/2}) {$\bb{R}_S$};
+\end{scope}
+\node[panel, anchor=north west] at (-1.6,0.7) {(a)};
+% legend for (a)
+\node[note, anchor=north west, text width=5.7cm] at (7.2,0.25) {%
+    \textbf{Fluid block} $\tilde{\bb{J}}_{ff}$ (velocity--pressure)\\[1pt]
+    $\tilde{\bb{J}}_{mm}$: momentum (BDF2, compact diffusion, upwind
+    convection)\\
+    $\tilde{\bb{J}}_{mp}$: pressure gradient\\
+    $\tilde{\bb{J}}_{pm}$: divergence (continuity)\\
+    $\tilde{J}_{pp}$: Rhie--Chow pressure stabilisation\\[4pt]
+    \textbf{Coupling blocks} (interface cells only)\\[1pt]
+    $\tilde{\bb{J}}_{fs}=[\tilde{\bb{J}}_{ms};\tilde{\bb{J}}_{ps}]$: solid
+    interface velocity $\to$ fluid interface velocity condition and interface
+    flux\\
+    $\tilde{\bb{J}}_{sf}=[\tilde{\bb{J}}_{sm},\tilde{\bb{J}}_{sp}]$: fluid
+    viscous traction and pressure $\to$ solid interface traction\\[4pt]
+    \textbf{Solid block} $\tilde{\bb{J}}_{ss}$: solid momentum in terms of
+    the solid velocity (compact)\\[4pt]
+    Grey: diagonal blocks of the fluid--solid split.};
+% ------------------------------------------------- (b) preconditioner hierarchy
+\begin{scope}[yshift=-6.0cm]
+    \node[panel, anchor=north west] at (-1.6,0.45) {(b)};
+    \node[pcbox, text width=7.4cm] (newton) at (3.2,0)
+        {Newton step (LGMRES):
+        \mbox{$\bb{J}\,\Delta\bb{\mathcal{U}}_k=-\bb{R}(\bb{\mathcal{U}}_k)$}\\
+        $\bb{J}$ applied matrix-free (\texttt{-snes\_mf\_operator}):\\[1pt]
+        \mbox{$\bb{J}\bb{w}\approx[\bb{R}(\bb{\mathcal{U}}_k+\epsilon\bb{w})
+        -\bb{R}(\bb{\mathcal{U}}_k)]/\epsilon$}};
+    \node[pcbox, text width=4.5cm, anchor=west] (jtilde) at (8.0,0)
+        {approximate Jacobian $\tilde{\bb{J}}$ of (a),\\
+        row-scaled by $s_F$ and $s_S$;\\
+        assembled only to build\\ the preconditioner};
+    \node[pcbox, text width=6.8cm] (outer) at (3.2,-1.65)
+        {fluid--solid field split, multiplicative:\\
+        fluid block first, then solid block with\\
+        right-hand side updated by $\tilde{\bb{J}}_{sf}$};
+    \draw[->] (outer.north) -- node[right, small]
+        {preconditions} (newton.south);
+    \draw[->] (jtilde.south) |- node[pos=0.25, right, small]
+        {builds} (outer.east);
+    % second level
+    \node[pcbox, text width=4.4cm] (fluid) at (2.4,-3.2)
+        {fluid $\tilde{\bb{J}}_{ff}$: velocity--pressure\\
+        Schur field split (upper or full)};
+    \node[pcleaf, text width=3.4cm] (solid) at (8.4,-3.2)
+        {solid $\tilde{\bb{J}}_{ss}$:\\ direct (LU) or AMG};
+    % third level
+    \node[pcleaf, text width=3.0cm] (vel) at (0.6,-4.75)
+        {velocity $\tilde{\bb{J}}_{mm}$:\\ block Jacobi + ILU(0)};
+    \node[pcleaf, text width=3.6cm] (pres) at (4.6,-4.75)
+        {pressure Schur complement\\
+        $\hat{S}_p$ (\texttt{selfp}): BoomerAMG};
+    \draw[tree] (outer.south) -- ++(0,-0.3) coordinate (o1);
+    \draw[tree] (fluid.north) |- (o1) -| (solid.north);
+    \draw[tree] (fluid.south) -- ++(0,-0.3) coordinate (f1);
+    \draw[tree] (vel.north) |- (f1) -| (pres.north);
+    \node[note, anchor=north west, text width=4.6cm] at (8.0,-4.15) {%
+        $\hat{S}_p=\tilde{J}_{pp}-\tilde{\bb{J}}_{pm}\,
+        \mathrm{diag}(\tilde{\bb{J}}_{mm})^{-1}\tilde{\bb{J}}_{mp}$\\[3pt]
+        Each block solver (grey) is applied once, without inner Krylov
+        iterations, so the preconditioner is a fixed linear operator.};
+\end{scope}
+\end{tikzpicture}

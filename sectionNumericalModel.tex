@@ -623,6 +623,14 @@ where $\tilde{\bb{J}}_{ff}$ is the approximate fluid velocity--pressure block,
 $\tilde{\bb{J}}_{ss}$ is the approximate solid velocity block, and
 $\tilde{\bb{J}}_{fs}$ and $\tilde{\bb{J}}_{sf}$ approximate the interface
 coupling derivatives.
+Figure~\ref{fig:block_preconditioner} summarises the block structure of $\tilde{\bb{J}}$ and the field-split preconditioner built from it (Section~\ref{sec:fieldsplit}).
+
+\begin{figure}[tbp]
+    \centering
+    \input{figures/tikz/blockPreconditioner.tex}
+    \caption{(a) Block structure of the approximate Jacobian $\tilde{\bb{J}}$ (Equations~\eqref{eqn:block_preconditioner} and \eqref{eqn:fluid_block_preconditioner}) for the Newton correction of the fluid velocity, fluid pressure and solid velocity; block sizes are not to scale. (b) The nested field-split preconditioner built from $\tilde{\bb{J}}$ (Section~\ref{sec:fieldsplit}); the Newton operator $\bb{J}$ itself is applied matrix-free (Equation~\eqref{eqn:jfnk_operator}).}
+    \label{fig:block_preconditioner}
+\end{figure}
 
 The fluid block is itself a coupled velocity--pressure system. With the fluid
 momentum and pressure equations ordered as in
@@ -1120,6 +1128,14 @@ The combined decomposition can assign some processes cells of only one region, w
 \todo{State which decomposition each parallel run in Section 8 uses.}
 
 The time-step procedure is summarised in Algorithm~\ref{alg:quasi_monolithic_fsi}, and the residual evaluation used inside the nonlinear solve is summarised in Algorithm~\ref{alg:coupled_residual}.
+Figure~\ref{fig:time_step_flowchart} shows the time-step procedure as a flowchart.
+
+\begin{figure}[tbp]
+    \centering
+    \input{figures/tikz/timeStepFlowchart.tex}
+    \caption{One time step, $t^{n-1}\to t^n$, of the quasi-monolithic algorithm (Algorithms~\ref{alg:quasi_monolithic_fsi} and~\ref{alg:coupled_residual}). The fluid mesh is moved once, before the Newton loop (grey), and is fixed during it; a failed nonlinear solve is retried from the stored state with a quarter of the time step when adaptive time stepping is enabled.}
+    \label{fig:time_step_flowchart}
+\end{figure}
 
 \begin{algorithm}[htbp]
 \caption{Quasi-monolithic FSI solution procedure for one time step, $t^{n-1} \to t^n$}

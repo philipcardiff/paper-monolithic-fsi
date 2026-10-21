@@ -1,0 +1,3 @@
+run_id                      np status       t_last  steps   newt  max  ksp/nw    exec_s clock_s allrun_s
+b2-mono-F2-S160x8-directMa   1 completed       1.5    240 2.6958    3 285.801   4414.14  4420.0 4421.189
+b2-mono-F2-S640x8-AMI        1 completed       1.5    240 2.5875    3 272.203   4687.72  4694.0  4695.17

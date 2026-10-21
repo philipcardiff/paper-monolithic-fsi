@@ -10,8 +10,8 @@ Last updated: 2026-10-20
 **Phase B continues on XenoSim** (Philip, 21 Oct: while MeluXina is out of
 hours, move work to XenoSim; phase B checks that the cases work, no fine
 meshes). B0 done; B1 ring done. Running/queued on XenoSim: B1 cav spin-up
-13027 → cav windows 13028, tube spin-up 13029 → tube windows 13030, B2
-conformal 13024 and AMI 13025 (running). MeluXina held jobs 5364390, 5364391, 5364295, 5364354 cancelled
+13027 done → cav windows 13028 (queued), tube spin-up 13029 (running) →
+tube windows 13030. B2 done; B3 estimate done. MeluXina held jobs 5364390, 5364391, 5364295, 5364354 cancelled
 (superseded); p201287 used 1376 of 1389 node-hours in October.
 **Handoff Section 8 triggered** by B1 ring (preconditioner changes a QoI by
 more than the floor) — see `paper-data/campaign/b1/findings.md`.
@@ -24,7 +24,7 @@ Gate G1 not reached. No main-campaign (R1–R7) runs.
 | B0 build | done on MeluXina and XenoSim | MeluXina 5364171 COMPLETED; XenoSim 12759 completed (no build errors, `v2.2-1692-g257b2e564`) | – |
 | B0 smoke | **done, passed** (`paper-data/campaign/b0/findings.md`) | 5364272 COMPLETED | – |
 | B1 solid PC | ring done; cav and tube spin-ups redone on XenoSim (first attempt failed, see log) | 5364389 COMPLETED; XenoSim 13027 (cav spin-up, serial) → 13028 (cav windows, 1/4/16 ranks); 13029 (tube spin-up, 16 ranks) → 13030 (tube windows, 4/16 ranks); 13021–13023 failed in set-up | analyse; pick the cheapest PC per case |
-| B2 collapsibleChannel AMI | step 1 done (640×8 chosen); step 2 on XenoSim | 5364293 COMPLETED; XenoSim 13024 (conformal), 13025 (AMI 640×8) | compare trough error and cost |
+| B2 collapsibleChannel AMI | **done** (`paper-data/campaign/b2/findings.md`): AMI 640×8 trough error −1.91% vs conformal 160×8 −4.28%, Newton 2.59 vs 2.70/step, +6% clock (indicative) | 5364293 COMPLETED; XenoSim 13024, 13025 COMPLETED | – |
 | B3 Jaiman/Liu estimate | **done** (`paper-data/campaign/b3/estimate.md`): blobInTreacle monolithic temporal study < 0.1 core-h, R6 total 2–12 core-h; block with tail 3–3.5 person-days + ~20–60 core-h (unverified guess) | – | decision at G1 |
 | G1 report | not started | – | – |
 
@@ -163,6 +163,15 @@ evidence. S2 is 4× the floor.
 None open (budget and acceptance test answered 21 Oct, see decisions).
 
 ## Log
+
+- **2026-10-22** B2 done on XenoSim (13024, 13025, ~75 min each, serial).
+  Conformal baseline reproduces the README (−0.20650 vs −0.20691 m); AMI with
+  the 640×8 solid cuts the trough error from −4.28% to −1.91% with no loss of
+  Newton convergence. `b2_post.py` counted the mesh-motion SNES solves as
+  steps (480, mean 2.95); fixed to count the coupled Up solve only (240,
+  2.70), and gained a `ddt_U` column. Cav spin-up redone on XenoSim (13027,
+  28 min, 2.23 Newton/step, restart fields written). `status.py` crashed on
+  missing values; fixed.
 
 - **2026-10-21** B3 estimate written (no runs). blobInTreacle monolithic
   fluid uses `ddt(U) Euler` at 257b2e564; R6 must switch it to `backward`.

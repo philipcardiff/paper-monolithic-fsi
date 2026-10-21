@@ -11,7 +11,8 @@ For each run directory (runs/b2/<run_id>):
   tutorial README: (|trough| - |trough_ref|)/|trough_ref|, with
   trough_ref = -0.215731 m at dt = 0.00625 s; wall time (solver ClockTime,
   and the Allrun wall time from run_meta.json); Newton iterations per step
-  from the SNES "Nonlinear solve converged/diverged ... iterations N" lines;
+  from the SNES "Nonlinear solve converged/diverged ... iterations N" line
+  of the coupled Up solve (not the mesh-motion D solve) of each step;
   status completed / diverged / stalled / timeout.
 
 The trough and reference readers are imported (read-only, no bytecode) from
@@ -49,7 +50,7 @@ DEFAULT_TUTORIAL = os.path.join(
 )
 COLUMNS = [
     "run_id", "case", "study", "coupling", "level", "solid_mesh", "interface",
-    "dt", "rho_ratio", "ranks", "exclusive", "code_commit", "status", "t_end",
+    "dt", "ddt_U", "rho_ratio", "ranks", "exclusive", "code_commit", "status", "t_end",
     "n_steps", "iters_mean", "wall_s", "notes",
 ]
 SNES = re.compile(
@@ -111,6 +112,14 @@ def static_row(run_dir: Path, commit: str) -> dict:
     }
 
 
+def ddt_u(run_dir: Path) -> str:
+    """Fluid ddt(U) scheme of the monolithic variant."""
+    path = run_dir / "system/fluid/fvSchemes.monolithic"
+    m = re.search(r"ddt\(U\)\s+(\w+);", path.read_text()) \
+        if path.is_file() else None
+    return m.group(1) if m else ""
+
+
 def fsi_row(run_dir: Path, driver, refs: dict, commit: str) -> dict:
     case = load_json(run_dir / "b2_case.json")
     meta = load_json(run_dir / "run_meta.json")
@@ -119,7 +128,10 @@ def fsi_row(run_dir: Path, driver, refs: dict, commit: str) -> dict:
     end_time = float(case.get("end_time", 1.5))
     dt = float(case.get("dt", 0.00625))
 
-    snes = SNES.findall(text)
+    # Each step solves the mesh motion (D) and then the coupled system (Up);
+    # count only the Up solve, the first SNES result after its header
+    snes = [m for block in text.split("for Up using PETSc SNES")[1:]
+            for m in SNES.findall(block)[:1]]
     iters = [int(n) for kind, _, n in snes if kind == "converged"]
     diverged = [(reason, int(n)) for kind, reason, n in snes
                 if kind == "diverged"]
@@ -174,7 +186,7 @@ def fsi_row(run_dir: Path, driver, refs: dict, commit: str) -> dict:
         "level": case.get("level", ""), "solid_mesh": case.get("solid_mesh", ""),
         "interface": case.get("interfaceTransferMethod", "")
         + ("+conservative" if case.get("conservativeTractionTransfer") else ""),
-        "dt": dt, "rho_ratio": 1, "ranks": meta.get("ranks", 1),
+        "dt": dt, "ddt_U": ddt_u(run_dir), "rho_ratio": 1, "ranks": meta.get("ranks", 1),
         "exclusive": "yes" if meta.get("exclusive") else "no",
         "code_commit": commit, "status": status, "t_end": t_last,
         "n_steps": len(iters) + len(diverged),

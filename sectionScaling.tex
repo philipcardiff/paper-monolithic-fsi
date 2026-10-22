@@ -24,6 +24,12 @@ It is used here to check the quasi-monolithic coupling against the partitioned o
 
 %%--------------------------------------------------------------------------------------------------------------------%%
 \subsection{Consistency on three levels}\label{sec:tube3d_consistency}
+% TIME-SCHEME NOTE (Philip, 22 Oct 2026), for anyone adding results here:
+% all transient results in this paper must use BDF2 (backward) for the fluid
+% ddt(U) and the solid. The solids4foam tutorial default for this case is
+% Euler (the verification driver sets backward) for the fluid ddt(U). Confirm and record the ddt schemes of every
+% run (runs.csv); rerun any result computed with Euler, and say so here.
+\todo{Time scheme: confirm that every result in this subsection uses BDF2 (backward) for the fluid and the solid (tutorial default for the fluid ddt(U): Euler (the verification driver sets backward)); results computed with Euler must be rerun.}
 %%--------------------------------------------------------------------------------------------------------------------%%
 
 A quarter of the tube is computed with symmetry planes, on the three geometrically similar mesh levels of the companion paper (16\,000, 128\,000 and 1\,024\,000 fluid cells) with the time step halved with the mesh ($2.5\times10^{-5}$, $1.25\times10^{-5}$ and $6.25\times10^{-6}\,\mathrm{s}$), to the end of the response.
@@ -44,7 +50,7 @@ Expected claims: the differences decrease from \tbd{value} on level 1 to \tbd{va
 Level 2 is run on 1, 2, 4, 8, 16, 32 and 64 processes and level 3 on 16, 32, 64 and \tbd{128} processes, over a fixed window of 50 steps from a restart, with the quasi-monolithic coupling and with Robin--Neumann coupling.
 The fluid and solid regions are decomposed together by the \texttt{decomposeParMonolithic} utility of solids4foam, which partitions the fluid and solid cells as one graph, with extra edges across the interface face pairs, so that a process may own fluid cells, solid cells or both; the graph is partitioned with \tbd{decomposition method}.
 % Source: applications/utilities/decomposeParMonolithic/README.md at 257b2e564.
-The solid block is preconditioned by \tbd{the choice made in check B1: exact LU gathered on one process, or BoomerAMG}.
+The solid block is preconditioned by one V-cycle of BoomerAMG, the default of the solids4foam 3dTube verification driver, which replaces the exact LU factorisation gathered on one process because that factorisation dominates the cost on the finer meshes \tbd{confirm with check B1}.
 
 \paragraph{Measured.}
 Wall time per step and parallel efficiency relative to the smallest process count of each level, Newton iterations per step and Krylov iterations per Newton iteration as functions of the process count, and peak memory per process.
@@ -54,7 +60,7 @@ Wall time per step and parallel efficiency relative to the smallest process coun
 Expected claims: the quasi-monolithic coupling reaches a parallel efficiency of \tbd{value} on \tbd{N} processes on level \tbd{level}, against \tbd{value} for Robin--Neumann; the Krylov iterations per Newton iteration grow by \tbd{factor} from 1 to \tbd{N} processes; the wall time per step of the quasi-monolithic coupling is \tbd{factor} that of Robin--Neumann at \tbd{N} processes.
 
 %%--------------------------------------------------------------------------------------------------------------------%%
-\subsection{Preconditioner and Jacobian ablation}\label{sec:tube3d_pc_ablation}
+\subsection{Effect of the preconditioner and Jacobian settings}\label{sec:tube3d_pc_study}
 %%--------------------------------------------------------------------------------------------------------------------%%
 % All variants are PETSc options on the tag (A4 Sections 5 and 6, route A).
 
@@ -62,7 +68,7 @@ The default solver settings (Table~\ref{tab:solver_settings}) are examined by ch
 Each variant must reproduce the quantities of interest of the default run to within the iterative floor (Section~\ref{sec:protocol}); a variant that does not is reported as such.
 The variants are: an upper-triangular instead of a full Schur factorisation of the fluid block; the Jacobian and preconditioner rebuilt every Newton iteration instead of every eighth; a Krylov tolerance of $10^{-4}$ instead of $10^{-3}$; \tbd{the alternative solid-block preconditioner to the one chosen in check B1}; BoomerAMG instead of block-Jacobi ILU(0) for the fluid velocity block; and the assembled approximate Jacobian used as the Newton operator instead of the matrix-free operator (Section~\ref{sec:jfnk_solution}).
 
-\todo{Table: 3dTube preconditioner ablation, level 2, 8 processes, 50 steps. Rows: default; Schur upper; lag 1; \texttt{ksp\_rtol} $10^{-4}$; solid block alternative; velocity block BoomerAMG; assembled Jacobian as operator (no \texttt{snes\_mf\_operator}). Columns: Newton iterations per step; Krylov iterations per Newton iteration; wall time per step; peak memory; largest change of a QoI against the default (relative to the iterative floor); outcome.}
+\todo{Table: 3dTube preconditioner and Jacobian settings, level 2, 8 processes, 50 steps. Rows: default; Schur upper; lag 1; \texttt{ksp\_rtol} $10^{-4}$; solid block alternative; velocity block BoomerAMG; assembled Jacobian as operator (no \texttt{snes\_mf\_operator}). Columns: Newton iterations per step; Krylov iterations per Newton iteration; wall time per step; peak memory; largest change of a QoI against the default (relative to the iterative floor); outcome.}
 
 \todo{Figure: Newton residual norm against Newton iteration for one representative time step, matrix-free operator against assembled approximate Jacobian, on 3dTube level 2 and on ringAddedMass (moderate level, factor 2, 100 steps per period), with \texttt{snes\_max\_it} high enough for the assembled-Jacobian run to converge. Reference slopes for linear and quadratic convergence.}
 

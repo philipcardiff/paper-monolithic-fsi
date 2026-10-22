@@ -8,6 +8,12 @@ This section reports where the method, as implemented and released, is limited: 
 
 %%--------------------------------------------------------------------------------------------------------------------%%
 \subsection{Time-step limit in a three-dimensional flag}\label{sec:lim_foil}
+% TIME-SCHEME NOTE (Philip, 22 Oct 2026), for anyone adding results here:
+% all transient results in this paper must use BDF2 (backward) for the fluid
+% ddt(U) and the solid. The solids4foam tutorial default for this case is
+% backward for the fluid ddt(U). Confirm and record the ddt schemes of every
+% run (runs.csv); rerun any result computed with Euler, and say so here.
+\todo{Time scheme: confirm that every result in this subsection uses BDF2 (backward) for the fluid and the solid (tutorial default for the fluid ddt(U): backward); results computed with Euler must be rerun.}
 %%--------------------------------------------------------------------------------------------------------------------%%
 % Set-up: solids4foam origin/fix/foilInWind-monolithic-timestep @ b157ecaf3
 % (solids4foam PR #602), tutorials/fluidSolidInteraction/foilInWind/README.md
@@ -55,12 +61,13 @@ The method has no globalisation beyond a backtracking line search, and adaptive 
 % Historical (April 2026, commit 2f99ea065): per-process bjacobi+LU on the
 % solid block changed the foilInWind solid response with the process count;
 % a preconditioner must not change a converged answer, so the Newton
-% tolerance was too loose then. Ask Philip whether to mention it.
+% tolerance was too loose then. Not reported (the acceptance test of check B1
+% now guards against it).
 
-In every case of this paper except \tbd{list}, the solid block of the preconditioner is factorised exactly with a sparse LU factorisation after gathering it onto a single process.
+In the two-dimensional cases of this paper, the solid block of the preconditioner is factorised exactly with a sparse LU factorisation after gathering it onto a single process.
 This is robust, and affordable because the solid block is small compared with the fluid block in these cases, but it is a serial step whose cost and memory grow with the size of the solid, and it limits the parallel scaling of cases with large solids (Section~\ref{sec:tube3d_scaling}).
-Algebraic multigrid (BoomerAMG) on the solid block \tbd{reproduces the converged solution and costs \ldots / did not converge acceptably / changed the solution beyond the iterative floor} (check B1), and \tbd{is / is not} used as the default.
-\todo{Fill from the G1 report (B1: S0 redundant+LU, S1 BoomerAMG, S2 bjacobi+LU, on ringAddedMass, cavityFlexibleBottom level 3 and 3dTube level 2). If BoomerAMG is adopted, rewrite this subsection as a note on its acceptance test.}
+For the three-dimensional tube, one V-cycle of BoomerAMG replaces it (Section~\ref{sec:tube3d_scaling}); on the small solid block of the ring it needs about twice the Krylov iterations of the exact factorisation \tbd{confirm and complete from check B1: cost on the cavity and the tube, and agreement with the tightly converged solution}.
+\todo{Fill from the G1 report (B1 on ringAddedMass, cavityFlexibleBottom level 3 and 3dTube level 2, judged against the tightly converged reference: HANDOFF.md, decision of 21 October).}
 
 %%--------------------------------------------------------------------------------------------------------------------%%
 \subsection{Velocity solid on thin structures}\label{sec:lim_thin_solid}

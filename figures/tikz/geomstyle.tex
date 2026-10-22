@@ -1,0 +1,28 @@
+% Shared style of the case geometry figures (mesh layer + annotation layer).
+% Usage, inside a figure environment (model coordinates = TikZ coordinates):
+%   \begin{tikzpicture}[x=<W/(xmax-xmin)>cm, y=<same>cm]
+%     \node[anchor=south west, inner sep=0pt] at (xmin,ymin)
+%       {\includegraphics[width=<W>cm]{figures/mesh/<case>.pdf}};
+%     \draw[geom outline] ...;  \geomdimx{...}; \node[geom bc] ...;
+%   \end{tikzpicture}
+% <W>, xmin, xmax, ymin come from the .json that figures/scripts/mesh_layer.py
+% writes next to the mesh PDF (width_cm, xmin, xmax, ymin).
+\tikzset{
+  geom outline/.style={line width=0.6pt, black},
+  geom interface/.style={line width=0.9pt, black},
+  geom dim/.style={line width=0.35pt, {Latex[length=1.6mm,width=1.1mm]}-{Latex[length=1.6mm,width=1.1mm]}},
+  geom ext/.style={line width=0.25pt, gray},
+  geom label/.style={font=\footnotesize, inner sep=1pt},
+  geom bc/.style={font=\footnotesize\itshape, inner sep=1pt},
+  geom point/.style={circle, fill=black, inner sep=0pt, minimum size=3pt},
+  geom arrow/.style={line width=0.4pt, -{Latex[length=1.4mm,width=1mm]}},
+}
+% Horizontal and vertical dimension lines: (start) (end) {label} offset
+\newcommand{\geomdimx}[4]{%
+  \draw[geom ext] (#1) -- ++(0,#4);
+  \draw[geom ext] (#2) -- ++(0,#4);
+  \draw[geom dim] ($(#1)+(0,#4)$) -- node[geom label, fill=white] {#3} ($(#2)+(0,#4)$);}
+\newcommand{\geomdimy}[4]{%
+  \draw[geom ext] (#1) -- ++(#4,0);
+  \draw[geom ext] (#2) -- ++(#4,0);
+  \draw[geom dim] ($(#1)+(#4,0)$) -- node[geom label, fill=white] {#3} ($(#2)+(#4,0)$);}

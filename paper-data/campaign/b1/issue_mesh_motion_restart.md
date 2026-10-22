@@ -13,6 +13,14 @@ displacement, giving a spurious interface offset after a restart. With the
 fix a restart of the tutorial cavity reproduces the continuous run
 (first-step norms to 11 digits, displacement output to all 12 written
 digits) and continuous runs are bit-for-bit unchanged (PR description).
+Verified by the coordinator on the B1 campaign mesh (cavity factor 4,
+Δt = 0.5 s, `ddt(U) backward`, `writePrecision 12`), fix build
+`~/OpenFOAM/philipc-v2512-qmfix` (abfcd3e32), XenoSim job 13152: a
+continuous run 0 → 15 s against a restart 10 → 15 s. First-step initial
+norms at t = 10.5: mesh motion 2.075431291686e-01 / 2.075431291687e-01,
+Up 2.244128412562e+06 / 2.244128412564e+06; largest point-displacement
+difference over the 10 restarted steps 2e-12 m (runs in
+`runs/rtest/cav{,-restart}`, script `campaign/jobs/rtest_cav.sh`).
 Until the PR is merged the campaign avoids restarts (B1 windows run from
 t = 0).
 

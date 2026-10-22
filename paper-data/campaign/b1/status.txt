@@ -27,3 +27,7 @@ b1-tube-S2-p16              16 completed  0.002625    210    2.0    2  14.693   
 b1-tube-S2-p4                4 completed  0.002625    210    2.0    2  14.426   1529.17  1529.0         
 b1-spin-cav                  1 completed       100    200   2.23    3  58.249   1736.67  1740.0         
 b1-spin-tube                16 completed     0.002    160    2.0    2  14.409   4401.42  4405.0         
+b1-cav-S0ref-p4              4 completed       125    250  2.948    3 112.223   1345.85  1347.0         
+b1-cav-S1ref-p4              4 completed       125    250  2.948    3 124.563   1290.62  1291.0         
+b1-tube-S0ref-p4             4 completed  0.002625    210 2.0571    3  35.579   6877.54  6878.0         
+b1-tube-S1ref-p16           16 completed  0.002625    210 2.0571    3  34.868    967.38   968.0         

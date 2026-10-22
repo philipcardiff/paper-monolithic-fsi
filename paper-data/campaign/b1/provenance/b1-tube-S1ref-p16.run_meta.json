@@ -1,0 +1,11 @@
+{
+ "run_id": "b1-tube-S1ref-p16",
+ "case": "tube",
+ "config": "S1ref",
+ "ranks": 16,
+ "rc": 0,
+ "wall_s": 970.814,
+ "peak_rss_max_rank_gb": 0.449,
+ "peak_rss_sum_gb": 6.15,
+ "binding": "none (shared node)"
+}

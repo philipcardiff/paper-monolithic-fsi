@@ -1,0 +1,11 @@
+{
+ "run_id": "b1-tube-S0ref-p4",
+ "case": "tube",
+ "config": "S0ref",
+ "ranks": 4,
+ "rc": 0,
+ "wall_s": 6881.067,
+ "peak_rss_max_rank_gb": 2.344,
+ "peak_rss_sum_gb": 9.34,
+ "binding": "none (shared node)"
+}

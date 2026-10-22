@@ -107,6 +107,55 @@ tube 9.8e-6. (Source: `b1_windows.csv`.)
   6.7e-5, S1 6.1e-5. (Computed with `b1_analyse.histories` and
   `max_rel_diff` over the windows; not in the CSV.)
 
+## Revised acceptance test (HANDOFF Section 10, 21 Oct)
+
+Reference: S0ref and S1ref = S0 and S1 at `snes_rtol`/`snes_stol` 1e-10,
+`ksp_rtol` 1e-8 (`ksp_max_it` 10000), same windows. XenoSim jobs 13051
+(cav, both on 4 ranks), 13052 (tube S1ref, 16 ranks), 13053 (tube S0ref,
+4 ranks); all rc 0, every step converged (`CONVERGED_FNORM_RELATIVE`).
+Per-quantity differences: `b1_qoi_vs_ref.csv`; maxima:
+`qoi_maxreldiff_vs_ref` in `b1_windows.csv`.
+
+- **The reference is preconditioner-independent:** S1ref against S0ref is
+  0 in the written digits for every quantity of both cases.
+- Cost at the reference tolerances (window): cav S0ref 231 s, S1ref 237 s
+  (4 ranks; 2.74 Newton/step, 115 and 128 Krylov/Newton); tube S0ref
+  1 573 s (4 ranks), S1ref 227 s (16 ranks).
+
+Thresholds: 5% of the change between the two finest meshes in the
+verification READMEs. cav (monolithic L3 → L4): Uy 0.70% → 3.5e-4, Fy
+0.057% → 2.9e-5. 3dTube (Robin–Neumann L1 → L2, the only levels
+recorded): u_r,max(A) 0.05% → 2.5e-5, u_z,min(A) 1.85% → 9.3e-4.
+
+| Case | Quantity | S0 | S1 | S2 | Threshold |
+|---|---|---:|---:|---:|---:|
+| cav | Uy at the monitor point | 0 | 0 | 0 | 3.5e-4 |
+| cav | Fy | 0 | ≤ 1.9e-7 | 1.9e-7 | 2.9e-5 |
+| tube | u_r at A | 4.6e-6 | 4.6e-6 | 4.6e-6 | 2.5e-5 |
+| tube | u_z at A | 4.5e-6 | 4.5e-6 | 4.5e-6 | 9.3e-4 |
+
+(Largest over rank counts; tutorial tolerances. Source:
+`b1_qoi_vs_ref.csv`.)
+
+- **cav: every configuration passes**, by two orders of magnitude or more.
+  The tutorial tolerances (`snes_rtol` 1e-6) are sufficient. (The 5.3e-6
+  in `qoi_maxreldiff_vs_ref` is the x component of the monitor point, not
+  a paper QoI.)
+- **tube: every configuration passes at point A**, at the tutorial
+  tolerances (`snes_rtol` 1e-4, `ksp_rtol` 1e-3).
+- The radial displacement at the wall points z = 0.40 and 0.45 m differs
+  by up to 6.5e-5 (S1) and 1.0e-4 (S2) relative to its own maximum, above
+  2.5e-5. The pulse has not reached them in the window (their maximum is
+  ≤ 1.1e-7 m, against 1.5e-4 m at z = 0.05 m), so the relative difference
+  is of a precursor of ~1e-7 m. Relative to the u_r peak (1.57e-4 m), every
+  wall difference is below 1e-5. Not a failure in my reading; reported.
+- **Limitation:** the 3dTube window (t = 2.0–2.625 ms) ends before the u_r
+  peak (7.2 ms); the test of `snes_rtol` 1e-4 on the peak itself needs a
+  full-run tight reference, which belongs in R5 (tolerance calibration).
+  The cavity window is at the steady state, so its test is final for L3.
+- **Solid PC at equal accuracy:** unchanged. All configurations meet the
+  rule, so the cheapest is chosen: S0 for cav, S1 for 3dTube.
+
 ## Recommendation (frozen solid-block options for R)
 
 | Case | Solid block |

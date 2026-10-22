@@ -7,15 +7,11 @@ Last updated: 2026-10-22
 
 ## Current phase
 
-**Phase B complete** (B0–B3 done; B1 cav and tube on XenoSim, windows from
-t = 0 because restarts fail: `paper-data/campaign/b1/issue_mesh_motion_restart.md`).
-B1 result: S0 (`redundant` + LU) cheapest for ring and cav; S1 (BoomerAMG)
-cheapest for 3dTube, 4–12× faster than S0. **Applying the revised B1
-acceptance test** (HANDOFF §10, 21 Oct, later): tight-reference runs S0ref
-and S1ref (`snes_rtol`/`snes_stol` 1e-10, `ksp_rtol` 1e-8) for cav (13051)
-and tube (13052 S1ref 16 ranks, 13053 S0ref 4 ranks) on XenoSim. Then the
-G1 report (`campaign/G1_report.md`, run-matrix costs being collected).
-Gate G1 not reached. No main-campaign (R1–R7) runs.
+**Gate G1 reached; campaign stopped.** Report: `campaign/G1_report.md`
+(costs: `campaign/G1_cost_estimate.md`). Phase B complete. B1 solid PC: S0
+(`redundant` + LU) for the 2D cases, S1 (BoomerAMG) for 3dTube; every
+configuration meets the revised 5% rule against tight references. Six open
+questions for Philip in the report. No R runs started; nothing queued.
 
 ## Status by stream
 
@@ -26,7 +22,7 @@ Gate G1 not reached. No main-campaign (R1–R7) runs.
 | B1 solid PC | **done** (`paper-data/campaign/b1/findings.md`): S0 for ring/cav, S1 BoomerAMG for 3dTube | 5364389 COMPLETED; XenoSim spin-ups 13039 (cav), 13029 (tube); windows 13044 (cav), 13045–13049 (tube) completed, all rc 0; earlier restart-based attempts failed (see log) | – |
 | B2 collapsibleChannel AMI | **done** (`paper-data/campaign/b2/findings.md`): AMI 640×8 trough error −1.91% vs conformal 160×8 −4.28%, Newton 2.59 vs 2.70/step, +6% clock (indicative) | 5364293 COMPLETED; XenoSim 13024, 13025 COMPLETED | – |
 | B3 Jaiman/Liu estimate | **done** (`paper-data/campaign/b3/estimate.md`): blobInTreacle monolithic temporal study < 0.1 core-h, R6 total 2–12 core-h; block with tail 3–3.5 person-days + ~20–60 core-h (unverified guess) | – | decision at G1 |
-| G1 report | in progress | – | write, push, stop |
+| G1 report | **done** (`campaign/G1_report.md`) | – | Philip's answers |
 
 ## Results so far (each number has its source)
 
@@ -176,9 +172,23 @@ All 2.00 Newton/step. QoI differences vs S0tight: cav S0/S1 ≤ 1.1e-5
 
 ## Open questions for Philip
 
-None open (budget and acceptance test answered 21 Oct, see decisions).
+See `campaign/G1_report.md`, "Open questions": restart defect before timing;
+timing machine (exclusive-node billing); collapsibleChannel accuracy run at
+fluid level 3; block with tail; 3dTube L3 scaling; rebuild from the branch
+head and repeat the chosen B1 configurations.
 
 ## Log
+
+- **2026-10-22** Tight references done (13051–13053, rc 0). S1ref = S0ref
+  in every written digit. All configurations meet the 5% rule at the
+  tutorial tolerances. Cavity Uy/Fy diff ≤ 1.9e-7 (thresholds 3.5e-4 and
+  2.9e-5). 3dTube point A 4.6e-6 (threshold 2.5e-5). Wall points ahead of
+  the pulse (max ≤ 1.1e-7 m) exceed it relative to their own maximum, which
+  is not meaningful (< 1e-5 of the u_r peak). 3dTube window ends before the
+  peak, so the full-run check is deferred to R5. Solid PC unchanged: S0
+  for 2D, S1 for 3dTube. Wrote `campaign/G1_report.md` and
+  `campaign/G1_cost_estimate.md` (R1–R7 ≈ 540–2 300 core-h). **Stopped
+  for G1.**
 
 - **2026-10-22** Read the decisions of 21 Oct on `campaign/handoff`
   (024f045, 52b95c4), which I had not applied: G2 dropped, run from the

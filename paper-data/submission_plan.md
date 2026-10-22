@@ -130,6 +130,24 @@ partitioned).
    before submitting. MeluXina is also the timing machine (exclusive nodes).
 8. **WP0 and 8a** (mesh layers) are approved to start now.
 
+## 3a. Decisions (Philip, 23 October 2026)
+
+1. **FSI3 comparison (§7):** option (b) for now. Compare QM-AMI on the
+   tutorial meshes with the verification paper's IQN-ILS tutorial-mesh runs
+   (1x/2x/4x, already done). QM-AMI 1x/2x exist; the 4x is a new run (4a).
+   QM against IQN-ILS on the conformal meshes (option a) may come later.
+2. **3dTube (§8):** QM uses `directMap`, the verification paper's
+   Robin–Neumann runs use AMI on the same meshes. State this in §8; no rerun.
+3. **Cavity:** the partitioned runs reduce Δt with the level; this is fine
+   for a steady case and is the point of the cost comparison.
+4. **ringAddedMass:** run Robin–Neumann with the standard solid (1d).
+5. **MeluXina project p201136** is Amirhossein and Colm's project (the
+   "Amir/Colm project" of decision 7 above).
+6. **Shared run registry:** `campaign/registry/registry.csv` (branch
+   `campaign/registry`), seeded from `paper-data/reuse_map.md`. Every run
+   is checked against it and claimed there before submission. Run agents
+   follow `campaign/RUN_AGENT_BRIEF.md`.
+
 ## 4. Runs (not started)
 
 All runs: the solver branch head at the time of the run (with its commit
@@ -157,7 +175,7 @@ the timing machine; everything else can run anywhere.
 | 1a | ringAddedMass | QM, 3 added-mass levels × mesh 1/2/4 × 25/50/100/200 steps per period (`--study monolithic` + mesh sweep) | Fig. 4.1, case-settings table |
 | 1b | ringAddedMass | QM zero-gradient pressure, moderate and strong levels × mesh 1/2/4, 100 steps per period | Fig. 4.3 |
 | 1c | ringAddedMass | QM non-conformal (`--study nonconformal`), conservative/interpolated × coarser/finer solid | Fig. 4.4 |
-| 1d | ringAddedMass | Strong level, mesh 2, 25/50/100 steps per period: QM, IQN-ILS, RN (**timing**) | Table 4.2 |
+| 1d | ringAddedMass | Strong level, mesh 2, 25/50/100 steps per period: QM, IQN-ILS, RN, all with the standard solid (**timing**) | Table 4.2 |
 | 1e | womersleyTube | QM m1/m2/m4 at 200 steps; m2 at 50/100/200/400 (`--monolithic`); RN and IQN-ILS on the same (for §5) | Table 4.3, Fig. 5.2 |
 | 1f | ring and Womersley | BDF2 start-up check: the same QoIs with a second-order first step, or a start-up window excluded | `\tbd` in §3 |
 
@@ -181,7 +199,7 @@ the timing machine; everything else can run anywhere.
 
 | ID | Case | Runs | Output |
 |---|---|---|---|
-| 4a | TurekHron2006 FSI3 | QM and IQN-ILS, conformal 1x/2x/4x, full runs | Table 7.1, accuracy axis of Fig. 7.1 |
+| 4a | TurekHron2006 FSI3 | Option (b): QM-AMI on the tutorial meshes, 4x full run (1x/2x and IQN-ILS 1x/2x/4x exist; see the registry). Option (a), QM and IQN-ILS on the conformal meshes, deferred | Table 7.1, accuracy axis of Fig. 7.1 |
 | 4b | TurekHron2006 FSI3 | Timing windows (2 periods from a periodic restart), same ranks per level for both (**timing**) | Cost axis of Fig. 7.1 |
 | 4c | TurekHron2006 FSI3 | 2x tolerance sweep: QM `snes_rtol` 1e-4/1e-6/1e-8; IQN-ILS strict 1e-4/1e-5/1e-6 | Fig. 7.1 inset |
 | 4d | TurekHron2006 FSI3 | Order of the QM u_x mean on 2x→4x (from 4a) | Sentence in the verification paper |
@@ -203,7 +221,7 @@ B3 estimate: all of WP5 is under 0.1 core-hours.
 
 | ID | Case | Runs | Output |
 |---|---|---|---|
-| 6a | 3dTube | QM L1–L3, full 20 ms (driver: BDF2, BoomerAMG solid) | Table 8.1 |
+| 6a | 3dTube | QM L3, full 20 ms (driver: BDF2, BoomerAMG solid, `directMap`); L1/L2 exist (registry) | Table 8.1 |
 | 6b | 3dTube | Strong scaling, L2 at 1–64 ranks and L3 at 16–128, QM and RN, 50-step windows (**timing**) | Fig. 8.1 |
 | 6c | 3dTube | Preconditioner and Jacobian settings, L2, 8 ranks, 7 variants (**timing**) | Table 8.2 |
 | 6d | 3dTube and ring | Newton residual histories, matrix-free against assembled Jacobian | Fig. 8.2 |
@@ -235,7 +253,7 @@ B3 estimate: all of WP5 is under 0.1 core-hours.
    - **Agent B, maps:** WP3 as array jobs;
    - **Agent C, heavy:** WP4 and WP6 (accuracy runs now; timing windows
      from 1 November on MeluXina).
-3. **In parallel, here:** 8b (geometry figures) and the template switch,
+3. **In parallel, here:** 8b (geometry figures),
    then the data figures and tables as the CSVs arrive (8d), then 8c.
 4. **Last:** fill the `\tbd`s, final pass on the abstract and Conclusions,
    case-settings table, named tag and Zenodo, cover letter and highlights.

@@ -192,6 +192,13 @@ None open (G1 answered 22 Oct).
 
 ## Log
 
+- **2026-10-22** Restart defect fixed: solids4foam PR #616 (subagent;
+  three defects, see `paper-data/campaign/b1/issue_mesh_motion_restart.md`).
+  Verifying on the B1 campaign mesh (cavity factor 4) with the fix build
+  (job 13152). Codex finished the block-with-tail set-up (commit
+  5a977259a, pushed; sandbox blocked its Slurm/MPI runs); its long runs
+  13123 (monolithic) and 13124 (partitioned) submitted on XenoSim.
+
 - **2026-10-22** Head build on XenoSim done (13104, no build errors).
   Submitted the B1 repeats and B2 level runs on it; MeluXina head build
   5375410; R0 sweep delegated (subagent β).

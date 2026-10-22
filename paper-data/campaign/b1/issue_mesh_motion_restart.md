@@ -1,7 +1,20 @@
 # Suspected solver issue: quasi-monolithic run does not restart consistently (fluid mesh motion)
 
-Status: reported under handoff Section 9; not worked around in code. The
-campaign avoids restarts instead (B1 windows run from t = 0).
+Status: **fixed in solids4foam PR #616** (`fix/monolithic-restart`,
+abfcd3e32, into `feature-petsc-snes-quasi-monolithic`; requested by Philip
+22 Oct). Three defects, none of them the suspicion below: (1)
+`nonLinGeomTotalLagTotalDispSolid::evolveSnes()` seeded the SNES solution
+vector from D only with the predictor on, so a restart started from zero
+internal displacement (the crash); (2) the coupling constructor's
+`storeOldTime()` overwrote the old-time velocities read on a restart, so
+the first displacement predictor used the wrong history; (3) the written
+mesh-motion interface held the predicted, not the final, solid
+displacement, giving a spurious interface offset after a restart. With the
+fix a restart of the tutorial cavity reproduces the continuous run
+(first-step norms to 11 digits, displacement output to all 12 written
+digits) and continuous runs are bit-for-bit unchanged (PR description).
+Until the PR is merged the campaign avoids restarts (B1 windows run from
+t = 0).
 
 ## Code and machine
 

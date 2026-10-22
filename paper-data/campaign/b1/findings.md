@@ -1,79 +1,126 @@
-# B1: preconditioner of the solid block (partial: ringAddedMass only)
+# B1: preconditioner of the solid block
 
-Code `257b2e564`, MeluXina (AMD EPYC 7H12), one exclusive node per case,
-runs one after another, ranks mapped and bound to cores. Set-up:
+Code `257b2e564` (`v2.2-1692-g257b2e564`). Set-up:
 `campaign/scripts/b1_setup.py`; job: `campaign/jobs/b1.sh`; analysis:
-`campaign/scripts/b1_analyse.py` → `b1_windows.csv`; per-run status:
-`status.txt`; provenance: `provenance/<run_id>.json`.
+`campaign/scripts/b1_analyse.py` → `b1_windows.csv` (all three cases, one
+run of the script); per-run status: `status.txt`; provenance:
+`provenance/<run_id>.json` and `provenance/<run_id>.run_meta.json`.
 
 Configurations of the `UpU` solid block: S0 `redundant` + LU (tutorial
-default); S1 BoomerAMG with the membraneRoof solid settings; S2 `bjacobi` +
-LU per rank; S0tight = S0 with `snes_rtol` and `snes_stol` 1e-6 → 1e-8.
-All other options are the tutorial's (`ksp_rtol 1e-4`, LGMRES, Schur
-fieldsplit for the fluid).
+default); S1 BoomerAMG with the membraneRoof solid settings (HMIS, ext+i,
+P_max 1, truncation 0.3); S2 `bjacobi` + LU per rank; S0tight = S0 with
+`snes_rtol` and `snes_stol` 100 times smaller. All other options are the
+tutorial's (`ksp_rtol 1e-4`, LGMRES, Schur fieldsplit for the fluid;
+`snes_rtol` 1e-6, except 3dTube 1e-4).
 
-## ringAddedMass
+**Criterion (Philip, 21 Oct): use the cheapest preconditioner per case.**
+The QoI difference from S0tight is reported but is not a gate.
 
-Moderate added mass (ρf = 140), mesh factor 2, standard solid, 50 steps per
-period, 2 periods (100 steps) from t = 0. Job 5364389.
+QoI difference = largest difference over the window of each monitored
+quantity (point displacement components and, for cav and tube, the fluid
+force), relative to that quantity's largest magnitude, maximised over the
+quantities. The monitors write 6 significant digits; `qoi_output_resolution`
+in the CSV is one unit in the last digit of the coarsest quantity, so smaller
+differences are not resolved.
 
-QoI difference = largest difference over the 100 steps of the monitored
-displacement components (x and y at the ring point), relative to their
-largest magnitude (3.84e-4 m), against S0tight at the same rank count.
+## Results
 
-| Config | Ranks | Newton/step | Krylov/Newton | Clock (s) | QoI diff vs S0tight |
-|---|---:|---:|---:|---:|---:|
-| S0 | 1 | 2.00 | 23.9 | 39 | 9.4e-7 |
-| S1 | 1 | 2.00 | 47.4 | 54 | 1.7e-5 |
-| S0tight | 1 | 2.99 | 28.9 | 56 | – |
-| S0 | 4 | 2.00 | 24.5 | 17 | 1.8e-6 |
-| S1 | 4 | 2.00 | 53.4 | 33 | 5.5e-5 |
-| S2 | 4 | 2.00 | 56.6 | 32 | 6.9e-6 |
-| S0tight | 4 | 3.00 | 29.5 | 30 | – |
+| Case | Config | Ranks | Newton/step | Krylov/Newton | Clock (s) | Memory, all ranks (GB) | QoI diff vs S0tight |
+|---|---|---:|---:|---:|---:|---:|---:|
+| ring | **S0** | 1 | 2.00 | 23.9 | **39** | – | 9.4e-7 |
+| ring | S1 | 1 | 2.00 | 47.4 | 54 | – | 1.7e-5 |
+| ring | **S0** | 4 | 2.00 | 24.5 | **17** | – | 1.8e-6 |
+| ring | S1 | 4 | 2.00 | 53.4 | 33 | – | 5.5e-5 |
+| ring | S2 | 4 | 2.00 | 56.6 | 32 | – | 6.9e-6 |
+| cav | **S0** | 1 | 2.00 | 60.1 | **352** | 0.60 | 5.3e-6 |
+| cav | S1 | 1 | 2.00 | 69.7 | 386 | 0.60 | 1.1e-5 |
+| cav | **S0** | 4 | 2.00 | 59.1 | **99** | 0.93 | 5.3e-6 |
+| cav | S1 | 4 | 2.00 | 69.2 | 109 | 0.92 | 5.3e-6 |
+| cav | S2 | 4 | 2.00 | 90.5 | 137 | 0.95 | 3.7e-5 |
+| cav | **S0** | 16 | 2.00 | 64.0 | **42** | 2.23 | 0 |
+| cav | S1 | 16 | 2.00 | 75.4 | 48 | 2.14 | 5.3e-6 |
+| cav | S2 | 16 | 2.00 | 108.5 | 59 | 2.18 | 1.2e-4 |
+| tube | S0 | 4 | 2.00 | 15.2 | 1 194 | 9.2 | 7.1e-5 |
+| tube | **S1** | 4 | 2.00 | 15.0 | **279** | 4.6 | 5.5e-5 |
+| tube | S2 | 4 | 2.00 | 15.1 | 337 | 5.3 | 5.5e-5 |
+| tube | S0 | 16 | 2.00 | 15.5 | 1 296 | 24.8 | 6.9e-5 |
+| tube | **S1** | 16 | 2.00 | 15.2 | **108** | 6.0 | 6.4e-5 |
+| tube | S2 | 16 | 2.00 | 15.6 | 132 | 6.5 | 1.0e-4 |
 
-(Source: `b1_windows.csv`.)
+S0tight runs (references, not candidates): ring 2.99–3.00 Newton/step;
+cav 2.76–2.90; tube 2.66–2.68. Output resolution: ring 2.6e-6, cav 5.3e-6,
+tube 9.8e-6. (Source: `b1_windows.csv`.)
 
-- **Iterative floor of S0:** 9.4e-7 (serial) and 1.8e-6 (4 ranks) of the
-  displacement amplitude.
-- **S1 (BoomerAMG) fails the acceptance test.** Its QoIs differ from the
-  tight reference by 1.7e-5 and 5.5e-5, 18 and 30 times the S0 floor, on all
-  four monitored components alike (not a near-zero component). It also costs
-  more: twice the Krylov iterations per Newton iteration and 1.4 to 1.9 times
-  the clock time.
-- **S2 (bjacobi + LU) also exceeds the floor**, by a factor of 4 (6.9e-6 at
-  4 ranks), and costs 1.9 times S0.
-- All configurations converge in 2 Newton iterations per step; the SNES
-  test (`snes_rtol 1e-6` relative to the initial residual) is met by all of
-  them, but with a different iterative error, because the Newton step is
-  only solved to `ksp_rtol 1e-4` and the error left after two Newton
-  iterations depends on the preconditioner. The S0 floor therefore measures
-  S0's iterative error only; other preconditioners at the same SNES tolerance
-  have a larger one.
-- Size in context: 5.5e-5 of the amplitude is small in absolute terms but of
-  the same order as the ring's recorded wet/dry ratio errors
-  (0.002–0.005%, ringAddedMass verification README), so for this case the
-  preconditioner choice is not negligible at the tutorial tolerance.
+### Set-up per case
 
-**Handoff Section 8 trigger:** "A preconditioner or rank count changes a
-converged QoI by more than the iterative floor." Reported; S1 and S2 are not
-adopted on this evidence. Rank count alone (S0, 1 against 4 ranks) changes
-the QoI by the same order as the floor itself (both at most 1.8e-6 from the
-tight runs).
+- **ringAddedMass** (MeluXina, AMD EPYC 7H12, job 5364389): moderate added
+  mass (ρf = 140), mesh factor 2, 50 steps per period, 2 periods (100 steps)
+  from t = 0; exclusive node, ranks bound to cores.
+- **cavityFlexibleBottom L3** (XenoSim, AMD EPYC 9684X, job 13044): mesh
+  factor 4, Δt = 0.5 s, inlet ramp 20 s, `ddt(U) backward`. Spin-up to
+  t = 100 s (job 13039, 200 steps, serial); each window runs from t = 0 to
+  t = 125 s and is measured over t = 100–125 s (50 steps). Per-region
+  `decomposePar`.
+- **3dTube L2** (XenoSim, jobs 13045 for 16 ranks, 13046–13049 for 4
+  ranks): mesh factor 2, Δt = 1.25e-5 s, `ddt(U) backward`. Spin-up to
+  t = 2 ms (job 13029, 160 steps, 16 ranks); each window runs from t = 0 to
+  2.625 ms and is measured over the last 50 steps. `decomposeParMonolithic`.
+- Windows run from t = 0 because a restart from the spin-up fails
+  (`issue_mesh_motion_restart.md`). Newton, Krylov and Clock are taken over
+  the last 50 steps only.
+- XenoSim: shared node (load ~185 of 192 cores), not exclusive, no core
+  binding (Slurm has no cpusets there). Clock times are indicative;
+  differences of ≈10% are within what the shared node can produce, factors
+  of 4–12 are not.
 
-## Not yet run
+## Findings
 
-- cavityFlexibleBottom L3: spin-up to t = 100 s completed (job 5364387,
-  25 min serial, 2.25 Newton/step, `status.txt`); windows job 5364390 is
-  **held** (project budget, see the progress log).
-- 3dTube L2: serial spin-up 5364388 **cancelled** after 3 min (MeluXina
-  bills a whole node for a 1-core job; with the budget nearly exhausted, the
-  spin-up should run in parallel); windows job 5364391 held.
+- **ring and cav: S0 is cheapest.** On the ring S1 costs 1.4–1.9 times S0
+  (twice the Krylov iterations); on the cavity S1 costs 10–14% more (16–18%
+  more Krylov iterations per Newton iteration) and S2 38–40% more. S0 is
+  kept for both (tutorial default).
+- **3dTube: S1 (BoomerAMG) is cheapest, by a wide margin.** Against S0 it
+  is 4.3 times faster at 4 ranks (279 against 1 194 s) and 12 times faster
+  at 16 ranks (108 against 1 296 s), and uses half (4 ranks) to a quarter
+  (16 ranks) of the memory. S0 does not scale: `redundant` factorises the
+  whole solid block on every rank, so its time does not fall from 4 to 16
+  ranks and its memory grows with the rank count (9.2 → 24.8 GB). S2 is
+  close to S1 (+21–22%). This matches the expectation that hypre pays off
+  for 3D meshes that are not small.
+- **Krylov iterations per Newton iteration hardly depend on the solid PC
+  for 3dTube** (15.0–15.6), unlike the 2D cases, so there the cost
+  difference is the cost of setting up and applying the PC.
+- **All configurations converge in 2 Newton iterations per step** in every
+  case at the tutorial tolerances (S0tight 2.7–3.0).
+- **QoI differences (reported, not a gate).**
+  - ring: S0 9.4e-7 / 1.8e-6; S1 1.7e-5 / 5.5e-5; S2 6.9e-6. With
+    `ksp_rtol 1e-4` the error left after two Newton iterations depends on
+    the PC. Section 8 trigger reported on 20 Oct.
+  - cav: S0 and S1 within 1–2 units of the output resolution (≤ 1.1e-5);
+    S2 3.7e-5 (4 ranks) and 1.2e-4 (16 ranks), above it.
+  - tube: S0 itself is 7e-5 from S0tight (the tutorial's `snes_rtol 1e-4`);
+    S1 (5.5e-5, 6.4e-5) and S2 (5.5e-5, 1.0e-4) are of the same order. S1
+    is as close to the tight reference as the default S0.
+- **Rank count** (largest QoI difference between rank counts): cav S0tight
+  1 / 4 / 16 ranks identical in the written digits, S0 1 against 16 ranks
+  5.3e-6 (one output digit); tube S0tight 4 against 16 ranks 6.1e-6, S0
+  6.7e-5, S1 6.1e-5. (Computed with `b1_analyse.histories` and
+  `max_rel_diff` over the windows; not in the CSV.)
 
-## Open questions for Philip
+## Recommendation (frozen solid-block options for R)
 
-1. Should the acceptance test compare each configuration with its own tight
-   run (its own floor) rather than S0's floor? At the tutorial tolerances,
-   any preconditioner other than S0 will fail S0's floor on the ring.
-2. Alternatively, tighten `ksp_rtol` (or `snes_rtol`) campaign-wide so that
-   the converged QoIs become preconditioner-independent; this changes cost
-   numbers.
+| Case | Solid block |
+|---|---|
+| ringAddedMass, cavityFlexibleBottom and the other 2D cases | S0 (`redundant` + LU), unchanged |
+| 3dTube (and other 3D cases that are not small) | S1 (BoomerAMG, membraneRoof settings) |
+
+## Deviations
+
+- 3dTube at 32 ranks not run (XenoSim had ~20 free cores; MeluXina out of
+  hours). The 4 → 16 rank trend is already decisive.
+- 3dTube spin-up on 16 ranks rather than serial.
+- cav and tube on XenoSim (shared, unbound) instead of MeluXina exclusive
+  nodes; ring on MeluXina. Costs are compared only within a case.
+- One run per configuration; no timing repeats.
+- The ring rows have no `ddt_U` entry in the CSV (its `b1_window.json`
+  does not record it); its fluid `fvSchemes` has `ddt(U) backward`.

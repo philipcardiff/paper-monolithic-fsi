@@ -1,0 +1,11 @@
+{
+ "run_id": "b1-cav-S0tight-p1",
+ "case": "cav",
+ "config": "S0tight",
+ "ranks": 1,
+ "rc": 0,
+ "wall_s": 2574.192,
+ "peak_rss_max_rank_gb": 0.608,
+ "peak_rss_sum_gb": 0.608,
+ "binding": "none (shared node)"
+}

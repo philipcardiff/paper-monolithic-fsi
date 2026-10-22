@@ -1,0 +1,11 @@
+{
+ "run_id": "b1-spin-tube",
+ "case": "tube",
+ "config": "S0",
+ "ranks": 16,
+ "rc": 0,
+ "wall_s": 4412.123,
+ "peak_rss_max_rank_gb": null,
+ "peak_rss_sum_gb": null,
+ "binding": "none (shared node)"
+}

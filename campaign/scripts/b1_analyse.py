@@ -19,6 +19,7 @@ import argparse
 import csv
 import glob
 import json
+import math
 import os
 import sys
 
@@ -89,6 +90,14 @@ def max_rel_diff(a, b):
     return max(abs(a[t] - b[t]) for t in times) / scale
 
 
+def resolution(col):
+    """Largest last-digit unit of the written values (6 significant
+    digits), relative to the column's largest magnitude."""
+    scale = max(abs(v) for v in col.values()) or 1.0
+    return max(10**(math.floor(math.log10(abs(v))) - 5)
+               for v in col.values() if v) / scale
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("root")
@@ -120,14 +129,15 @@ def main():
         ref = runs.get((kind, "S0tight", ranks))
         s0 = runs.get((kind, "S0", ranks))
         diff_tight = diff_s0 = None
-        if ref and ref[4] and h:
-            diff_tight = max(filter(None, (max_rel_diff(h[k], ref[4][k])
-                                           for k in h if k in ref[4])),
-                             default=None)
-        if s0 and s0[4] and h:
-            diff_s0 = max(filter(None, (max_rel_diff(h[k], s0[4][k])
-                                        for k in h if k in s0[4])),
-                          default=None)
+        if ref and ref[4] and h and config != "S0tight":
+            diff_tight = max((x for x in (max_rel_diff(h[k], ref[4][k])
+                                          for k in h if k in ref[4])
+                              if x is not None), default=None)
+        if s0 and s0[4] and h and config != "S0":
+            diff_s0 = max((x for x in (max_rel_diff(h[k], s0[4][k])
+                                       for k in h if k in s0[4])
+                           if x is not None), default=None)
+        res = max((resolution(col) for col in h.values()), default=None)
         n = s.get("n_steps") or 0
         clock = s.get("clock_s")
         rows.append({
@@ -142,6 +152,7 @@ def main():
                 "%.3e" % diff_tight if diff_tight is not None else "",
             "qoi_maxreldiff_vs_S0":
                 "%.3e" % diff_s0 if diff_s0 is not None else "",
+            "qoi_output_resolution": "%.1e" % res if res else "",
         })
     w = csv.DictWriter(open(args.csv, "w", newline="") if args.csv
                        else sys.stdout, fieldnames=list(rows[0]))

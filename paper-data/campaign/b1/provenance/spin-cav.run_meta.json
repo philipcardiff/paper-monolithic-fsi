@@ -1,0 +1,11 @@
+{
+ "run_id": "b1-spin-cav",
+ "case": "cav",
+ "config": "S0",
+ "ranks": 1,
+ "rc": 0,
+ "wall_s": 1741.214,
+ "peak_rss_max_rank_gb": null,
+ "peak_rss_sum_gb": null,
+ "binding": "none (shared node)"
+}

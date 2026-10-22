@@ -10,8 +10,11 @@ Last updated: 2026-10-22
 **Phase B complete** (B0–B3 done; B1 cav and tube on XenoSim, windows from
 t = 0 because restarts fail: `paper-data/campaign/b1/issue_mesh_motion_restart.md`).
 B1 result: S0 (`redundant` + LU) cheapest for ring and cav; S1 (BoomerAMG)
-cheapest for 3dTube, 4–12× faster than S0. Writing the G1 report
-(`campaign/G1_report.md`); the campaign then stops for G1.
+cheapest for 3dTube, 4–12× faster than S0. **Applying the revised B1
+acceptance test** (HANDOFF §10, 21 Oct, later): tight-reference runs S0ref
+and S1ref (`snes_rtol`/`snes_stol` 1e-10, `ksp_rtol` 1e-8) for cav (13051)
+and tube (13052 S1ref 16 ranks, 13053 S0ref 4 ranks) on XenoSim. Then the
+G1 report (`campaign/G1_report.md`, run-matrix costs being collected).
 Gate G1 not reached. No main-campaign (R1–R7) runs.
 
 ## Status by stream
@@ -118,6 +121,8 @@ All 2.00 Newton/step. QoI differences vs S0tight: cav S0/S1 ≤ 1.1e-5
 | (21 Oct) Use the cheapest solid-block PC per case; hypre is probably only useful for 3D meshes that are not small | B1 criterion = cost (Krylov iterations and clock); QoI difference to S0tight reported, not a gate. Ring: S0 is cheapest. |
 | (21 Oct) While MeluXina is out of hours, move work to XenoSim; phase B checks the cases work, not fine meshes | done: B1 cav/tube and B2 step 2 resubmitted on XenoSim (see Deviations 6) |
 | mokLidDrivenCavity, beamInCrossFlow, membraneRoof, perpendicularFlap → appendix, no runs | removed from the plan |
+| (21 Oct, `campaign/handoff` 024f045) No release lock: get every case running from the head of `feature-petsc-snes-quasi-monolithic`, fix the version later; G2 dropped; viscousStressTranspose default `no`; timing later on one machine | to be applied in the G1 run matrix; B1/B2 stay at `257b2e564` (checks) |
+| (21 Oct, `campaign/handoff` 52b95c4) B1 acceptance: compare with a tight reference (snes 1e-10, ksp 1e-8); accept if the QoI difference ≤ 5% of the case's discretisation error; per-case tolerances; choose the solid PC on 3dTube/cav by cost at equal accuracy; no issue file for the ring trigger; rebuild from the branch head before reusing B1 for the paper | S0ref/S1ref configurations added (`b1_setup.py`), runs 13051–13053; `b1_analyse.py` writes `qoi_maxreldiff_vs_ref` and a per-quantity CSV |
 
 ## B1 design (as submitted)
 
@@ -174,6 +179,17 @@ All 2.00 Newton/step. QoI differences vs S0tight: cav S0/S1 ≤ 1.1e-5
 None open (budget and acceptance test answered 21 Oct, see decisions).
 
 ## Log
+
+- **2026-10-22** Read the decisions of 21 Oct on `campaign/handoff`
+  (024f045, 52b95c4), which I had not applied: G2 dropped, run from the
+  branch head; revised B1 acceptance test against a tight reference. Added
+  S0ref/S1ref (`snes_rtol`/`snes_stol` 1e-10, `ksp_rtol` 1e-8,
+  `ksp_max_it` 10000) and submitted cav (13051, 4 ranks) and tube (13052
+  S1ref 16 ranks, 13053 S0ref 4 ranks). Thresholds from the READMEs (5% of
+  the change between the two finest meshes): cav Uy 3.5e-4 (L3→L4 0.70%),
+  Fy 2.9e-5 (0.057%); tube u_r,max 2.5e-5 (L1→L2 0.05%), u_z,min 9e-4
+  (1.85%), Robin–Neumann levels. Subagent collecting R-stream costs for the
+  G1 run matrix.
 
 - **2026-10-22** All B1 windows completed (rc 0). Cheapest PC: S0 for cav
   (S1 +10–14%, S2 +38–40%), S1 for 3dTube (S0 4.3× slower at 4 ranks,

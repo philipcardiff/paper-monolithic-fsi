@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """B1: QoI differences, iterations, time and memory of the solid-PC windows.
 
-Usage: b1_analyse.py <runs/b1> [--csv OUT]
+Usage: b1_analyse.py <runs/b1> [--csv OUT] [--qoi-csv OUT]
 
 Only the window counts: for cav and tube the steps after the spin-up's end
 time t0 (b1_window.json), whether the run restarted there or ran from 0;
@@ -13,6 +13,11 @@ QoIs: the history of every column of the case's displacement monitors
 (solidPointDisplacement*.dat), reduced to the largest difference over the
 window relative to the largest |value| of that column in the reference run;
 cav also the final total y force.
+
+Reference (HANDOFF Section 10, 21 Oct): S0ref (S0 at snes_rtol and
+snes_stol 1e-10, ksp_rtol 1e-8), at the same rank count if run there,
+otherwise at any rank count; S1ref is compared with it as the round-off
+check. --qoi-csv writes the difference from the reference per quantity.
 """
 
 import argparse
@@ -98,10 +103,22 @@ def resolution(col):
                for v in col.values() if v) / scale
 
 
+def reference(runs, kind, ranks):
+    """The tight reference run for a case: S0ref, same ranks first."""
+    for config in ("S0ref", "S1ref"):
+        if (kind, config, ranks) in runs:
+            return runs[(kind, config, ranks)]
+        same = sorted(r for (k, c, r) in runs if k == kind and c == config)
+        if same:
+            return runs[(kind, config, same[0])]
+    return None
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("root")
     ap.add_argument("--csv")
+    ap.add_argument("--qoi-csv")
     args = ap.parse_args()
 
     runs = {}
@@ -124,8 +141,20 @@ def main():
                  for k, col in h.items()}
         runs[(kind, config, int(p[1:]))] = (name, d, s, meta, h)
 
-    rows = []
+    rows, qoi_rows = [], []
     for (kind, config, ranks), (name, d, s, meta, h) in sorted(runs.items()):
+        tight = reference(runs, kind, ranks)
+        diff_ref = None
+        if tight and tight[4] and h and tight[0] != name:
+            per = {k: max_rel_diff(h[k], tight[4][k])
+                   for k in h if k in tight[4]}
+            per = {k: x for k, x in per.items() if x is not None}
+            diff_ref = max(per.values(), default=None)
+            qoi_rows += [{"run_id": name, "case": kind, "config": config,
+                          "ranks": ranks, "reference": tight[0],
+                          "quantity": k, "maxreldiff": "%.3e" % x,
+                          "output_resolution": "%.1e" % resolution(h[k])}
+                         for k, x in sorted(per.items())]
         ref = runs.get((kind, "S0tight", ranks))
         s0 = runs.get((kind, "S0", ranks))
         diff_tight = diff_s0 = None
@@ -152,12 +181,20 @@ def main():
                 "%.3e" % diff_tight if diff_tight is not None else "",
             "qoi_maxreldiff_vs_S0":
                 "%.3e" % diff_s0 if diff_s0 is not None else "",
+            "qoi_maxreldiff_vs_ref":
+                "%.3e" % diff_ref if diff_ref is not None else "",
+            "reference": tight[0] if diff_ref is not None else "",
             "qoi_output_resolution": "%.1e" % res if res else "",
         })
     w = csv.DictWriter(open(args.csv, "w", newline="") if args.csv
                        else sys.stdout, fieldnames=list(rows[0]))
     w.writeheader()
     w.writerows(rows)
+    if args.qoi_csv and qoi_rows:
+        w = csv.DictWriter(open(args.qoi_csv, "w", newline=""),
+                           fieldnames=list(qoi_rows[0]))
+        w.writeheader()
+        w.writerows(qoi_rows)
 
 
 if __name__ == "__main__":

@@ -10,7 +10,7 @@ Configurations of the `UpU` solid block: S0 `redundant` + LU (tutorial
 default); S1 BoomerAMG with the membraneRoof solid settings (HMIS, ext+i,
 P_max 1, truncation 0.3); S2 `bjacobi` + LU per rank; S0tight = S0 with
 `snes_rtol` and `snes_stol` 100 times smaller. All other options are the
-tutorial's (`ksp_rtol 1e-4`, LGMRES, Schur fieldsplit for the fluid;
+tutorial's (`ksp_rtol` 1e-4, 3dTube 1e-3; LGMRES; Schur fieldsplit for the fluid;
 `snes_rtol` 1e-6, except 3dTube 1e-4).
 
 **Criterion (Philip, 21 Oct): use the cheapest preconditioner per case.**

@@ -32,6 +32,9 @@ Configurations of the solid block of the UpU fieldsplit preconditioner:
     S1n      S1 with nodal coarsening
     S2       bjacobi + LU per rank (parallel only)
     S0tight  S0 with snes_rtol and snes_stol 100 times smaller
+    S0ref    S0 at the reference tolerances (HANDOFF Section 10, 21 Oct):
+             snes_rtol and snes_stol 1e-10, ksp_rtol 1e-8
+    S1ref    S1 at the reference tolerances
 """
 
 import argparse
@@ -73,7 +76,12 @@ CONFIGS = {
            ("sub_pc_type", "lu")],
 }
 CONFIGS["S0tight"] = CONFIGS["S0"]
+CONFIGS["S0ref"] = CONFIGS["S0"]
+CONFIGS["S1ref"] = CONFIGS["S1"]
 TIGHTEN = 0.01
+# Tightly converged reference; ksp_max_it raised so that ksp_rtol is reached
+REFERENCE = {"snes_rtol": 1e-10, "snes_stol": 1e-10, "ksp_rtol": 1e-8,
+             "ksp_max_it": 10000}
 # Spin-up also writes the restart fields of the fluid mesh-motion solid
 # (B1_FLUID_RESTART=1); otherwise the windows continue it with `restart no`
 FLUID_RESTART = os.environ.get("B1_FLUID_RESTART", "1") == "1"
@@ -137,15 +145,20 @@ def apply_config(case, config):
     lines = [ln for ln in body.split("\n")
              if not re.match(rf"\s*{PREFIX}\w+", ln)]
     if config == "S0tight":
-        for key in ("snes_rtol", "snes_stol"):
-            for k, ln in enumerate(lines):
-                mm = re.match(rf'(\s*{key}\s+)"?([^";\s]+)"?\s*;', ln)
-                if mm:
-                    value = float(mm.group(2)) * TIGHTEN
-                    lines[k] = f'{mm.group(1)}"{value:g}";'
-                    break
-            else:
-                sys.exit(f"No {key} in {path}")
+        new = {"snes_rtol": lambda v: v * TIGHTEN,
+               "snes_stol": lambda v: v * TIGHTEN}
+    elif config.endswith("ref"):
+        new = {k: (lambda v, r=r: r) for k, r in REFERENCE.items()}
+    else:
+        new = {}
+    for key, f in new.items():
+        for k, ln in enumerate(lines):
+            mm = re.match(rf'(\s*{key}\s+)"?([^";\s]+)"?\s*;', ln)
+            if mm:
+                lines[k] = f'{mm.group(1)}"{f(float(mm.group(2))):g}";'
+                break
+        else:
+            sys.exit(f"No {key} in {path}")
     indent = "            "
     added = [f"{indent}// B1 configuration {config}"] + [
         f"{indent}{PREFIX}{k} {v};" for k, v in CONFIGS[config]]

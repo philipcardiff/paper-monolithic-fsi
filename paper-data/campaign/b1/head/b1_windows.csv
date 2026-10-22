@@ -1,0 +1,6 @@
+run_id,case,config,ranks,ddt_U,n_steps,newton_mean,ksp_per_newton,clock_s,clock_s_per_step,peak_rss_sum_gb,qoi_maxreldiff_vs_S0tight,qoi_maxreldiff_vs_S0,qoi_maxreldiff_vs_ref,reference,qoi_output_resolution
+b1-cav-S0-p4,cav,S0,4,backward,50,2.0,59.1,96.0,1.92,0.927,,,5.269e-06,b1-cav-S0ref-p4,5.3e-06
+b1-cav-S0ref-p4,cav,S0ref,4,backward,50,2.74,114.796,183.0,3.66,0.997,,5.269e-06,,,5.3e-06
+b1-ring-S0-p1,ring,S0,1,backward (tutorial),100,2.0,23.875,32.0,0.32,,,,,,2.6e-06
+b1-tube-S1-p16,tube,S1,16,backward,50,2.0,15.21,98.0,1.96,5.996,,,6.482e-05,b1-tube-S1ref-p16,9.8e-06
+b1-tube-S1ref-p16,tube,S1ref,16,backward,50,2.02,34.921,198.0,3.96,6.156,,,,,9.8e-06

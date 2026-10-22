@@ -156,6 +156,21 @@ recorded): u_r,max(A) 0.05% → 2.5e-5, u_z,min(A) 1.85% → 9.3e-4.
 - **Solid PC at equal accuracy:** unchanged. All configurations meet the
   rule, so the cheapest is chosen: S0 for cav, S1 for 3dTube.
 
+## Repeat on the branch head (G1 answer 6)
+
+Chosen configurations and references repeated with solids4foam at the head
+of `feature-petsc-snes-quasi-monolithic` (`v2.2-1713-g85b0c1de6`, includes
+#581, #604, #608–#611 and `viscousStressTranspose no`), XenoSim, same
+windows: ring S0 1 rank (job 13108), cav S0 and S0ref 4 ranks (13117), tube
+S1 and S1ref 16 ranks (13118). Data: `head/b1_windows.csv`,
+`head/b1_qoi_vs_ref.csv`, `head/status.txt`, `head/provenance/`.
+
+- **Identical results.** Newton and Krylov counts equal those at
+  `257b2e564` (cav S0 59.1, tube S1 15.21, ring 23.875 Krylov/Newton), and
+  every monitored QoI history is identical in all written digits for all
+  five runs, from t = 0 (ring against the MeluXina run at `257b2e564`).
+- So the B1 conclusions hold on the branch head.
+
 ## Recommendation (frozen solid-block options for R)
 
 | Case | Solid block |

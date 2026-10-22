@@ -1,0 +1,11 @@
+{
+ "run_id": "b1-ring-S0-p1",
+ "case": "ring",
+ "config": "S0",
+ "ranks": 1,
+ "rc": 0,
+ "wall_s": 33.215,
+ "peak_rss_max_rank_gb": null,
+ "peak_rss_sum_gb": null,
+ "binding": "none (shared node)"
+}

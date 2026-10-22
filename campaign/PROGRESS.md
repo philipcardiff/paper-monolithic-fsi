@@ -192,6 +192,10 @@ None open (G1 answered 22 Oct).
 
 ## Log
 
+- **2026-10-22** B1 repeats on the branch head (85b0c1de6) identical to
+  257b2e564: same iteration counts and QoI histories in all written digits
+  (ring, cav S0/S0ref, tube S1/S1ref). `paper-data/campaign/b1/head/`.
+
 - **2026-10-22** Restart defect fixed: solids4foam PR #616 (subagent;
   three defects, see `paper-data/campaign/b1/issue_mesh_motion_restart.md`).
   Verifying on the B1 campaign mesh (cavity factor 4) with the fix build

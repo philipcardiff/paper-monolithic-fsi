@@ -1,0 +1,11 @@
+{
+ "run_id": "b1-cav-S0ref-p4",
+ "case": "cav",
+ "config": "S0ref",
+ "ranks": 4,
+ "rc": 0,
+ "wall_s": 1097.935,
+ "peak_rss_max_rank_gb": 0.252,
+ "peak_rss_sum_gb": 0.997,
+ "binding": "none (shared node)"
+}

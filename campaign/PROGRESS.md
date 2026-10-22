@@ -166,6 +166,11 @@ None open (budget and acceptance test answered 21 Oct, see decisions).
 
 ## Log
 
+- **2026-10-22** First from-start window done: cav S0 1 rank (13044),
+  250 steps, 2.18 Newton/step, 58.6 Krylov/Newton, 1778 s, rc 0
+  (`runs/b1/b1-cav-S0-p1/run_meta.json` on XenoSim); consistent with the
+  spin-up (2.23). All six window jobs (13044–13049) running.
+
 - **2026-10-22** Restart test 13042 (spin-up 13039 wrote the restart fields
   of both the solid and the mesh-motion solid): the mesh-motion SNES again
   starts at norm 3.413470681598 (identical) and its linear solve fails

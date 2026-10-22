@@ -305,7 +305,10 @@ def window(src, dest, config, ranks, steps, ddt_u, from_start):
     if dest.exists():
         shutil.rmtree(dest)
     t0, name = latest_time(src)
-    if t0 <= 0:
+    if t0 <= 0 and from_start:
+        # A window from t = 0 needs only the spin-up's set-up and end time
+        t0 = float(json.loads((src / "b1_spinup.json").read_text())["endTime"])
+    elif t0 <= 0:
         sys.exit(f"Spin-up {src} has no time directory after 0")
 
     def ignore(directory, names):

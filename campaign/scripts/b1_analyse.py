@@ -3,7 +3,9 @@
 
 Usage: b1_analyse.py <runs/b1> [--csv OUT]
 
-For each case (ring, cav, tube) the iterative floor is the QoI difference
+Only the window counts: for cav and tube the steps after the spin-up's end
+time t0 (b1_window.json), whether the run restarted there or ran from 0;
+for the ring the whole run. For each case (ring, cav, tube) the iterative floor is the QoI difference
 between S0 and S0tight at the same rank count. Every other configuration is
 compared with S0tight at the same rank count (its QoI error) and with S0.
 
@@ -56,6 +58,28 @@ def histories(run):
     return out
 
 
+def window_stats(solved, t0):
+    """Newton, Krylov and clock time over the steps after t0 (all steps if
+    t0 is None)."""
+    if t0 is None:
+        before, win = [], solved
+    else:
+        before = [st for st in solved if float(st["time"]) <= t0 + 1e-12]
+        win = [st for st in solved if float(st["time"]) > t0 + 1e-12]
+    newton = [st["newton"] for st in win]
+    ksp = sum(sum(st["ksp"]) for st in win)
+    clocks = [st["clock_s"] for st in win if st["clock_s"] is not None]
+    start = before[-1]["clock_s"] if before and before[-1]["clock_s"] \
+        is not None else 0.0
+    return {
+        "n_steps": len(win),
+        "iters_mean": round(sum(newton) / len(newton), 4) if newton else None,
+        "ksp_per_newton_mean": round(ksp / sum(newton), 3)
+        if newton and sum(newton) else None,
+        "clock_s": round(clocks[-1] - start, 2) if clocks else None,
+    }
+
+
 def max_rel_diff(a, b):
     """Largest |a - b| over common times, relative to max |b|."""
     times = sorted(set(a) & set(b))
@@ -77,15 +101,19 @@ def main():
         _, kind, config, p = name.split("-")
         meta = {}
         win = os.path.join(d, "b1_window.json")
-        ddt_u = json.load(open(win)).get("ddt_U") if os.path.isfile(win) \
-            else None
+        wmeta = json.load(open(win)) if os.path.isfile(win) else {}
+        ddt_u = wmeta.get("ddt_U")
+        t0 = wmeta.get("t0")
         if os.path.isfile(os.path.join(d, "run_meta.json")):
             meta = json.load(open(os.path.join(d, "run_meta.json")))
         log = os.path.join(d, "log.solids4Foam")
-        s = parse(log)[0] if os.path.isfile(log) else {}
+        s = window_stats(parse(log)[1], t0) if os.path.isfile(log) else {}
         meta["ddt_U"] = ddt_u
-        runs[(kind, config, int(p[1:]))] = (name, d, s, meta,
-                                            histories(d))
+        h = histories(d)
+        if t0 is not None:
+            h = {k: {tt: v for tt, v in col.items() if tt > t0 + 1e-12}
+                 for k, col in h.items()}
+        runs[(kind, config, int(p[1:]))] = (name, d, s, meta, h)
 
     rows = []
     for (kind, config, ranks), (name, d, s, meta, h) in sorted(runs.items()):
@@ -107,7 +135,7 @@ def main():
             "ddt_U": meta.get("ddt_U"),
             "n_steps": n, "newton_mean": s.get("iters_mean"),
             "ksp_per_newton": s.get("ksp_per_newton_mean"),
-            "exec_s": s.get("exec_s"), "clock_s": clock,
+            "clock_s": clock,
             "clock_s_per_step": round(clock / n, 4) if clock and n else None,
             "peak_rss_sum_gb": meta.get("peak_rss_sum_gb"),
             "qoi_maxreldiff_vs_S0tight":

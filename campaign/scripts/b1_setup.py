@@ -17,9 +17,11 @@ spinup  copies the tutorial and sets the level and time controls; the job
 Both set `restart yes` in the solid model's coefficients (a restart needs
 the fields it writes) and the fluid ddt(U) of the monolithic variant (--ddt-u, default
 backward).
-window  copies a completed spin-up (latest time only), restarts from it for
-        --steps steps, writes fields only at the end, and applies the
-        solid-block configuration and rank count.
+window  copies a completed spin-up and runs it from t = 0 to the spin-up's
+        end time plus --steps steps (the window), writing fields only at
+        the end, with the solid-block configuration and rank count; with
+        --restart it restarts from the spin-up's last time instead (not
+        usable at 257b2e564: issue_mesh_motion_restart.md).
 ring    builds ringAddedMass, moderate added mass, mesh factor 2, 50 steps
         per period, 2 periods, with the verification driver's configure();
         the job runs `./Allrun monolithic standard [parallel]`.
@@ -279,7 +281,14 @@ def latest_time(case):
     return max(times)
 
 
-def window(src, dest, config, ranks, steps, ddt_u):
+def window(src, dest, config, ranks, steps, ddt_u, from_start):
+    """A window of `steps` steps after the spin-up's end time t0.
+
+    from_start: run from t = 0 through the spin-up to t0 + steps*dt (the
+    window is the last `steps` steps; b1_analyse.py reads only those).
+    Otherwise restart from the spin-up's t0: not usable at 257b2e564, as the
+    fluid mesh-motion solid does not continue consistently from a restart
+    (issue_mesh_motion_restart.md)."""
     if dest.exists():
         shutil.rmtree(dest)
     t0, name = latest_time(src)
@@ -291,7 +300,7 @@ def window(src, dest, config, ranks, steps, ddt_u):
         if Path(directory) == src:
             for n in names:
                 try:
-                    if float(n) not in (0.0, t0):
+                    if float(n) not in ((0.0,) if from_start else (0.0, t0)):
                         skip.add(n)
                 except ValueError:
                     pass
@@ -302,17 +311,22 @@ def window(src, dest, config, ranks, steps, ddt_u):
     dt = meta["deltaT"]
     t1 = t0 + steps * dt
     control = dest / "system/controlDict"
-    set_entry(control, "startFrom", "latestTime")
+    if from_start:
+        set_entry(control, "startFrom", "startTime")
+        set_entry(control, "writeInterval", f"{t1:.10g}")
+    else:
+        set_entry(control, "startFrom", "latestTime")
+        set_entry(control, "writeInterval", f"{t1 - t0:.10g}")
     set_entry(control, "endTime", f"{t1:.10g}")
-    set_entry(control, "writeInterval", f"{t1 - t0:.10g}")
     apply_config(dest, config)
-    if not meta.get("fluid_restart"):
+    if not from_start and not meta.get("fluid_restart"):
         set_restart(dest, "fluid", "no")
     set_ranks(dest, ranks)
     set_ddt_u(dest, ddt_u)
     (dest / "b1_window.json").write_text(json.dumps(dict(
         spinup=str(src), kind=meta["kind"], config=config, ranks=ranks,
         steps=steps, t0=t0, t1=t1, deltaT=dt, ddt_U=ddt_u,
+        from_start=from_start,
         spinup_ddt_U=meta.get("ddt_U", "Euler")), indent=1))
 
 
@@ -353,6 +367,8 @@ def main():
     p.add_argument("--ranks", type=int, required=True)
     p.add_argument("--steps", type=int, default=50)
     p.add_argument("--ddt-u", default="backward")
+    p.add_argument("--restart", action="store_true",
+                   help="restart from the spin-up instead of running from 0")
     p = sub.add_parser("ring")
     p.add_argument("dest", type=Path)
     p.add_argument("--config", choices=sorted(CONFIGS), required=True)
@@ -362,7 +378,7 @@ def main():
         spinup(args.kind, args.dest.resolve(), args.ddt_u)
     elif args.cmd == "window":
         window(args.spinup.resolve(), args.dest.resolve(), args.config,
-               args.ranks, args.steps, args.ddt_u)
+               args.ranks, args.steps, args.ddt_u, not args.restart)
     else:
         ring(args.dest.resolve(), args.config, args.ranks)
 

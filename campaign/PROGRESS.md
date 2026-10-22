@@ -10,10 +10,10 @@ Last updated: 2026-10-20
 **Phase B continues on XenoSim** (Philip, 21 Oct: while MeluXina is out of
 hours, move work to XenoSim; phase B checks that the cases work, no fine
 meshes). B0 done; B1 ring done. Running/queued on XenoSim: B1 cav spin-up
-cav and tube windows **paused**: restarting from a spin-up is not
-consistent for the fluid mesh motion (see log 22 Oct). Testing a spin-up
-that also writes the mesh-motion restart fields: 13039 (cav spin-up) →
-13040 (3-step window test). B2 done; B3 estimate done. MeluXina held jobs 5364390, 5364391, 5364295, 5364354 cancelled
+cav and tube windows now run **from t = 0** (restarts are
+not usable: `paper-data/campaign/b1/issue_mesh_motion_restart.md`): cav
+13044 (11 runs, 16 cores); tube 13045 (16-rank runs) and 13046–13049 (one
+4-rank run each). B2 done; B3 estimate done. MeluXina held jobs 5364390, 5364391, 5364295, 5364354 cancelled
 (superseded); p201287 used 1376 of 1389 node-hours in October.
 **Handoff Section 8 triggered** by B1 ring (preconditioner changes a QoI by
 more than the floor) — see `paper-data/campaign/b1/findings.md`.
@@ -165,6 +165,19 @@ evidence. S2 is 4× the floor.
 None open (budget and acceptance test answered 21 Oct, see decisions).
 
 ## Log
+
+- **2026-10-22** Restart test 13042 (spin-up 13039 wrote the restart fields
+  of both the solid and the mesh-motion solid): the mesh-motion SNES again
+  starts at norm 3.413470681598 (identical) and its linear solve fails
+  (DIVERGED_ITS 10000). The restart fields are not the cause → suspected
+  solver issue, written up in
+  `paper-data/campaign/b1/issue_mesh_motion_restart.md` (Section 9); not
+  worked around in code. B1 windows changed to run from t = 0 to
+  t0 + 50 Δt; `b1_analyse.py` now reports Newton, Krylov, clock and QoI
+  differences over the last 50 steps only (checked: the ring rows of
+  `b1_windows.csv` are reproduced). Cost: cav ~3 h, tube 16-rank ~1.6 h per
+  run, 4-rank runs as separate 4-core jobs. (A first attempt of the test,
+  13040, failed with rc 127: `sbatch --wrap` runs sh, which lacks `source`.)
 
 - **2026-10-22** Cav window S0-p1 (13036) started but stalled: the fluid
   mesh-motion SNES (D) starts at function norm 3.41 after the restart,

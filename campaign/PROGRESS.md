@@ -7,11 +7,17 @@ Last updated: 2026-10-22
 
 ## Current phase
 
-**Gate G1 reached; campaign stopped.** Report: `campaign/G1_report.md`
-(costs: `campaign/G1_cost_estimate.md`). Phase B complete. B1 solid PC: S0
-(`redundant` + LU) for the 2D cases, S1 (BoomerAMG) for 3dTube; every
-configuration meets the revised 5% rule against tight references. Six open
-questions for Philip in the report. No R runs started; nothing queued.
+**G1 answered (Philip, 22 Oct); phase R starting.** Running now:
+- branch-head build `v2.2-1713-g85b0c1de6` on XenoSim
+  (`~/OpenFOAM/philipc-v2512-qmhead`, job 13104);
+- restart-defect fix (subagent; branch `fix/monolithic-restart`, own tree
+  `~/OpenFOAM/philipc-v2512-qmfix`, PR to follow);
+- block with flexible tail (#615) by codex (Sol model), branch
+  `tutorial/block-with-flexible-tail`, notes in
+  `~/OpenFOAM/philipc-v2512/codex/blockWithTail-runs/NOTES.md`; not part of
+  the paper.
+Next: repeat the chosen B1 configurations on the head build; B2 AMI at
+fluid level 3; then the R streams (MeluXina p201136, packed nodes).
 
 ## Status by stream
 
@@ -22,7 +28,7 @@ questions for Philip in the report. No R runs started; nothing queued.
 | B1 solid PC | **done** (`paper-data/campaign/b1/findings.md`): S0 for ring/cav, S1 BoomerAMG for 3dTube | 5364389 COMPLETED; XenoSim spin-ups 13039 (cav), 13029 (tube); windows 13044 (cav), 13045–13049 (tube) completed, all rc 0; earlier restart-based attempts failed (see log) | – |
 | B2 collapsibleChannel AMI | **done** (`paper-data/campaign/b2/findings.md`): AMI 640×8 trough error −1.91% vs conformal 160×8 −4.28%, Newton 2.59 vs 2.70/step, +6% clock (indicative) | 5364293 COMPLETED; XenoSim 13024, 13025 COMPLETED | – |
 | B3 Jaiman/Liu estimate | **done** (`paper-data/campaign/b3/estimate.md`): blobInTreacle monolithic temporal study < 0.1 core-h, R6 total 2–12 core-h; block with tail 3–3.5 person-days + ~20–60 core-h (unverified guess) | – | decision at G1 |
-| G1 report | **done** (`campaign/G1_report.md`) | – | Philip's answers |
+| G1 report | **done** (`campaign/G1_report.md`); answered 22 Oct | – | – |
 
 ## Results so far (each number has its source)
 
@@ -117,6 +123,7 @@ All 2.00 Newton/step. QoI differences vs S0tight: cav S0/S1 ≤ 1.1e-5
 | (21 Oct) Use the cheapest solid-block PC per case; hypre is probably only useful for 3D meshes that are not small | B1 criterion = cost (Krylov iterations and clock); QoI difference to S0tight reported, not a gate. Ring: S0 is cheapest. |
 | (21 Oct) While MeluXina is out of hours, move work to XenoSim; phase B checks the cases work, not fine meshes | done: B1 cav/tube and B2 step 2 resubmitted on XenoSim (see Deviations 6) |
 | mokLidDrivenCavity, beamInCrossFlow, membraneRoof, perpendicularFlap → appendix, no runs | removed from the plan |
+| (22 Oct, G1 answers) 1. fix the restart defect via a solids4foam PR; 2. pack small jobs on MeluXina nodes (task farm, reasonable use, not 5% of a node for hours); 3. try collapsibleChannel AMI at fluid level 3; 4. block with tail not in the paper, but codex (Sol) sets it up (#615); 5. keep 3dTube L3 scaling; 6. rebuild from the branch head and repeat the chosen B1 configurations. MeluXina: bill **p201136** preferentially | all in progress (Current phase) |
 | (21 Oct, `campaign/handoff` 024f045) No release lock: get every case running from the head of `feature-petsc-snes-quasi-monolithic`, fix the version later; G2 dropped; viscousStressTranspose default `no`; timing later on one machine | to be applied in the G1 run matrix; B1/B2 stay at `257b2e564` (checks) |
 | (21 Oct, `campaign/handoff` 52b95c4) B1 acceptance: compare with a tight reference (snes 1e-10, ksp 1e-8); accept if the QoI difference ≤ 5% of the case's discretisation error; per-case tolerances; choose the solid PC on 3dTube/cav by cost at equal accuracy; no issue file for the ring trigger; rebuild from the branch head before reusing B1 for the paper | S0ref/S1ref configurations added (`b1_setup.py`), runs 13051–13053; `b1_analyse.py` writes `qoi_maxreldiff_vs_ref` and a per-quantity CSV |
 
@@ -172,12 +179,15 @@ All 2.00 Newton/step. QoI differences vs S0tight: cav S0/S1 ≤ 1.1e-5
 
 ## Open questions for Philip
 
-See `campaign/G1_report.md`, "Open questions": restart defect before timing;
-timing machine (exclusive-node billing); collapsibleChannel accuracy run at
-fluid level 3; block with tail; 3dTube L3 scaling; rebuild from the branch
-head and repeat the chosen B1 configurations.
+None open (G1 answered 22 Oct).
 
 ## Log
+
+- **2026-10-22** G1 answered. Started: branch-head build (13104, 85b0c1de6,
+  XenoSim, new tree `philipc-v2512-qmhead`); restart-fix subagent (own
+  tree `philipc-v2512-qmfix`); codex (gpt-5.6-sol, workspace-write sandbox,
+  commits locally, I push) on #615. A full-access codex launch was blocked
+  by the permission classifier; the sandboxed one runs.
 
 - **2026-10-22** Tight references done (13051–13053, rc 0). S1ref = S0ref
   in every written digit. All configurations meet the 5% rule at the

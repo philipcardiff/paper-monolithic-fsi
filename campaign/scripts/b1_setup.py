@@ -72,6 +72,9 @@ CONFIGS = {
 }
 CONFIGS["S0tight"] = CONFIGS["S0"]
 TIGHTEN = 0.01
+# Spin-up also writes the restart fields of the fluid mesh-motion solid
+# (B1_FLUID_RESTART=1); otherwise the windows continue it with `restart no`
+FLUID_RESTART = os.environ.get("B1_FLUID_RESTART", "1") == "1"
 SPINUP_RANKS = int(os.environ.get("B1_SPINUP_RANKS", "32"))
 
 SPINUP = {
@@ -94,7 +97,9 @@ def load(name, path):
 def ignore_outputs(directory, names):
     return {n for n in names if n.startswith(("processor", "log.",
                                               "postProcessing"))
-            or n in ("work", "verification")}
+            or n.startswith("mem.")
+            or n in ("work", "verification", "run_meta.json",
+                     "provenance.json")}
 
 
 def set_entry(path, key, value):
@@ -257,8 +262,11 @@ def spinup(kind, dest, ddt_u):
     set_entry(control, "writeInterval", f"{s['endTime']:.10g}")
     set_ddt_u(dest, ddt_u)
     set_restart(dest)
+    if FLUID_RESTART:
+        set_restart(dest, "fluid", "yes")
     (dest / "b1_spinup.json").write_text(json.dumps(
-        dict(s, kind=kind, ddt_U=ddt_u), indent=1))
+        dict(s, kind=kind, ddt_U=ddt_u, fluid_restart=FLUID_RESTART),
+        indent=1))
 
 
 def latest_time(case):
@@ -298,7 +306,8 @@ def window(src, dest, config, ranks, steps, ddt_u):
     set_entry(control, "endTime", f"{t1:.10g}")
     set_entry(control, "writeInterval", f"{t1 - t0:.10g}")
     apply_config(dest, config)
-    set_restart(dest, "fluid", "no")
+    if not meta.get("fluid_restart"):
+        set_restart(dest, "fluid", "no")
     set_ranks(dest, ranks)
     set_ddt_u(dest, ddt_u)
     (dest / "b1_window.json").write_text(json.dumps(dict(

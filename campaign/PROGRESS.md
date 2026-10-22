@@ -10,9 +10,10 @@ Last updated: 2026-10-20
 **Phase B continues on XenoSim** (Philip, 21 Oct: while MeluXina is out of
 hours, move work to XenoSim; phase B checks that the cases work, no fine
 meshes). B0 done; B1 ring done. Running/queued on XenoSim: B1 cav spin-up
-13027 done → cav windows 13036 (resubmitted; 13028 failed in set-up),
-tube spin-up 13029 done (160 steps, 16 ranks, 73 min, 2.0 Newton/step) →
-tube windows 13037 (resubmitted; 13030 failed in set-up). B2 done; B3 estimate done. MeluXina held jobs 5364390, 5364391, 5364295, 5364354 cancelled
+cav and tube windows **paused**: restarting from a spin-up is not
+consistent for the fluid mesh motion (see log 22 Oct). Testing a spin-up
+that also writes the mesh-motion restart fields: 13039 (cav spin-up) →
+13040 (3-step window test). B2 done; B3 estimate done. MeluXina held jobs 5364390, 5364391, 5364295, 5364354 cancelled
 (superseded); p201287 used 1376 of 1389 node-hours in October.
 **Handoff Section 8 triggered** by B1 ring (preconditioner changes a QoI by
 more than the floor) — see `paper-data/campaign/b1/findings.md`.
@@ -164,6 +165,20 @@ evidence. S2 is 4× the floor.
 None open (budget and acceptance test answered 21 Oct, see decisions).
 
 ## Log
+
+- **2026-10-22** Cav window S0-p1 (13036) started but stalled: the fluid
+  mesh-motion SNES (D) starts at function norm 3.41 after the restart,
+  against 3.3e-3 at the spin-up's last step, and its first linear solve did
+  not converge in 6 min (spin-up: 19 Krylov iterations). So `restart no`
+  for the mesh-motion solid (total-displacement, neo-Hookean) does not give
+  a consistent continuation, despite the solver's message. Cancelled 13036
+  and the queued tube windows 13037. Test: spin-up writing the mesh-motion
+  restart fields too (`B1_FLUID_RESTART=1`, default) → 13039, then a 3-step
+  window (13040). If the D residual then starts near 3e-3, windows restart
+  as designed; if not, I write `issue_mesh_motion_restart.md` and run the
+  windows from t = 0 without restarts. (Also: windows no longer copy the
+  spin-up's run_meta.json/provenance.json; a copied run_meta.json made
+  status.py report the running window as diverged.)
 
 - **2026-10-22** 2-step serial cav window test (13035): the restart check
   passes (warning for `restart no` on the mesh motion, as intended); the test

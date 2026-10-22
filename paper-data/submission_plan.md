@@ -27,17 +27,19 @@ it waits for runs (Section 4 of this file).
 | 10 | Conclusions | Done; all 34 `\tbd` repeat values from §§4–9. | Results |
 | App. | Additional cases | Decide after the first full draft (keep, shorten or drop). | Optional |
 
-**Journal template (decision needed).** The paper uses the Springer Nature
-class `sn-jnl`. CMAME is an Elsevier journal and expects `elsarticle`, plus
-highlights, a CRediT author statement, a competing-interests declaration
-and, optionally, a graphical abstract. The switch is mechanical, about half
-a day for one agent: front matter, bibliography style, `\bmhead` sections,
-`\tbd` and `\todo` macros, algorithm and figure environments. It is best
-done before the figures are sized, because the text widths differ.
+**Journal template:** keep `sn-jnl` for the review stage (Philip, 22 Oct);
+CMAME accepts any reasonable template there.
 
 ## 2. Figures
 
 ### F-geo: geometry and coarse mesh, one per case, same style
+
+Tooling (done, 22 Oct): `figures/scripts/mesh_layer.py` draws the mesh
+layer from ASCII `polyMesh` files to PDF, with a JSON bounding box.
+`figures/tikz/geomstyle.tex` holds the shared annotation styles
+(`geom outline`, `geom interface`, `geom dim`, `geom bc`, `geom point`,
+`\geomdimx`, `\geomdimy`). Both were tested on a synthetic two-region
+mesh.
 
 Model: the existing Fig. 4 (cavityFlexibleBottom): a grey coarse mesh,
 black outline, dimension arrows, boundary-condition labels and the monitor
@@ -102,17 +104,31 @@ writes PGF/PDF in one style: Matplotlib with the paper's font and fixed
 marker and line conventions (filled markers for quasi-monolithic, open for
 partitioned).
 
-## 3. Decisions needed before runs start
+## 3. Decisions (Philip, 22 October 2026)
 
-1. **`viscousStressTranspose`** (WP0): keep it off, fix its wall value, or
-   enable it. This affects every result on a deforming wall.
-2. **Block with flexible tail** (B3 estimate): 3–3.5 person-days to build.
-   Recommendation: **drop it**. blobInTreacle already gives the comparison
-   with Liu et al. (2014).
-3. **Journal template:** switch to `elsarticle` now (recommended) or later.
-4. **Field images:** next to each case or as a gallery.
-5. **Timing machine:** MeluXina from 1 November (budget reset) for every
-   timing run (WP4 and WP6 windows, cost tables).
+1. **`viscousStressTranspose`:** decided after WP0 (0b/0c).
+2. **Block with flexible tail:** dropped from the paper. A tutorial request
+   is logged as solids4foam#615.
+3. **Journal template:** keep `sn-jnl` for review.
+4. **Field images:** next to each case's geometry figure. Final images come
+   from a **medium or fine** level; coarse-level images may serve as
+   placeholders or as a first look at the set-up.
+5. **Animations** of the transient cases go in the supplementary material.
+   They are made with `pvbatch`/`pvpython` scripts stored in this repository
+   (`campaign/scripts/animations/`). Run a cheap test first and show Philip
+   a short sample (a few frames or a GIF) before the full renders.
+6. **ParaView on XenoSim:** render on the NVIDIA GPU. Check with
+   `nvidia-smi` that `pvbatch` runs on the GPU, using an EGL/headless
+   ParaView build if available; do not fall back silently to software
+   rendering.
+7. **MeluXina projects:**
+   - use the **Amir/Colm project** first, from 22 October;
+   - the "xenosim" project only if needed;
+   - **never** the project running Hron–Turek x8 (Petar and Simon).
+
+   Confirm the project IDs with `myquota` (and with Philip if unclear)
+   before submitting. MeluXina is also the timing machine (exclusive nodes).
+8. **WP0 and 8a** (mesh layers) are approved to start now.
 
 ## 4. Runs (not started)
 

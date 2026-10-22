@@ -10,8 +10,8 @@ Last updated: 2026-10-20
 **Phase B continues on XenoSim** (Philip, 21 Oct: while MeluXina is out of
 hours, move work to XenoSim; phase B checks that the cases work, no fine
 meshes). B0 done; B1 ring done. Running/queued on XenoSim: B1 cav spin-up
-13027 done → cav windows 13028 (queued), tube spin-up 13029 (running) →
-tube windows 13030. B2 done; B3 estimate done. MeluXina held jobs 5364390, 5364391, 5364295, 5364354 cancelled
+13027 done → cav windows 13036 (resubmitted; 13028 failed in set-up),
+tube spin-up 13029 (running) → tube windows 13030. B2 done; B3 estimate done. MeluXina held jobs 5364390, 5364391, 5364295, 5364354 cancelled
 (superseded); p201287 used 1376 of 1389 node-hours in October.
 **Handoff Section 8 triggered** by B1 ring (preconditioner changes a QoI by
 more than the floor) — see `paper-data/campaign/b1/findings.md`.
@@ -163,6 +163,16 @@ evidence. S2 is 4× the floor.
 None open (budget and acceptance test answered 21 Oct, see decisions).
 
 ## Log
+
+- **2026-10-22** Cav windows 13028 failed again at start-up, same message:
+  this time from the **fluid mesh-motion** solid model
+  (`nonLinearGeometryTotalLagrangianTotalDisplacement`, neo-Hookean, in
+  `constant/fluid/solidProperties`), not the solid region (which now has its
+  restart fields). That model is total-strain with no history, so the
+  windows set `restart no` for it, as the solver's message allows
+  (`b1_setup.py`: `set_restart(dest, "fluid", "no")`); applies to the tube
+  windows too. Failed dirs in `runs/b1/failed-20261022/`. Resubmitted as
+  13036, with a 2-step serial test (13035, dev partition) ahead of it.
 
 - **2026-10-22** B2 done on XenoSim (13024, 13025, ~75 min each, serial).
   Conformal baseline reproduces the README (−0.20650 vs −0.20691 m); AMI with

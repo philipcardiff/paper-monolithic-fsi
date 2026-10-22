@@ -146,10 +146,14 @@ def apply_config(case, config):
     path.write_text(text[:o.end()] + body + text[i - 1:])
 
 
-def set_restart(case):
-    """Ask the solid model to write the fields a consistent restart needs
-    (the windows restart from the spin-up)."""
-    path = case / "constant/solid/solidProperties.monolithic"
+def set_restart(case, region="solid", value="yes"):
+    """Set `restart` in the coefficients of a region's solid model.
+
+    solid, yes: the spin-up writes the fields a consistent restart needs.
+    fluid, no:  the fluid mesh motion is a neo-Hookean total-Lagrangian
+                total-displacement solid (total strain, no history), which
+                the solver lets continue without them."""
+    path = case / f"constant/{region}/solidProperties.monolithic"
     text = path.read_text()
     model = re.search(r"^solidModel\s+(\w+);", text, flags=re.MULTILINE)
     if not model:
@@ -160,7 +164,7 @@ def set_restart(case):
         sys.exit(f"No {model.group(1)}Coeffs in {path}")
     if re.search(r"^\s*restart\s", text, flags=re.MULTILINE):
         sys.exit(f"{path} already sets restart")
-    path.write_text(text[:coeffs.end()] + "\n    restart yes;"
+    path.write_text(text[:coeffs.end()] + f"\n    restart {value};"
                     + text[coeffs.end():])
 
 
@@ -292,6 +296,7 @@ def window(src, dest, config, ranks, steps, ddt_u):
     set_entry(control, "endTime", f"{t1:.10g}")
     set_entry(control, "writeInterval", f"{t1 - t0:.10g}")
     apply_config(dest, config)
+    set_restart(dest, "fluid", "no")
     set_ranks(dest, ranks)
     set_ddt_u(dest, ddt_u)
     (dest / "b1_window.json").write_text(json.dumps(dict(

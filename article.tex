@@ -103,13 +103,14 @@ textheight=24cm, % llncs has 19.3cm
 %\author[1,2,3]{\fnm{Dylan} \sur{Armfield}}
 %%\author[5]{\fnm{Hiroaki} \sur{Nishikawa}}
 %\author[4]{\fnm{\v{Z}eljko} \sur{Tukovi\'{c}}}
+\author[3]{\fnm{Emad} \sur{Tandis}}
 \author[1,2]{\fnm{Ivan} \sur{Batisti\'{c}}}
-\author[1]{Add others}
 
 \affil[1]{\orgdiv{School of Mechanical and Materials Engineering}, \orgname{University College Dublin}, \orgaddress{\country{Ireland}}}
 %\affil[2]{\orgdiv{UCD Centre for Mechanics}, \orgname{University College Dublin}, \orgaddress{\country{Ireland}}}
 %\affil[3]{\orgdiv{I-Form Centre}, \orgname{University College Dublin}, \orgaddress{\country{Ireland}}}
 \affil[2]{\orgdiv{Faculty of Mechanical Engineering and Naval Architecture}, \orgname{University of Zagreb}, \orgaddress{\country{Croatia}}}
+\affil[3]{\orgname{Aston University}, \orgaddress{\city{Birmingham}, \country{United Kingdom}}}% TODO: add the school/department (Aston's pages differ)
 %\affil[5]{\orgname{National Institute of Aerospace}, \orgaddress{\country{Hampton, VA 23666, USA}}}
 
 
@@ -118,7 +119,7 @@ textheight=24cm, % llncs has 19.3cm
 Partitioned coupling dominates finite volume fluid--solid interaction (FSI), but its outer iterations converge slowly or fail when the added mass of the fluid is large.
 This paper presents a quasi-monolithic cell-centred finite volume method in which the arbitrary Lagrangian--Eulerian fluid momentum and continuity equations and the total Lagrangian solid momentum equation, written in terms of velocity, form a single nonlinear residual with the fluid mesh motion treated outside the Newton system.
 The residual is solved by a Jacobian-free Newton--Krylov method; an approximate Jacobian assembled from compact finite volume linearisations is used only to build a fluid--solid field-split preconditioner.
-The interface treatment is examined by ablation against exact solutions for an added-mass ring and a thick-walled Womersley tube: an interface pressure gradient taken from the normal momentum equation and an interface traction taken from the discrete momentum flux are each needed for second-order accuracy, and a second-order velocity-based solid without force lag adds no coupling damping.
+The interface treatment is assessed against exact solutions for an added-mass ring and a thick-walled Womersley tube: an interface pressure gradient taken from the normal momentum equation is needed for a second-order added-mass effect, the interface traction is taken from the discrete momentum flux, and a second-order velocity-based solid without force lag adds no coupling damping.
 For non-matching interface meshes, a conservative transfer balances the total interface force and power to round-off.
 On the same discretisation the method agrees with the partitioned solver to within \tbd{difference}, and it converges over \tbd{range of density ratios and time steps} where Dirichlet--Neumann coupling with Aitken or IQN-ILS acceleration and Robin--Neumann coupling \tbd{fail or need more than N iterations}.
 Using the reference solutions and the strict coupling convergence test of a companion verification study, costs are compared at equal verified accuracy: on the Hron--Turek FSI3 benchmark the method is \tbd{factor} times \tbd{faster/slower} than the best partitioned scheme at \tbd{error level}.
@@ -162,23 +163,8 @@ The implementation, built on solids4foam and PETSc, and all case set-ups are rel
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Conclusions} \label{sec:conclusion}
+\input{sectionConclusions.tex}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-WIP
-The key conclusions of the work are:
-\begin{itemize}
-	\item \textbf{WIP}: WIP
-\end{itemize}
-
-
-
-WIP, yet several areas for future exploration remain:
-\begin{enumerate}
-	\item{WIP}: WIP
-	
-	\item{Higher order discretisation}: WIP
-\end{enumerate}
-
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -187,9 +173,8 @@ WIP, yet several areas for future exploration remain:
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \bmhead{Data Availability}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\hl{CHECK}
 The quasi-monolithic solver presented is part of the open-source solids4foam toolbox, available at \url{https://github.com/solids4foam/solids4foam}; at the time of writing, it is on the \texttt{feature-petsc-snes-quasi-monolithic} branch (pull request \#233 into the \texttt{development} branch).
-\todo{Replace the branch and pull request with the tagged solids4foam release (and its DOI) used for all results.}
+\todo{Before submission, replace the branch with the solids4foam version used for the final results (a named tag with a Zenodo DOI); until then, the commit of each result is recorded with its data.}
 The monolithic variants of the test cases are distributed with the solids4foam tutorials (\texttt{./Allrun monolithic}), and the verification scripts with the corresponding \texttt{verification} directories.
 \todo{Confirm where the cases, raw data and plotting scripts of this paper are archived (paper repository and/or data DOI); the previous text pointed to solids4foam/solid-benchmarks.}
 

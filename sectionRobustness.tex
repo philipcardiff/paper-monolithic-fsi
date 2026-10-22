@@ -1,5 +1,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Robustness with respect to added mass and time step}\label{sec:robustness}
+\section{Robustness}\label{sec:robustness}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Stream feeding this section: R3 (campaign/HANDOFF.md), and pre-campaign
 % check B2 (collapsibleChannel solid resolution through AMI).
@@ -62,3 +62,10 @@ Where the quasi-monolithic coupling fails, the cause is \tbd{e.g.\ inversion of 
 % Optional in HANDOFF R3 (cheap). Level 3, dt = 0.0625 ... 1.0 s.
 
 \todo{Optional (decide at G1). If run: cavityFlexibleBottom level 3 (Section~\ref{sec:cavity_m}) with $\Delta t = 0.0625$, $0.125$, $0.25$, $0.5$ and $1.0\,\mathrm{s}$, quasi-monolithic and Aitken. Here the time step is a pseudo-time step towards the steady state, and the measure is the number of steps and the wall time to the steady state as well as the outcome. Figure: wall time to steady state against $\Delta t$ for both couplings, with failed runs marked; or one row added to the maps above. Drop this subsection if the result adds nothing to Section~\ref{sec:robustness_collapsible}.}
+
+\paragraph{Discussion.}
+Robustness with respect to the added mass and robustness with respect to the time step are distinct properties.
+Solving the interface conditions within the Newton iteration removes the dependence of convergence on the added mass, including the enclosed-fluid and massless-wall configurations in which Dirichlet--Neumann iterations cannot converge~\citep{Kuttler2006} (Section~\ref{sec:robustness_collapsible}).
+It does not remove the dependence on the nonlinearity of the coupled problem over one step: in the flag of Section~\ref{sec:lim_foil}, Newton stagnates at the time step at which IQN-ILS converges, and the quasi-monolithic coupling converges only with \tbd{a quarter} of that step.
+The quasi-monolithic coupling is therefore expected to be the more reliable choice where the added mass is strong and the step is limited by accuracy rather than by the nonlinearity, as in \tbd{cases}, and not necessarily where large steps through strongly nonlinear transients are wanted.
+The robustness of the partitioned couplings, in turn, depends on settings such as the Robin coefficient and the IQN-ILS history, which are those of the companion paper~\citetodo{companion verification paper} for every case (Section~\ref{sec:protocol}); the maps above do not measure how far other settings would extend them.

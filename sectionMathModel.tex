@@ -160,8 +160,8 @@ Where the displacement gradient remains small, a small-strain (linear geometry) 
 \end{equation}
 where $\text{sym}[ \bb{A} ] = \frac{1}{2} (\bb{A} + \bb{A}^T)$ denotes the symmetric part.
 Both formulations share the velocity form of Equations~\eqref{eqn:solid_displacement_velocity} and \eqref{eqn:solid_momentum_TL}.
-Two-dimensional cases assume plane strain.
-\todo{Confirm the constitutive laws against the final case list: all monolithic tutorials at solids4foam 257b2e564 use Saint Venant--Kirchhoff with the total Lagrangian velocity solid or Hooke's law with the small-strain velocity solid; check the laws required by the Jaiman/Liu half-cylinder and block-with-tail cases if they are included.}
+Planar two-dimensional cases assume plane strain, and axisymmetric cases (the compliant tube of Section~\ref{sec:womersley_m}) are solved on a wedge mesh one cell thick in the circumferential direction.
+\todo{Confirm the constitutive laws against the final case list: all monolithic tutorials at solids4foam fdcc397e2 use Saint Venant--Kirchhoff with the total Lagrangian velocity solid or Hooke's law with the small-strain velocity solid; check the laws required by the Jaiman/Liu half-cylinder and block-with-tail cases if they are included.}
 
 The solid boundary conditions considered are prescribed velocity (zero on clamped boundaries), prescribed traction (including traction-free boundaries) and symmetry conditions; interface conditions coupling the solid to the fluid are described in Section~\ref{sec:fsi_interface}.
 

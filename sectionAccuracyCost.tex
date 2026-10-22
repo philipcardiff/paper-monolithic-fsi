@@ -94,3 +94,11 @@ Both couplings are timed over the temporal study.
 \todo{Table: blobInTreacle mesh study. Columns: mesh factor; steady $u_x$(A) quasi-monolithic; partitioned; relative difference; observed order (each coupling); extrapolated value; wall time (both). Keep the companion paper's partitioned-only table separate: this table reports the difference between the couplings.}
 
 Expected claims: the quasi-monolithic coupling converges in time at order \tbd{order} over the steps used, against \tbd{order} for the partitioned coupling and \tbd{order} reported by~\citet{Liu2014}, at \tbd{factor} of the partitioned cost; the steady displacements of the two couplings differ by \tbd{values} on the three meshes and extrapolate to within \tbd{value} of each other.
+
+\paragraph{Discussion: cost per step and number of iterations.}
+A Newton iteration of the quasi-monolithic coupling solves a preconditioned linear system for all fluid and solid unknowns, whereas a coupling iteration of the partitioned schemes performs one segregated fluid solve and one solid solve.
+A Newton iteration is therefore the more expensive of the two, and the quasi-monolithic coupling is cheaper per step only when the partitioned scheme needs sufficiently many coupling iterations.
+In the cases of this paper the quasi-monolithic coupling needs \tbd{number} Newton iterations per step independently of the added-mass ratio (Sections~\ref{sec:ring_m} and~\ref{sec:robustness_ring}), whereas the coupling iterations of IQN-ILS and Robin--Neumann grow with it, and the cost of the two couplings is equal at \tbd{added-mass ratio or iteration count at the crossover}.
+Below this point, which includes \tbd{cases}, the accelerated partitioned schemes are the cheaper choice at equal accuracy; above it, the quasi-monolithic coupling is cheaper by \tbd{factor}.
+On the Hron--Turek FSI3 benchmark, the only case of the paper with an established external reference and a work--precision comparison, the quasi-monolithic coupling costs \tbd{factor} times \tbd{more/less} than IQN-ILS at equal error (Section~\ref{sec:fsi3_m}).
+\todo{Check this paragraph against the cost results of Sections~\ref{sec:ring_m} and~\ref{sec:fsi3_m} once filled; delete any claim they do not support, in particular the crossover.}

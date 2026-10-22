@@ -1,5 +1,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Numerical Methods}\label{sec:numerical_methods}
+\section{Method}\label{sec:numerical_methods}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Outline of subsections
@@ -225,7 +225,7 @@ For a fluid control volume $P$ of volume $\Omega_P$, the discrete momentum resid
     {2\Delta t},
     \label{eqn:fluid_momentum_residual}
 \end{eqnarray}
-where $\bb{v}_P$ and $\bb{v}_{N_f}$ are the velocities in cell $P$ and in the neighbouring cell across face $f$; the linearly interpolated face velocity is denoted $\bb{v}_f$ and is used in the convective and continuity fluxes introduced below.
+where $\bb{v}_P$ and $\bb{v}_{N_f}$ are the velocities in cell $P$ and in the neighbouring cell across face $f$; the face velocity obtained by linear interpolation with a skewness correction is denoted $\bb{v}_f$ and is used in the convective and continuity fluxes introduced below.
 With the adopted convention, $\hat{\bb{n}}_f \cdot \bb{d}_f > 0$ on a properly oriented mesh, and the orthogonal diffusion term in Equation~\eqref{eqn:fluid_momentum_residual} represents the flux into cell $P$ from its neighbour $N_f$.
 
 
@@ -279,7 +279,7 @@ The discrete pressure residual for cell $P$ is
     \mathcal{D}_{p,P},
     \label{eqn:fluid_pressure_residual}
 \end{equation}
-where $\bb{v}_f$ is again the linearly interpolated face velocity, so that the face flux $\bb{\Gamma}_f \cdot \bb{v}_f$ in the continuity equation is the same (absolute) face flux that convects momentum in Equation~\eqref{eqn:fluid_momentum_residual}.
+where $\bb{v}_f$ is again this interpolated face velocity, so that the face flux $\bb{\Gamma}_f \cdot \bb{v}_f$ in the continuity equation is the same (absolute) face flux that convects momentum in Equation~\eqref{eqn:fluid_momentum_residual}.
 Evaluating the divergence with a different interpolation from that of the convecting flux makes the convecting flux non-solenoidal whenever the two interpolations differ, which was observed to damp transient flows.
 $\mathcal{D}_{p,P}$ is the finite-volume pressure-stabilisation contribution \citep{Rhie1983} calculated as
 \begin{eqnarray} \label{eqn:rhie_chow}
@@ -302,7 +302,7 @@ The cell-centred coefficient is defined as
 \begin{equation}
     \frac{\alpha_p}{a_{P}}
     =
-    \alpha_p
+    \alpha_p \, \Omega_{F,P}
     \left[
     \frac{3}{2\Delta t}\Omega_{F,P}
     +
@@ -316,7 +316,9 @@ The cell-centred coefficient is defined as
     \right]^{-1},
     \label{eqn:rAU_definition}
 \end{equation}
-i.e.\ the reciprocal of the compact (diagonal) part of the discrete fluid-momentum operator, comprising the temporal, diffusive and convective contributions. Note that a first-order upwind scheme is used for the convection coefficient in this stabilisation, independently of the convection scheme used in the fluid momentum residual calculation; this keeps the sign of $a_P$ fixed for any trial velocity encountered during the Newton and finite-difference Jacobian evaluations.
+i.e.\ the cell volume divided by the compact (diagonal) coefficient of the discrete fluid-momentum operator, comprising the temporal, diffusive and convective contributions, so that $\alpha_p/a_P$ has the dimension of time.
+Here and in Section~\ref{sec:approximate_block_preconditioner}, the sums over $\mathcal{F}^{\mathrm{int}}_P$ also include the boundary faces at which an operator contributes to the diagonal (prescribed-velocity faces for the diffusion term and outflow faces for the convection term).
+Note that a first-order upwind scheme is used for the convection coefficient in this stabilisation, independently of the convection scheme used in the fluid momentum residual calculation; this keeps the sign of $a_P$ fixed for any trial velocity encountered during the Newton and finite-difference Jacobian evaluations.
 The face value $\alpha_p/a_{P_f}$ used in Equation~\eqref{eqn:rhie_chow} is then obtained by linear interpolation of the two adjacent cell values.
 This Rhie--Chow-type stabilisation has been shown in \citet{Cardiff2026} to disappear in the limit of mesh refinement at a second-order rate.
 %Its detailed construction is given in Section~\ref{sec:approximate_block_preconditioner}.
@@ -399,9 +401,10 @@ In the geometrically nonlinear total Lagrangian variant, the new-time face force
 = \left(J_f^{n}\, \bb{F}_f^{-T,\,n} \cdot \bb{\Gamma}_{0,f}\right) \cdot \bb{\sigma}_f^{n},
 \label{eqn:face_force}
 \end{equation}
-where $\bb{\Gamma}_f^{n}$ and $\bb{\Gamma}_{0,f}$ are the outward face area vectors in the deformed and reference configurations, related by Nanson's relation, $\bb{F}_f^{n}$ and $J_f^{n} = \det \bb{F}_f^{n}$ are the new-time deformation gradient and volume ratio interpolated to the face, $\bb{\sigma}_f^{n}$ is the corresponding Cauchy stress, and $\bb{P}_f^{n}$ is the first Piola--Kirchhoff stress (Section~\ref{sec:solid_model}). The third form is used in the present implementation, since the reference face area vector $\bb{\Gamma}_{0,f}$ is fixed and does not require updating as the solid deforms.
+where $\bb{\Gamma}_f^{n}$ and $\bb{\Gamma}_{0,f}$ are the outward face area vectors in the deformed and reference configurations, related by Nanson's relation, $J_f^{n}\bb{F}_f^{-T,\,n}$ is the new-time cell-centred product $J\bb{F}^{-T}$ linearly interpolated to the face, $\bb{\sigma}_f^{n}$ is the corresponding Cauchy stress, and $\bb{P}_f^{n}$ is the first Piola--Kirchhoff stress (Section~\ref{sec:solid_model}). The third form is used in the present implementation, since the reference face area vector $\bb{\Gamma}_{0,f}$ is fixed and does not require updating as the solid deforms.
 The cell-centred stress is computed from the displacement $\bb{D}^{n}$ (via $\bb{F}^{n} = \bb{I} + (\bb{\nabla}_0\bb{D}^n)^T$) by the run-time selectable constitutive law and then linearly interpolated to the faces.
 In the linear-geometry variant, the face force is $\bb{T}_f^{n} = \bb{\Gamma}_{0,f} \cdot \bb{\sigma}_f^{n}$, with the stress computed from the small-strain tensor of $\bb{D}^n$.
+In both variants, the stabilisation is added to the face traction before it is multiplied by the face area, so in the geometrically nonlinear variant the area $|\bb{\Gamma}_{0,f}|$ in Equation~\eqref{eqn:rhie_chow_s} is replaced by the deformed area $|\bb{\Gamma}^{n}_f|$; the gradient terms in the brackets remain those of the reference mesh.
 The term ``linear'' here refers to the geometric linearisation of the kinematics; both variants use the same second-order spatial discretisation.
 
 For faces on the fluid--solid interface, the solid face force is replaced by the force obtained from the fluid traction, as described in Section~\ref{sec:interface_conditions}, and the stabilisation contribution is set to zero, as on all traction boundaries.
@@ -464,9 +467,10 @@ The fluid force on interface face $f$ is
     |\bb{\Gamma}_f|,
     \label{eqn:interface_fluid_traction}
 \end{equation}
-where $p$ is the kinematic pressure and $(\bb{\nabla}\bb{v})^{\perp}_f$ is the face-normal gradient of the velocity, evaluated with the same compact and non-orthogonal-correction form as the diffusion term in Equation~\eqref{eqn:fluid_momentum_residual}.
+where $p$ is the kinematic pressure and $(\bb{\nabla}\bb{v})^{\perp}_f = (\bb{v}_f - \bb{v}_P)/(\hat{\bb{n}}_f \cdot \bb{d}_f)$ is the compact face-normal gradient of the velocity, with $\bb{d}_f$ here the vector from the centre of the adjacent cell $P$ to the face centre; this is the boundary-face form of the diffusion term in Equation~\eqref{eqn:fluid_momentum_residual}, which has no non-orthogonal correction on boundary faces.
 The viscous part is thus the boundary flux of the momentum equation's viscous term, so that the force applied to the solid is the momentum that the fluid loses through the interface.
-At an incompressible no-slip wall this is also the viscous traction; evaluating instead the full deviatoric stress, $\hat{\bb{n}}_f \cdot \nu[\bb{\nabla}\bb{v} + (\bb{\nabla}\bb{v})^T]$, adds the transpose of the boundary velocity gradient, whose tangential components are taken from the adjacent cell values, which introduces a first-order error that the residual does not contain.
+It omits the transpose part of the viscous stress, $\nu\,\hat{\bb{n}}_f \cdot (\bb{\nabla}\bb{v})^T_f$, which vanishes on a stationary or rigidly moving no-slip wall but not on a deforming one (Section~\ref{sec:fluid_differences}).
+The implementation can add this part, together with the corresponding explicit term in the momentum residual (the option \texttt{viscousStressTranspose}), but the option is off by default and is not used in this work.
 
 \paragraph{Mass flux.}
 On the interface, the relative (ALE) flux in the convective term is set to zero, consistent with the no-slip condition, while the flux in the continuity equation, Equation~\eqref{eqn:fluid_pressure_residual}, is the absolute flux of the interface velocity, $\bb{\Gamma}_f \cdot \bb{v}^{\Gamma}_f$, i.e.\ the same flux that would convect momentum.
@@ -569,9 +573,9 @@ Although the exact Jacobian is not assembled, preconditioning remains essential 
 This matrix is not required to be a consistent linearisation of $\bb{R}(\bb{\mathcal{U}})$; it only affects the convergence of the linear iterations, not the converged nonlinear solution, provided the nonlinear solve reaches the specified tolerances. The construction of this approximate block preconditioner is described in Section~\ref{sec:approximate_block_preconditioner}.
 Using $\tilde{\bb{J}}$ as the Newton operator itself, in place of Equation~\eqref{eqn:jfnk_operator}, gives a quasi-Newton method that converges only linearly, as $\tilde{\bb{J}}$ retains only compact-stencil approximations of the diffusive, convective, constitutive and interface contributions to the true Jacobian; it is not used in this work.
 
-The Krylov solver is restarted LGMRES, terminated at a prescribed relative reduction of the linear residual.
+The Krylov solver is restarted LGMRES with left preconditioning (the PETSc default), terminated at a prescribed relative reduction of the preconditioned linear residual norm.
 As the first Newton iteration of a time step is limited by the nonlinearity of the residual, a relative linear tolerance much tighter than the nonlinear reduction achieved per iteration only adds Krylov iterations, each of which costs a residual evaluation.
-The nonlinear iterations are terminated when the coupled residual norm, relative to its value at the start of the time step, or the relative Newton correction falls below a prescribed tolerance.
+The nonlinear iterations are terminated when the coupled residual norm, relative to its value at the start of the time step, or the norm of the Newton correction, relative to that of the current iterate, falls below a prescribed tolerance.
 The Newton update in Equation~\eqref{eqn:newton_update} uses the full step ($s_k = 1$) unless stated otherwise; a backtracking or $\ell_2$-minimising line search can be selected for strongly nonlinear cases.
 \todo{Final campaign values: snes\_rtol (1e-6 or 1e-4 in the tutorials), ksp\_rtol (1e-4 or 1e-3), LGMRES restart, and which cases use a line search (foilInWind: bt; membraneRoof: l2).}
 
@@ -579,7 +583,7 @@ The Newton update in Equation~\eqref{eqn:newton_update} uses the full step ($s_k
 The fluid residuals are written per unit fluid density (kinematic pressure), whereas the solid residual is a force, so the two blocks can differ in magnitude by many orders.
 Before the residual norm is formed, the fluid rows (momentum and continuity) are multiplied by a scale factor $s_F$ and the solid rows by $s_S$; the same factors scale the corresponding rows of $\tilde{\bb{J}}$.
 Row scaling does not change the solution, but it balances the contributions of the two blocks to the residual norm used for the convergence test and to the Krylov iterations.
-By default $s_S$ is the average over the solid of $1/(\mu_S \Delta t)$; $s_F = 10^{8}$ in all the cases of this work.
+By default $s_S$ is the average over the solid cells of $1/(\mu_S \Delta t)$, evaluated once with the initial time step and not updated when the time step is adapted, and $s_F = 1$; $s_F = 10^{8}$ in all the cases of this work.
 \todo{Confirm s\_F and s\_S for every campaign case.}
 
 \paragraph{Jacobian and preconditioner lagging.}
@@ -685,7 +689,7 @@ across face $f$ is
     \min\left(\phi^{\mathrm{rel}}_{F,f},0\right)\bb{I}.
     \label{eqn:Jmm_offdiag}
 \end{equation}
-Here the convective contribution in the approximate Jacobian is always based on first-order upwinding, independently of the convection scheme used in the nonlinear residual (which is a second-order upwind scheme in the current work).
+Here the convective contribution in the approximate Jacobian is always based on first-order upwinding, independently of the convection scheme used in the nonlinear residual (linear or limited second-order upwind interpolation in the cases considered).
 
 The pressure-gradient coupling block is obtained by differentiating the cell-centred pressure-gradient term in the momentum equation with respect to the cell-centred pressure.
 If $\bb{g}_{P,Q}$ denotes the least-squares gradient coefficient multiplying the pressure in cell $Q$ when evaluating $(\bb{\nabla}p)_P$, then
@@ -740,6 +744,7 @@ term. For a compact Laplacian-type representation of the stabilisation,
 where $\alpha_p/a_{P,f}$ is the face pressure-stabilisation coefficient arising
 from the Rhie--Chow stabilisation in Equation~\eqref{eqn:rhie_chow}. Here
 $a_{P,f}$ denotes the face-interpolated compact momentum diagonal coefficient.
+\todo{In the implementation, $\tilde{J}_{pp}$ is built from $1/a_{P,f}$ times a separate Jacobian scale factor (default 1) rather than $\alpha_p/a_{P,f}$; the two coincide for $\alpha_p = 1$, used in all cases here. Mention only if a case uses $\alpha_p \neq 1$.}
 In addition to this compact part, the contribution of the interpolated-gradient term in Equation~\eqref{eqn:rhie_chow}, whose stencil extends to the neighbours of the neighbours, is also inserted into $\tilde{J}_{pp}$, so that the pressure block contains the complete linear stabilisation operator.
 
 The block $\tilde{J}_{pp}$ is therefore a compact pressure--pressure coupling
@@ -989,6 +994,7 @@ Following \citet{Liu2014} and \citet[Algorithm~2]{JaimanJoshi2022}, the interfac
     \label{eqn:solid_predicted_displacement}
 \end{equation}
 which is interpolated to the solid mesh points.
+The constant-step coefficients of Equation~\eqref{eqn:solid_predicted_displacement} are used also when the time step is adapted.
 The predicted displacement $\bb{D}_S^{n,*}$ is used only to move the fluid mesh; the solid stress is evaluated from the implicit displacement of Equation~\eqref{eqn:solid_bdf2_displacement}, which replaces $\bb{D}_S^{n,*}$ once the coupled solve has converged.
 As the mesh displacement is a total displacement and the prediction at the next step starts from the corrected $\bb{D}_S^{n}$, the prediction error does not accumulate over time steps.
 
@@ -1007,8 +1013,8 @@ Appropriate prescribed-displacement or symmetry conditions are applied on the
 remaining fluid-domain boundaries.
 
 The interior fluid mesh displacement is computed by treating the fluid mesh as a pseudo-solid: a solids4foam solid model is used as the mesh motion solver of the fluid mesh (the \texttt{solids4foamSolidModel} motion solver), so that any of the solid models and constitutive laws of the toolbox can be selected for the mesh motion.
-In this work, a linear-geometry (small-strain) total-displacement model with a linear elastic law, or a total Lagrangian model with a neo-Hookean law, is used; for the former, the pseudo-solid problem reads
-The unknown $\bb{D}^{\Gamma}$ is the total fluid mesh displacement relative to the initial fluid configuration, and satisfies
+In this work, a linear-geometry (small-strain) total-displacement model with a linear elastic law, or a total Lagrangian model with a neo-Hookean law, is used.
+For the former, the unknown $\bb{D}^{\Gamma}$, which is the total fluid mesh displacement relative to the initial fluid configuration, satisfies
 \begin{equation}
     \oint_{\Gamma_{P}^{n-1}}
     \delta \;
@@ -1079,7 +1085,7 @@ Equation~\eqref{eqn:mesh_motion_pseudo_solid} is solved for the cell-centred flu
 The mesh-motion problem is solved once per time step, independently of the coupled Newton system.
 
 As the discrete displacement field is stored at cell centres, an interpolation to mesh points is required before the mesh can be moved.
-For each fluid mesh point, $\bb{D}^{\Gamma}$ is extrapolated from every adjacent cell centre using the cell-centred value and gradient $\bb{\nabla}^{n-1} \bb{D}^{\Gamma}$, and the resulting extrapolated values are averaged to give the point displacement.
+For each fluid mesh point, $\bb{D}^{\Gamma}$ is extrapolated from every adjacent cell centre using the cell-centred value and gradient $\bb{\nabla}^{n-1} \bb{D}^{\Gamma}$, and the resulting extrapolated values are averaged, with weights inversely proportional to the distance from the cell centre to the point, to give the point displacement.
 The fluid mesh points are then updated by adding the interpolated point displacement to the initial-configuration point positions.
 
 The mesh face flux $\phi^{\Gamma}_f$, which represents the volume swept by face $f$ as the mesh moves, is computed directly from the swept volumes between successive mesh configurations rather than by differentiating $\bb{D}^{\Gamma}$ in time and interpolating to faces.
@@ -1087,12 +1093,15 @@ For the BDF2 time scheme used in the present work, the swept volume from two con
 \begin{equation}
 \phi^{\Gamma,n}_f
 =
-\tfrac{3}{2} \, \mathcal{V}^{n}_{f}
+\frac{
+3 \, \mathcal{V}^{n}_{f}
 -
-\tfrac{1}{2} \, \mathcal{V}^{n-1}_{f},
+\mathcal{V}^{n-1}_{f}
+}
+{2\Delta t},
     \label{eqn:gcl_swept_volume}
 \end{equation}
-where $\mathcal{V}^{n}_{f}$ and $\mathcal{V}^{n-1}_{f}$ are the volumes swept by face $f$ over the most recent and previous time steps, and the $\tfrac{3}{2}$ and $\tfrac{1}{2}$ weights are consistent with the BDF2 temporal discretisation.
+where $\mathcal{V}^{n}_{f}$ and $\mathcal{V}^{n-1}_{f}$ are the volumes swept by face $f$ over the most recent and previous time steps, and the weights are those of the BDF2 temporal discretisation (with the Euler scheme, $\phi^{\Gamma,n}_f = \mathcal{V}^{n}_{f}/\Delta t$).
 This construction enforces the discrete geometric conservation law: a uniform flow field passing through the moving mesh produces zero net contribution from the mesh motion, so spurious mass sources from the ALE convective flux are eliminated.
 
 
@@ -1105,11 +1114,8 @@ This section describes the implementation of the method outlined in Sections~\re
 
 The coupled unknown vector is stored as a fluid block followed by a solid
 block. The fluid block contains the velocity and pressure unknowns, while the
-solid block contains the solid velocity unknowns. Index sets are constructed
-for the top-level fluid and solid fields, and for the velocity and pressure
-sub-blocks within the fluid field. These index sets are used to extract
-sub-vectors during equation evaluation and to define block or nested
-field-split preconditioning strategies.
+solid block contains the solid velocity unknowns. Index sets of the fluid and solid unknowns are used to extract the region sub-vectors during the residual and Jacobian evaluation and to define the outer fluid--solid field split.
+Within the fluid block, the velocity components and the pressure of each cell are stored contiguously, so the inner velocity--pressure split is defined by the block size of the fluid unknowns.
 
 The nonlinear residual is evaluated through callbacks supplied to the PETSc nonlinear solver \emph{SNES}.
 For each nonlinear trial vector, the trial values are copied into the corresponding OpenFOAM finite-volume fields.

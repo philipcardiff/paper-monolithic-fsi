@@ -97,3 +97,9 @@ With the stiffened pseudo-solid mesh-motion laws used here (\texttt{diffusionEla
 The quasi-monolithic coupling requires the OpenFOAM.com (ESI) line of OpenFOAM and PETSc; solids4foam builds without it on the other OpenFOAM lines and without PETSc.
 The results of this paper were obtained with OpenFOAM \tbd{v2512} and PETSc \tbd{version}; the coupling also builds with OpenFOAM v2312 and v2412 with PETSc.
 The partitioned couplings with which it is compared are available on all supported OpenFOAM lines.
+
+\paragraph{Scope and modularity.}
+Partitioned coupling in solids4foam combines any of its fluid and solid models, including displacement-based solids with high-order reconstruction, and runs on every supported OpenFOAM line~\citep{Tukovic2018, Cardiff2025}.
+The quasi-monolithic coupling is restricted to the \texttt{newtonIcoFluid} fluid model and the velocity solids (Section~\ref{sec:numerical_methods}), to the OpenFOAM.com line with PETSc (Section~\ref{sec:lim_platform}), and to the standard second-order solid reconstruction, which limits its accuracy on thin structures (Section~\ref{sec:lim_thin_solid}).
+A new physical model enters the quasi-monolithic coupling only with its contribution to the residual and to the approximate Jacobian, whereas it enters partitioned coupling through its interface data alone.
+Where both couplings apply, the choice is thus between a solver that converges independently of the added mass at a higher cost per iteration, and a modular solver whose cost and reliability depend on the added mass and on its acceleration settings.

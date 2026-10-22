@@ -20,8 +20,8 @@ With the fluid--solid field-split preconditioner, the Krylov iterations per Newt
 On the ring added-mass problem, the quasi-monolithic coupling reproduces the exact added-mass frequency ratio at order \tbd{order} at every added-mass level, and the amplitude loss of the coupled vibration equals that of the dry ring to within \tbd{difference}, so the coupling adds no measurable damping (Section~\ref{sec:ring_m}).
 Replacing the interface pressure gradient taken from the normal momentum equation by a zero normal gradient reduces the order to \tbd{order} and adds damping of \tbd{amplitude loss per period} (Section~\ref{sec:interface_ablations}); the pressure treatment therefore controls the damping of the coupled vibration as well as its frequency.
 Removing the one-step lag of the interface force in the velocity solid, and evaluating the viscous traction from the discrete momentum flux, were each shown during development to remove a loss of accuracy (Section~\ref{sec:interface_ablations}).
-On a deforming wall, the interface traction must also contain the part $\mu\bb{\nabla}(\bb{v}\cdot\hat{\bb{n}})$ of the viscous traction, which vanishes on a stationary wall; without it, the wall motion of the pulsatile tube differs from the partitioned solutions by an amount that does not decrease under refinement (Section~\ref{sec:womersley_consistency}).
-With the corrected traction, every quantity of the pulsatile tube converges \tbd{at second order} in space and time (observed orders \tbd{range}; Section~\ref{sec:womersley_m}).
+\tbd{Deforming-wall traction: the outcome of the comparison with and without the part $\mu\bb{\nabla}(\bb{v}\cdot\hat{\bb{n}})$ of the viscous traction (Sections~\ref{sec:fluid_differences} and~\ref{sec:womersley_consistency}).}
+Every quantity of the pulsatile tube converges \tbd{at second order} in space and time (observed orders \tbd{range}; Section~\ref{sec:womersley_m}).
 \todo{Rewrite this paragraph together with contribution 2 of the Introduction once the deforming-wall traction correction is merged and the form adopted is known (Section~\ref{sec:fluid_differences}).}
 
 \paragraph{Conservative non-conformal coupling.}
@@ -36,7 +36,6 @@ At equal error against the Featflow reference on Hron--Turek FSI3, the quasi-mon
 In time, the quasi-monolithic coupling converges at order \tbd{order} on the elastic half-cylinder of \citet{Liu2014} (Section~\ref{sec:blob_m}).
 On the three-dimensional tube, the method reaches a parallel efficiency of \tbd{value} on \tbd{N} processes (Section~\ref{sec:tube3d_scaling}).
 In one case, a thin flag in air, Newton stagnates at the time step at which IQN-ILS converges, and the quasi-monolithic coupling requires \tbd{a quarter} of that step, at \tbd{factor} times the partitioned cost (Section~\ref{sec:lim_foil}): convergence of the method is independent of the added mass but not of the nonlinearity of the coupled problem over a step.
-Section~\ref{sec:discussion} discusses what these results imply for the choice between the couplings.
 
 \paragraph{Outlook.}
 Several extensions follow from the limitations identified in Section~\ref{sec:limitations}.

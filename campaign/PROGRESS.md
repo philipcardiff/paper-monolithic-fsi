@@ -11,7 +11,8 @@ Last updated: 2026-10-20
 hours, move work to XenoSim; phase B checks that the cases work, no fine
 meshes). B0 done; B1 ring done. Running/queued on XenoSim: B1 cav spin-up
 13027 done → cav windows 13036 (resubmitted; 13028 failed in set-up),
-tube spin-up 13029 (running) → tube windows 13030. B2 done; B3 estimate done. MeluXina held jobs 5364390, 5364391, 5364295, 5364354 cancelled
+tube spin-up 13029 done (160 steps, 16 ranks, 73 min, 2.0 Newton/step) →
+tube windows 13037 (resubmitted; 13030 failed in set-up). B2 done; B3 estimate done. MeluXina held jobs 5364390, 5364391, 5364295, 5364354 cancelled
 (superseded); p201287 used 1376 of 1389 node-hours in October.
 **Handoff Section 8 triggered** by B1 ring (preconditioner changes a QoI by
 more than the floor) — see `paper-data/campaign/b1/findings.md`.
@@ -163,6 +164,15 @@ evidence. S2 is 4× the floor.
 None open (budget and acceptance test answered 21 Oct, see decisions).
 
 ## Log
+
+- **2026-10-22** 2-step serial cav window test (13035): the restart check
+  passes (warning for `restart no` on the mesh motion, as intended); the test
+  itself then failed in `MPI_Init` because I launched it with `srun`, and
+  XenoSim's Open MPI has no Slurm PMI support (batch jobs don't use srun).
+  Tube spin-up done (13029). Tube windows 13030 failed in set-up: the tube
+  mesh-motion model (`linearGeometryTotalDisplacement`, linear elastic) has
+  a regex-keyed coefficients block that `set_restart` didn't match; fixed
+  and resubmitted as 13037.
 
 - **2026-10-22** Cav windows 13028 failed again at start-up, same message:
   this time from the **fluid mesh-motion** solid model

@@ -150,16 +150,18 @@ def set_restart(case, region="solid", value="yes"):
     """Set `restart` in the coefficients of a region's solid model.
 
     solid, yes: the spin-up writes the fields a consistent restart needs.
-    fluid, no:  the fluid mesh motion is a neo-Hookean total-Lagrangian
-                total-displacement solid (total strain, no history), which
-                the solver lets continue without them."""
+    fluid, no:  the fluid mesh motion is a total-displacement solid with no
+                history (cav: neo-Hookean total Lagrangian; tube: linear
+                elastic), which the solver lets continue without them."""
     path = case / f"constant/{region}/solidProperties.monolithic"
     text = path.read_text()
     model = re.search(r"^solidModel\s+(\w+);", text, flags=re.MULTILINE)
     if not model:
         sys.exit(f"No solidModel in {path}")
-    coeffs = re.search(rf"^{model.group(1)}Coeffs\s*\{{", text,
-                       flags=re.MULTILINE)
+    # The coefficients block may be keyed by a regular expression, e.g.
+    # "linearGeometryTotalDisplacementCoeffs|...Coeffs" (3dTube fluid)
+    coeffs = re.search(rf'^"?[^\n{{]*\b{model.group(1)}Coeffs\b[^\n{{]*\s*\{{',
+                       text, flags=re.MULTILINE)
     if not coeffs:
         sys.exit(f"No {model.group(1)}Coeffs in {path}")
     if re.search(r"^\s*restart\s", text, flags=re.MULTILINE):

@@ -14,6 +14,12 @@ For each run the outcome (Section~\ref{sec:protocol}), the mean number of Newton
 
 %%--------------------------------------------------------------------------------------------------------------------%%
 \subsection{Ring added-mass problem}\label{sec:robustness_ring}
+% TIME-SCHEME NOTE (Philip, 22 Oct 2026), for anyone adding results here:
+% all transient results in this paper must use BDF2 (backward) for the fluid
+% ddt(U) and the solid. The solids4foam tutorial default for this case is
+% backward for the fluid ddt(U). Confirm and record the ddt schemes of every
+% run (runs.csv); rerun any result computed with Euler, and say so here.
+\todo{Time scheme: confirm that every result in this subsection uses BDF2 (backward) for the fluid and the solid (tutorial default for the fluid ddt(U): backward); results computed with Euler must be rerun.}
 %%--------------------------------------------------------------------------------------------------------------------%%
 % Set-up as Section 4.2. Map: HANDOFF R3. Driver: ringAddedMass/verification/
 % Allverify (density levels via its fluid-density setting); the extension
@@ -28,6 +34,12 @@ Expected claims: the quasi-monolithic coupling completes every cell with \tbd{nu
 
 %%--------------------------------------------------------------------------------------------------------------------%%
 \subsection{Collapsible channel}\label{sec:robustness_collapsible}
+% TIME-SCHEME NOTE (Philip, 22 Oct 2026), for anyone adding results here:
+% all transient results in this paper must use BDF2 (backward) for the fluid
+% ddt(U) and the solid. The solids4foam tutorial default for this case is
+% Euler for the fluid ddt(U). Confirm and record the ddt schemes of every
+% run (runs.csv); rerun any result computed with Euler, and say so here.
+\todo{Time scheme: confirm that every result in this subsection uses BDF2 (backward) for the fluid and the solid (tutorial default for the fluid ddt(U): Euler); results computed with Euler must be rerun.}
 %%--------------------------------------------------------------------------------------------------------------------%%
 % Set-up: companion paper sectionBenchmarkSuite.tex "Collapsible channel";
 % solids4foam 257b2e564 tutorials/fluidSolidInteraction/collapsibleChannel/
@@ -58,6 +70,10 @@ Where the quasi-monolithic coupling fails, the cause is \tbd{e.g.\ inversion of 
 
 %%--------------------------------------------------------------------------------------------------------------------%%
 \subsection{Flexible-bottom cavity: time step}\label{sec:robustness_cavity}
+% TIME-SCHEME NOTE (Philip, 22 Oct 2026), for anyone adding results here:
+% this case is steady (pseudo-time stepping), so the Euler scheme is acceptable
+% for the fluid ddt(U); record the ddt schemes of every run with the results.
+\todo{Time scheme: steady case; Euler pseudo-time stepping is acceptable (tutorial default for the fluid: Euler). Record the ddt schemes used.}
 %%--------------------------------------------------------------------------------------------------------------------%%
 % Optional in HANDOFF R3 (cheap). Level 3, dt = 0.0625 ... 1.0 s.
 

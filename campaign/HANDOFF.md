@@ -649,3 +649,33 @@ Philip asked the coordinating session to decide, and the decision is as follows.
   `feature-petsc-snes-quasi-monolithic` before the B1 cavity/tube analysis
   is reused for the paper. It now includes #609–#611, the physics-PC
   removal and `viscousStressTranspose no`.
+
+**22 October 2026 (Philip): road to submission.**
+
+Read `paper-data/submission_plan.md` (branch `manuscript/submission-plan`).
+It replaces the R1–R7 list with work packages WP0–WP8, sorted by paper
+section. Main points:
+
+- **Approved to start now:**
+  - **WP0:** rebuild at the solver branch head; finish B1 and B2; runs 0b/0c,
+    which decide the `viscousStressTranspose` default.
+  - **8a:** the coarse-mesh layers of the geometry figures, from
+    `figures/scripts/mesh_layer.py`. Commit the PDFs and JSONs to
+    `figures/mesh/`.
+  - The other work packages wait for Philip's go-ahead on how many run
+    agents to launch.
+- **MeluXina:**
+  - use the **Amir/Colm project** first, from today;
+  - the "xenosim" project only if needed;
+  - **never** the project running Hron–Turek x8 (Petar and Simon).
+
+  Confirm the project IDs with `myquota` before submitting jobs. MeluXina
+  is also the timing machine.
+- **ParaView on XenoSim:** render on the NVIDIA GPU. Check with
+  `nvidia-smi`; use an EGL/headless build if available.
+- **Field images:** next to each case, from a medium or fine level (coarse
+  only as placeholders).
+- **Animations:** for the transient cases, as supplementary material, using
+  `pvbatch` scripts under `campaign/scripts/animations/` in this
+  repository. Show Philip a cheap sample first.
+- **Block with flexible tail:** dropped (solids4foam#615).

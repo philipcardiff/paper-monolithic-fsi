@@ -136,7 +136,11 @@ The same approximation is applied to the rate of change term in the solid moment
 \end{equation}
 %The same temporal discretisation is used for the fluid velocity and solid velocity.
 The solid displacement, which is not an independent unknown in the coupled Newton system, is obtained from the solid velocity by the same BDF2 formula, as described in the next section.
-\todo{Several solids4foam monolithic tutorials use the Euler scheme for the fluid ddt(U); state per case in Sections 4--8 if any campaign case does not use BDF2 for the fluid.}
+All transient cases of this work use BDF2 for both the fluid and the solid; steady problems computed by pseudo-time stepping (the flexible-bottom cavity) may use the first-order Euler scheme, since their pseudo-time history is not part of the result.
+BDF2 needs two old time levels, so it is started with one Euler step: on the first time step the backward scheme of OpenFOAM.com, used throughout this work, reverts to the Euler coefficients, and the solid displacement update of Equation~\eqref{eqn:solid_bdf2_displacement} does the same.
+With a constant time step this start keeps the global error of second order, although \citet{Nishikawa2019bdf2} showed that a BDF1 start can give a large start-up error in BDF2 for stiff problems, in particular when the first step is taken smaller than the following ones; here the first step equals the following ones, and the quantities of interest are periodic, steady or taken after the starting transient \tbd{confirm for the ring and Womersley studies, which start from exact initial fields}.
+After a retry (Section~\ref{sec:jfnk_solution}) the step is reduced to a quarter, and it is subsequently increased by at most a factor of 1.5 per step, so the variable-step BDF2 coefficients are used with these step ratios.
+\todo{Several solids4foam tutorials default to the Euler scheme for the fluid ddt(U) (3dTube, blobInTreacle, cavityFlexibleBottom, collapsibleChannel, membraneRoof, mokLidDrivenCavity, perpendicularFlap at solver commit 85b0c1de6); verification drivers may override this (the 3dTube driver uses backward). Every campaign run must record its ddt schemes; the case sections carry a reminder.}
 
 
 %%--------------------------------------------------------------------------------------------------------------------%%
@@ -961,8 +965,9 @@ The velocity block $\tilde{\bb{J}}_{mm}$ is approximated by block Jacobi, with a
 The Schur complement is approximated by $\hat{S}_p$ in Equation~\eqref{eqn:schur_complement_approx} and preconditioned by one V-cycle of the BoomerAMG algebraic multigrid method of HYPRE~\citep{hypre}.
 Each inner block is applied once (no inner Krylov iterations), so the preconditioner is a fixed linear operator and a standard (non-flexible) Krylov method can be used.
 
-The solid block $\tilde{\bb{J}}_{ss}$, which is much smaller than the fluid block in the cases considered, is preconditioned either by an exact sparse LU factorisation, gathered on a single process in parallel, or by algebraic multigrid (BoomerAMG).
-\todo{Final solid-block preconditioner from the campaign: all solids4foam monolithic tutorials use redundant+LU; BoomerAMG on the solid block has not yet been tested. Gathering the solid block on one rank limits parallel scalability; discuss in Section 8/9.}
+The solid block $\tilde{\bb{J}}_{ss}$, which is much smaller than the fluid block in the cases considered, is preconditioned either by an exact sparse LU factorisation, gathered on a single process in parallel, or by one V-cycle of BoomerAMG.
+The tutorial settings use the LU factorisation, which is the cheaper choice for the small two-dimensional solid blocks; for the three-dimensional tube, whose finer solid meshes make the gathered factorisation dominate the cost, BoomerAMG is used (the converged solution does not depend on the choice).
+\todo{Confirm per case from the campaign (check B1 on the cavity and 3dTube): which solid-block preconditioner each case of Sections~\ref{sec:verification_exact}--\ref{sec:scaling_3d} uses. Source for 3dTube: solids4foam \texttt{tutorials/fluidSolidInteraction/3dTube/verification/README.md} (option \texttt{--solid-preconditioner}, default BoomerAMG, merged with \#604).}
 
 
 %%--------------------------------------------------------------------------------------------------------------------%%

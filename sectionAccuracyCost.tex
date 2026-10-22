@@ -10,6 +10,12 @@ This section compares the quasi-monolithic coupling with partitioned IQN-ILS cou
 
 %%--------------------------------------------------------------------------------------------------------------------%%
 \subsection{Hron--Turek FSI3}\label{sec:fsi3_m}
+% TIME-SCHEME NOTE (Philip, 22 Oct 2026), for anyone adding results here:
+% all transient results in this paper must use BDF2 (backward) for the fluid
+% ddt(U) and the solid. The solids4foam tutorial default for this case is
+% backward for the fluid ddt(U). Confirm and record the ddt schemes of every
+% run (runs.csv); rerun any result computed with Euler, and say so here.
+\todo{Time scheme: confirm that every result in this subsection uses BDF2 (backward) for the fluid and the solid (tutorial default for the fluid ddt(U): backward); results computed with Euler must be rerun.}
 %%--------------------------------------------------------------------------------------------------------------------%%
 % Set-up: companion paper sectionBenchmarkSuite.tex "Hron--Turek family";
 % solids4foam 257b2e564 tutorials/fluidSolidInteraction/TurekHron2006/
@@ -56,6 +62,12 @@ The observed order of the quasi-monolithic $u_x$ mean between factors 2 and 4 is
 
 %%--------------------------------------------------------------------------------------------------------------------%%
 \subsection{Elastic half-cylinder in a viscous channel flow}\label{sec:blob_m}
+% TIME-SCHEME NOTE (Philip, 22 Oct 2026), for anyone adding results here:
+% all transient results in this paper must use BDF2 (backward) for the fluid
+% ddt(U) and the solid. The solids4foam tutorial default for this case is
+% Euler for the fluid ddt(U). Confirm and record the ddt schemes of every
+% run (runs.csv); rerun any result computed with Euler, and say so here.
+\todo{Time scheme: confirm that every result in this subsection uses BDF2 (backward) for the fluid and the solid (tutorial default for the fluid ddt(U): Euler); results computed with Euler must be rerun.}
 %%--------------------------------------------------------------------------------------------------------------------%%
 % Set-up: solids4foam 257b2e564 tutorials/fluidSolidInteraction/
 % blobInTreacle/README.md (case overview and parameter table) and

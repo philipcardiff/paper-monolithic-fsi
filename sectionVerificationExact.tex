@@ -22,7 +22,7 @@ This section verifies the method against two exact solutions and uses them to ex
 		\toprule
 		Case & Section & Question & Reference \\
 		\midrule
-		ringAddedMass & \ref{sec:ring_m}, \ref{sec:interface_ablations}, \ref{sec:robustness_ring} & added mass, interface ablations, robustness & exact \\
+		ringAddedMass & \ref{sec:ring_m}, \ref{sec:interface_comparison}, \ref{sec:robustness_ring} & added mass, interface treatment, robustness & exact \\
 		womersleyTube & \ref{sec:womersley_m}, \ref{sec:womersley_consistency} & viscous traction on a deforming wall & exact \\
 		cavityFlexibleBottom & \ref{sec:cavity_m}, \ref{sec:robustness_cavity} & consistency with partitioned coupling & partitioned, same meshes \\
 		collapsibleChannel & \ref{sec:robustness_collapsible} & robustness, massless wall & oomph-lib \\
@@ -82,6 +82,12 @@ The run tables, the extracted quantities of interest, the provenance records and
 
 %%--------------------------------------------------------------------------------------------------------------------%%
 \subsection{Ring added-mass problem}\label{sec:ring_m}
+% TIME-SCHEME NOTE (Philip, 22 Oct 2026), for anyone adding results here:
+% all transient results in this paper must use BDF2 (backward) for the fluid
+% ddt(U) and the solid. The solids4foam tutorial default for this case is
+% backward for the fluid ddt(U). Confirm and record the ddt schemes of every
+% run (runs.csv); rerun any result computed with Euler, and say so here.
+\todo{Time scheme: confirm that every result in this subsection uses BDF2 (backward) for the fluid and the solid (tutorial default for the fluid ddt(U): backward); results computed with Euler must be rerun.}
 %%--------------------------------------------------------------------------------------------------------------------%%
 % Set-up: solids4foam origin/feature-petsc-snes-quasi-monolithic @ 257b2e564,
 % tutorials/fluidSolidInteraction/ringAddedMass/README.md (Table 1) and
@@ -117,6 +123,12 @@ Expected claims: the ratio error converges at order \tbd{order} to \tbd{finest e
 
 %%--------------------------------------------------------------------------------------------------------------------%%
 \subsection{Pulsatile compliant tube}\label{sec:womersley_m}
+% TIME-SCHEME NOTE (Philip, 22 Oct 2026), for anyone adding results here:
+% all transient results in this paper must use BDF2 (backward) for the fluid
+% ddt(U) and the solid. The solids4foam tutorial default for this case is
+% backward for the fluid ddt(U). Confirm and record the ddt schemes of every
+% run (runs.csv); rerun any result computed with Euler, and say so here.
+\todo{Time scheme: confirm that every result in this subsection uses BDF2 (backward) for the fluid and the solid (tutorial default for the fluid ddt(U): backward); results computed with Euler must be rerun.}
 %%--------------------------------------------------------------------------------------------------------------------%%
 % Set-up: companion paper sectionBenchmarkSuite.tex "Pulsatile compliant tube";
 % solids4foam 257b2e564 tutorials/fluidSolidInteraction/womersleyTube/
@@ -141,9 +153,9 @@ The difference between the couplings is discussed in Section~\ref{sec:womersley_
 Expected claims: every quantity converges at second order in space and time (observed orders \tbd{range}), with \tbd{2} Newton iterations per step and \tbd{factor} of the wall time of IQN-ILS.
 
 %%--------------------------------------------------------------------------------------------------------------------%%
-\subsection{Interface treatment: ablations}\label{sec:interface_ablations}
+\subsection{Effect of the interface treatment}\label{sec:interface_comparison}
 %%--------------------------------------------------------------------------------------------------------------------%%
-% Ablations selected per Philip's decision (20 Oct 2026): only those that are
+% Comparisons selected per Philip's decision (20 Oct 2026): only those that are
 % an option on the tag and informative. Routes and run sets from audit A4
 % (paper-data/a4_ablation_reproducibility.md, Sections 1 and 7).
 
@@ -156,7 +168,7 @@ The normal pressure gradient of Equation~\eqref{eqn:interface_pressure_gradient}
 % arm of Allverify --study nonconformal, --levels moderate,strong.
 The moderate and strong levels are run on mesh factors 1, 2 and 4 at 100 steps per period.
 
-\todo{Figure: ringAddedMass, interface pressure ablation. (a) Error of the wet/dry frequency ratio against mesh factor (1, 2, 4), moderate and strong levels, normal-momentum gradient against zero gradient, with slope-1 and slope-2 triangles. (b) Amplitude loss per period for the same runs, with the dry-ring value as a horizontal line.}
+\todo{Figure: ringAddedMass, effect of the interface pressure condition. (a) Error of the wet/dry frequency ratio against mesh factor (1, 2, 4), moderate and strong levels, normal-momentum gradient against zero gradient, with slope-1 and slope-2 triangles. (b) Amplitude loss per period for the same runs, with the dry-ring value as a horizontal line.}
 
 Expected claims: with a zero gradient the ratio error converges at first order (\tbd{orders}) and the coupling adds damping of \tbd{amplitude loss per period}, whereas the normal-momentum gradient gives \tbd{second order and no added damping}; the pressure treatment therefore controls the damping of the coupled vibration as well as its frequency.
 

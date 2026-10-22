@@ -30,7 +30,7 @@ One difference did not.
 The quasi-monolithic interface traction was the wall flux of the viscous term of the momentum equation, $\mu\,\partial\bb{v}/\partial n$, whereas the partitioned traction is $\hat{\bb{n}}\cdot 2\mu\bb{D}(\bb{v})$.
 On a stationary or rigidly moving wall the two are equal at the continuum level, but on a deforming wall the former omits $\mu\bb{\nabla}(\bb{v}\cdot\hat{\bb{n}})$, a physical part of the traction whose size relative to the pressure is about $\mu\omega R/(Eh)$ for a compliant tube of radius $R$, wall thickness $h$ and angular frequency $\omega$; it is not a discretisation error and does not vanish under refinement.
 The term can be included in the quasi-monolithic coupling (\texttt{viscousStressTranspose}, which adds the explicit transpose term to the momentum residual and its wall flux to the traction, as in the partitioned fluid), but it is off by default and the results below use the wall-flux traction \tbd{or the corrected form, once verified}.
-\todo{State of the code (solids4foam \texttt{feature-petsc-snes-quasi-monolithic}, 21 Oct 2026): PR \#611 added the term; its default was then set to off (\texttt{021affbc4}) because, in its present form, it moved the steady blobInTreacle displacement $2\%$ further from the partitioned solution although the term vanishes on a stationary wall, which suggests a first-order error in its wall value. Pending: blobInTreacle x1/x2/x4 and womersleyTube m2 with the option on and off. Then (i) describe the adopted form and update Equation~\eqref{eqn:interface_fluid_traction}, Section~\ref{sec:interface_conditions}, the abstract, contribution 2 and Section~\ref{sec:interface_ablations}; (ii) rerun womersleyTube (R1); (iii) confirm that the cavity and blobInTreacle results do not change beyond the iterative tolerance.}
+\todo{State of the code (solids4foam \texttt{feature-petsc-snes-quasi-monolithic}, 21 Oct 2026): PR \#611 added the term; its default was then set to off (\texttt{021affbc4}) because, in its present form, it moved the steady blobInTreacle displacement $2\%$ further from the partitioned solution although the term vanishes on a stationary wall, which suggests a first-order error in its wall value. Pending: blobInTreacle x1/x2/x4 and womersleyTube m2 with the option on and off. Then (i) describe the adopted form and update Equation~\eqref{eqn:interface_fluid_traction}, Section~\ref{sec:interface_conditions}, the abstract, contribution 2 and Section~\ref{sec:interface_comparison}; (ii) rerun womersleyTube (R1); (iii) confirm that the cavity and blobInTreacle results do not change beyond the iterative tolerance.}
 
 \begin{table}[htbp]
 	\centering
@@ -45,6 +45,10 @@ The term can be included in the quasi-monolithic coupling (\texttt{viscousStress
 
 %%--------------------------------------------------------------------------------------------------------------------%%
 \subsection{Channel flow over a cavity with a flexible bottom}\label{sec:cavity_m}
+% TIME-SCHEME NOTE (Philip, 22 Oct 2026), for anyone adding results here:
+% this case is steady (pseudo-time stepping), so the Euler scheme is acceptable
+% for the fluid ddt(U); record the ddt schemes of every run with the results.
+\todo{Time scheme: steady case; Euler pseudo-time stepping is acceptable (tutorial default for the fluid: Euler). Record the ddt schemes used.}
 %%--------------------------------------------------------------------------------------------------------------------%%
 % Set-up: companion paper sectionBenchmarkSuite.tex "Flexible-bottom cavity";
 % solids4foam origin/verification/cavityflexiblebottom-partitioned-fine @
@@ -85,6 +89,12 @@ Expected claims: the difference between the couplings decreases from \tbd{value}
 
 %%--------------------------------------------------------------------------------------------------------------------%%
 \subsection{Pulsatile compliant tube}\label{sec:womersley_consistency}
+% TIME-SCHEME NOTE (Philip, 22 Oct 2026), for anyone adding results here:
+% all transient results in this paper must use BDF2 (backward) for the fluid
+% ddt(U) and the solid. The solids4foam tutorial default for this case is
+% backward for the fluid ddt(U). Confirm and record the ddt schemes of every
+% run (runs.csv); rerun any result computed with Euler, and say so here.
+\todo{Time scheme: confirm that every result in this subsection uses BDF2 (backward) for the fluid and the solid (tutorial default for the fluid ddt(U): backward); results computed with Euler must be rerun.}
 %%--------------------------------------------------------------------------------------------------------------------%%
 % Data: the R1 womersleyTube runs (Section 4.3) and the partitioned
 % Robin-Neumann and IQN-ILS runs of the companion paper, both from the tag.

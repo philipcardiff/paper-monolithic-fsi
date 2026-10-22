@@ -12,20 +12,20 @@ The main findings, in the order of the contributions listed in Section~\ref{sec:
 
 \paragraph{Newton operator and preconditioner.}
 The compact finite volume linearisations of the fluid, solid and interface-coupling terms are adequate as a preconditioner but not as a Jacobian.
-Used as the Newton operator, the assembled approximate Jacobian gives linear convergence with a contraction factor of \tbd{value} per iteration, whereas the matrix-free operator converges in \tbd{number} Newton iterations per step in every case that completes (Section~\ref{sec:tube3d_pc_ablation}).
+Used as the Newton operator, the assembled approximate Jacobian gives linear convergence with a contraction factor of \tbd{value} per iteration, whereas the matrix-free operator converges in \tbd{number} Newton iterations per step in every case that completes (Section~\ref{sec:tube3d_pc_study}).
 With the fluid--solid field-split preconditioner, the Krylov iterations per Newton iteration \tbd{remain below N / grow by factor} over the cases and process counts considered (Sections~\ref{sec:verification_exact} and~\ref{sec:scaling_3d}).
-\tbd{One sentence on the preconditioner settings that matter, from the ablation of Section~\ref{sec:tube3d_pc_ablation}: Schur factorisation, lag, solid block.}
+\tbd{One sentence on the preconditioner settings that matter, from the comparison of Section~\ref{sec:tube3d_pc_study}: Schur factorisation, lag, solid block.}
 
 \paragraph{Interface treatment.}
 On the ring added-mass problem, the quasi-monolithic coupling reproduces the exact added-mass frequency ratio at order \tbd{order} at every added-mass level, and the amplitude loss of the coupled vibration equals that of the dry ring to within \tbd{difference}, so the coupling adds no measurable damping (Section~\ref{sec:ring_m}).
-Replacing the interface pressure gradient taken from the normal momentum equation by a zero normal gradient reduces the order to \tbd{order} and adds damping of \tbd{amplitude loss per period} (Section~\ref{sec:interface_ablations}); the pressure treatment therefore controls the damping of the coupled vibration as well as its frequency.
-Removing the one-step lag of the interface force in the velocity solid, and evaluating the viscous traction from the discrete momentum flux, were each shown during development to remove a loss of accuracy (Section~\ref{sec:interface_ablations}).
+Replacing the interface pressure gradient taken from the normal momentum equation by a zero normal gradient reduces the order to \tbd{order} and adds damping of \tbd{amplitude loss per period} (Section~\ref{sec:interface_comparison}); the pressure treatment therefore controls the damping of the coupled vibration as well as its frequency.
+Removing the one-step lag of the interface force in the velocity solid, and evaluating the viscous traction from the discrete momentum flux, were each shown during development to remove a loss of accuracy (Section~\ref{sec:interface_comparison}).
 \tbd{Deforming-wall traction: the outcome of the comparison with and without the part $\mu\bb{\nabla}(\bb{v}\cdot\hat{\bb{n}})$ of the viscous traction (Sections~\ref{sec:fluid_differences} and~\ref{sec:womersley_consistency}).}
 Every quantity of the pulsatile tube converges \tbd{at second order} in space and time (observed orders \tbd{range}; Section~\ref{sec:womersley_m}).
 \todo{Rewrite this paragraph together with contribution 2 of the Introduction once the deforming-wall traction correction is merged and the form adopted is known (Section~\ref{sec:fluid_differences}).}
 
 \paragraph{Conservative non-conformal coupling.}
-Transferring the fluid face forces to the solid with the transpose of the solid-to-fluid velocity transfer balances the total interface force and power to \tbd{round-off level} on coarser and finer solid interface meshes, whereas interpolation of the traction leaves an imbalance of \tbd{size} that decreases at order \tbd{order} (Section~\ref{sec:interface_ablations}).
+Transferring the fluid face forces to the solid with the transpose of the solid-to-fluid velocity transfer balances the total interface force and power to \tbd{round-off level} on coarser and finer solid interface meshes, whereas interpolation of the traction leaves an imbalance of \tbd{size} that decreases at order \tbd{order} (Section~\ref{sec:interface_comparison}).
 The effect on the frequency ratio of the ring is \tbd{below / of the order of} the discretisation error.
 With this transfer, the solid can be refined independently of the fluid, which \tbd{was / was not} used to reduce the solid error on the collapsible channel (Sections~\ref{sec:robustness_collapsible} and~\ref{sec:lim_thin_solid}).
 

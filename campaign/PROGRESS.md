@@ -16,8 +16,17 @@ Last updated: 2026-10-22
   `tutorial/block-with-flexible-tail`, notes in
   `~/OpenFOAM/philipc-v2512/codex/blockWithTail-runs/NOTES.md`; not part of
   the paper.
-Next: repeat the chosen B1 configurations on the head build; B2 AMI at
-fluid level 3; then the R streams (MeluXina p201136, packed nodes).
+- XenoSim, head build: B1 repeats of the chosen configurations (13106 cav
+  S0/S0ref 4 ranks, 13107 tube S1/S1ref 16 ranks, 13108 ring S0 serial);
+  B2 collapsibleChannel (Euler, as the README): AMI 640×8 at fluid level 2
+  (13109) and level 4 (13110), conformal 320×8 at level 4 (13111). (The
+  README's fluid levels are refinement factors 1, 2, 4; "level 3" in the G1
+  report means the next one, 4.)
+- MeluXina: head build `qm-head` (5375410, p201136).
+- **R0: every paper case runs** (subagent β): one monolithic run per paper
+  case, tutorial resolution, `backward`, full end time, packed on one
+  MeluXina node (p201136); branch `evidence/campaign-r0`,
+  `paper-data/campaign/r0/`.
 
 ## Status by stream
 
@@ -182,6 +191,10 @@ All 2.00 Newton/step. QoI differences vs S0tight: cav S0/S1 ≤ 1.1e-5
 None open (G1 answered 22 Oct).
 
 ## Log
+
+- **2026-10-22** Head build on XenoSim done (13104, no build errors).
+  Submitted the B1 repeats and B2 level runs on it; MeluXina head build
+  5375410; R0 sweep delegated (subagent β).
 
 - **2026-10-22** G1 answered. Started: branch-head build (13104, 85b0c1de6,
   XenoSim, new tree `philipc-v2512-qmhead`); restart-fix subagent (own

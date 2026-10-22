@@ -16,6 +16,8 @@
 # Parameterised by the solid mesh:
 #   SOLID_NX, SOLID_NY  solid divisions (160 8 = conformal level-2 baseline)
 #   RUN_ID              run id (directory under runs/b2)
+#   LEVEL, DT           fluid level (refinement factor; default 2) and time
+#                       step (default 0.00625 s)
 # If SOLID_NX != 160 the driver's configure_case selects AMI, and this script
 # adds conservativeTractionTransfer yes + useUndeformedArea yes.
 #
@@ -34,8 +36,8 @@ source "$QM_ROOT/env.sh"
 set -u
 
 : "${SOLID_NX:?}" "${SOLID_NY:?}" "${RUN_ID:?}"
-LEVEL=2
-DT=0.00625
+LEVEL="${LEVEL:-2}"
+DT="${DT:-0.00625}"
 END=1.5
 RUNS="$QM_ROOT/runs/b2"
 SCRIPTS="$QM_ROOT/campaign/scripts"

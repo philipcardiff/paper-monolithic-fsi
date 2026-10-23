@@ -15,14 +15,19 @@
 #
 # Required environment: WP3_TASKS (task file: one "run_id setup-args..." per
 # line, setup-args as for wp3_setup.py without the run directory),
-# WP3_TIMEOUT_H (per-run limit, hours). Optional: WP3_SLOTS (default 120).
+# WP3_TIMEOUT_H (per-run limit, hours). Optional: WP3_SLOTS (default 120),
+# WP3_PIN (yes|no, default yes; no on XenoSim, which has no Slurm cpusets,
+# so pinning to cores 0..N-1 would stack runs on other users' processes),
+# WP3_RUNS, WP3_SCRIPTS, WP3_PROVENANCE (paths; MeluXina defaults).
 
 QM_ROOT="${QM_ROOT:-/project/home/p201287/philip/qm-head}"
 export QM_ROOT
 source "$QM_ROOT/env.sh"
 set -u
-RUNS="$QM_ROOT/runs/wp3"
-SCRIPTS="$QM_ROOT/campaign/wp3"
+RUNS="${WP3_RUNS:-$QM_ROOT/runs/wp3}"
+SCRIPTS="${WP3_SCRIPTS:-$QM_ROOT/campaign/wp3}"
+PROVENANCE="${WP3_PROVENANCE:-$QM_ROOT/campaign/scripts/provenance.py}"
+PIN="${WP3_PIN:-yes}"
 TASKS="${WP3_TASKS:?}"
 TLIM_S=$(( ${WP3_TIMEOUT_H:?} * 3600 ))
 SLOTS="${WP3_SLOTS:-120}"
@@ -46,16 +51,22 @@ run_one()
     export FOAM_USER_APPBIN="$d/bin" PATH="$d/bin:$PATH"
     local t0 t1 rc wall
     t0=$(now)
-    taskset -c "$core" timeout "$TLIM_S" $(cat wp3_cmd) > log.Allrun 2>&1
+    if [ "$PIN" = yes ]
+    then
+        taskset -c "$core" timeout "$TLIM_S" $(cat wp3_cmd) > log.Allrun 2>&1
+    else
+        timeout "$TLIM_S" $(cat wp3_cmd) > log.Allrun 2>&1
+    fi
     rc=$?
     t1=$(now)
     wall=$(python3 -c "print(round($t1 - $t0, 3))")
-    python3 "$QM_ROOT/campaign/scripts/provenance.py" "$d" --ranks 1 \
+    python3 "$PROVENANCE" "$d" --ranks 1 \
         --run-id "$id" --out "$d/provenance.json" > /dev/null 2>&1
     cat > "$d/run_meta.json" <<EOF
 {"run_id": "$id", "core": $core, "node": "$(hostname)",
- "slurm_job_id": "$SLURM_JOB_ID", "exclusive_node": true,
- "shared_with_other_wp3_runs": true, "binding": "taskset -c $core",
+ "slurm_job_id": "$SLURM_JOB_ID", "exclusive_node": $([ "$PIN" = yes ] && echo true || echo false),
+ "shared_with_other_wp3_runs": true,
+ "binding": "$([ "$PIN" = yes ] && echo "taskset -c $core" || echo "none (shared node)")",
  "rc": $rc, "timeout_s": $TLIM_S, "wall_s": $wall}
 EOF
     python3 "$SCRIPTS/wp3_post.py" "$d" --rc "$rc" --wall "$wall"

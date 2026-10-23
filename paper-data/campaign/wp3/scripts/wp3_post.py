@@ -11,8 +11,12 @@ runs, README.md) is applied in this order, identically for every coupling:
              "FSI coupling did not converge"; quasi-monolithic: the Newton
              solve of the coupled system did not converge, e.g. at
              snes_max_it)
-  newton     a solid Newton (SNES) failure inside a partitioned step, or a
-             mesh-motion SNES failure
+  newton     a solid Newton (SNES) failure inside a partitioned step that
+             ended the run
+  mesh       quasi-monolithic only: the fluid mesh-motion (pseudo-solid)
+             SNES failed and ended the run; counted as a QM failure but
+             labelled separately, as it is not a coupling failure (Philip,
+             23 Oct)
   diverged   ring: |ovalling displacement| above 10 times its first peak;
              collapsibleChannel: |wall displacement| above the channel
              height (1 m)
@@ -229,7 +233,7 @@ def main():
     elif log["coupling_cap"] or log["coupled_snes_fail"]:
         status = "cap"
     elif log["other_snes_fail"] and not end_ok:
-        status = "newton"
+        status = "mesh" if qm else "newton"
     elif diverged:
         status = "diverged"
     elif args.rc == 124:

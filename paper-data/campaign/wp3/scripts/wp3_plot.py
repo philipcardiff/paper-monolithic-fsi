@@ -28,7 +28,8 @@ CRITICAL = "#d03b3b"
 COUPLINGS = [("aitken", "Aitken", "s", False), ("iqn", "IQN-ILS", "^", False),
              ("rn", "Robin–Neumann", "D", False), ("qm", "Quasi-monolithic", "o",
                                                   True)]
-CODE = {"cap": "cap", "newton": "Nwt", "nan": "NaN", "diverged": "div",
+CODE = {"cap": "cap", "newton": "Nwt", "mesh": "mesh", "nan": "NaN",
+        "diverged": "div",
         "timeout": "t/o", "crash": "crash"}
 
 
@@ -105,7 +106,7 @@ def main():
                for _, n, m, f in COUPLINGS]
     handles.append(Line2D([], [], marker="o", ms=7, color=CRITICAL,
                           mfc="none", linestyle="none",
-                          label="failed (cap, Nwt, NaN, div, t/o)"))
+                          label="failed (cap, Nwt, mesh, NaN, div, t/o)"))
     ax.legend(handles=handles, loc="upper center", ncol=5, fontsize=7,
               frameon=False, bbox_to_anchor=(0.5, -0.16 - 0.02 * len(ys)),
               handletextpad=0.2, columnspacing=1.0)

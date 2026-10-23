@@ -84,6 +84,7 @@ def main():
         prov["run_meta"] = rmeta
         (out / "provenance" / f"{d.name}.json").write_text(
             json.dumps(prov, indent=1) + "\n")
+        xe = "xenosim" in str(rmeta.get("node", "")).lower()
         qm = meta["coupling"] == "qm"
         ring = meta["map"] == "3a"
         lib = prov.get("libraries") or {}
@@ -104,9 +105,12 @@ def main():
             rho_ratio=(f"{meta['rho_ratio']:g}" if not ring else
                        f"rhoF {meta['rhoFluid']:g} (mu {meta['massRatio']:.4g})"),
             ranks=1, cores=1, nodes=1,
-            node_type=f"MeluXina cpu ({prov.get('cpu_model', 'AMD EPYC 7H12')})",
-            exclusive="node exclusive, shared with other WP3 runs "
-                      "(timings indicative)",
+            node_type=(f"XenoSim ({prov.get('cpu_model', '')})" if xe else
+                       f"MeluXina cpu ({prov.get('cpu_model', '')})"),
+            exclusive=("no (shared XenoSim node, no binding; timings "
+                       "indicative)" if xe else
+                       "node exclusive, shared with other WP3 runs "
+                       "(timings indicative)"),
             code_commit=f"{s4f.get('describe', '')} {s4f.get('commit', '')}"
                         .strip(),
             of_version=(prov.get("openfoam") or {}).get("version", ""),

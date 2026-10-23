@@ -33,3 +33,14 @@
   fluid mesh-motion SNES (`DIVERGED_LINEAR_SOLVE` of the pseudo-solid
   motion solver), after Newton steps of 3 iterations. Judgement point for
   Philip (mesh-motion failure, not coupling).
+- Collapsible smoke (Δt 0.025, ρs/ρf 1, MeluXina, 40 min node): Aitken,
+  IQN-ILS, RN pass (mean 40.5, 18.6, 31.1 iterations per step; trough
+  −1.79% against oomph-lib in all three); QM fails at t = 0.275 s in the
+  mesh-motion SNES (status `mesh`).
+- Philip (23 Oct): 3b on XenoSim, 16 cores (MeluXina would bill ~380
+  core-hours for one exclusive node); QM mesh-motion failures counted as
+  failures and labelled `mesh`.
+- 3b claimed in the registry; submission on XenoSim waits for the load
+  average to fall below 165 (it was 193/192 at 14:40).
+- MeluXina p201136 use so far: smoke 0.67 + 3a 0.16 node-hours (≈ 107
+  billed core-hours).

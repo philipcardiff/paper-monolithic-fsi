@@ -16,7 +16,8 @@ Identical for all four couplings and both maps; applied by
 |---|---|
 | `nan` | a non-finite value in the solver log or the monitored displacement history |
 | `cap` | a step reached the coupling cap: partitioned, 200 coupling iterations (`nOuterCorr 200`; the solver stops with "FSI coupling did not converge"); quasi-monolithic, the coupled Newton solve did not converge (`snes_max_it 20`, or any other negative SNES reason) |
-| `newton` | a solid Newton (SNES) failure in a partitioned step, or a mesh-motion SNES failure, that ended the run |
+| `newton` | a solid Newton (SNES) failure in a partitioned step that ended the run |
+| `mesh` | quasi-monolithic only: the fluid mesh-motion (pseudo-solid) SNES failed and ended the run. Counted as a QM failure, labelled separately because it is not a coupling failure (Philip, 23 Oct, after the 3b smoke run) |
 | `diverged` | ring: ovalling displacement above 10 times its first peak; collapsibleChannel: wall displacement above the channel height (1 m) |
 | `timeout` | the run reached its wall-clock limit (recorded, not counted as a coupling failure) |
 | `crash` | any other abnormal end |
@@ -42,9 +43,11 @@ coupled system for QM) are recorded for every run.
   collapsibleChannel the partitioned fluid file's `Gauss linear` gradient is
   changed to `leastSquares`). Recorded per run in `wp3_case.json` and in the
   `runs.csv` notes.
-- MeluXina, project p201136, one exclusive node per map with the serial runs
-  packed as a task farm (`jobs/wp3_farm.sh`); wall times are indicative (runs
-  share the node).
+- 3a: MeluXina, project p201136, one exclusive node with the serial runs
+  packed as a task farm (`jobs/wp3_farm.sh`). 3b: XenoSim (Philip, 23 Oct:
+  MeluXina nodes are exclusive, so the long serial runs would cost about
+  380 billed core-hours there), 16 Slurm tasks, no core binding
+  (`jobs/wp3_farm_xe.sh`). Wall times are indicative in both.
 
 ## 3a ringAddedMass
 

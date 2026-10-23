@@ -1,0 +1,40 @@
+run_id,qoi,value,reference,reference_source,rel_error,uncertainty_of_reference,notes
+r0-blob-backward-a,ux_top,0.11685406,0.116851,"README monolithic x1 (t=3 s, Euler, serial macOS)",2.6187e-05,,t=10; partitioned x1 0.117301
+r0-cav-backward-a,uy_underside,-0.201575,-0.201552,"README #597 rerun, level 1, Euler, at 200 s (300 s: -0.201546)",1.1411e-04,,t=200; monitor point (4 -1 0.5) = underside
+r0-cav-backward-a,Fy,-5.12351,-5.12258,"README #597 rerun, level 1, Euler, 300 s",1.8155e-04,,total force (col 3 of force.dat: total y)
+r0-coll-backward-c,trough_wallMid,-0.19602708,-0.21295614,oomph-lib dt=0.025 (collapsibleChannel_oomph_dt40.csv),-7.9496e-02,,"t=0.4750 s (oomph-lib t=0.4750 s); README monolithic rows are at dt=0.00625 (L1: -0.19619, -9.1%)"
+r0-coll-backward-c,t_trough,0.475,0.475,oomph-lib dt=0.025,0.0000e+00,,
+r0-foil-backward-e,ux_TE_peak_first_0.01s,7.6708e-08,7.7e-08,README (b157ecaf3) quasi-monolithic dt=0.0025,-3.7922e-03,,
+r0-foil-backward-e,uxy_TE_max_abs,4.2992273088335873e-07,,,,,at t=0.925; flapping beyond 0.2 s not in README
+r0-foil-backward-e,ux_TE_final,-2.0467e-10,,,,,t=0.95
+r0-foil-backward-e,uy_TE_final,-1.04198e-07,,,,,t=0.95
+r0-foil-backward-e,Fx_final,3.558756e-06,,,,,t=0.95
+r0-fsi1-backward-a,ux,2.61744716391e-05,,Featflow (driver reference JSON),,,driver |error| vs Featflow 0.1528; README conformal 1x error +0.1530
+r0-fsi1-backward-a,uy,0.000533897594916,,Featflow (driver reference JSON),,,driver |error| vs Featflow 0.3496; README conformal 1x error -0.3500
+r0-fsi1-backward-a,drag,14.231084264880002,,Featflow (driver reference JSON),,,driver |error| vs Featflow 0.0044; README conformal 1x error -0.0044
+r0-fsi1-backward-a,lift,0.8791151045786667,,Featflow (driver reference JSON),,,driver |error| vs Featflow 0.1511; README conformal 1x error +0.1510
+r0-fsi3-backward-a,ux_mean,-0.001337506065,-0.00288,Featflow (driver reference JSON),-5.3559e-01,,driver |error| vs Featflow 0.5356; README has no conformal 1x FSI3 row
+r0-fsi3-backward-a,ux_amplitude,0.001332713935,0.00272,Featflow (driver reference JSON),-5.1003e-01,,driver |error| vs Featflow 0.5100; README has no conformal 1x FSI3 row
+r0-fsi3-backward-a,uy_amplitude,0.020915200000000002,0.03499,Featflow (driver reference JSON),-4.0225e-01,,driver |error| vs Featflow 0.4023; README has no conformal 1x FSI3 row
+r0-fsi3-backward-a,uy_frequency,5.91945493780617,5.46,Featflow (driver reference JSON),8.4149e-02,,driver |error| vs Featflow 0.0841; README has no conformal 1x FSI3 row
+r0-fsi3-backward-a,drag_mean,513.9266333333334,460.5,Featflow (driver reference JSON),1.1602e-01,,driver |error| vs Featflow 0.1160; README has no conformal 1x FSI3 row
+r0-fsi3-backward-a,drag_amplitude,23.8500333333333,27.74,Featflow (driver reference JSON),-1.4023e-01,,driver |error| vs Featflow 0.1402; README has no conformal 1x FSI3 row
+r0-fsi3-backward-a,lift_amplitude,387.80013333333335,153.91,Featflow (driver reference JSON),1.5197e+00,,driver |error| vs Featflow 1.5197; README has no conformal 1x FSI3 row
+r0-ram-backward-a,omega,2.1769117030013247,1.8045131724003833,"exact, verification/reference (moderate, rhoFluid 140)",2.0637e-01,,"standard 2nd-order velocity solid, too stiff in bending: README gives +20.7% for the standard solid on the tutorial mesh"
+r0-ram-backward-a,loss_per_period,0.00023198872275698168,0.0004,"README monolithic table: moderate, factor 2, 100 steps/period (0.040%); tutorial is factor 1",-4.2003e-01,,
+r0-tube-Euler-a,ur_max_A_m,0.00015245501923076923,0.00015949,"3dTube verification README, quasi-monolithic level 1 (backward, 8 ranks, PR #599 settings)",-4.4109e-02,,
+r0-tube-Euler-a,t_ur_max_A_s,0.007175480769230767,0.007225,"3dTube verification README, quasi-monolithic level 1 (backward, 8 ranks, PR #599 settings)",-6.8539e-03,,
+r0-tube-Euler-a,uz_min_A_m,-8.539840933242506e-05,-8.896e-05,"3dTube verification README, quasi-monolithic level 1 (backward, 8 ranks, PR #599 settings)",-4.0036e-02,,
+r0-tube-Euler-a,t_arrival_A_s,0.005729011772298904,0.005876,"3dTube verification README, quasi-monolithic level 1 (backward, 8 ranks, PR #599 settings)",-2.5015e-02,,
+r0-tube-Euler-a,wave_speed_pressure_m_s,4.6584733719010805,4.666,"3dTube verification README, quasi-monolithic level 1 (backward, 8 ranks, PR #599 settings)",-1.6131e-03,,
+r0-tube-backward-a,ur_max_A_m,0.0001594900051020408,0.00015949,"3dTube verification README, quasi-monolithic level 1 (backward, 8 ranks, PR #599 settings)",3.1990e-08,,
+r0-tube-backward-a,t_ur_max_A_s,0.007225255102040817,0.007225,"3dTube verification README, quasi-monolithic level 1 (backward, 8 ranks, PR #599 settings)",3.5308e-05,,
+r0-tube-backward-a,uz_min_A_m,-8.896378988297872e-05,-8.896e-05,"3dTube verification README, quasi-monolithic level 1 (backward, 8 ranks, PR #599 settings)",4.2602e-05,,
+r0-tube-backward-a,t_arrival_A_s,0.005875992415715737,0.005876,"3dTube verification README, quasi-monolithic level 1 (backward, 8 ranks, PR #599 settings)",-1.2907e-06,,
+r0-tube-backward-a,wave_speed_pressure_m_s,4.666301423328233,4.666,"3dTube verification README, quasi-monolithic level 1 (backward, 8 ranks, PR #599 settings)",6.4600e-05,,
+r0-wom-backward-a,profile_err,0.004685009190796692,0.0047,"README monolithic table m2,n100 (6 periods, last 2 analysed; this run: tutorial 2 periods, last 1)",,,relative error vs exact Womersley solution
+r0-wom-backward-a,flow_amp_err,0.00037045390014633917,0.000473,"README monolithic table m2,n100 (6 periods, last 2 analysed; this run: tutorial 2 periods, last 1)",,,relative error vs exact Womersley solution
+r0-wom-backward-a,wallMid_amp_err,-0.0005443935551850965,-0.000996,"README monolithic table m2,n100 (6 periods, last 2 analysed; this run: tutorial 2 periods, last 1)",,,relative error vs exact Womersley solution
+r0-wom-backward-a,wallMid_phase_err,-0.002656860707250684,-0.00282,"README monolithic table m2,n100 (6 periods, last 2 analysed; this run: tutorial 2 periods, last 1)",,,relative error vs exact Womersley solution
+r0-wom-backward-a,speed_err,2.4124512134404696e-05,-0.000136,"README monolithic table m2,n100 (6 periods, last 2 analysed; this run: tutorial 2 periods, last 1)",,,relative error vs exact Womersley solution
+r0-wom-backward-a,attenuation_err,-0.004586994601911698,-0.00464,"README monolithic table m2,n100 (6 periods, last 2 analysed; this run: tutorial 2 periods, last 1)",,,relative error vs exact Womersley solution

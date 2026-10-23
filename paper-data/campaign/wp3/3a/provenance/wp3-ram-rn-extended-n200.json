@@ -1,0 +1,134 @@
+{
+ "run_id": "wp3-ram-rn-extended-n200",
+ "case": "/project/home/p201287/philip/qm-head/runs/wp3/wp3-ram-rn-extended-n200",
+ "date_utc": "2026-10-23T11:55:44.372063+00:00",
+ "solids4foam": {
+  "path": "/project/home/p201287/philip/qm-head/solids4foam",
+  "describe": "v2.2-1713-g85b0c1de6",
+  "commit": "85b0c1de6d2d233bd3fae97e03f530a6b12051f2",
+  "tags_at_head": ""
+ },
+ "openfoam": {
+  "version": "v2512",
+  "dir": "/project/home/p201287/philip/openfoam-v2512/OpenFOAM-v2512",
+  "foam_api": "2512"
+ },
+ "libraries": {
+  "petsc_dir": "/apps/USE/easybuild/staging/2024.1/software/PETSc/3.22.0-foss-2024a",
+  "petsc_arch": null,
+  "petsc_version": "3.22.0",
+  "hypre_version": "2.31.0",
+  "mumps_version": "5.7.3",
+  "petsc_has": {
+   "hypre": true,
+   "mumps": true,
+   "superlu_dist": true
+  }
+ },
+ "compiler": {
+  "wm_compiler": "Gcc",
+  "wm_cxx": "g++",
+  "compiler_version": "g++ (GCC) 13.3.0",
+  "wm_compile_option": "Opt",
+  "wm_options": "linux64GccDPInt32Opt",
+  "wm_mplib": "SYSTEMOPENMPI",
+  "compile_flags": "-std=c++17 -m64 -pthread -DOPENFOAM=2512 -DWM_DP -DWM_LABEL_SIZE=32 -Wall -Wextra -Wold-style-cast -Wnon-virtual-dtor -Wno-unused-parameter -Wno-invalid-offsetof -Wno-attributes -Wno-unknown-pragmas -O2 -fno-tree-vectorize -march=znver2 -DNoRepository -ftemplate-depth-100 -fPIC"
+ },
+ "host": "mel0515",
+ "cpu_model": "AMD EPYC 7H12 64-Core Processor",
+ "ranks": 1,
+ "omp_num_threads": "1",
+ "slurm": {
+  "slurm_job_id": "5377695",
+  "slurm_job_partition": "cpu",
+  "slurm_job_nodelist": "mel0515",
+  "slurm_job_num_nodes": "1",
+  "slurm_ntasks": "128",
+  "oversubscribe": "NO",
+  "exclusive": true
+ },
+ "petsc_options": {
+  "system/solid/fvSolution": {
+   "D": {
+    "snes_type": "newtonls",
+    "snes_linesearch_type": "basic",
+    "snes_rtol": "1e-8",
+    "snes_atol": "1e-14",
+    "snes_stol": "1e-8",
+    "snes_max_it": "1000",
+    "snes_max_funcs": "50000",
+    "snes_monitor": "",
+    "snes_converged_reason": "",
+    "snes_mf": "",
+    "snes_mf_operator": "",
+    "ksp_type": "lgmres",
+    "ksp_gmres_restart": "100",
+    "ksp_converged_reason": "",
+    "snes_lag_preconditioner_persists": "true",
+    "snes_lag_preconditioner": "-2",
+    "pc_type": "bjacobi",
+    "sub_pc_type": "lu"
+   }
+  }
+ },
+ "case_settings": {
+  "map": "3a",
+  "case": "ringAddedMass",
+  "coupling": "rn",
+  "level": "extended",
+  "rhoFluid": 14000.0,
+  "massRatio": 100.75506514014994,
+  "omega_exact": 0.2536156983296937,
+  "steps_per_period": 200,
+  "periods": 2,
+  "deltaT": 0.12387216857159235,
+  "n_steps": 400,
+  "end_time": 49.54886742863694,
+  "mesh_factor": 2,
+  "solid": "standard",
+  "interface": "directMap",
+  "fluid_schemes": {
+   "div(phi,U)": "Gauss linear",
+   "ddtSchemes default": "backward",
+   "gradSchemes default": "leastSquares"
+  },
+  "solid_schemes": {
+   "ddtSchemes default": "backward",
+   "gradSchemes default": "leastSquaresS4f"
+  },
+  "spec": {
+   "kind": "wet",
+   "level": "extended",
+   "coupling": "robin",
+   "solid": "standard",
+   "factor": 2,
+   "steps": 200,
+   "periods": 2,
+   "omega_exact": 0.2536156983296937,
+   "period": 24.77443371431847
+  },
+  "caps": {
+   "nOuterCorr": 200,
+   "snes_max_it": 20
+  },
+  "coupling_tol": "outerCorrTolerance 1e-6; robinPressureTolerance 1e-5; robinFluxTolerance 5e-3",
+  "convergence_test": "strict (requireAllResidualMeasures yes)",
+  "allrun": [
+   "./Allrun",
+   "robin",
+   "standard"
+  ]
+ },
+ "run_meta": {
+  "run_id": "wp3-ram-rn-extended-n200",
+  "core": 2,
+  "node": "mel0515",
+  "slurm_job_id": "5377695",
+  "exclusive_node": true,
+  "shared_with_other_wp3_runs": true,
+  "binding": "taskset -c 2",
+  "rc": 0,
+  "timeout_s": 7200,
+  "wall_s": 497.463
+ }
+}

@@ -20,3 +20,16 @@
   min job limit). Registry row: running.
 - 3b: not submitted. Waiting for the smoke cost per step and Philip's go
   (estimated cost above 300 core-hours once node billing is counted).
+- **3a done** (5377695, 9 min 53 s on one node; 2.66 core-hours of CPU,
+  0.16 node-hours billed). 79/80 pass; RN strong n12 hits the 200-iteration
+  cap at step 10. Mean iterations per step: Aitken 3.2–10.2, IQN-ILS 3.0–6.1,
+  RN 3.0–42, QM 2.0 everywhere. All couplings agree on ω to ~0.1%; the +6.3%
+  error at n200 is the standard solid on mesh 2 (second order, cf. README
+  +1.58% on mesh 4), the same for every coupling. With the predictor, the
+  strict test and the 200 cap, the partitioned couplings do not fail on this
+  case even at μ = 100: the map separates them by iterations, not by
+  pass/fail. CSVs and draft map in `3a/`.
+- Collapsible smoke: QM at Δt 0.025, ρs/ρf 1 aborts at t = 0.275 s in the
+  fluid mesh-motion SNES (`DIVERGED_LINEAR_SOLVE` of the pseudo-solid
+  motion solver), after Newton steps of 3 iterations. Judgement point for
+  Philip (mesh-motion failure, not coupling).

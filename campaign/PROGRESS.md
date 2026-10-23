@@ -3,7 +3,7 @@
 Maintained by the coordinator agent. Plan: `paper-fsi-verification/HANDOFF.md`.
 Newest entries first in the log; the status table is always current.
 
-Last updated: 2026-10-22
+Last updated: 2026-10-23
 
 ## Current phase
 
@@ -23,10 +23,12 @@ Last updated: 2026-10-22
   README's fluid levels are refinement factors 1, 2, 4; "level 3" in the G1
   report means the next one, 4.)
 - MeluXina: head build `qm-head` (5375410, p201136).
-- **R0: every paper case runs** (subagent β): one monolithic run per paper
-  case, tutorial resolution, `backward`, full end time, packed on one
-  MeluXina node (p201136); branch `evidence/campaign-r0`,
-  `paper-data/campaign/r0/`.
+- **R0 done** (subagent β, merged from `evidence/campaign-r0`): 8 of 9
+  paper cases ran to their end time with `backward`; foilInWind aborted at
+  t = 0.95 s of 12 (suspected defect, below). Waiting for Philip on the
+  four R0 questions before R4/R5.
+- B2 level-2 AMI on the head (13109) finished (rc 0, 4 009 s); level-4 runs
+  13110/13111 still running.
 
 ## Status by stream
 
@@ -38,6 +40,7 @@ Last updated: 2026-10-22
 | B2 collapsibleChannel AMI | **done** (`paper-data/campaign/b2/findings.md`): AMI 640×8 trough error −1.91% vs conformal 160×8 −4.28%, Newton 2.59 vs 2.70/step, +6% clock (indicative) | 5364293 COMPLETED; XenoSim 13024, 13025 COMPLETED | – |
 | B3 Jaiman/Liu estimate | **done** (`paper-data/campaign/b3/estimate.md`): blobInTreacle monolithic temporal study < 0.1 core-h, R6 total 2–12 core-h; block with tail 3–3.5 person-days + ~20–60 core-h (unverified guess) | – | decision at G1 |
 | G1 report | **done** (`campaign/G1_report.md`); answered 22 Oct | – | – |
+| R0 every case runs | **done, one failure** (`paper-data/campaign/r0/findings.md`): ring, Womersley, collapsibleChannel, cavity, blobInTreacle, FSI1, FSI3 (1x), 3dTube completed; foilInWind aborted at t = 0.95 s on 128 ranks | MeluXina p201136, packed farm + foilInWind jobs (5375613 and earlier); 2.30 node-h | Philip: questions below |
 
 ## Results so far (each number has its source)
 
@@ -188,9 +191,37 @@ All 2.00 Newton/step. QoI differences vs S0tight: cav S0/S1 ≤ 1.1e-5
 
 ## Open questions for Philip
 
-None open (G1 answered 22 Oct).
+From R0 (23 Oct, `paper-data/campaign/r0/findings.md`):
+1. **foilInWind defect** (`paper-data/campaign/r0/issue_foilInWind_processor_point_mismatch.md`):
+   after the mesh-motion solve at t = 0.9525 s, ranks 42 and 116 hold the
+   same processor face ~1e-7 m apart (the flag displacement scale), and
+   OpenFOAM aborts. All Newton solves had converged. Fix in the solver, or
+   first test fewer ranks? (A full run is ~21 h on 128 ranks.)
+2. **FSI3 at 1x:** u_y amplitude −40% and lift amplitude +152% vs Featflow
+   (README has no 1x row). Should R4 include 1x, or start at 2x?
+3. **p201287 file quota** is at 0.92M of 1M files: long runs there must
+   write little (R0 already cut foilInWind writes to once per second).
+4. Merge #602 (foilInWind Δt) and fix the collapsibleChannel helper
+   include path (fails to compile outside the tree) before the
+   consistent-version reruns? Also PR #616 (restart fix) awaits review.
 
 ## Log
+
+- **2026-10-23** R0 done (subagent β; merged `evidence/campaign-r0`
+  e6136bc, ea95c86). Head 85b0c1de6, `backward` everywhere, tutorial
+  meshes. Newton/step (max): ring 2.00 (2), Womersley 2.00 (2),
+  collapsibleChannel 3.04 (4), cavity 2.01 (5), blobInTreacle 1.42 (3),
+  FSI1 1.38 (2), FSI3 1x 2.00 (3), 3dTube 2.00 (2), foilInWind 2.44 (4)
+  until the abort. QoIs match the READMEs where they have a row (ring
+  ω +20.6% vs README 20.7%; Womersley 4.69e-3 vs 4.70e-3; FSI1 and 3dTube
+  L1 to every printed digit; foilInWind start-up peak 7.67e-8 vs 7.7e-8 m).
+  collapsibleChannel trough −7.95% vs oomph-lib at the tutorial Δt.
+  Deviations: collapsibleChannel first attempt lacked its initial flow
+  (helper tool include path; fixed, rerun); foilInWind Δt from b157ecaf3
+  (#602); p201287 hit the 1M-file limit once, so the subagent deleted only
+  its own aborted foilInWind processor directories (~79k files); one extra
+  3dTube Euler run by accident, kept for information. 2.30 node-h on
+  p201136. Questions for Philip above.
 
 - **2026-10-22** B1 repeats on the branch head (85b0c1de6) identical to
   257b2e564: same iteration counts and QoI histories in all written digits

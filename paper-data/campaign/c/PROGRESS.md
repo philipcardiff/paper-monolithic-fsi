@@ -10,9 +10,10 @@ Run directories: `/project/home/p201136/philip-agentC/runs/`.
 - QM run copies use the partitioned fluid schemes: no `cellLimited`,
   `div(phi,U) Gauss linearUpwind grad(U)`, `gradSchemes default
   leastSquares`, `ddt(U) backward` (Philip, via the coordinator).
-- `viscousStressTranspose`: undecided (likely `yes` for second-order
-  consistency, pending the blob debugging). The FSI3 4x and 3dTube L3
-  production runs are **on hold** until the decision.
+- `viscousStressTranspose` (decided 23 Oct): the option is removed and the
+  corrected wall treatment of the transpose term is hard-coded (agent A).
+  FSI3 4x and 3dTube L3 wait for the fixed build; then the 1x check is
+  rerun on it first.
 
 ## 4a — FSI3 QM-AMI, tutorial meshes
 
@@ -69,15 +70,16 @@ the V 1x row has `pass False` too). CSVs: `runs.csv`, `qois.csv`,
 
 ### 4x production
 
-Registry row claimed (M run agent). On hold (vST decision).
+Registry row claimed (M run agent). Waiting for the fixed build.
 
 ## 6a — 3dTube QM L3
 
-Registry row claimed (M run agent). On hold (vST decision).
+Registry row claimed (M run agent). Waiting for the fixed build.
 
 ## Timing jobs (4b, 6b, 6c, 4c)
 
-To prepare; not submitted.
+Job list and estimates: `TIMING_JOBS.md` (≈ 34 node-hours). Not submitted;
+waiting for the fixed build, #616 and Philip's go.
 
 ## Core-hours
 

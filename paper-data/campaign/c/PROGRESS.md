@@ -79,7 +79,8 @@ Registry row claimed (M run agent). Waiting for the fixed build.
 ## Timing jobs (4b, 6b, 6c, 4c)
 
 Job list and estimates: `TIMING_JOBS.md` (≈ 34 node-hours). Not submitted;
-waiting for the fixed build, #616 and Philip's go.
+approved by Philip 23 Oct (decisions in `TIMING_JOBS.md`); submit from
+1 November on the fixed build with #616.
 
 ## Core-hours
 

@@ -104,6 +104,14 @@ Per repeat about 45 min; × 3 ≈ **2.5 node-hours**.
 | **Timing jobs** | **≈ 34 (≈ 4 300 core-hours)** |
 | 4a 4x + 6a L3 production + 1x recheck | ≈ 15 |
 
+## Decisions (Philip, 23 Oct 2026)
+
+1. Production runs (1x recheck, 4a 4x, 6a L3) on this month's p201136
+   allocation; timing jobs from 1 November on the new allocation.
+2. 4b ranks 1 / 8 / 32 for both couplings.
+3. 4b IQN-ILS: strict test, coupling tolerance 1e-5.
+4. 6b and 6c windows restart from t = 5 ms.
+
 ## Prerequisites and order
 
 1. The fixed build is announced; build it with #616 on top.

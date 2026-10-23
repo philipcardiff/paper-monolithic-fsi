@@ -31,18 +31,20 @@ file quota (the R0 foil `-d` run hit "Disk quota exceeded").
 | smoke tests | 5 + 5 | Mx p201136 | 5377599, 5377771 | done |
 | 1a ring QM | 36 wet + 12 dry + 3 tight | Mx p201136 | 5377679 | done |
 | 1d ring IQN-ILS, RN (standard solid, strong, m2) | 6 (QM in 1a) | Mx p201136 | 5377679 | done |
-| 1e Womersley QM yes/no, RN, IQN-ILS | 10 + 5 + 5 | Mx p201136 | 5377679 | m4 and n400 partitioned running |
+| 1e Womersley QM yes/no, RN, IQN-ILS | 10 + 5 + 5 | Mx p201136 | 5377679 | done (`WP1_findings.md`) |
 | 1b ring zeroGradient p | 6 | Mx p201136 | 5377777 | done |
 | 1c ring AMI, coarser/finer solid x conservative/interpolated | 36 wet + 6 dry | Mx p201136 | 5377777 | done |
-| 1f BDF2 start-up | analysis of 1a (first period excluded) | local | – | ring done (`1f/`); Womersley from 1e |
-| 2a cavity QM L1-L4 | 4 (L4 on 4 ranks) | Mx p201136 | 5377777 | L1, L2 done; L3, L4 running |
+| 1f BDF2 start-up | analysis of 1a (first period excluded); Womersley periodicity | local | – | done: no start-up effect |
+| 2a cavity QM L1-L4 | 4 (L4 on 4 ranks) | Mx p201136 | 5377777 | L1-L3 done; L4 running |
 | 2b cavity interpolate(U) linear | L2, L3 | Mx p201136 | 5377777 | L2 done; L3 running |
 | 2c checkMesh | on 2a/2b final states | Mx | – | after 2a; partitioned strict directories no longer exist (see notes) |
 | 5b blob QM time steps | 4 | Mx p201136 | 5377777 | done |
 | 7a foilInWind QM dt 0.01, 0.005; IQN-ILS dt 0.01 | 3 (+1 failed set-up at 128 ranks) | Mx p201136 | 5377780, 5377781, 5377823 | QM 0.01 stalls at 0.05 s (as #602); QM 0.005 to 0.2 s; IQN-ILS 0.01 fails at 0.08 s (stopped, reported) |
 | vST diagnostic D1, D3 (blob x1) | 3 restarts + post-processing | MS | – | done: `../wp0/vST_diagnostic.md` |
 
-Registry: rows of agent A on `campaign/registry` (`68349d0`, then running).
+Registry: rows of agent A on `campaign/registry`; WP1, 5b, 7a closed (7a IQN-ILS `failed`); cavity rows running.
+
+Cost so far (whole-node allocations on p201136): batch 1 2.1 node-h, smoke 0.2, foil 0.5, batch 2 ~2 node-h so far and about 8 in total (the cavity L4 run holds its node alone for its last ~6 h).
 
 ## Notes
 

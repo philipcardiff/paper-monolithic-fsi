@@ -35,16 +35,16 @@ file quota (the R0 foil `-d` run hit "Disk quota exceeded").
 | 1b ring zeroGradient p | 6 | Mx p201136 | 5377777 | done |
 | 1c ring AMI, coarser/finer solid x conservative/interpolated | 36 wet + 6 dry | Mx p201136 | 5377777 | done |
 | 1f BDF2 start-up | analysis of 1a (first period excluded); Womersley periodicity | local | – | done: no start-up effect |
-| 2a cavity QM L1-L4 | 4 (L4 on 4 ranks) | Mx p201136 | 5377777 | L1-L3 done; L4 running |
-| 2b cavity interpolate(U) linear | L2, L3 | Mx p201136 | 5377777 | L2 done; L3 running |
-| 2c checkMesh | on 2a/2b final states | Mx | – | after 2a; partitioned strict directories no longer exist (see notes) |
+| 2a cavity QM L1-L4 | 4 (L4 on 4 ranks) | Mx p201136 | 5377777 | done (`WP2_5_7_findings.md`) |
+| 2b cavity interpolate(U) linear | L2, L3 | Mx p201136 | 5377777 | done |
+| 2c checkMesh | on 2a/2b final states | Mx p201136 | 5378556 | QM done (`2c/`); partitioned directories no longer exist (see notes) |
 | 5b blob QM time steps | 4 | Mx p201136 | 5377777 | done |
 | 7a foilInWind QM dt 0.01, 0.005; IQN-ILS dt 0.01 | 3 (+1 failed set-up at 128 ranks) | Mx p201136 | 5377780, 5377781, 5377823 | QM 0.01 stalls at 0.05 s (as #602); QM 0.005 to 0.2 s; IQN-ILS 0.01 fails at 0.08 s (stopped, reported) |
 | vST diagnostic D1, D3 (blob x1) | 3 restarts + post-processing | MS | – | done: `../wp0/vST_diagnostic.md` |
 
-Registry: rows of agent A on `campaign/registry`; WP1, 5b, 7a closed (7a IQN-ILS `failed`); cavity rows running.
+Registry: rows of agent A on `campaign/registry`; WP1, 5b, 7a closed (7a IQN-ILS `failed`); cavity rows done. All agent A rows closed.
 
-Cost so far (whole-node allocations on p201136): batch 1 2.1 node-h, smoke 0.2, foil 0.5, batch 2 ~2 node-h so far and about 8 in total (the cavity L4 run holds its node alone for its last ~6 h).
+Cost so far (whole-node allocations on p201136): batch 1 2.1 node-h, smoke 0.2, foil 0.5, batch 2 2.4 node-h, checkMesh 0.01. Total about 5.2 node-hours.
 
 ## Notes
 

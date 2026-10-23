@@ -27,6 +27,10 @@ ma-cav-qm-L3-interplinear,uy_monitor,-0.235647,-0.235448,"four_level_partitioned
 ma-cav-qm-L3-interplinear,fy_interface,-5.256851,,,,,spread 1.90e-07
 ma-cav-qm-L3-interplinear,t_steady_0.001,124,,,,,"last time |uy - uy_final| > 0.001 |uy_final|; 248 steps, 543 Newton iterations"
 ma-cav-qm-L3-interplinear,t_steady_0.0001,167.5,,,,,"last time |uy - uy_final| > 0.0001 |uy_final|; 335 steps, 705 Newton iterations"
+ma-cav-qm-L4,uy_monitor,-0.237187,-0.237187,"four_level_partitioned_monolithic.csv monolithic_597 (E597, Euler)",0.0000e+00,,t = 300 s; spread over last 10% 4.22e-06
+ma-cav-qm-L4,fy_interface,-5.256112,,,,,spread 1.90e-07
+ma-cav-qm-L4,t_steady_0.001,124,,,,,"last time |uy - uy_final| > 0.001 |uy_final|; 248 steps, 548 Newton iterations"
+ma-cav-qm-L4,t_steady_0.0001,167.5,,,,,"last time |uy - uy_final| > 0.0001 |uy_final|; 335 steps, 710 Newton iterations"
 ma-ram-dry-m1-n100,omega,3.0828986,2.5550422,exact linear solution (ring_exact_frequencies.py),2.065940e-01,,
 ma-ram-dry-m1-n100,loss_per_period,6.796371e-04,,,,,amplitude loss per period (exact 0)
 ma-ram-dry-m1-n100-nc32,omega,3.3296887,2.5550422,exact linear solution (ring_exact_frequencies.py),3.031834e-01,,

@@ -60,3 +60,6 @@
   QM rows carry `pre-vST-fix` in the `runs.csv` notes (3a regenerated; 3b
   will have it); registry status becomes `superseded` once the fixed build
   exists.
+- **3b done** (XenoSim 13279, finished before 20:10; longest run 4.6 h;
+  55.7 core-hours CPU, no allocation). Pass counts: QM 15/20, RN 11/20,
+  IQN-ILS 9/20, Aitken 7/20. See `findings.md`. Registry row done.

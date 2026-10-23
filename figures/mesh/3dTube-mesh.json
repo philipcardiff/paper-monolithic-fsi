@@ -1,0 +1,28 @@
+{
+ "foam": "3dTube.foam",
+ "fluid": "inlet,symmetry-x,symmetry-y",
+ "solid": "inlet,symmetry-x,symmetry-y,outer-wall",
+ "view": [
+  -1.0,
+  -0.35,
+  -0.5
+ ],
+ "up": [
+  0.0,
+  1.0,
+  0.0
+ ],
+ "width_px": 3000,
+ "height_px": 900,
+ "zoom": 1.0,
+ "parallel_scale": 0.007324017160065201,
+ "bounds": [
+  0.0,
+  0.006000000052154064,
+  0.0,
+  0.006000000052154064,
+  0.0,
+  0.05000000074505806
+ ],
+ "projection": "parallel"
+}

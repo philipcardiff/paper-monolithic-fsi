@@ -106,9 +106,13 @@ def plane_faces(mesh_dir, axes, patch_name=None):
     sel = faces[p["startFace"]:p["startFace"] + p["nFaces"]]
     a, b = (AXIS[c] for c in axes)
     normal = 3 - a - b
-    # keep the faces on the lower side in the out-of-plane coordinate
+    # keep the faces on the lower side in the out-of-plane coordinate; a
+    # wedge patch is one side already, and its faces are tilted, so the
+    # out-of-plane coordinate varies with the radius: keep all its faces
     zmid = [sum(points[i][normal] for i in f) / len(f) for f in sel]
     zcut = min(zmid) + 0.5 * (max(zmid) - min(zmid))
+    if p["type"] == "wedge":
+        zcut = max(zmid)
     polys = [[(points[i][a], points[i][b]) for i in f]
              for f, z in zip(sel, zmid) if z <= zcut + 1e-12]
     return polys

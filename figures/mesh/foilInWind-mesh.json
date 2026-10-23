@@ -1,0 +1,28 @@
+{
+ "foam": "foilInWind.foam",
+ "fluid": "walls,inlet,outlet,block",
+ "solid": "interface,fixed",
+ "view": [
+  -0.6,
+  0.5,
+  1.0
+ ],
+ "up": [
+  0.0,
+  1.0,
+  0.0
+ ],
+ "width_px": 3000,
+ "height_px": 1800,
+ "zoom": 1.0,
+ "parallel_scale": 0.09209046721483334,
+ "bounds": [
+  0.0,
+  0.20000000298023224,
+  0.0,
+  0.10999999940395355,
+  0.0,
+  0.10999999940395355
+ ],
+ "projection": "parallel"
+}

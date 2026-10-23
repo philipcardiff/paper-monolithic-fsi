@@ -147,6 +147,17 @@ partitioned).
    `campaign/registry`), seeded from `paper-data/reuse_map.md`. Every run
    is checked against it and claimed there before submission. Run agents
    follow `campaign/RUN_AGENT_BRIEF.md`.
+7. **Schemes (23 Oct):** no `cellLimited` or similar limiters. QM runs use
+   the same schemes as the case's partitioned tutorial: least-squares
+   gradients, `linearUpwind grad(U)` (or `Gauss linear` where the
+   partitioned file has it), `backward` in time. solids4foam branch
+   `tutorials/monolithic-schemes-consistent` makes this the tutorial default.
+8. **`viscousStressTranspose` (open):** `yes` is the formulation consistent
+   with `pimpleFluid` (the term is in the residual and the traction). WP0 on
+   blob shows QM `yes` differing from partitioned by −2.34/−1.04/−0.44%
+   (x1/x2/x4) against −0.33/−0.29/−0.16% for `no`; a diagnostic (agent A)
+   looks for the discrete mismatch. FSI3 4x and 3dTube L3 production runs
+   wait for the decision.
 
 ## 4. Runs (not started)
 

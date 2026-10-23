@@ -1,0 +1,8 @@
+wp3-ram-aitken-strong-n12-smoke ring --coupling aitken --level strong --steps 12
+wp3-ram-iqn-strong-n12-smoke ring --coupling iqn --level strong --steps 12
+wp3-ram-rn-strong-n12-smoke ring --coupling rn --level strong --steps 12
+wp3-ram-qm-strong-n12-smoke ring --coupling qm --level strong --steps 12
+wp3-coll-aitken-dt0.025-rho1-smoke coll --coupling aitken --dt 0.025 --rho-ratio 1
+wp3-coll-iqn-dt0.025-rho1-smoke coll --coupling iqn --dt 0.025 --rho-ratio 1
+wp3-coll-rn-dt0.025-rho1-smoke coll --coupling rn --dt 0.025 --rho-ratio 1
+wp3-coll-qm-dt0.025-rho1-smoke coll --coupling qm --dt 0.025 --rho-ratio 1

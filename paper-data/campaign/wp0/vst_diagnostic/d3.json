@@ -1,0 +1,98 @@
+[
+ {
+  "case": "wp0-blob-qm-vstyes-x1",
+  "faces": 24,
+  "nu": 1.0,
+  "max|tQMyes - tPimple|": 1.831026719408895e-15,
+  "max|tPimple|": 9.133794439873649,
+  "max|transpose part|": 0.6749852979637643,
+  "mean|transpose part|": 0.40314706322077076,
+  "mean|viscous (QM yes)|": 4.79143571081725,
+  "max|n.grad(U).n| (wall-normal stretching)": 0.2339980622814417,
+  "max|tr grad(U)| at wall": 0.8520468999999997,
+  "F_viscous_QMyes": [
+   -6.368412237547429,
+   -0.36368772086040224
+  ],
+  "F_viscous_QMno": [
+   -6.535009748255643,
+   -0.31891760464750224
+  ],
+  "F_viscous_pimple": [
+   -6.368412237547429,
+   -0.36368772086040224
+  ],
+  "F_transpose": [
+   0.16659751070821466,
+   -0.04477011621289982
+  ],
+  "F_pressure": [
+   -8.621911557834068,
+   25.343487949880203
+  ]
+ },
+ {
+  "case": "wp0-blob-qm-vstno-x1",
+  "faces": 24,
+  "nu": 1.0,
+  "max|tQMyes - tPimple|": 1.7763568394002505e-15,
+  "max|tPimple|": 8.817500911066448,
+  "max|transpose part|": 0.6590822882255537,
+  "mean|transpose part|": 0.41356319623907484,
+  "mean|viscous (QM yes)|": 4.617094210713632,
+  "max|n.grad(U).n| (wall-normal stretching)": 0.3425583103509604,
+  "max|tr grad(U)| at wall": 0.3998978000000002,
+  "F_viscous_QMyes": [
+   -6.469956718500525,
+   -0.4086968737409842
+  ],
+  "F_viscous_QMno": [
+   -6.5259432364998196,
+   -0.3747883720165667
+  ],
+  "F_viscous_pimple": [
+   -6.469956718500526,
+   -0.40869687374098407
+  ],
+  "F_transpose": [
+   0.05598651799929353,
+   -0.0339085017244173
+  ],
+  "F_pressure": [
+   -8.973103126106633,
+   25.513067402090297
+  ]
+ },
+ {
+  "case": "wp0-blob-iqn-x1",
+  "faces": 24,
+  "nu": 1.0,
+  "max|tQMyes - tPimple|": 1.790180836524724e-15,
+  "max|tPimple|": 9.301832968473038,
+  "max|transpose part|": 0.6718033255938342,
+  "mean|transpose part|": 0.4316998077766145,
+  "mean|viscous (QM yes)|": 4.94631965724837,
+  "max|n.grad(U).n| (wall-normal stretching)": 0.7514157926449712,
+  "max|tr grad(U)| at wall": 0.24007369999999995,
+  "F_viscous_QMyes": [
+   -7.1179151521834765,
+   -0.2291647862265266
+  ],
+  "F_viscous_QMno": [
+   -7.090200001219889,
+   -0.253852718047636
+  ],
+  "F_viscous_pimple": [
+   -7.117915152183478,
+   -0.22916478622652672
+  ],
+  "F_transpose": [
+   -0.0277151509635898,
+   0.02468793182110894
+  ],
+  "F_pressure": [
+   -9.201226659097795,
+   25.246420592426603
+  ]
+ }
+]

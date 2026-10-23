@@ -45,3 +45,11 @@
 - MeluXina p201136 use so far: smoke 0.67 + 3a 0.16 node-hours (≈ 107
   billed core-hours).
 - 3b submitted on XenoSim at 15:06 (load5 155): job 13279, 16 tasks; registry running.
+- 18:07 check (3 h in, load5 169): 67/80 3b runs finished, 13 running
+  (all past t = 0.3 s); no setup failures. So far: QM passes every
+  Δt ≤ 0.0125 at every density (2.0–3.0 Newton/step); QM Δt 0.025 fails
+  `mesh` at t = 0.275 s for all five densities. Aitken and IQN-ILS fail
+  (`cap`) for ρs/ρf ≤ 0.1 at small Δt within the first steps, pass at
+  ρs/ρf 10. RN at ρs/ρf = 0: floating-point exception on the first
+  coupling iteration (Robin coefficient ∝ wall density vanishes, as the
+  verification README notes), classified `nan`.

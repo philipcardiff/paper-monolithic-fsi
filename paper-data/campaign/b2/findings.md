@@ -56,6 +56,34 @@ side. Fluid `ddt(U) Euler` (tutorial; the same scheme as the README values).
   the trough by 0.5% from Δt 0.00625 to 0.003125 s, and the fluid is at
   level 2.
 
+## Step 3: fluid level 4 on the branch head (22–23 Oct)
+
+Philip's G1 answer 3 ("try AMI too"). Code `85b0c1de6`
+(`v2.2-1713-g85b0c1de6`), XenoSim, serial, shared node, Euler `ddt(U)`,
+Δt = 0.00625 s, as step 2. Source: `head/runs.csv` (from
+`scripts/b2_post.py`), provenance in `head/provenance/`. The README's fluid
+levels are refinement factors 1, 2, 4, so level 4 is the next one after 2.
+
+| Run (job) | Fluid | Solid | Interface | Trough error vs oomph-lib | Newton/step (max) | Allrun wall |
+|---|---:|---|---|---:|---:|---:|
+| b2-mono-F2-S640x8-AMI (13109) | 2 | 640×8 | AMI, conservative | −1.91% | 2.59 (3) | 4 009 s |
+| b2-mono-F4-S640x8-AMI (13110) | 4 | 640×8 | AMI, conservative | **−1.83%** | 2.68 (3) | 14 512 s |
+| b2-mono-F4-S320x8-directMap (13111) | 4 | 320×8 | conformal | −2.36% (README −2.4%) | 2.68 (3) | 15 443 s |
+
+- The level-2 AMI run on the head repeats step 2 (257b2e564) exactly:
+  same trough, error and Newton count.
+- The conformal level-4 run reproduces the README (−2.36% vs −2.4%).
+- Refining the fluid from level 2 to 4 with AMI changes the error by only
+  0.08 points (−1.91% → −1.83%). The remaining error is therefore neither
+  the solid mesh (−0.22% static) nor the fluid mesh: it is the time
+  discretisation (Euler, Δt = 0.00625 s).
+- **Result against the 1% rule: still robustness-only** at this Δt and
+  scheme. Reaching 1% needs the temporal error reduced (backward and/or a
+  smaller Δt), not a finer fluid mesh. The R0 run with `backward` used the
+  tutorial meshes (160×8 solid), so it does not answer this.
+- Clock times are on the loaded shared XenoSim node and are indicative only
+  (the README's 7 901 s was on macOS).
+
 ## Caveats
 
 - Euler `ddt(U)` (runs submitted before the 20 Oct decision to use

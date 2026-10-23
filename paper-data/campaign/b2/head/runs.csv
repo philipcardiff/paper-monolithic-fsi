@@ -1,0 +1,4 @@
+run_id,case,study,coupling,level,solid_mesh,interface,dt,ddt_U,rho_ratio,ranks,exclusive,code_commit,status,t_end,n_steps,iters_mean,wall_s,notes
+b2-mono-F2-S640x8-AMI,collapsibleChannel,mono,NewtonQuasiMonolithic,2,640x8,AMI+conservative,0.00625,Euler,1,1,no,v2.2-1713,completed,1.5,240,2.59,4007,trough -0.21162 m at t=0.4660 s; oomph-lib -0.21573 m; error -1.91%; iters max 3; Allrun wall 4009 s; node xenosim
+b2-mono-F4-S320x8-directMap,collapsibleChannel,mono,NewtonQuasiMonolithic,4,320x8,directMap,0.00625,Euler,1,1,no,v2.2-1713,completed,1.5,240,2.68,15441,trough -0.21063 m at t=0.4661 s; oomph-lib -0.21573 m; error -2.36%; iters max 3; Allrun wall 15443 s; node xenosim
+b2-mono-F4-S640x8-AMI,collapsibleChannel,mono,NewtonQuasiMonolithic,4,640x8,AMI+conservative,0.00625,Euler,1,1,no,v2.2-1713,completed,1.5,240,2.68,14510,trough -0.21179 m at t=0.4667 s; oomph-lib -0.21573 m; error -1.83%; iters max 3; Allrun wall 14512 s; node xenosim

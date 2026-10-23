@@ -1,0 +1,5 @@
+{"run_id": "b2-mono-F2-S640x8-AMI", "study": "mono", "level": 2,
+ "solid_mesh": "640x8", "dt": 0.00625, "end_time": 1.5,
+ "ranks": 1, "exclusive": false, "node": "xenosim",
+ "slurm_job_id": "13109", "allrun_rc": 0, "timeout_s": 171897,
+ "allrun_wall_s": 4008.634}

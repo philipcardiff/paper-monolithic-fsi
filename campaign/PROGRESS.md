@@ -27,8 +27,8 @@ Last updated: 2026-10-23
   paper cases ran to their end time with `backward`; foilInWind aborted at
   t = 0.95 s of 12 (suspected defect, below). Waiting for Philip on the
   four R0 questions before R4/R5.
-- B2 level-2 AMI on the head (13109) finished (rc 0, 4 009 s); level-4 runs
-  13110/13111 still running.
+- B2 on the head done (13109–13111): AMI at fluid level 4 gives −1.83%
+  (level 2: −1.91%); the error is the Euler time step, not the mesh.
 
 ## Status by stream
 
@@ -206,6 +206,14 @@ From R0 (23 Oct, `paper-data/campaign/r0/findings.md`):
    consistent-version reruns? Also PR #616 (restart fix) awaits review.
 
 ## Log
+
+- **2026-10-23** B2 fluid level 4 on the head (13110 AMI 640×8, 13111
+  conformal 320×8; level 2 AMI 13109 repeats step 2 exactly). Trough
+  errors: AMI L2 −1.91%, AMI L4 −1.83%, conformal L4 −2.36% (README −2.4%).
+  Refining the fluid barely helps, so the remaining error is temporal
+  (Euler, Δt = 0.00625 s). collapsibleChannel stays robustness-only under
+  the 1% rule unless a backward / smaller-Δt run is added (R3).
+  `paper-data/campaign/b2/findings.md` step 3.
 
 - **2026-10-23** R0 done (subagent β; merged `evidence/campaign-r0`
   e6136bc, ea95c86). Head 85b0c1de6, `backward` everywhere, tutorial

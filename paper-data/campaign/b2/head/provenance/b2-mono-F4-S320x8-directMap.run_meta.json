@@ -1,0 +1,5 @@
+{"run_id": "b2-mono-F4-S320x8-directMap", "study": "mono", "level": 4,
+ "solid_mesh": "320x8", "dt": 0.00625, "end_time": 1.5,
+ "ranks": 1, "exclusive": false, "node": "xenosim",
+ "slurm_job_id": "13111", "allrun_rc": 0, "timeout_s": 171899,
+ "allrun_wall_s": 15443.193}

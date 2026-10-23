@@ -53,3 +53,10 @@
   ρs/ρf 10. RN at ρs/ρf = 0: floating-point exception on the first
   coupling iteration (Robin coefficient ∝ wall density vanishes, as the
   verification README notes), classified `nan`.
+- Coordinator (23 Oct): `viscousStressTranspose` will be removed and the
+  transpose wall treatment hard-coded; QM results at the current head will
+  be rerun after the fix. No further QM runs until the fixed build is
+  announced (none were pending: all 3a/3b QM runs had already finished).
+  QM rows carry `pre-vST-fix` in the `runs.csv` notes (3a regenerated; 3b
+  will have it); registry status becomes `superseded` once the fixed build
+  exists.

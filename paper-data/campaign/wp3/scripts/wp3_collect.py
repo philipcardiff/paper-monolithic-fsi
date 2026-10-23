@@ -143,6 +143,10 @@ def main():
                  f" of {meta['end_time']:.6g}", schemes_note(meta)]
         if qm:
             notes.append("viscousStressTranspose no")
+            # Coordinator, 23 Oct: the option is to be removed and the wall
+            # treatment of the transpose term hard-coded; QM results at
+            # 85b0c1de6 will be rerun with the fixed build
+            notes.append("pre-vST-fix")
         if meta["coupling"] == "iqn":
             notes.append("couplingReuse 0")
         if "relaxationFactor" in meta:

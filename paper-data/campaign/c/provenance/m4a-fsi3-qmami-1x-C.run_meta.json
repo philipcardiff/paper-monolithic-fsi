@@ -1,0 +1,7 @@
+{"run_id": "m4a-fsi3-qmami-1x-C", "variant": "C", "div_phi_U": "aligned",
+ "viscousStressTranspose": "yes", "ranks": 8, "cores": "64-71",
+ "command": "./verification/Allverify --coupling monolithicAMI --levels 1 --cores 8", "solver_case": "/project/home/p201136/philip-agentC/runs/4a/m4a-fsi3-qmami-1x-C/verification/work/monolithicAMI_mesh_1x", "code_commit": "v2.4-1103-g85b0c1de6",
+ "node": "mel0509", "slurm_job_id": "5377601", "account": "p201136",
+ "exclusive_node": true, "shared_with_other_runs": true,
+ "binding": "taskset -c 64-71; MPI binding none",
+ "rc": 1, "wall_s": 1530.767}

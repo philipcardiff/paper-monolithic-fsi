@@ -34,7 +34,38 @@ V QM-AMI 1x (paper-fsi-verification `ring-monolithic`,
 28.831 mm, `u_y` frequency 5.5945 Hz, drag mean 453.97 N/m, drag amplitude
 22.331 N/m, lift amplitude 221.74 N/m.
 
-Status: running.
+Status: **done** (job 5377601, 25 min 46 s, all three complete, no failed
+Newton solve; 2–3 Newton iterations per coupled step, max 4). The driver
+exits 1 only on its accuracy check (1x is below the tutorial-2x tolerances;
+the V 1x row has `pass False` too). CSVs: `runs.csv`, `qois.csv`,
+`4a/*.sweep.csv`, `4a/*.history.csv`; provenance in `provenance/`.
+
+| QoI | V 1x | A | A − V | B − A | C | C − B |
+|---|---:|---:|---:|---:|---:|---:|
+| `u_x` mean (mm) | −2.14240 | −2.14241 | −0.0003% | 0 | −2.16908 | −1.25% (magnitude +) |
+| `u_x` amplitude (mm) | 2.07201 | 2.07201 | +0.0001% | 0 | 2.10025 | +1.36% |
+| `u_y` amplitude (mm) | 28.8311 | 28.8312 | +0.0002% | 0 | 29.0188 | +0.65% |
+| `u_y` frequency (Hz) | 5.59447 | 5.59447 | −0.0001% | 0 | 5.60016 | +0.10% |
+| drag mean (N/m) | 453.971 | 453.971 | 0.0000% | 0 | 454.232 | +0.06% |
+| drag amplitude (N/m) | 22.3313 | 22.3314 | +0.0003% | 0 | 22.5997 | +1.20% |
+| lift amplitude (N/m) | 221.738 | 221.739 | +0.0003% | 0 | 223.724 | +0.90% |
+
+- **A reproduces V** to ≤ 3e-6 relative in every primary QoI (different
+  machine, compiler and node: M1/Clang vs Mx/GCC).
+- **B = A bit for bit.** In OpenFOAM v2512 `linearUpwind` reads a single
+  word as the name of its gradient scheme and looks it up with
+  `mesh.gradScheme(name)`. In `linearUpwind cellLimited leastSquares 1` that
+  word is `cellLimited`, which has no entry in `gradSchemes`, so the lookup
+  returns `default leastSquares` and `leastSquares 1` is never read: the
+  limiter was never active. The same holds for every tutorial whose
+  `fvSchemes.monolithic` has this line (3dTube, beamInCrossFlow, blob,
+  cavity, foilInWind, membraneRoof, Mok, TurekHron2006; all have
+  `gradSchemes default leastSquares` and no `grad(U)` entry). Existing QM
+  results therefore already use the partitioned convection scheme; the
+  scheme decision changes text, not numbers.
+- **vST yes (C − B)**: 0.06–1.4% on the primary QoIs, moving `u_y`
+  amplitude towards Featflow (error 17.6% → 17.1%) and towards IQN-ILS.
+  Same Newton count (1.8068 vs 1.8046 mean over all steps).
 
 ### 4x production
 
@@ -52,4 +83,4 @@ To prepare; not submitted.
 
 | Project | Job | Node-hours |
 |---|---|---|
-| p201136 | 5377601 | running |
+| p201136 | 5377601 (4a 1x check, 1 exclusive node, 25.8 min) | 0.43 |

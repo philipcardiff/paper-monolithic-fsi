@@ -28,15 +28,35 @@ file quota (the R0 foil `-d` run hit "Disk quota exceeded").
 
 | Item | Runs | Where | Job | Status |
 |---|---|---|---|---|
-| smoke test (5 runs) | ring QM/dry/IQN/RN, Womersley QM | Mx p201136 | 5377599 | ring QM/dry/IQN and Womersley QM done, match README; RN running |
-| 1a ring QM | 36 wet + 12 dry + 3 tight | Mx p201136 | 5377679 | submitted |
-| 1d ring IQN-ILS, RN (standard solid, strong, m2) | 6 (QM in 1a) | Mx p201136 | 5377679 | submitted |
-| 1e Womersley QM yes/no, RN, IQN-ILS | 10 + 5 + 5 | Mx p201136 | 5377679 | submitted |
+| smoke tests | 5 + 5 | Mx p201136 | 5377599, 5377771 | done |
+| 1a ring QM | 36 wet + 12 dry + 3 tight | Mx p201136 | 5377679 | done |
+| 1d ring IQN-ILS, RN (standard solid, strong, m2) | 6 (QM in 1a) | Mx p201136 | 5377679 | done |
+| 1e Womersley QM yes/no, RN, IQN-ILS | 10 + 5 + 5 | Mx p201136 | 5377679 | m4 and n400 partitioned running |
+| 1b ring zeroGradient p | 6 | Mx p201136 | 5377777 | done |
+| 1c ring AMI, coarser/finer solid x conservative/interpolated | 36 wet + 6 dry | Mx p201136 | 5377777 | done |
+| 1f BDF2 start-up | analysis of 1a (first period excluded) | local | – | ring done (`1f/`); Womersley from 1e |
+| 2a cavity QM L1-L4 | 4 (L4 on 4 ranks) | Mx p201136 | 5377777 | L1, L2 done; L3, L4 running |
+| 2b cavity interpolate(U) linear | L2, L3 | Mx p201136 | 5377777 | L2 done; L3 running |
+| 2c checkMesh | on 2a/2b final states | Mx | – | after 2a; partitioned strict directories no longer exist (see notes) |
+| 5b blob QM time steps | 4 | Mx p201136 | 5377777 | done |
+| 7a foilInWind QM dt 0.01, 0.005; IQN-ILS dt 0.01 | 3 (+1 failed set-up at 128 ranks) | Mx p201136 | 5377780, 5377781, 5377823 | QM 0.01 stalls at 0.05 s (as #602); QM 0.005 to 0.2 s; IQN-ILS 0.01 fails at 0.08 s (stopped, reported) |
 | vST diagnostic D1, D3 (blob x1) | 3 restarts + post-processing | MS | – | done: `../wp0/vST_diagnostic.md` |
 
 Registry: rows of agent A on `campaign/registry` (`68349d0`, then running).
 
 ## Notes
+
+- 7a IQN-ILS on 128 ranks (job 5377782) stopped in the first step: the
+  partitioned PETSc solid solve (4 608 cells over 128 ranks) reached 10 000
+  Krylov iterations. Rerun on 8 ranks (5377823): outer iterations per step
+  4, 5, 5, 6, 8, 10, 18, then 50 without convergence at t = 0.08 s
+  (residual 2.5e-5 against 1e-5, strict test). Not retried with other
+  settings; reported.
+- 2c: the strict partitioned cavity directories behind the
+  `partitioned_strict` CSV rows are not on the mac-studio any more (only
+  legacy-test Aitken/IQN-ILS runs at dt 0.5 from September). A head rerun
+  of Aitken strict L1-L4 at the recorded time steps would cost about 2
+  core-hours; proposed, not run.
 
 - The R0 foilInWind run `r0-foil-backward-e` (Δt 0.0025, 128 ranks)
   diverged at t = 0.95 s (380 steps, 2.44 Newton/step). It covers 0–0.2 s

@@ -110,11 +110,65 @@ def definitions():
                             steps=n))
     for r in out:
         r["ranks"] = 1
+        r["batch"] = 1
+    return out + definitions2()
+
+
+def definitions2():
+    out = []
+    # 2a: cavity QM L1-L4, steady (ddt(U) Euler as the partitioned file),
+    # dt 0.5 to 300 s with the 20 s inlet ramp, as the #597 rerun;
+    # 2b: L2, L3 with interpolate(U) linear
+    for lvl in (1, 2, 3, 4):
+        out.append(dict(id=f"ma-cav-qm-L{lvl}", item="2a", case="cav",
+                        level=lvl, vst="no", interp="skewCorrected linear",
+                        ranks=4 if lvl == 4 else 1))
+    for lvl in (2, 3):
+        out.append(dict(id=f"ma-cav-qm-L{lvl}-interplinear", item="2b",
+                        case="cav", level=lvl, vst="no", interp="linear",
+                        ranks=1))
+    # 5b: blob QM x1 time-step study to t = 1 s (tight tolerances: the
+    # changes at the finest steps are ~1e-5 m)
+    for dt in (0.25, 0.125, 0.0625, 0.03125):
+        out.append(dict(id=f"ma-blob-qm-x1-dt{dt:g}", item="5b", case="blob",
+                        level=1, dt=dt, end_time=1.0, vst="no", petsc=TIGHT,
+                        ranks=1))
+    # 1b: ring QM with a zeroGradient interface pressure
+    for lvl in ("moderate", "strong"):
+        for f in (1, 2, 4):
+            out.append(dict(id=f"ma-ram-qm-{lvl}-m{f}-n100-pzg", item="1b",
+                            case="ram", kind="wet", level=lvl,
+                            coupling="monolithic", solid="standard",
+                            factor=f, steps=100, vst="no", petsc={},
+                            p_interface="zeroGradient", ranks=1))
+    # 1c: ring QM non-conformal (AMI), solid coarser (32) and finer (72
+    # circumferential cells per factor; fluid 48), interpolated and
+    # conservative traction transfer; conformal baseline in 1a (n100)
+    for f in (1, 2, 4):
+        for nc in (32 * f, 72 * f):
+            out.append(dict(id=f"ma-ram-dry-m{f}-n100-nc{nc}", item="1c",
+                            case="ram", kind="dry", solid="standard",
+                            factor=f, steps=100, solidCells=nc, ranks=1))
+            for lvl in ("weak", "moderate", "strong"):
+                for cons in ("no", "yes"):
+                    tag = "cons" if cons == "yes" else "interp"
+                    out.append(dict(
+                        id=f"ma-ram-qm-{lvl}-m{f}-n100-nc{nc}-{tag}",
+                        item="1c", case="ram", kind="wet", level=lvl,
+                        coupling="monolithic", solid="standard", factor=f,
+                        steps=100, solidCells=nc, vst="no", petsc={},
+                        conservative=cons, ranks=1))
+    for r in out:
+        r["batch"] = 2
     return out
 
 
 def cost(r):
     """Rough relative cost, to start the long runs first."""
+    if r["case"] == "cav":
+        return 4 ** r["level"] * 1000
+    if r["case"] == "blob":
+        return 100 / r["dt"]
     c = r["factor"] ** 2 * r["steps"]
     if r["case"] == "wom":
         c *= 6
@@ -154,6 +208,8 @@ def run_ram(ctx, r):
             "factor": r["factor"], "steps": r["steps"], "periods": periods,
             "omega_exact": omega, "period": 2 * 3.141592653589793 / omega,
             "name": r["id"]}
+    if r.get("solidCells"):
+        spec["solidCells"] = r["solidCells"]
     case = ctx["runs"] / r["id"]
     if case.exists():
         shutil.rmtree(case)
@@ -164,6 +220,16 @@ def run_ram(ctx, r):
         if r["coupling"] == "monolithic":
             set_vst(case, r["vst"])
             set_petsc(case, r["petsc"])
+            if r.get("p_interface") == "zeroGradient":
+                sub1(case / "0/fluid/p.monolithic",
+                     r"(interface\s*\{[^}]*?)type\s+fixedGradient;\s*"
+                     r"gradient\s+uniform 0;",
+                     r"\g<1>type            zeroGradient;")
+            if r.get("conservative"):
+                sub1(case / "constant/fsiProperties.monolithic",
+                     r"(^\s*passViscousStress\s+\w+;\n)",
+                     rf"\g<1>    conservativeTractionTransfer "
+                     rf"{r['conservative']};\n")
         else:
             set_partitioned(case, r["coupling"])
     rc, wall = run_cmd(cmd, case, "log.Allrun")
@@ -201,10 +267,110 @@ def run_wom(ctx, r):
     return case, row
 
 
+def newton_counts(text):
+    return [int(n) for n in re.findall(
+        r"^Solving the monolithic momentum-continuity system.*?"
+        r"Nonlinear solve \w+ due to \w+ iterations (\d+)",
+        text, re.MULTILINE | re.DOTALL)]
+
+
+def time_to_steady(history, rel):
+    """First time after which the value stays within rel of the final."""
+    final = history[-1][1]
+    t_ss = history[0][0]
+    for t, v in history:
+        if abs(v - final) > rel * abs(final):
+            t_ss = t
+    return t_ss
+
+
+def run_cav(ctx, r):
+    cav = ctx["cav"]
+    case = ctx["runs"] / r["id"]
+    if case.exists():
+        shutil.rmtree(case)
+    shutil.copytree(cav.CASE_DIR, case, ignore=cav.ignored, symlinks=True)
+    factor = 2 ** (r["level"] - 1)
+    cav.refine_mesh(case / "system/fluid/blockMeshDict", factor)
+    cav.refine_mesh(case / "system/solid/blockMeshDict", factor)
+    cav.set_control(case, "endTime", 300.0)
+    cav.set_control(case, "deltaT", 0.5)
+    cav.ramp_inlet(case, 20.0)
+    set_vst(case, r["vst"])
+    schemes = case / "system/fluid/fvSchemes.monolithic"
+    # Same schemes as the partitioned fvSchemes (no limiter; #553)
+    sub1(schemes, r"(^\s*div\(phi,U\)\s+)[^;]+;",
+         r"\g<1>Gauss linearUpwind grad(U);")
+    sub1(schemes, r"(^\s*interpolate\(U\)\s+)[^;]+;",
+         rf"\g<1>{r['interp']};")
+    cmd = ["./Allrun", "monolithic"]
+    if r["ranks"] > 1:
+        for d in (case / "system").rglob("decomposeParDict*"):
+            text = re.sub(r"(numberOfSubdomains\s+)\d+;",
+                          rf"\g<1>{r['ranks']};", d.read_text())
+            d.write_text(text)
+        # Fluid mesh motion: redundant LU in parallel (as the #597 L4 run)
+        mm = case / "system/fluid/fvSolution.monolithic"
+        sub1(mm, r"(^\s*pc_type\s+)bjacobi;", r"\g<1>redundant;")
+        sub1(mm, r"(^\s*)sub_pc_type(\s+)lu;", r"\g<1>redundant_pc_type\g<2>lu;")
+        cmd.append("parallel")
+    rc, wall = run_cmd(cmd, case, "log.Allrun")
+    cav.check_solver_log(case / "log.solids4Foam", 300.0, r["id"])
+    disp = cav.read_displacement_history(case)
+    force = cav.read_force_history(case)
+    uy, uy_spread = cav.steady_value(disp, 0.1)
+    fy, fy_spread = cav.steady_value(force, 0.1)
+    text = (case / "log.solids4Foam").read_text(errors="replace")
+    n = newton_counts(text)
+    times = [float(t) for t in re.findall(r"^Time = ([0-9.eE+-]+)", text,
+                                          re.MULTILINE)]
+    out = dict(uy=uy, uy_spread=uy_spread, fy=fy, fy_spread=fy_spread,
+               wall_s=wall, n_steps=len(n), iters_mean=sum(n) / len(n),
+               iters_max=max(n), newton_total=sum(n),
+               ksp_per_newton_mean=ksp_per_newton(case))
+    clock = re.findall(r"ClockTime\s*=\s*([0-9.eE+-]+)", text)
+    out["clock_s"] = float(clock[-1]) if clock else None
+    for rel in (1e-3, 1e-4):
+        t_ss = time_to_steady(disp, rel)
+        k = sum(1 for t in times if t <= t_ss + 1e-9)
+        out[f"t_steady_{rel:g}"] = t_ss
+        out[f"newton_to_steady_{rel:g}"] = sum(n[:k])
+        out[f"steps_to_steady_{rel:g}"] = k
+    return case, out
+
+
+def run_blob(ctx, r):
+    blob = ctx["blob"]
+    case = ctx["runs"] / r["id"]
+    if case.exists():
+        shutil.rmtree(case)
+    shutil.copytree(blob.CASE_DIR, case, ignore=blob.ignored, symlinks=True)
+    control = case / "system/controlDict"
+    blob.set_entry(control, "endTime", f"{r['end_time']:.10g}")
+    blob.set_entry(control, "deltaT", f"{r['dt']:.10g}")
+    sub1(case / "system/fluid/fvSchemes.monolithic",
+         r"(ddt\(U\)\s+)Euler;", r"\g<1>backward;")
+    sub1(case / "system/fluid/fvSchemes.monolithic",
+         r"(^\s*div\(phi,U\)\s+)[^;]+;", r"\g<1>Gauss linearUpwind grad(U);")
+    set_vst(case, r["vst"])
+    set_petsc(case, r["petsc"])
+    rc, wall = run_cmd(["./Allrun", "monolithic"], case, "log.Allrun")
+    blob.check_solver_log(case / "log.solids4Foam", r["end_time"], r["id"])
+    _, ux, uy = blob.value_at(blob.displacement_history(case), r["end_time"])
+    pts = [list(v) for v in blob.interface_vertices(case, r["end_time"])]
+    text = (case / "log.solids4Foam").read_text(errors="replace")
+    n = newton_counts(text)
+    out = dict(ux=ux, uy=uy, interface_vertices=pts, wall_s=wall,
+               n_steps=len(n), iters_mean=sum(n) / len(n), iters_max=max(n),
+               ksp_per_newton_mean=ksp_per_newton(case))
+    return case, out
+
+
 def execute(ctx, r):
     case = ctx["runs"] / r["id"]
     try:
-        case, out = (run_ram if r["case"] == "ram" else run_wom)(ctx, r)
+        case, out = {"ram": run_ram, "wom": run_wom, "cav": run_cav,
+                     "blob": run_blob}[r["case"]](ctx, r)
         out["status"] = "completed"
     except Exception as error:  # record and carry on
         out = {"status": "failed", "error": str(error),
@@ -213,7 +379,7 @@ def execute(ctx, r):
     out["def"] = r
     if case.is_dir():
         subprocess.run([sys.executable, str(ctx["provenance"]), str(case),
-                        "--ranks", "1", "--run-id", r["id"],
+                        "--ranks", str(r["ranks"]), "--run-id", r["id"],
                         "--s4f", str(ctx["s4f"])],
                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         (case / "ma_result.json").write_text(
@@ -230,9 +396,12 @@ def main():
                     default=HERE / "provenance.py")
     ap.add_argument("--cores", type=int, default=8)
     ap.add_argument("--only")
+    ap.add_argument("--batch", type=int)
     ap.add_argument("--list", action="store_true")
     args = ap.parse_args()
     todo = definitions()
+    if args.batch:
+        todo = [r for r in todo if r["batch"] == args.batch]
     if args.only:
         keep = set(args.only.split(","))
         todo = [r for r in todo if r["id"] in keep]
@@ -246,10 +415,15 @@ def main():
                "ring_added_mass_verification.py")
     wom = load("womdrv", fsi / "womersleyTube/verification/scripts/"
                "womersley_tube_verification.py")
+    cav = load("cavdrv", fsi / "cavityFlexibleBottom/verification/scripts/"
+               "cavity_flexible_bottom_verification.py")
+    blob = load("blobdrv", fsi / "blobInTreacle/verification/scripts/"
+                "blob_in_treacle_verification.py")
     args.runs.mkdir(parents=True, exist_ok=True)
     ram.WORK_ROOT = args.runs
     wom.WORK_ROOT = args.runs
-    ctx = dict(ram=ram, wom=wom, runs=args.runs, s4f=args.s4f,
+    ctx = dict(ram=ram, wom=wom, cav=cav, blob=blob, runs=args.runs,
+               s4f=args.s4f,
                provenance=args.provenance,
                ram_ref=json.loads(ram.REFERENCE_FILE.read_text()),
                wom_ref=json.loads(wom.REFERENCE_FILE.read_text()))
@@ -261,10 +435,13 @@ def main():
         try:
             execute(ctx, r)
         finally:
-            sem.release()
+            for _ in range(r["ranks"]):
+                sem.release()
 
+    # Only this loop acquires, so multi-rank runs cannot deadlock
     for r in todo:
-        sem.acquire()
+        for _ in range(r["ranks"]):
+            sem.acquire()
         print(f"{time.strftime('%H:%M:%S')} start {r['id']}", flush=True)
         t = threading.Thread(target=worker, args=(r,))
         t.start()

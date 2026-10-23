@@ -1,0 +1,66 @@
+run_id,qoi,value,reference,reference_source,rel_error,uncertainty_of_reference,notes
+wp0-blob-iqn-x1,ux_top,0.11723093,,,,,t = 3 s steady top point
+wp0-blob-iqn-x1,uy_top,-0.013725747,,,,,t = 3 s steady top point
+wp0-blob-iqn-x2,ux_top,0.11969096,,,,,t = 3 s steady top point
+wp0-blob-iqn-x2,uy_top,-0.013994201,,,,,t = 3 s steady top point
+wp0-blob-iqn-x4,ux_top,0.12020627,,,,,t = 3 s steady top point
+wp0-blob-iqn-x4,uy_top,-0.014027113,,,,,t = 3 s steady top point
+wp0-blob-qm-vstno-x1,ux_top,0.11685033,0.11723093,"wp0-blob-iqn-x1 (IQN-ILS strict, same level, head)",-3.2466e-03,,t = 3 s steady top point
+wp0-blob-qm-vstno-x1,uy_top,-0.014343536,-0.013725747,"wp0-blob-iqn-x1 (IQN-ILS strict, same level, head)",-4.5009e-02,,t = 3 s steady top point
+wp0-blob-qm-vstno-x1-tight,ux_top,0.11685033,0.11723093,"wp0-blob-iqn-x1 (IQN-ILS strict, same level, head)",-3.2466e-03,,t = 3 s steady top point
+wp0-blob-qm-vstno-x1-tight,uy_top,-0.014343536,-0.013725747,"wp0-blob-iqn-x1 (IQN-ILS strict, same level, head)",-4.5009e-02,,t = 3 s steady top point
+wp0-blob-qm-vstno-x2,ux_top,0.11934394,0.11969096,"wp0-blob-iqn-x2 (IQN-ILS strict, same level, head)",-2.8993e-03,,t = 3 s steady top point
+wp0-blob-qm-vstno-x2,uy_top,-0.014233,-0.013994201,"wp0-blob-iqn-x2 (IQN-ILS strict, same level, head)",-1.7064e-02,,t = 3 s steady top point
+wp0-blob-qm-vstno-x4,ux_top,0.12001843,0.12020627,"wp0-blob-iqn-x4 (IQN-ILS strict, same level, head)",-1.5626e-03,,t = 3 s steady top point
+wp0-blob-qm-vstno-x4,uy_top,-0.014105231,-0.014027113,"wp0-blob-iqn-x4 (IQN-ILS strict, same level, head)",-5.5691e-03,,t = 3 s steady top point
+wp0-blob-qm-vstyes-x1,ux_top,0.11449199,0.11723093,"wp0-blob-iqn-x1 (IQN-ILS strict, same level, head)",-2.3364e-02,,t = 3 s steady top point
+wp0-blob-qm-vstyes-x1,uy_top,-0.014138758,-0.013725747,"wp0-blob-iqn-x1 (IQN-ILS strict, same level, head)",-3.0090e-02,,t = 3 s steady top point
+wp0-blob-qm-vstyes-x2,ux_top,0.11844125,0.11969096,"wp0-blob-iqn-x2 (IQN-ILS strict, same level, head)",-1.0441e-02,,t = 3 s steady top point
+wp0-blob-qm-vstyes-x2,uy_top,-0.014116271,-0.013994201,"wp0-blob-iqn-x2 (IQN-ILS strict, same level, head)",-8.7229e-03,,t = 3 s steady top point
+wp0-blob-qm-vstyes-x4,ux_top,0.11968236,0.12020627,"wp0-blob-iqn-x4 (IQN-ILS strict, same level, head)",-4.3584e-03,,t = 3 s steady top point
+wp0-blob-qm-vstyes-x4,uy_top,-0.014045252,-0.014027113,"wp0-blob-iqn-x4 (IQN-ILS strict, same level, head)",-1.2931e-03,,t = 3 s steady top point
+wp0-wom-iqn-m2n50,profile,6.157093e-03,0,exact linear solution (womersley_exact.py); value is the relative error,6.157093e-03,,
+wp0-wom-iqn-m2n50,flow_amp,-1.197851e-03,0,exact linear solution (womersley_exact.py); value is the relative error,-1.197851e-03,,
+wp0-wom-iqn-m2n50,flow_phase,1.167508e-04,0,exact linear solution (womersley_exact.py); value is the relative error,1.167508e-04,,phase errors in radians
+wp0-wom-iqn-m2n50,wallMid_amp,5.470538e-03,0,exact linear solution (womersley_exact.py); value is the relative error,5.470538e-03,,
+wp0-wom-iqn-m2n50,wallMid_phase,-6.179158e-03,0,exact linear solution (womersley_exact.py); value is the relative error,-6.179158e-03,,phase errors in radians
+wp0-wom-iqn-m2n50,speed,1.423182e-03,0,exact linear solution (womersley_exact.py); value is the relative error,1.423182e-03,,
+wp0-wom-iqn-m2n50,attenuation,-1.314560e-02,0,exact linear solution (womersley_exact.py); value is the relative error,-1.314560e-02,,
+wp0-wom-iqn-m2n50,pressure,6.979838e-03,0,exact linear solution (womersley_exact.py); value is the relative error,6.979838e-03,,
+wp0-wom-iqn-m2n50,periodicity,6.773089e-05,0,,,,
+wp0-wom-qm-vstno-m2n50,profile,6.218215e-03,0,exact linear solution (womersley_exact.py); value is the relative error,6.218215e-03,,
+wp0-wom-qm-vstno-m2n50,flow_amp,-1.273275e-03,0,exact linear solution (womersley_exact.py); value is the relative error,-1.273275e-03,,
+wp0-wom-qm-vstno-m2n50,flow_phase,1.390419e-04,0,exact linear solution (womersley_exact.py); value is the relative error,1.390419e-04,,phase errors in radians
+wp0-wom-qm-vstno-m2n50,wallMid_amp,4.939655e-03,0,exact linear solution (womersley_exact.py); value is the relative error,4.939655e-03,,
+wp0-wom-qm-vstno-m2n50,wallMid_phase,-6.594835e-03,0,exact linear solution (womersley_exact.py); value is the relative error,-6.594835e-03,,phase errors in radians
+wp0-wom-qm-vstno-m2n50,speed,1.336159e-03,0,exact linear solution (womersley_exact.py); value is the relative error,1.336159e-03,,
+wp0-wom-qm-vstno-m2n50,attenuation,-1.348062e-02,0,exact linear solution (womersley_exact.py); value is the relative error,-1.348062e-02,,
+wp0-wom-qm-vstno-m2n50,pressure,6.921057e-03,0,exact linear solution (womersley_exact.py); value is the relative error,6.921057e-03,,
+wp0-wom-qm-vstno-m2n50,periodicity,6.381889e-05,0,,,,
+wp0-wom-qm-vstno-m2n50-tut,profile,6.218214e-03,0,exact linear solution (womersley_exact.py); value is the relative error,6.218214e-03,,
+wp0-wom-qm-vstno-m2n50-tut,flow_amp,-1.273275e-03,0,exact linear solution (womersley_exact.py); value is the relative error,-1.273275e-03,,
+wp0-wom-qm-vstno-m2n50-tut,flow_phase,1.390423e-04,0,exact linear solution (womersley_exact.py); value is the relative error,1.390423e-04,,phase errors in radians
+wp0-wom-qm-vstno-m2n50-tut,wallMid_amp,4.939637e-03,0,exact linear solution (womersley_exact.py); value is the relative error,4.939637e-03,,
+wp0-wom-qm-vstno-m2n50-tut,wallMid_phase,-6.594831e-03,0,exact linear solution (womersley_exact.py); value is the relative error,-6.594831e-03,,phase errors in radians
+wp0-wom-qm-vstno-m2n50-tut,speed,1.336160e-03,0,exact linear solution (womersley_exact.py); value is the relative error,1.336160e-03,,
+wp0-wom-qm-vstno-m2n50-tut,attenuation,-1.348063e-02,0,exact linear solution (womersley_exact.py); value is the relative error,-1.348063e-02,,
+wp0-wom-qm-vstno-m2n50-tut,pressure,6.921060e-03,0,exact linear solution (womersley_exact.py); value is the relative error,6.921060e-03,,
+wp0-wom-qm-vstno-m2n50-tut,periodicity,6.381853e-05,0,,,,
+wp0-wom-qm-vstyes-m2n50,profile,6.183673e-03,0,exact linear solution (womersley_exact.py); value is the relative error,6.183673e-03,,
+wp0-wom-qm-vstyes-m2n50,flow_amp,-1.273288e-03,0,exact linear solution (womersley_exact.py); value is the relative error,-1.273288e-03,,
+wp0-wom-qm-vstyes-m2n50,flow_phase,1.611285e-04,0,exact linear solution (womersley_exact.py); value is the relative error,1.611285e-04,,phase errors in radians
+wp0-wom-qm-vstyes-m2n50,wallMid_amp,5.106785e-03,0,exact linear solution (womersley_exact.py); value is the relative error,5.106785e-03,,
+wp0-wom-qm-vstyes-m2n50,wallMid_phase,-6.101875e-03,0,exact linear solution (womersley_exact.py); value is the relative error,-6.101875e-03,,phase errors in radians
+wp0-wom-qm-vstyes-m2n50,speed,1.391540e-03,0,exact linear solution (womersley_exact.py); value is the relative error,1.391540e-03,,
+wp0-wom-qm-vstyes-m2n50,attenuation,-1.302954e-02,0,exact linear solution (womersley_exact.py); value is the relative error,-1.302954e-02,,
+wp0-wom-qm-vstyes-m2n50,pressure,6.849995e-03,0,exact linear solution (womersley_exact.py); value is the relative error,6.849995e-03,,
+wp0-wom-qm-vstyes-m2n50,periodicity,6.592564e-05,0,,,,
+wp0-wom-rn-m2n50,profile,6.178262e-03,0,exact linear solution (womersley_exact.py); value is the relative error,6.178262e-03,,
+wp0-wom-rn-m2n50,flow_amp,-1.228970e-03,0,exact linear solution (womersley_exact.py); value is the relative error,-1.228970e-03,,
+wp0-wom-rn-m2n50,flow_phase,1.435683e-04,0,exact linear solution (womersley_exact.py); value is the relative error,1.435683e-04,,phase errors in radians
+wp0-wom-rn-m2n50,wallMid_amp,5.283523e-03,0,exact linear solution (womersley_exact.py); value is the relative error,5.283523e-03,,
+wp0-wom-rn-m2n50,wallMid_phase,-6.117842e-03,0,exact linear solution (womersley_exact.py); value is the relative error,-6.117842e-03,,phase errors in radians
+wp0-wom-rn-m2n50,speed,1.408089e-03,0,exact linear solution (womersley_exact.py); value is the relative error,1.408089e-03,,
+wp0-wom-rn-m2n50,attenuation,-1.307470e-02,0,exact linear solution (womersley_exact.py); value is the relative error,-1.307470e-02,,
+wp0-wom-rn-m2n50,pressure,6.909102e-03,0,exact linear solution (womersley_exact.py); value is the relative error,6.909102e-03,,
+wp0-wom-rn-m2n50,periodicity,6.715984e-05,0,,,,

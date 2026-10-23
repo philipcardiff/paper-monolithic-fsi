@@ -44,3 +44,4 @@
   average to fall below 165 (it was 193/192 at 14:40).
 - MeluXina p201136 use so far: smoke 0.67 + 3a 0.16 node-hours (≈ 107
   billed core-hours).
+- 3b submitted on XenoSim at 15:06 (load5 155): job 13279, 16 tasks; registry running.

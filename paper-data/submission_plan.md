@@ -152,6 +152,10 @@ partitioned).
    gradients, `linearUpwind grad(U)` (or `Gauss linear` where the
    partitioned file has it), `backward` in time. solids4foam branch
    `tutorials/monolithic-schemes-consistent` makes this the tutorial default.
+   The `linearUpwind cellLimited leastSquares 1` entries never applied a
+   limiter (one word is read as a gradient-scheme name; solids4foam#553),
+   so earlier QM results are unaffected; only `ddt(U)` Euler to `backward`
+   changes results.
 8. **`viscousStressTranspose` (open):** `yes` is the formulation consistent
    with `pimpleFluid` (the term is in the residual and the traction). WP0 on
    blob shows QM `yes` differing from partitioned by −2.34/−1.04/−0.44%

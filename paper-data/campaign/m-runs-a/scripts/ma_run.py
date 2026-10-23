@@ -160,12 +160,46 @@ def definitions2():
                         conservative=cons, ranks=1))
     for r in out:
         r["batch"] = 2
+    return (out + definitions3() + definitions4()
+            + definitions4(prefix="mafinal", batch=5))
+
+
+def definitions4(prefix="mafix", batch=4):
+    """Verification of the vST fix build (transpose always on, also in the
+    wall pressure gradient): Womersley m1/m2/m4 n200 (against the head RN
+    runs of 1e) and ring QM n100, 3 levels x mesh 1/2/4 (against 1a; the
+    dry rings of 1a are unchanged by the fluid fix)."""
+    out = []
+    for f in (1, 2, 4):
+        out.append(dict(id=f"{prefix}-wom-qm-m{f}-n200", item="fix",
+                        case="wom", coupling="monolithic", factor=f,
+                        steps=200, vst=None, petsc=TIGHT))
+        for lvl in ("weak", "moderate", "strong"):
+            out.append(dict(id=f"{prefix}-ram-qm-{lvl}-m{f}-n100", item="fix",
+                            case="ram", kind="wet", level=lvl,
+                            coupling="monolithic", solid="standard",
+                            factor=f, steps=100, vst=None, petsc={}))
+    for r in out:
+        r.update(ranks=1, batch=batch)
+    return out
+
+
+def definitions3():
+    """2c: partitioned (Aitken, strict) cavity L1-L4 at the head, as the
+    README's partitioned_strict rows, for checkMesh on the final states."""
+    out = []
+    for lvl, dt in ((1, 0.5), (2, 0.25), (3, 0.125), (4, 0.0625)):
+        out.append(dict(id=f"ma-cav-aitken-L{lvl}", item="2c", case="cavpart",
+                        level=lvl, dt=dt, end_time=200.0,
+                        n_outer=40 if lvl == 4 else 20,
+                        fluid_tol="1e-08" if lvl == 4 else None,
+                        ranks=4 if lvl == 4 else 1, batch=3))
     return out
 
 
 def cost(r):
     """Rough relative cost, to start the long runs first."""
-    if r["case"] == "cav":
+    if r["case"] in ("cav", "cavpart"):
         return 4 ** r["level"] * 1000
     if r["case"] == "blob":
         return 100 / r["dt"]
@@ -218,7 +252,8 @@ def run_ram(ctx, r):
     if r["kind"] == "wet":
         cmd += [r["coupling"], r["solid"]]
         if r["coupling"] == "monolithic":
-            set_vst(case, r["vst"])
+            if r["vst"] is not None:
+                set_vst(case, r["vst"])
             set_petsc(case, r["petsc"])
             if r.get("p_interface") == "zeroGradient":
                 sub1(case / "0/fluid/p.monolithic",
@@ -253,7 +288,8 @@ def run_wom(ctx, r):
         shutil.rmtree(case)
     wom.configure(case, spec, ref)
     if r["coupling"] == "monolithic":
-        set_vst(case, r["vst"])
+        if r["vst"] is not None:
+            set_vst(case, r["vst"])
         set_petsc(case, r["petsc"])
     else:
         set_partitioned(case, r["coupling"])
@@ -339,12 +375,87 @@ def run_cav(ctx, r):
     return case, out
 
 
+def check_mesh(case):
+    out = {}
+    for region in ("fluid", "solid"):
+        for when, flag in (("constant", "-constant"), ("final", "-latestTime")):
+            res = subprocess.run(["checkMesh", "-region", region, flag],
+                                 cwd=case, capture_output=True, text=True)
+            (case / f"log.checkMesh.{region}.{when}").write_text(res.stdout)
+            # -constant also loops over the time directories that hold a
+            # mesh: keep the first block, which is the constant mesh
+            text = res.stdout
+            if when == "constant":
+                blocks = text.split("\nTime = ")
+                text = blocks[1] if len(blocks) > 2 else text
+            sk = re.findall(r"Max skewness = ([0-9.eE+-]+)", text)
+            no = re.findall(r"Mesh non-orthogonality Max: ([0-9.eE+-]+) "
+                            r"average: ([0-9.eE+-]+)", text)
+            pick = (lambda v: v[0]) if when == "constant" else (lambda v: v[-1])
+            out[f"{region}_{when}"] = dict(
+                max_skewness=float(pick(sk)) if sk else None,
+                max_nonortho=float(pick(no)[0]) if no else None,
+                avg_nonortho=float(pick(no)[1]) if no else None,
+                ok="Failed" not in text)
+    return out
+
+
+def run_cavpart(ctx, r):
+    cav = ctx["cav"]
+    case = ctx["runs"] / r["id"]
+    if case.exists():
+        shutil.rmtree(case)
+    shutil.copytree(cav.CASE_DIR, case, ignore=cav.ignored, symlinks=True)
+    factor = 2 ** (r["level"] - 1)
+    cav.refine_mesh(case / "system/fluid/blockMeshDict", factor)
+    cav.refine_mesh(case / "system/solid/blockMeshDict", factor)
+    cav.set_control(case, "endTime", r["end_time"])
+    cav.set_control(case, "deltaT", r["dt"])
+    fsi = case / "constant/fsiProperties"
+    sub1(fsi, r"(^\s*writeResidualsToFile\s+yes;\n)",
+         r"\g<1>    requireAllResidualMeasures yes;\n")
+    sub1(fsi, r"(^\s*nOuterCorr\s+)\d+;", rf"\g<1>{r['n_outer']};")
+    if r.get("fluid_tol"):
+        path = case / "system/fluid/fvSolution"
+        text, n = re.subn(r"(^\s*tolerance\s+)1e-0?6;",
+                          rf"\g<1>{r['fluid_tol']};", path.read_text(),
+                          flags=re.MULTILINE)
+        if n < 3:
+            raise RuntimeError(f"expected 3 fluid tolerances, found {n}")
+        path.write_text(text)
+    cmd = ["./Allrun"]
+    if r["ranks"] > 1:
+        for d in (case / "system").rglob("decomposeParDict*"):
+            d.write_text(re.sub(r"(numberOfSubdomains\s+)\d+;",
+                                rf"\g<1>{r['ranks']};", d.read_text()))
+        cmd.append("parallel")
+    rc, wall = run_cmd(cmd, case, "log.Allrun")
+    cav.check_solver_log(case / "log.solids4Foam", r["end_time"], r["id"])
+    uy, uy_spread = cav.steady_value(cav.read_displacement_history(case), 0.1)
+    fy, fy_spread = cav.steady_value(cav.read_force_history(case), 0.1)
+    per = {}
+    for line in (case / "postProcessing/fsiResiduals.dat").read_text().splitlines()[1:]:
+        f = line.split()
+        if len(f) >= 2:
+            per[f[0]] = max(per.get(f[0], 0), int(f[1]))
+    n = list(per.values())
+    out = dict(uy=uy, uy_spread=uy_spread, fy=fy, fy_spread=fy_spread,
+               wall_s=wall, n_steps=len(n), iters_mean=sum(n) / len(n),
+               iters_max=max(n), iters_mean_last10=sum(n[-len(n) // 10:])
+               / len(n[-len(n) // 10:]), checkmesh=check_mesh(case))
+    return case, out
+
+
 def run_blob(ctx, r):
     blob = ctx["blob"]
     case = ctx["runs"] / r["id"]
     if case.exists():
         shutil.rmtree(case)
     shutil.copytree(blob.CASE_DIR, case, ignore=blob.ignored, symlinks=True)
+    if r.get("level", 1) != 1:
+        for region in ("fluid", "solid"):
+            blob.refine_mesh(case / "system" / region / "blockMeshDict",
+                             r["level"])
     control = case / "system/controlDict"
     blob.set_entry(control, "endTime", f"{r['end_time']:.10g}")
     blob.set_entry(control, "deltaT", f"{r['dt']:.10g}")
@@ -352,12 +463,31 @@ def run_blob(ctx, r):
          r"(ddt\(U\)\s+)Euler;", r"\g<1>backward;")
     sub1(case / "system/fluid/fvSchemes.monolithic",
          r"(^\s*div\(phi,U\)\s+)[^;]+;", r"\g<1>Gauss linearUpwind grad(U);")
-    set_vst(case, r["vst"])
+    if r.get("p_interface") == "zeroGradient":
+        sub1(case / "0/fluid/p.monolithic",
+             r"(interface\s*\{[^}]*?)type\s+fixedGradient;\s*"
+             r"gradient\s+uniform 0;", r"\g<1>type            zeroGradient;")
+    if r.get("interp"):
+        sub1(case / "system/fluid/fvSchemes.monolithic",
+             r"(^\s*interpolate\(U\)\s+)[^;]+;", rf"\g<1>{r['interp']};")
+    for key, value in r.get("fluid_props", {}).items():
+        sub1(case / "constant/fluid/fluidProperties.monolithic",
+             r"(newtonIcoFluidCoeffs\s*\{\n)", rf"\g<1>    {key} {value};\n")
+    if r["vst"] is not None:
+        set_vst(case, r["vst"])
     set_petsc(case, r["petsc"])
-    rc, wall = run_cmd(["./Allrun", "monolithic"], case, "log.Allrun")
+    cmd = ["./Allrun", "monolithic"]
+    if r["ranks"] > 1:
+        blob.set_cores(case, r["ranks"])
+        cmd.append("parallel")
+    rc, wall = run_cmd(cmd, case, "log.Allrun")
     blob.check_solver_log(case / "log.solids4Foam", r["end_time"], r["id"])
-    _, ux, uy = blob.value_at(blob.displacement_history(case), r["end_time"])
-    pts = [list(v) for v in blob.interface_vertices(case, r["end_time"])]
+    hist = blob.displacement_history(case)
+    _, ux, uy = blob.value_at(hist, r["end_time"])
+    try:
+        pts = [list(v) for v in blob.interface_vertices(case, r["end_time"])]
+    except RuntimeError:
+        pts = []
     text = (case / "log.solids4Foam").read_text(errors="replace")
     n = newton_counts(text)
     out = dict(ux=ux, uy=uy, interface_vertices=pts, wall_s=wall,
@@ -370,6 +500,7 @@ def execute(ctx, r):
     case = ctx["runs"] / r["id"]
     try:
         case, out = {"ram": run_ram, "wom": run_wom, "cav": run_cav,
+                     "cavpart": run_cavpart,
                      "blob": run_blob}[r["case"]](ctx, r)
         out["status"] = "completed"
     except Exception as error:  # record and carry on

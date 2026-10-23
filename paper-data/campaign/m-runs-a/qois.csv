@@ -7,6 +7,14 @@ ma-blob-qm-x1-dt0.125,ux_top_t1,0.056450122,,,,,t = 1 s top point
 ma-blob-qm-x1-dt0.125,uy_top_t1,-0.0090507596,,,,,t = 1 s top point
 ma-blob-qm-x1-dt0.25,ux_top_t1,0.055665953,,,,,t = 1 s top point
 ma-blob-qm-x1-dt0.25,uy_top_t1,-0.009172733,,,,,t = 1 s top point
+ma-cav-aitken-L1,uy_monitor,-0.202499,-0.202499,"four_level_partitioned_monolithic.csv partitioned_strict (MS, 0698d55cd)",0.0000e+00,,t = 200 s
+ma-cav-aitken-L1,fy_interface,-5.152803,,,,,
+ma-cav-aitken-L2,uy_monitor,-0.228841,-0.22883,"four_level_partitioned_monolithic.csv partitioned_strict (MS, 0698d55cd)",-4.8071e-05,,t = 200 s
+ma-cav-aitken-L2,fy_interface,-5.239149,,,,,
+ma-cav-aitken-L3,uy_monitor,-0.235635,-0.235636,"four_level_partitioned_monolithic.csv partitioned_strict (MS, 0698d55cd)",4.2438e-06,,t = 200 s
+ma-cav-aitken-L3,fy_interface,-5.256603,,,,,
+ma-cav-aitken-L4,uy_monitor,-0.237312,-0.237307,"four_level_partitioned_monolithic.csv partitioned_strict (MS, 0698d55cd)",-2.1070e-05,,t = 200 s
+ma-cav-aitken-L4,fy_interface,-5.26008,,,,,
 ma-cav-qm-L1,uy_monitor,-0.201546,-0.201546,"four_level_partitioned_monolithic.csv monolithic_597 (E597, Euler)",0.0000e+00,,t = 300 s; spread over last 10% 4.96e-06
 ma-cav-qm-L1,fy_interface,-5.122583,,,,,spread 0.00e+00
 ma-cav-qm-L1,t_steady_0.001,138,,,,,"last time |uy - uy_final| > 0.001 |uy_final|; 276 steps, 612 Newton iterations"

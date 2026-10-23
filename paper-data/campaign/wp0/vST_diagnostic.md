@@ -101,3 +101,69 @@ transpose part (`newtonIcoFluid::patchViscousForce`); pimple =
   matters for any QM-against-partitioned `u_y` comparison on blob. It
   could be checked by D1 at x2/x4, or by running the partitioned case with
   the QM mesh-motion solver.
+
+## Debugging and fix (23 October, after Philip: "yes is the correct solution")
+
+Experiments on blobInTreacle x1/x2/x4 (mac-studio, WP0 set-up, `scripts/vst_debug.py`;
+QM minus the WP0 partitioned u_x; Richardson limit from the three levels;
+"wall force" = x force of the transpose part of the traction / total x load):
+
+| Variant | x1 | x2 | x4 | Order | Limit vs part. | Transpose wall force x1/x2/x4 |
+|---|---:|---:|---:|---:|---:|---|
+| partitioned (IQN-ILS strict) | 0 | 0 | 0 | 2.26 | 0 | −0.18/−0.04/−0.004% |
+| head, vST no | −0.33% | −0.29% | −0.16% | 1.89 | −0.06% | (not in traction) |
+| head, vST yes | −2.34% | −1.04% | −0.44% | 1.67 | −0.08% | +1.1/+0.62/+0.33% |
+| E1 vST yes + `interpolate(U) linear` | −1.84% | −0.89% | −0.40% | | | |
+| E2 vST yes + zeroGradient interface p | −0.95% | −0.29% | −0.06% | | | |
+| E3 vST yes + zeroGradient + linear | −0.50% | −0.15% | −0.03% | | | |
+| fix 1: transpose term in the wall p gradient (63d2cc8a9) | −1.31% | −0.56% | −0.22% | 1.85 | −0.04% | +0.60/+0.39/+0.22% |
+| fix 1 + zeroGradient + linear (E7) | −0.50% | −0.15% | −0.03% | 2.10 | +0.03% | +0.40/+0.24/+0.13% |
+| **fix 2: wall value from the wall velocity (final)** | **−0.71%** | **−0.39%** | **−0.18%** | 1.88 | −0.06% | **0 (stationary wall)** |
+| fix 2 + zeroGradient + linear (E9) | +0.31% | +0.11% | +0.06% | | | 0 |
+
+Max |tr grad(U)| on the interface (cell-gradient boundary value):
+partitioned 0.24/0.066/0.035; head vST yes 0.85/0.57/0.31; fix 1
+0.50/0.34/0.20; fix 2 0.38/0.29/0.18 (x1/x2/x4).
+
+1. **Defect 1, wall pressure gradient.** The fixedGradient interface
+   pressure gets its gradient from the normal momentum equation in the
+   adjacent cells (`updatePressureGradientBoundary`), with
+   `laplacian(nuEff,U) - ddt(U)` only: with vST yes the residual also has
+   `div(nuEff*dev2(T(grad(U))))`, so the wall pressure was inconsistent with
+   the momentum equation. Fixed in 63d2cc8a9 (the term added; Astra
+   independently identified the same omission). This halves the error.
+2. **Defect 2, wall value of the transpose stress.** Taken from the
+   boundary value of `grad(U)`, the transpose traction's tangential
+   derivatives come from the adjacent cell values. In the partitioned
+   solution the tangential (∂_t u_n, +0.30 at x1) and normal (∂_n u_n,
+   −0.37) parts nearly cancel, as continuity requires; in QM the normal
+   part is almost zero (−0.06) and the −⅔ tr term adds −0.20, so a
+   spurious force of 0.6% (x1) remains, decaying at order 0.6–0.8. On a
+   no-slip wall, n & grad(U)^T = grad(U & n) depends on the wall velocity
+   only. Fix 2 sets the wall value from a least-squares surface gradient of
+   the wall velocity (zero for a rigid translation, exact for a linear wall
+   velocity, wedge images for the axisymmetric circumferential term). A
+   first version with point averages was rejected in review (curvature,
+   wedge, foam-extend); the least-squares version passes the reviewer's
+   counter-examples exactly.
+3. **What remains** is not an inconsistency: all series extrapolate to
+   within 0.08% of the partitioned limit, and with the partitioned
+   pressure condition and interpolation the sign flips (+0.31/+0.11/+0.06%).
+   The remaining difference is the partitioned `zeroGradient` interface
+   pressure (first order), the face interpolation of U and the face-flux
+   construction (product interpolation, ddtCorr; Astra's list). QM's
+   near-wall cell velocity still has a larger discrete divergence than
+   pimpleFluid's pressure-corrected one, but it no longer reaches the
+   traction.
+4. **Other cases** (local, final build unless stated): womersleyTube m2
+   n200 QM minus RN, wall phase −2.9e-5 rad, attenuation −1.3e-5, amplitude
+   −1.5e-4 (vST no: −4.8e-4, −4.1e-4, −3.3e-4); ringAddedMass unchanged
+   (strong m2 n100 ratio −0.0039%); serial and parallel runs agree. FSI3
+   conformal 1x (Mx, fix 1 only): u_y amplitude −2.1%, drag mean −2.7%,
+   u_x mean −3.4% against R0 (coarse mesh). The final-build MeluXina
+   verification (Womersley m1/m2/m4 n200, ring 3×3 n100, FSI3 1x) is in
+   `../m-runs-a/` when complete.
+
+Astra consultations: `m-runs-a-work/astra/answer1.md` (diagnosis),
+`answer2.md` (fix 1 review, no blocking issue), `answer3.md` (fix 2 first
+version, blocking issues, resolved), `answer4.md` (fix 2 final).

@@ -32,13 +32,17 @@ WOM_QOIS = ["profile", "flow_amp", "flow_phase", "wallMid_amp",
             "wallMid_phase", "speed", "attenuation", "pressure",
             "periodicity"]
 COUPLING = {"monolithic": "NewtonQuasiMonolithic", "iqnils": "IQNILS",
+            "aitken": "Aitken",
             "robin": "Robin-Neumann", "": "none (dry solid)"}
 STUDY = {"1a": "1a ring QM sweep", "1d": "1d ring couplings (standard solid)",
          "1e": "1e Womersley QM cells", "1b": "1b ring zeroGradient pressure",
          "1c": "1c ring non-conformal (AMI)", "2a": "2a cavity QM L1-L4",
-         "2b": "2b cavity interpolate(U) linear", "5b": "5b blob QM time steps"}
+         "2b": "2b cavity interpolate(U) linear", "5b": "5b blob QM time steps",
+         "2c": "2c cavity partitioned strict rerun (checkMesh)",
+         "fix": "vST fix verification (build 63d2cc8a9)"}
 CASE = {"ram": "ringAddedMass", "wom": "womersleyTube",
-        "cav": "cavityFlexibleBottom", "blob": "blobInTreacle"}
+        "cav": "cavityFlexibleBottom", "cavpart": "cavityFlexibleBottom",
+        "blob": "blobInTreacle"}
 RHO = {"weak": 14.0, "moderate": 140.0, "strong": 1400.0}
 
 
@@ -79,7 +83,8 @@ def main():
         df = r["def"]
         ring = df["case"] == "ram"
         coupling = df.get("coupling", "") or \
-            ("monolithic" if df["case"] in ("cav", "blob") else "")
+            ("monolithic" if df["case"] in ("cav", "blob") else
+             "aitken" if df["case"] == "cavpart" else "")
         qm = coupling == "monolithic"
         opts = p.get("petsc_options") or {}
         petsc = (opts.get("system/fvSolution") or {}).get("UpU", {})
@@ -93,7 +98,7 @@ def main():
                 (f" nc{df['solidCells']}" if df.get("solidCells") else "")
         elif df["case"] == "wom":
             level = f"m{df['factor']} n{df['steps']}"
-        elif df["case"] == "cav":
+        elif df["case"] in ("cav", "cavpart"):
             level = f"L{df['level']}"
         else:
             level = f"x{df['level']} dt {df['dt']:g}"
@@ -117,7 +122,8 @@ def main():
             hypre_version=lib.get("hypre_version", ""),
             compiler=comp.get("compiler_version", ""),
             compile_flags=comp.get("compile_flags", ""),
-            ddt_U="Euler (steady)" if df["case"] == "cav" else "backward",
+            ddt_U="Euler (steady)" if df["case"] in ("cav", "cavpart")
+            else "backward",
             status=r["status"], repeats=1,
             window="full run")
         notes = []
@@ -160,7 +166,12 @@ def main():
             rows.append(row)
             continue
         wall = r["wall_s"]
-        if df["case"] in ("cav", "blob"):
+        if df["case"] == "cavpart":
+            notes.append(f"Aitken tol 1e-5, nOuterCorr {df['n_outer']}"
+                         + (f", fluid solvers {df['fluid_tol']}" if df.get("fluid_tol") else "")
+                         + "; end 200 s as the README partitioned_strict rows")
+            notes.append(f"coupling iterations last 10% {r['iters_mean_last10']:.3g}")
+        if df["case"] in ("cav", "blob", "cavpart"):
             dt = 0.5 if df["case"] == "cav" else df["dt"]
             n_steps = r["n_steps"]
             t_end = n_steps * dt
@@ -203,6 +214,15 @@ def main():
         if r["status"] != "completed":
             continue
         df = r["def"]
+        if df["case"] == "cavpart":
+            ref = {1: -0.202499, 2: -0.22883, 3: -0.235636, 4: -0.237307}[df["level"]]
+            qrows.append(dict(run_id=rid, qoi="uy_monitor", value=f"{r['uy']:.6g}",
+                              reference=f"{ref:.6g}", reference_source=
+                              "four_level_partitioned_monolithic.csv partitioned_strict (MS, 0698d55cd)",
+                              rel_error=f"{(r['uy'] - ref) / abs(ref):.4e}",
+                              notes="t = 200 s"))
+            qrows.append(dict(run_id=rid, qoi="fy_interface", value=f"{r['fy']:.7g}"))
+            continue
         if df["case"] == "cav":
             ref = {1: -0.201546, 2: -0.228468, 3: -0.235448, 4: -0.237187}[df["level"]]
             qrows.append(dict(run_id=rid, qoi="uy_monitor", value=f"{r['uy']:.6g}",

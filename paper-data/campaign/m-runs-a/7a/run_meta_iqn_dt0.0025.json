@@ -1,0 +1,4 @@
+{"run_id": "ma-foil-iqn-dt0.0025", "coupling": "iqn", "dt": 0.0025,
+ "ranks": 8, "command": "./Allrun parallel", "node": "mel0245",
+ "slurm_job_id": "5379413", "exclusive_node": false, "rc": 0,
+ "wall_s": 469.863}

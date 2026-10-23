@@ -1,0 +1,290 @@
+[
+ {
+  "case": "vst-E6-fix-pzg-x1",
+  "faces": 24,
+  "nu": 1.0,
+  "max|tQMyes - tPimple|": 9.930136612989092e-16,
+  "max|tPimple|": 9.197772658563153,
+  "max|transpose part|": 0.652619156615348,
+  "mean|transpose part|": 0.44670416656963563,
+  "mean|viscous (QM yes)|": 4.8578922057799465,
+  "max|n.grad(U).n| (wall-normal stretching)": 0.370686219044702,
+  "max|tr grad(U)| at wall": 0.3169708,
+  "F_viscous_QMyes": [
+   -6.848510867993051,
+   -0.19116758793744001
+  ],
+  "F_viscous_QMno": [
+   -6.906604922444977,
+   -0.21526200806091741
+  ],
+  "F_viscous_pimple": [
+   -6.848510867993051,
+   -0.19116758793744001
+  ],
+  "F_transpose": [
+   0.05809405445192781,
+   0.02409442012347725
+  ],
+  "F_pressure": [
+   -8.84273449600367,
+   25.355160533025202
+  ]
+ },
+ {
+  "case": "vst-E6-fix-pzg-x2",
+  "faces": 48,
+  "nu": 1.0,
+  "max|tQMyes - tPimple|": 1.7772239894833365e-15,
+  "max|tPimple|": 9.597859835189608,
+  "max|transpose part|": 0.3608103254266797,
+  "mean|transpose part|": 0.2406574826364125,
+  "mean|viscous (QM yes)|": 4.956920495422215,
+  "max|n.grad(U).n| (wall-normal stretching)": 0.16346137710821074,
+  "max|tr grad(U)| at wall": 0.19255690000000003,
+  "F_viscous_QMyes": [
+   -6.812670777924814,
+   -0.25099573940884784
+  ],
+  "F_viscous_QMno": [
+   -6.850785942532804,
+   -0.26442313736255796
+  ],
+  "F_viscous_pimple": [
+   -6.812670777924815,
+   -0.2509957394088479
+  ],
+  "F_transpose": [
+   0.038115164607988444,
+   0.013427397953710105
+  ],
+  "F_pressure": [
+   -9.331348049688854,
+   25.784284569679098
+  ]
+ },
+ {
+  "case": "vst-E6-fix-pzg-x4",
+  "faces": 96,
+  "nu": 1.0,
+  "max|tQMyes - tPimple|": 1.9860273225978185e-15,
+  "max|tPimple|": 9.701119206133626,
+  "max|transpose part|": 0.18616114593186708,
+  "mean|transpose part|": 0.12341009834104338,
+  "mean|viscous (QM yes)|": 4.981422962538034,
+  "max|n.grad(U).n| (wall-normal stretching)": 0.07419922112754951,
+  "max|tr grad(U)| at wall": 0.10573010000000016,
+  "F_viscous_QMyes": [
+   -6.745056580975302,
+   -0.29130096761775487
+  ],
+  "F_viscous_QMno": [
+   -6.766343468388682,
+   -0.29852013696769353
+  ],
+  "F_viscous_pimple": [
+   -6.745056580975302,
+   -0.2913009676177547
+  ],
+  "F_transpose": [
+   0.02128688741338219,
+   0.007219169349938728
+  ],
+  "F_pressure": [
+   -9.502592007626536,
+   25.881977269099284
+  ]
+ },
+ {
+  "case": "vst-E7-fix-pzg-lin-x1",
+  "faces": 24,
+  "nu": 1.0,
+  "max|tQMyes - tPimple|": 1.776573666601473e-15,
+  "max|tPimple|": 9.204129358998662,
+  "max|transpose part|": 0.6801977520704214,
+  "mean|transpose part|": 0.44397586756991575,
+  "mean|viscous (QM yes)|": 4.86791485736092,
+  "max|n.grad(U).n| (wall-normal stretching)": 0.37198645488851945,
+  "max|tr grad(U)| at wall": 0.35602469999999986,
+  "F_viscous_QMyes": [
+   -6.853247125907063,
+   -0.21970641761114598
+  ],
+  "F_viscous_QMno": [
+   -6.916359545380619,
+   -0.2365457933435774
+  ],
+  "F_viscous_pimple": [
+   -6.853247125907063,
+   -0.21970641761114593
+  ],
+  "F_transpose": [
+   0.06311241947355606,
+   0.016839375732431414
+  ],
+  "F_pressure": [
+   -8.909201187349543,
+   25.4077328799175
+  ]
+ },
+ {
+  "case": "vst-E7-fix-pzg-lin-x2",
+  "faces": 48,
+  "nu": 1.0,
+  "max|tQMyes - tPimple|": 1.831026719408895e-15,
+  "max|tPimple|": 9.583935913292262,
+  "max|transpose part|": 0.3701326039574285,
+  "mean|transpose part|": 0.23948715971901982,
+  "mean|viscous (QM yes)|": 4.961844545460977,
+  "max|n.grad(U).n| (wall-normal stretching)": 0.16369831609442453,
+  "max|tr grad(U)| at wall": 0.2021360999999997,
+  "F_viscous_QMyes": [
+   -6.816650547975957,
+   -0.2641394003639069
+  ],
+  "F_viscous_QMno": [
+   -6.855944610640659,
+   -0.2753628350480077
+  ],
+  "F_viscous_pimple": [
+   -6.816650547975957,
+   -0.26413940036390693
+  ],
+  "F_transpose": [
+   0.03929406266470655,
+   0.011223434684100902
+  ],
+  "F_pressure": [
+   -9.358197801394285,
+   25.799277702255097
+  ]
+ },
+ {
+  "case": "vst-E7-fix-pzg-lin-x4",
+  "faces": 96,
+  "nu": 1.0,
+  "max|tQMyes - tPimple|": 1.831026719408895e-15,
+  "max|tPimple|": 9.684548925300486,
+  "max|transpose part|": 0.1889251786147925,
+  "mean|transpose part|": 0.12301018225640215,
+  "mean|viscous (QM yes)|": 4.982906352814919,
+  "max|n.grad(U).n| (wall-normal stretching)": 0.07460762988767833,
+  "max|tr grad(U)| at wall": 0.10963499999999993,
+  "F_viscous_QMyes": [
+   -6.746526699387214,
+   -0.29828208193403394
+  ],
+  "F_viscous_QMno": [
+   -6.768106844423709,
+   -0.30492962375433363
+  ],
+  "F_viscous_pimple": [
+   -6.746526699387212,
+   -0.29828208193403394
+  ],
+  "F_transpose": [
+   0.021580145036497415,
+   0.006647541820299646
+  ],
+  "F_pressure": [
+   -9.518469892825559,
+   25.888640984145397
+  ]
+ },
+ {
+  "case": "vst-E5-fix-lin-x1",
+  "faces": 24,
+  "nu": 1.0,
+  "max|tQMyes - tPimple|": 1.831026719408895e-15,
+  "max|tPimple|": 9.222141704029443,
+  "max|transpose part|": 0.674161466132171,
+  "mean|transpose part|": 0.4225301631319795,
+  "mean|viscous (QM yes)|": 4.848722954545303,
+  "max|n.grad(U).n| (wall-normal stretching)": 0.208043775256451,
+  "max|tr grad(U)| at wall": 0.5453222000000002,
+  "F_viscous_QMyes": [
+   -6.696130254309854,
+   -0.3460663241444212
+  ],
+  "F_viscous_QMno": [
+   -6.790980892927318,
+   -0.3223400787864571
+  ],
+  "F_viscous_pimple": [
+   -6.696130254309852,
+   -0.3460663241444212
+  ],
+  "F_transpose": [
+   0.09485063861746425,
+   -0.023726245357964255
+  ],
+  "F_pressure": [
+   -8.82945705831051,
+   25.376482420927903
+  ]
+ },
+ {
+  "case": "vst-E5-fix-lin-x2",
+  "faces": 48,
+  "nu": 1.0,
+  "max|tQMyes - tPimple|": 1.790180836524724e-15,
+  "max|tPimple|": 9.587461964529053,
+  "max|transpose part|": 0.3645750498289888,
+  "mean|transpose part|": 0.22536429733366756,
+  "mean|viscous (QM yes)|": 4.954966613567703,
+  "max|n.grad(U).n| (wall-normal stretching)": 0.055851711761382164,
+  "max|tr grad(U)| at wall": 0.34949390000000014,
+  "F_viscous_QMyes": [
+   -6.705516605676355,
+   -0.3209853151083488
+  ],
+  "F_viscous_QMno": [
+   -6.7686923175947395,
+   -0.31131377429994456
+  ],
+  "F_viscous_pimple": [
+   -6.705516605676355,
+   -0.32098531510834893
+  ],
+  "F_transpose": [
+   0.06317571191838492,
+   -0.009671540808403791
+  ],
+  "F_pressure": [
+   -9.306172853493576,
+   25.7891751261139
+  ]
+ },
+ {
+  "case": "vst-E5-fix-lin-x4",
+  "faces": 96,
+  "nu": 1.0,
+  "max|tQMyes - tPimple|": 1.9860273225978185e-15,
+  "max|tPimple|": 9.68426245970116,
+  "max|transpose part|": 0.18718165186563582,
+  "mean|transpose part|": 0.11470506368512201,
+  "mean|viscous (QM yes)|": 4.980142549974954,
+  "max|n.grad(U).n| (wall-normal stretching)": 0.03052969943956383,
+  "max|tr grad(U)| at wall": 0.20429969999999997,
+  "F_viscous_QMyes": [
+   -6.682676107594794,
+   -0.32240151599859584
+  ],
+  "F_viscous_QMno": [
+   -6.718398310882175,
+   -0.3190272288803894
+  ],
+  "F_viscous_pimple": [
+   -6.682676107594794,
+   -0.32240151599859584
+  ],
+  "F_transpose": [
+   0.035722203287379295,
+   -0.003374287118206005
+  ],
+  "F_pressure": [
+   -9.488968670082285,
+   25.8854237055388
+  ]
+ }
+]

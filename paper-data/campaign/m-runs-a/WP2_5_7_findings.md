@@ -49,9 +49,14 @@ and at t = 300 s. Fluid max skewness 0.430/0.488/0.518/0.534 (L1–L4)
 undeformed and the same to 0.1% deformed; max non-orthogonality 42.8 →
 44.4° (L1) up to 54.5 → 54.3° (L4); the solid stays orthogonal. The
 skewness is a property of the fluid mesh, not of the deformation.
-Partitioned: the strict run directories (MS, `0698d55cd`) no longer exist,
-so they were not checked. A head rerun of Aitken strict L1–L4 at the
-recorded Δt would cost about 2 core-hours; not run (decision needed).
+Partitioned (Philip, 23 Oct: rerun): Aitken strict L1–L4 at the head, at
+the recorded Δt 0.5/0.25/0.125/0.0625 s to 200 s (nOuterCorr 20, L4 40 with
+fluid solvers 1e-8 on 4 ranks; job 5379411). u_y reproduces the
+`partitioned_strict` rows to within 0.005% (−0.202499, −0.228841,
+−0.235635, −0.237312). Every mesh passes; fluid max skewness 0.430→0.431,
+0.488→0.491, 0.518→0.521, 0.534→0.535 (undeformed → final), the same as QM;
+max non-orthogonality grows a little more than with the QM mesh motion
+(L2 49.0→51.8°, L3 52.7→55.2°, L4 54.5→55.3°; QM 50.1°, 53.0°, 54.3°).
 
 ## 5b blobInTreacle QM time-step study (x1, t = 1 s)
 
@@ -95,6 +100,11 @@ IQN-ILS residuals, displacement and force monitors.
   README's IQN-ILS Δt 0.01 run (13 min, pre-BDF2, legacy test) is
   therefore not reproduced at the head with the strict test. Stopped and
   reported; not retried with other tolerances or nOuterCorr.
+- **Smaller Δt (Philip, 23 Oct).** IQN-ILS strict, 8 ranks, to 0.2 s:
+  Δt 0.005 s 5.35 coupling iterations per step (max 7), 385 s; Δt 0.0025 s
+  4.65 (max 6). Both complete. For comparison QM: Δt 0.005 s 3.33 Newton
+  (max 5), Δt 0.0025 s 2.91 (max 4). Data in `7a/` (`fsiResiduals_iqn_*`,
+  monitors).
 - The monitored displacements are about 1e-9–1e-8 m in this window and
   depend strongly on Δt (start-up transient), so no accuracy comparison is
   drawn from them.

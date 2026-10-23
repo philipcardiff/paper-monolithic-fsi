@@ -4,6 +4,11 @@ r0-cav-backward-a,uy_underside,-0.201575,-0.201552,"README #597 rerun, level 1, 
 r0-cav-backward-a,Fy,-5.12351,-5.12258,"README #597 rerun, level 1, Euler, 300 s",1.8155e-04,,total force (col 3 of force.dat: total y)
 r0-coll-backward-c,trough_wallMid,-0.19602708,-0.21295614,oomph-lib dt=0.025 (collapsibleChannel_oomph_dt40.csv),-7.9496e-02,,"t=0.4750 s (oomph-lib t=0.4750 s); README monolithic rows are at dt=0.00625 (L1: -0.19619, -9.1%)"
 r0-coll-backward-c,t_trough,0.475,0.475,oomph-lib dt=0.025,0.0000e+00,,
+r0-foil-backward-e,ux_TE_peak_first_0.01s,7.6708e-08,7.7e-08,README (b157ecaf3) quasi-monolithic dt=0.0025,-3.7922e-03,,
+r0-foil-backward-e,uxy_TE_max_abs,4.2992273088335873e-07,,,,,at t=0.925; flapping beyond 0.2 s not in README
+r0-foil-backward-e,ux_TE_final,-2.0467e-10,,,,,t=0.95
+r0-foil-backward-e,uy_TE_final,-1.04198e-07,,,,,t=0.95
+r0-foil-backward-e,Fx_final,3.558756e-06,,,,,t=0.95
 r0-fsi1-backward-a,ux,2.61744716391e-05,,Featflow (driver reference JSON),,,driver |error| vs Featflow 0.1528; README conformal 1x error +0.1530
 r0-fsi1-backward-a,uy,0.000533897594916,,Featflow (driver reference JSON),,,driver |error| vs Featflow 0.3496; README conformal 1x error -0.3500
 r0-fsi1-backward-a,drag,14.231084264880002,,Featflow (driver reference JSON),,,driver |error| vs Featflow 0.0044; README conformal 1x error -0.0044

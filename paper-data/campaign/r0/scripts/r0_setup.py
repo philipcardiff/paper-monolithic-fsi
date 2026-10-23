@@ -126,6 +126,14 @@ def main():
             shutil.copy(HERE / "foilInWind.controlDict.monolithic.b157ecaf3", cd)
             edits.append("system/controlDict.monolithic from b157ecaf3 "
                          "(deltaT 0.0025, endTime 12)")
+        # The project file quota (1e6 inodes, shared) cannot hold 100
+        # retained writes x 128 processor directories: the first attempt
+        # (r0-foil-backward-d) aborted at t = 0.14 s when mkDir failed.
+        # The QoIs come from the function objects, written every step.
+        sub_entry(cd, "writeInterval", "1")
+        sub_entry(cd, "purgeWrite", "2")
+        edits.append("controlDict.monolithic writeInterval 0.01 -> 1, "
+                     "purgeWrite 100 -> 2 (file quota)")
         if args.ranks > 1:
             sub_entry(dst / "system/decomposeParDict.monolithic",
                       "numberOfSubdomains", str(args.ranks))

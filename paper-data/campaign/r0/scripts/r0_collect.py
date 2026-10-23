@@ -93,7 +93,11 @@ def main():
         if s.get("fatal"):
             notes.append("fatal: " + s["fatal"])
         if meta.get("rc") not in (0, None):
-            notes.append(f"Allrun/driver rc {meta.get('rc')}")
+            notes.append(f"Allrun/driver rc {meta.get('rc')}"
+                         + (" (driver check: at least two levels required)"
+                            if key in ("tube", "fsi3", "fsi1") else ""))
+        if key == "fsi3":
+            notes.append("n_steps = coupled steps after couplingStartTime 2 s")
         runs.append({
             "run_id": s["run_id"], "stream": "r0", "case": s.get("case"),
             "study": "R0 runs-at-head", "coupling": "NewtonQuasiMonolithic",

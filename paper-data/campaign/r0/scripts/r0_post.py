@@ -27,6 +27,8 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
+# In the paper repository parse_log.py lives in campaign/scripts
+sys.path.insert(1, str(HERE.parents[3] / "campaign" / "scripts"))
 from parse_log import classify, parse  # noqa: E402
 
 
@@ -282,7 +284,7 @@ def summarise(run, qois=True):
     s["edits"] = setup.get("edits")
     if meta:
         s["peak_mem_gb"] = peak_mem_gb(run, case, meta.get("slurm_job_id"))
-    if qois and s["status"] == "completed":
+    if qois and s["status"] in ("completed", "diverged", "stalled", "timeout"):
         try:
             key = setup.get("key")
             fn = QOI.get(key)

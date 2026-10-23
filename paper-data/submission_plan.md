@@ -163,6 +163,36 @@ partitioned).
    looks for the discrete mismatch. FSI3 4x and 3dTube L3 production runs
    wait for the decision.
 
+## 3b. Transpose viscous term: fix, then rerun (23 October 2026)
+
+`viscousStressTranspose no` leaves a mesh-independent wall offset on
+womersleyTube (phase 4.8e-4 rad at every mesh); `yes` removes it, but on
+blobInTreacle it turns the QM wall divergence into an O(h) spurious wall
+force (`evidence/m-runs-a`: `paper-data/campaign/wp0/vST_diagnostic.md`,
+`paper-data/campaign/m-runs-a/WP1_findings.md`). Agent A is fixing the
+wall/interface evaluation of the term. Philip's decision: then **remove the
+option** and hard-code the term with the corrected wall evaluation
+(solids4foam branch from agent A; PR by the coordinator), together with
+solids4foam#617 (schemes).
+
+Every QM result at the current head is then superseded and rerun on the
+fixed build ("R-fix"); partitioned results are unaffected:
+
+| Case | QM runs to repeat | Who |
+|---|---|---|
+| blobInTreacle | x1/x2/x4 steady (0b/5a), temporal study (5b) | A |
+| womersleyTube | m1/m2/m4 n200, m2 n50–n400 (1e) | A |
+| ringAddedMass | 1a sweep, 1b, 1c, 1d (wall moves; effect expected small at ν = 1e-7) | A |
+| cavityFlexibleBottom | L1–L4 (2a), 2b | A |
+| foilInWind | Δt 0.0025, 0.005, 0.01 (7a) | A |
+| collapsibleChannel | B2 (13109–13111) and the QM arm of 3b | B |
+| ringAddedMass | QM arm of 3a | B |
+| TurekHron2006 FSI3 | QM-AMI 1x check, then 4x (4a), 4e | C |
+| 3dTube | QM L1/L2 (E597 values superseded), L3 (6a), 6e | C |
+
+The QM results recorded so far (E597 and head) remain as the
+"before the fix" record and may be cited for the effect of the fix.
+
 ## 4. Runs (not started)
 
 All runs: the solver branch head at the time of the run (with its commit

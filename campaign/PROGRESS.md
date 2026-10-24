@@ -3,7 +3,7 @@
 Maintained by the coordinator agent. Plan: `paper-fsi-verification/HANDOFF.md`.
 Newest entries first in the log; the status table is always current.
 
-Last updated: 2026-10-23
+Last updated: 2026-10-24
 
 ## Current phase
 
@@ -191,21 +191,32 @@ All 2.00 Newton/step. QoI differences vs S0tight: cav S0/S1 ≤ 1.1e-5
 
 ## Open questions for Philip
 
-From R0 (23 Oct, `paper-data/campaign/r0/findings.md`):
-1. **foilInWind defect** (`paper-data/campaign/r0/issue_foilInWind_processor_point_mismatch.md`):
-   after the mesh-motion solve at t = 0.9525 s, ranks 42 and 116 hold the
-   same processor face ~1e-7 m apart (the flag displacement scale), and
-   OpenFOAM aborts. All Newton solves had converged. Fix in the solver, or
-   first test fewer ranks? (A full run is ~21 h on 128 ranks.)
-2. **FSI3 at 1x:** u_y amplitude −40% and lift amplitude +152% vs Featflow
-   (README has no 1x row). Should R4 include 1x, or start at 2x?
-3. **p201287 file quota** is at 0.92M of 1M files: long runs there must
-   write little (R0 already cut foilInWind writes to once per second).
-4. Merge #602 (foilInWind Δt) and fix the collapsibleChannel helper
-   include path (fails to compile outside the tree) before the
-   consistent-version reruns? Also PR #616 (restart fix) awaits review.
+- p201287 file quota (920k of 1M after archiving my own runs): the large
+  non-campaign directories (`precice-issue587` 276k files,
+  `beam-richter-opus` 210k, `fsi-mesh-motion` 53k) are not mine; archive
+  them? (Not touched without Philip's word.)
+- #618 (merged 24 Oct) makes the viscous stress transpose always on; this
+  replaces the 21 Oct "off by default" decision for all reruns at the new
+  head.
 
 ## Log
+
+- **2026-10-24** Philip's answers to the R0 questions: (1) fix the
+  foilInWind defect: subagent started (branch from the new head, PR to
+  follow); (2) keep FSI3 at the coarsest (1x) mesh in R4; (3) reduce file
+  usage / archive: my own finished runs archived to
+  `/project/home/p201287/philip/qm-archive/` (job 5382521; tar member
+  count checked before deletion): `qm-paper/runs` (B0–B2) and all R0 runs
+  except `r0-foil-backward-e` (kept for the fix). Files 937 507 → 920 355;
+  (4) merge: #602 and #616 merged into `feature-petsc-snes-quasi-monolithic`
+  (755a31b04, a46bcbae7); collapsibleChannel set-up fix as #619
+  (`SOLIDS4FOAM_ROOT` from the environment; `Allrun` stops if
+  `setPoiseuilleFlow` fails). The head also has #617 and #618 (viscous
+  stress transpose always on), so the consistent-version reruns start
+  from the new head. Block with tail: codex asked to prepare a draft PR
+  and find why the tail frequency is ≈ 1.2 Hz instead of ≈ 3 Hz (long runs
+  13168/13169 reached 10 s, oscillation still growing); Philip may use the
+  case in the paper if it agrees with the literature.
 
 - **2026-10-23** B2 fluid level 4 on the head (13110 AMI 640×8, 13111
   conformal 320×8; level 2 AMI 13109 repeats step 2 exactly). Trough

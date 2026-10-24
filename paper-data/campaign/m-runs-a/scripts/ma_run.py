@@ -161,7 +161,8 @@ def definitions2():
     for r in out:
         r["batch"] = 2
     return (out + definitions3() + definitions4()
-            + definitions4(prefix="mafinal", batch=5))
+            + definitions4(prefix="mafinal", batch=5)
+            + definitions4(prefix="mafinal4", batch=6))
 
 
 def definitions4(prefix="mafix", batch=4):

@@ -19,7 +19,13 @@ RID="${FSI3_ID:-mafix-fsi3-1x}"
 D=/project/home/p201136/philip-ma/runs/$RID
 python3 "$QM_ROOT/campaign/scripts/r0_setup.py" fsi3 "$D" --ranks 4 --ddt-u backward > "$D.setup.log" 2>&1 || exit 1
 cd "$D" || exit 1
-# FSI3_LINEAR=1: interpolate(U) linear, as the tutorials on the fix branch
+# r0_setup.py copies the tutorial of $WM_PROJECT_USER_DIR/solids4foam (the
+# fix tree). FSI3_SKEW=1 restores the former skewCorrected interpolation of
+# U (for the code-only comparison with R0); FSI3_LINEAR=1 forces linear
+if [ "${FSI3_SKEW:-0}" = 1 ]; then
+    perl -pi -e 's/^(\s*interpolate\(U\)\s+)linear;/${1}skewCorrected linear;/' system/fluid/fvSchemes.monolithic
+    grep "interpolate(U)" system/fluid/fvSchemes.monolithic
+fi
 if [ "${FSI3_LINEAR:-0}" = 1 ]; then
     perl -pi -e 's/^(\s*interpolate\(U\)\s+)skewCorrected linear;/${1}linear;/' system/fluid/fvSchemes.monolithic
     grep "interpolate(U)" system/fluid/fvSchemes.monolithic

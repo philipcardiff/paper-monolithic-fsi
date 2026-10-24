@@ -82,6 +82,16 @@ def variants(name):
         for lvl in levels:
             out.append(dict(tag="E10-final-lin", level=lvl, vst=None,
                             interp="linear"))
+    if name == "E11":         # review fixes (wedge reflection, eigen reg.)
+        for lvl in levels:
+            out.append(dict(tag="E11-review", level=lvl, vst=None))
+    if name == "E12":         # evaluation on all fixed-velocity boundaries
+        for lvl in levels:
+            out.append(dict(tag="E12-allfv-lin", level=lvl, vst=None,
+                            interp="linear"))
+    if name == "E13":         # cache refactor build (same set-up as E11)
+        for lvl in levels:
+            out.append(dict(tag="E13-cache", level=lvl, vst=None))
     for r in out:
         r.update(id=f"vst-{r['tag']}-x{r['level']}", case="blob", item="vst",
                  dt=DT[r["level"]], end_time=3.0,

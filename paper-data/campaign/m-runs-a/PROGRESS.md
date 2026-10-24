@@ -65,3 +65,8 @@ Cost so far (whole-node allocations on p201136): batch 1 2.1 node-h, smoke 0.2, 
   for 7a. Run `-d` ended with a quota error when writing its metadata.
 - Smoke: ring IQN-ILS strong m2 n25 ω 0.800420 (README 0.80042); 4.23
   iterations/step with the strict test (README legacy 3.86).
+
+## vST fix (23-24 Oct)
+
+- solids4foam PR #618 (fix/newtonIcoFluid-viscous-transpose, head bcf29f8d3, CI green): transpose term always on, in the wall pressure gradient, wall value from a least-squares surface fit of the boundary velocity (decomposition-independent), cached once per residual. Tutorial schemes unchanged (interpolate(U) linear rejected on FSI3 evidence). Details: `../wp0/vST_diagnostic.md`, `PR618_review_checks.md`.
+- All QM results above predate this fix and are to be rerun on it after the merge (coordinator: no further QM production runs until then).

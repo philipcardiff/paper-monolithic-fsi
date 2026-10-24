@@ -1,0 +1,44 @@
+== 3a: run | status pre->post | Newton mean pre->post | omega rel_error pre->post (and value)
+wp3-ram-qm-extended-n100           pass ->pass   2.00-> 2.00   6.1609e-02 ->  6.1614e-02  value change +4.68e-06
+wp3-ram-qm-extended-n12            pass ->pass   2.00-> 2.00  -1.8803e-02 -> -1.8798e-02  value change +4.42e-06
+wp3-ram-qm-extended-n200           pass ->pass   2.00-> 2.00   6.2802e-02 ->  6.2807e-02  value change +4.53e-06
+wp3-ram-qm-extended-n25            pass ->pass   2.00-> 2.00   3.9922e-02 ->  3.9927e-02  value change +4.89e-06
+wp3-ram-qm-extended-n50            pass ->pass   2.00-> 2.00   5.6990e-02 ->  5.6995e-02  value change +4.77e-06
+wp3-ram-qm-moderate-n100           pass ->pass   2.00-> 2.00   6.1637e-02 ->  6.1640e-02  value change +2.35e-06
+wp3-ram-qm-moderate-n12            pass ->pass   2.00-> 2.00  -1.8740e-02 -> -1.8737e-02  value change +2.32e-06
+wp3-ram-qm-moderate-n200           pass ->pass   2.00-> 2.00   6.2822e-02 ->  6.2825e-02  value change +2.29e-06
+wp3-ram-qm-moderate-n25            pass ->pass   2.00-> 2.00   3.9972e-02 ->  3.9975e-02  value change +2.45e-06
+wp3-ram-qm-moderate-n50            pass ->pass   2.00-> 2.00   5.7027e-02 ->  5.7030e-02  value change +2.46e-06
+wp3-ram-qm-strong-n100             pass ->pass   2.00-> 2.00   6.1614e-02 ->  6.1619e-02  value change +4.28e-06
+wp3-ram-qm-strong-n12              pass ->pass   2.00-> 2.00  -1.8784e-02 -> -1.8780e-02  value change +4.03e-06
+wp3-ram-qm-strong-n200             pass ->pass   2.00-> 2.00   6.2806e-02 ->  6.2811e-02  value change +4.17e-06
+wp3-ram-qm-strong-n25              pass ->pass   2.00-> 2.00   3.9932e-02 ->  3.9937e-02  value change +4.48e-06
+wp3-ram-qm-strong-n50              pass ->pass   2.00-> 2.00   5.6997e-02 ->  5.7001e-02  value change +4.39e-06
+wp3-ram-qm-weak-n100               pass ->pass   2.00-> 2.00   6.1653e-02 ->  6.1654e-02  value change +4.25e-07
+wp3-ram-qm-weak-n12                pass ->pass   2.00-> 2.00  -1.8703e-02 -> -1.8703e-02  value change +4.18e-07
+wp3-ram-qm-weak-n200               pass ->pass   2.00-> 2.00   6.2832e-02 ->  6.2832e-02  value change +4.25e-07
+wp3-ram-qm-weak-n25                pass ->pass   2.00-> 2.00   4.0006e-02 ->  4.0006e-02  value change +4.34e-07
+wp3-ram-qm-weak-n50                pass ->pass   2.00-> 2.00   5.7052e-02 ->  5.7052e-02  value change +4.27e-07
+status changes: 0; max relative change of omega: 4.89e-06
+== 3b: run | status pre->post | Newton mean pre->post | trough_wallMid rel_error pre->post (and value)
+wp3-coll-qm-dt0.003125-rho0        pass ->pass   2.07-> 2.04  -6.4128e-03 -> -6.4125e-03  value change +2.33e-07
+wp3-coll-qm-dt0.003125-rho0.01     pass ->pass   2.05-> 2.02              ->              value change +1.17e-06
+wp3-coll-qm-dt0.003125-rho0.1      pass ->pass   2.05-> 2.02              ->              value change +1.54e-06
+wp3-coll-qm-dt0.003125-rho1        pass ->pass   2.02-> 2.04  -6.4597e-03 -> -6.4586e-03  value change +1.07e-06
+wp3-coll-qm-dt0.003125-rho10       pass ->pass   2.03-> 2.02              ->              value change +8.38e-07
+wp3-coll-qm-dt0.00625-rho0         pass ->pass   2.76-> 2.79  -6.9670e-03 -> -6.9675e-03  value change -5.60e-07
+wp3-coll-qm-dt0.00625-rho0.01      pass ->pass   2.79-> 2.79              ->              value change +2.84e-06
+wp3-coll-qm-dt0.00625-rho0.1       pass ->pass   2.78-> 2.83              ->              value change +1.63e-06
+wp3-coll-qm-dt0.00625-rho1         pass ->pass   2.77-> 2.74  -7.1219e-03 -> -7.1203e-03  value change +1.59e-06
+wp3-coll-qm-dt0.00625-rho10        pass ->pass   2.73-> 2.77              ->              value change +4.66e-07
+wp3-coll-qm-dt0.0125-rho0          pass ->pass   3.00-> 2.97  -9.5416e-03 -> -9.5409e-03  value change +6.55e-07
+wp3-coll-qm-dt0.0125-rho0.01       pass ->pass   2.98-> 2.98              ->              value change +4.68e-07
+wp3-coll-qm-dt0.0125-rho0.1        pass ->pass   2.98-> 2.98              ->              value change +8.88e-07
+wp3-coll-qm-dt0.0125-rho1          pass ->pass   2.98-> 3.00  -9.6766e-03 -> -9.6757e-03  value change +8.88e-07
+wp3-coll-qm-dt0.0125-rho10         pass ->pass   2.98-> 3.00              ->              value change +1.31e-06
+wp3-coll-qm-dt0.025-rho0           mesh ->mesh   3.10-> 3.10              ->              value change None
+wp3-coll-qm-dt0.025-rho0.01        mesh ->mesh   3.10-> 3.10              ->              value change None
+wp3-coll-qm-dt0.025-rho0.1         mesh ->mesh   3.10-> 3.10              ->              value change None
+wp3-coll-qm-dt0.025-rho1           mesh ->mesh   3.10-> 3.10              ->              value change None
+wp3-coll-qm-dt0.025-rho10          mesh ->mesh   3.10-> 3.10              ->              value change None
+status changes: 0; max relative change of trough_wallMid: 2.84e-06

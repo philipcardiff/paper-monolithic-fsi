@@ -77,3 +77,22 @@ same set-up, fields written every step; nothing tuned). Files:
 
 RN at ρs/ρf = 0 is now recorded as `n/a` (not applicable: the Robin
 coefficient scales with the wall density), grey marker in the map.
+
+## QM arms rerun on the #618 build (4ae081609 + #617 schemes in the copies)
+
+XenoSim job 13357, 40 runs (`3a/qm618/`, `3b/qm618/`; side-by-side table
+`qm618_comparison.txt`). The maps (`map_3a`, `map_3b`) now show these
+rows; the pre-#618 QM rows stay in `3a/runs.csv` and `3b/runs.csv`,
+marked superseded.
+
+- No status changes: 3a QM passes all 20 cells; 3b QM passes the 15 cells
+  with Δt ≤ 0.0125 and fails `mesh` at t = 0.275 s for all five densities
+  at Δt 0.025, as before.
+- Newton iterations per step unchanged (ring 2.00 everywhere; collapsible
+  2.0–3.0, within ±0.05 of the pre-#618 means).
+- QoIs move by at most 5e-6 relative: ring ω (≤ 4.9e-6), collapsible
+  trough (≤ 2.8e-6). #618 and the #617 scheme alignment do not affect
+  these two cases (inviscid ring; Re = 50 channel, where the transpose
+  term is small). In particular, the ~0.2-point QM–partitioned trough gap
+  in 3b (−0.65% against −0.43% at Δt 0.003125) is not a transpose-term
+  effect.

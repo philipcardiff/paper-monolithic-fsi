@@ -1,0 +1,81 @@
+run_id,qoi,value,reference,reference_source,rel_error,uncertainty_of_reference,notes
+wp3-ram-qm-extended-n100-r618,status,pass,,,,,WP3 failure criterion (README)
+wp3-ram-qm-extended-n100-r618,t_reached,49.548867,,,,,
+wp3-ram-qm-extended-n100-r618,omega,0.26924202,0.2536156983,exact linear (ring_exact_frequencies.py),6.1614e-02,,two periods; first crossing skipped (driver method)
+wp3-ram-qm-extended-n100-r618,loss_per_period,0.0010009,,,,,
+wp3-ram-qm-extended-n12-r618,status,pass,,,,,WP3 failure criterion (README)
+wp3-ram-qm-extended-n12-r618,t_reached,49.548867,,,,,
+wp3-ram-qm-extended-n12-r618,omega,0.24884815,0.2536156983,exact linear (ring_exact_frequencies.py),-1.8798e-02,,two periods; first crossing skipped (driver method)
+wp3-ram-qm-extended-n12-r618,loss_per_period,0.1537,,,,,
+wp3-ram-qm-extended-n200-r618,status,pass,,,,,WP3 failure criterion (README)
+wp3-ram-qm-extended-n200-r618,t_reached,49.548867,,,,,
+wp3-ram-qm-extended-n200-r618,omega,0.26954462,0.2536156983,exact linear (ring_exact_frequencies.py),6.2807e-02,,two periods; first crossing skipped (driver method)
+wp3-ram-qm-extended-n200-r618,loss_per_period,0.00064088,,,,,
+wp3-ram-qm-extended-n25-r618,status,pass,,,,,WP3 failure criterion (README)
+wp3-ram-qm-extended-n25-r618,t_reached,49.548867,,,,,
+wp3-ram-qm-extended-n25-r618,omega,0.26374191,0.2536156983,exact linear (ring_exact_frequencies.py),3.9927e-02,,two periods; first crossing skipped (driver method)
+wp3-ram-qm-extended-n25-r618,loss_per_period,0.026135,,,,,
+wp3-ram-qm-extended-n50-r618,status,pass,,,,,WP3 failure criterion (README)
+wp3-ram-qm-extended-n50-r618,t_reached,49.548867,,,,,
+wp3-ram-qm-extended-n50-r618,omega,0.26807044,0.2536156983,exact linear (ring_exact_frequencies.py),5.6995e-02,,two periods; first crossing skipped (driver method)
+wp3-ram-qm-extended-n50-r618,loss_per_period,0.0040964,,,,,
+wp3-ram-qm-moderate-n100-r618,status,pass,,,,,WP3 failure criterion (README)
+wp3-ram-qm-moderate-n100-r618,t_reached,6.9638564,,,,,
+wp3-ram-qm-moderate-n100-r618,omega,1.9157426,1.804513172,exact linear (ring_exact_frequencies.py),6.1640e-02,,two periods; first crossing skipped (driver method)
+wp3-ram-qm-moderate-n100-r618,loss_per_period,0.00040032,,,,,
+wp3-ram-qm-moderate-n12-r618,status,pass,,,,,WP3 failure criterion (README)
+wp3-ram-qm-moderate-n12-r618,t_reached,6.9638564,,,,,
+wp3-ram-qm-moderate-n12-r618,omega,1.7707013,1.804513172,exact linear (ring_exact_frequencies.py),-1.8737e-02,,two periods; first crossing skipped (driver method)
+wp3-ram-qm-moderate-n12-r618,loss_per_period,0.15327,,,,,
+wp3-ram-qm-moderate-n200-r618,status,pass,,,,,WP3 failure criterion (README)
+wp3-ram-qm-moderate-n200-r618,t_reached,6.9638564,,,,,
+wp3-ram-qm-moderate-n200-r618,omega,1.9178814,1.804513172,exact linear (ring_exact_frequencies.py),6.2825e-02,,two periods; first crossing skipped (driver method)
+wp3-ram-qm-moderate-n200-r618,loss_per_period,1.5709e-05,,,,,
+wp3-ram-qm-moderate-n25-r618,status,pass,,,,,WP3 failure criterion (README)
+wp3-ram-qm-moderate-n25-r618,t_reached,6.9638564,,,,,
+wp3-ram-qm-moderate-n25-r618,omega,1.8766481,1.804513172,exact linear (ring_exact_frequencies.py),3.9975e-02,,two periods; first crossing skipped (driver method)
+wp3-ram-qm-moderate-n25-r618,loss_per_period,0.025598,,,,,
+wp3-ram-qm-moderate-n50-r618,status,pass,,,,,WP3 failure criterion (README)
+wp3-ram-qm-moderate-n50-r618,t_reached,6.9638564,,,,,
+wp3-ram-qm-moderate-n50-r618,omega,1.9074245,1.804513172,exact linear (ring_exact_frequencies.py),5.7030e-02,,two periods; first crossing skipped (driver method)
+wp3-ram-qm-moderate-n50-r618,loss_per_period,0.0035219,,,,,
+wp3-ram-qm-strong-n100-r618,status,pass,,,,,WP3 failure criterion (README)
+wp3-ram-qm-strong-n100-r618,t_reached,16.348529,,,,,
+wp3-ram-qm-strong-n100-r618,omega,0.81601823,0.768654491,exact linear (ring_exact_frequencies.py),6.1619e-02,,two periods; first crossing skipped (driver method)
+wp3-ram-qm-strong-n100-r618,loss_per_period,0.00048327,,,,,
+wp3-ram-qm-strong-n12-r618,status,pass,,,,,WP3 failure criterion (README)
+wp3-ram-qm-strong-n12-r618,t_reached,16.348529,,,,,
+wp3-ram-qm-strong-n12-r618,omega,0.75421882,0.768654491,exact linear (ring_exact_frequencies.py),-1.8780e-02,,two periods; first crossing skipped (driver method)
+wp3-ram-qm-strong-n12-r618,loss_per_period,0.15331,,,,,
+wp3-ram-qm-strong-n200-r618,status,pass,,,,,WP3 failure criterion (README)
+wp3-ram-qm-strong-n200-r618,t_reached,16.348529,,,,,
+wp3-ram-qm-strong-n200-r618,omega,0.81693435,0.768654491,exact linear (ring_exact_frequencies.py),6.2811e-02,,two periods; first crossing skipped (driver method)
+wp3-ram-qm-strong-n200-r618,loss_per_period,0.00011767,,,,,
+wp3-ram-qm-strong-n25-r618,status,pass,,,,,WP3 failure criterion (README)
+wp3-ram-qm-strong-n25-r618,t_reached,16.348529,,,,,
+wp3-ram-qm-strong-n25-r618,omega,0.7993523,0.768654491,exact linear (ring_exact_frequencies.py),3.9937e-02,,two periods; first crossing skipped (driver method)
+wp3-ram-qm-strong-n25-r618,loss_per_period,0.025651,,,,,
+wp3-ram-qm-strong-n50-r618,status,pass,,,,,WP3 failure criterion (README)
+wp3-ram-qm-strong-n50-r618,t_reached,16.348529,,,,,
+wp3-ram-qm-strong-n50-r618,omega,0.81246877,0.768654491,exact linear (ring_exact_frequencies.py),5.7001e-02,,two periods; first crossing skipped (driver method)
+wp3-ram-qm-strong-n50-r618,loss_per_period,0.0035874,,,,,
+wp3-ram-qm-weak-n100-r618,status,pass,,,,,WP3 failure criterion (README)
+wp3-ram-qm-weak-n100-r618,t_reached,5.1594243,,,,,
+wp3-ram-qm-weak-n100-r618,omega,2.58578,2.435614881,exact linear (ring_exact_frequencies.py),6.1654e-02,,two periods; first crossing skipped (driver method)
+wp3-ram-qm-weak-n100-r618,loss_per_period,0.00044942,,,,,
+wp3-ram-qm-weak-n12-r618,status,pass,,,,,WP3 failure criterion (README)
+wp3-ram-qm-weak-n12-r618,t_reached,5.1594243,,,,,
+wp3-ram-qm-weak-n12-r618,omega,2.3900614,2.435614881,exact linear (ring_exact_frequencies.py),-1.8703e-02,,two periods; first crossing skipped (driver method)
+wp3-ram-qm-weak-n12-r618,loss_per_period,0.15333,,,,,
+wp3-ram-qm-weak-n200-r618,status,pass,,,,,WP3 failure criterion (README)
+wp3-ram-qm-weak-n200-r618,t_reached,5.1594243,,,,,
+wp3-ram-qm-weak-n200-r618,omega,2.5886506,2.435614881,exact linear (ring_exact_frequencies.py),6.2832e-02,,two periods; first crossing skipped (driver method)
+wp3-ram-qm-weak-n200-r618,loss_per_period,4.8029e-05,,,,,
+wp3-ram-qm-weak-n25-r618,status,pass,,,,,WP3 failure criterion (README)
+wp3-ram-qm-weak-n25-r618,t_reached,5.1594243,,,,,
+wp3-ram-qm-weak-n25-r618,omega,2.5330546,2.435614881,exact linear (ring_exact_frequencies.py),4.0006e-02,,two periods; first crossing skipped (driver method)
+wp3-ram-qm-weak-n25-r618,loss_per_period,0.02567,,,,,
+wp3-ram-qm-weak-n50-r618,status,pass,,,,,WP3 failure criterion (README)
+wp3-ram-qm-weak-n50-r618,t_reached,5.1594243,,,,,
+wp3-ram-qm-weak-n50-r618,omega,2.5745725,2.435614881,exact linear (ring_exact_frequencies.py),5.7052e-02,,two periods; first crossing skipped (driver method)
+wp3-ram-qm-weak-n50-r618,loss_per_period,0.003587,,,,,

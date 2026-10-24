@@ -155,7 +155,7 @@ wp3-coll-qm-dt0.025-rho1,status,mesh,,,,,WP3 failure criterion (README)
 wp3-coll-qm-dt0.025-rho1,t_reached,0.275,,,,,
 wp3-coll-qm-dt0.025-rho10,status,mesh,,,,,WP3 failure criterion (README)
 wp3-coll-qm-dt0.025-rho10,t_reached,0.275,,,,,
-wp3-coll-rn-dt0.003125-rho0,status,nan,,,,,WP3 failure criterion (README)
+wp3-coll-rn-dt0.003125-rho0,status,n/a,,,,,WP3 failure criterion (README)
 wp3-coll-rn-dt0.003125-rho0,t_reached,0.003125,,,,,
 wp3-coll-rn-dt0.003125-rho0.01,status,cap,,,,,WP3 failure criterion (README)
 wp3-coll-rn-dt0.003125-rho0.01,t_reached,0.003125,,,,,
@@ -168,7 +168,7 @@ wp3-coll-rn-dt0.003125-rho1,trough_wallMid,-0.21506242,-0.21600112,collapsibleCh
 wp3-coll-rn-dt0.003125-rho10,status,pass,,,,,WP3 failure criterion (README)
 wp3-coll-rn-dt0.003125-rho10,t_reached,0.75,,,,,
 wp3-coll-rn-dt0.003125-rho10,trough_wallMid,-0.21513252,,,,,trough at t = 0.47212 s
-wp3-coll-rn-dt0.00625-rho0,status,nan,,,,,WP3 failure criterion (README)
+wp3-coll-rn-dt0.00625-rho0,status,n/a,,,,,WP3 failure criterion (README)
 wp3-coll-rn-dt0.00625-rho0,t_reached,0.00625,,,,,
 wp3-coll-rn-dt0.00625-rho0.01,status,cap,,,,,WP3 failure criterion (README)
 wp3-coll-rn-dt0.00625-rho0.01,t_reached,0.0125,,,,,
@@ -181,7 +181,7 @@ wp3-coll-rn-dt0.00625-rho1,trough_wallMid,-0.21489344,-0.21600112,collapsibleCha
 wp3-coll-rn-dt0.00625-rho10,status,pass,,,,,WP3 failure criterion (README)
 wp3-coll-rn-dt0.00625-rho10,t_reached,0.75,,,,,
 wp3-coll-rn-dt0.00625-rho10,trough_wallMid,-0.21495158,,,,,trough at t = 0.47121 s
-wp3-coll-rn-dt0.0125-rho0,status,nan,,,,,WP3 failure criterion (README)
+wp3-coll-rn-dt0.0125-rho0,status,n/a,,,,,WP3 failure criterion (README)
 wp3-coll-rn-dt0.0125-rho0,t_reached,0.0125,,,,,
 wp3-coll-rn-dt0.0125-rho0.01,status,pass,,,,,WP3 failure criterion (README)
 wp3-coll-rn-dt0.0125-rho0.01,t_reached,0.75,,,,,
@@ -195,7 +195,7 @@ wp3-coll-rn-dt0.0125-rho1,trough_wallMid,-0.21432727,-0.21600112,collapsibleChan
 wp3-coll-rn-dt0.0125-rho10,status,pass,,,,,WP3 failure criterion (README)
 wp3-coll-rn-dt0.0125-rho10,t_reached,0.75,,,,,
 wp3-coll-rn-dt0.0125-rho10,trough_wallMid,-0.21452558,,,,,trough at t = 0.47204 s
-wp3-coll-rn-dt0.025-rho0,status,nan,,,,,WP3 failure criterion (README)
+wp3-coll-rn-dt0.025-rho0,status,n/a,,,,,WP3 failure criterion (README)
 wp3-coll-rn-dt0.025-rho0,t_reached,0.025,,,,,
 wp3-coll-rn-dt0.025-rho0.01,status,cap,,,,,WP3 failure criterion (README)
 wp3-coll-rn-dt0.025-rho0.01,t_reached,0.35,,,,,

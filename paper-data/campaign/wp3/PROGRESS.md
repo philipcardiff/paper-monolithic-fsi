@@ -84,3 +84,7 @@
   (3 tasks; a first submission 13358 reserved 16 CPUs and was cancelled at
   once); B2 QM rows superseded, reruns claimed. RN ρ 0 → `n/a`.
   QM Δt 0.025 failure recurs on #618; mesh diagnosis done (findings.md).
+- QM reruns (13357) done: no status changes, Newton counts unchanged,
+  QoIs within 5e-6 of pre-#618 (findings.md). Maps re-plotted with the
+  #618 QM rows. Registry rerun rows done. B2 reruns (13359): L2 AMI done,
+  L4 conformal running (t = 0.64 s of 1.5 at 22:58).

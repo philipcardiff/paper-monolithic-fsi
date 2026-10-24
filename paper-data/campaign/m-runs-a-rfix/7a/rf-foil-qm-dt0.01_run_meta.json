@@ -1,0 +1,4 @@
+{"run_id": "rf-foil-qm-dt0.01", "coupling": "qm", "dt": 0.01,
+ "ranks": 128, "command": "./Allrun monolithic parallel", "node": "mel0213",
+ "slurm_job_id": "5382221", "exclusive_node": true, "rc": 0,
+ "wall_s": 505.867}

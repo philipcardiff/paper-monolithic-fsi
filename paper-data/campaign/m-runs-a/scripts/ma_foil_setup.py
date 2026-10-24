@@ -36,6 +36,7 @@ def main():
     ap.add_argument("--end", type=float, default=0.2)
     ap.add_argument("--ranks", type=int, default=128)
     ap.add_argument("--qm-root", type=Path, required=True)
+    ap.add_argument("--tutorial-schemes", action="store_true")
     a = ap.parse_args()
     d = a.run_dir
     if d.exists():
@@ -46,9 +47,6 @@ def main():
                         "foil", str(d), "--ranks", str(a.ranks),
                         "--ddt-u", "backward"], check=True)
         cd = d / "system/controlDict.monolithic"
-        sub1(d / "constant/fluid/fluidProperties.monolithic",
-             r"(newtonIcoFluidCoeffs\s*\{\n)",
-             r"\g<1>    viscousStressTranspose no;\n\n")
         schemes = d / "system/fluid/fvSchemes.monolithic"
     else:
         src = a.qm_root / "solids4foam/tutorials/fluidSolidInteraction/foilInWind"
@@ -64,10 +62,12 @@ def main():
         schemes = d / "system/fluid/fvSchemes"
     sub1(cd, r"(^deltaT\s+)[^;]+;", rf"\g<1>{a.dt:g};")
     sub1(cd, r"(^endTime\s+)[^;]+;", rf"\g<1>{a.end:g};")
-    # Same convection entry for both; the cellLimited word never applied a
+    # Same convection entry for both unless the tutorial schemes are used as
+    # they are (R-fix: #617 merged); the cellLimited word never applied a
     # limiter (solids4foam #553)
-    sub1(schemes, r"(^\s*div\(phi,U\)\s+)[^;]+;",
-         r"\g<1>Gauss linearUpwind grad(U);")
+    if not a.tutorial_schemes:
+        sub1(schemes, r"(^\s*div\(phi,U\)\s+)[^;]+;",
+             r"\g<1>Gauss linearUpwind grad(U);")
     print(f"set up {d}")
 
 

@@ -1,0 +1,372 @@
+run_id,qoi,value,reference,reference_source,rel_error,uncertainty_of_reference,notes
+rf-blob-qm-x1,ux_top,0.1163905,0.117231,"WP0 IQN-ILS strict, same level (MS, 85b0c1de6)",-7.1696e-03,,t = 3 s steady top point
+rf-blob-qm-x1,uy_top,-0.014271599,,,,,t = 3 s steady top point
+rf-blob-qm-x1-dt0.03125,ux_top_t1,0.056143587,,,,,t = 1 s top point
+rf-blob-qm-x1-dt0.03125,uy_top_t1,-0.0090221822,,,,,t = 1 s top point
+rf-blob-qm-x1-dt0.0625,ux_top_t1,0.056126565,,,,,t = 1 s top point
+rf-blob-qm-x1-dt0.0625,uy_top_t1,-0.0090169828,,,,,t = 1 s top point
+rf-blob-qm-x1-dt0.125,ux_top_t1,0.055973625,,,,,t = 1 s top point
+rf-blob-qm-x1-dt0.125,uy_top_t1,-0.0090410934,,,,,t = 1 s top point
+rf-blob-qm-x1-dt0.25,ux_top_t1,0.055214284,,,,,t = 1 s top point
+rf-blob-qm-x1-dt0.25,uy_top_t1,-0.0091689048,,,,,t = 1 s top point
+rf-blob-qm-x2,ux_top,0.11922376,0.119691,"WP0 IQN-ILS strict, same level (MS, 85b0c1de6)",-3.9037e-03,,t = 3 s steady top point
+rf-blob-qm-x2,uy_top,-0.014208122,,,,,t = 3 s steady top point
+rf-blob-qm-x4,ux_top,0.11999105,0.120206,"WP0 IQN-ILS strict, same level (MS, 85b0c1de6)",-1.7882e-03,,t = 3 s steady top point
+rf-blob-qm-x4,uy_top,-0.014096352,,,,,t = 3 s steady top point
+rf-cav-qm-L1,uy_monitor,-0.201551,-0.201546,"four_level_partitioned_monolithic.csv monolithic_597 (E597, Euler)",-2.4808e-05,,t = 300 s; spread over last 10% 0.00e+00
+rf-cav-qm-L1,fy_interface,-5.122626,,,,,spread 0.00e+00
+rf-cav-qm-L1,t_steady_0.001,138,,,,,"last time |uy - uy_final| > 0.001 |uy_final|; 276 steps, 611 Newton iterations"
+rf-cav-qm-L1,t_steady_0.0001,166,,,,,"last time |uy - uy_final| > 0.0001 |uy_final|; 332 steps, 717 Newton iterations"
+rf-cav-qm-L2,uy_monitor,-0.228439,-0.228468,"four_level_partitioned_monolithic.csv monolithic_597 (E597, Euler)",1.2693e-04,,t = 300 s; spread over last 10% 0.00e+00
+rf-cav-qm-L2,fy_interface,-5.226559,,,,,spread 1.91e-07
+rf-cav-qm-L2,t_steady_0.001,124,,,,,"last time |uy - uy_final| > 0.001 |uy_final|; 248 steps, 546 Newton iterations"
+rf-cav-qm-L2,t_steady_0.0001,167.5,,,,,"last time |uy - uy_final| > 0.0001 |uy_final|; 335 steps, 707 Newton iterations"
+rf-cav-qm-L2-interplinear,uy_monitor,-0.228692,-0.228468,"four_level_partitioned_monolithic.csv monolithic_597 (E597, Euler)",-9.8044e-04,,t = 300 s; spread over last 10% 0.00e+00
+rf-cav-qm-L2-interplinear,fy_interface,-5.234352,,,,,spread 1.91e-07
+rf-cav-qm-L2-interplinear,t_steady_0.001,124,,,,,"last time |uy - uy_final| > 0.001 |uy_final|; 248 steps, 548 Newton iterations"
+rf-cav-qm-L2-interplinear,t_steady_0.0001,167.5,,,,,"last time |uy - uy_final| > 0.0001 |uy_final|; 335 steps, 709 Newton iterations"
+rf-cav-qm-L3,uy_monitor,-0.235436,-0.235448,"four_level_partitioned_monolithic.csv monolithic_597 (E597, Euler)",5.0967e-05,,t = 300 s; spread over last 10% 0.00e+00
+rf-cav-qm-L3,fy_interface,-5.250356,,,,,spread 0.00e+00
+rf-cav-qm-L3,t_steady_0.001,124,,,,,"last time |uy - uy_final| > 0.001 |uy_final|; 248 steps, 543 Newton iterations"
+rf-cav-qm-L3,t_steady_0.0001,167.5,,,,,"last time |uy - uy_final| > 0.0001 |uy_final|; 335 steps, 705 Newton iterations"
+rf-cav-qm-L3-interplinear,uy_monitor,-0.235634,-0.235448,"four_level_partitioned_monolithic.csv monolithic_597 (E597, Euler)",-7.8998e-04,,t = 300 s; spread over last 10% 4.24e-06
+rf-cav-qm-L3-interplinear,fy_interface,-5.256422,,,,,spread 0.00e+00
+rf-cav-qm-L3-interplinear,t_steady_0.001,124,,,,,"last time |uy - uy_final| > 0.001 |uy_final|; 248 steps, 543 Newton iterations"
+rf-cav-qm-L3-interplinear,t_steady_0.0001,167.5,,,,,"last time |uy - uy_final| > 0.0001 |uy_final|; 335 steps, 705 Newton iterations"
+rf-cav-qm-L4,uy_monitor,-0.237183,-0.237187,"four_level_partitioned_monolithic.csv monolithic_597 (E597, Euler)",1.6864e-05,,t = 300 s; spread over last 10% 0.00e+00
+rf-cav-qm-L4,fy_interface,-5.255992,,,,,spread 1.90e-07
+rf-cav-qm-L4,t_steady_0.001,124,,,,,"last time |uy - uy_final| > 0.001 |uy_final|; 248 steps, 548 Newton iterations"
+rf-cav-qm-L4,t_steady_0.0001,167.5,,,,,"last time |uy - uy_final| > 0.0001 |uy_final|; 335 steps, 710 Newton iterations"
+rf-ram-dry-m1-n100,omega,3.0828986,2.5550422,exact linear solution (ring_exact_frequencies.py),2.065940e-01,,
+rf-ram-dry-m1-n100,loss_per_period,6.796371e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-dry-m1-n100-nc32,omega,3.3296887,2.5550422,exact linear solution (ring_exact_frequencies.py),3.031834e-01,,
+rf-ram-dry-m1-n100-nc32,loss_per_period,8.554090e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-dry-m1-n100-nc72,omega,2.9664878,2.5550422,exact linear solution (ring_exact_frequencies.py),1.610328e-01,,
+rf-ram-dry-m1-n100-nc72,loss_per_period,6.057460e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-dry-m1-n200,omega,3.0873112,2.5550422,exact linear solution (ring_exact_frequencies.py),2.083210e-01,,
+rf-ram-dry-m1-n200,loss_per_period,8.577583e-05,,,,,amplitude loss per period (exact 0)
+rf-ram-dry-m1-n25,omega,3.00364,2.5550422,exact linear solution (ring_exact_frequencies.py),1.755735e-01,,
+rf-ram-dry-m1-n25,loss_per_period,3.618093e-02,,,,,amplitude loss per period (exact 0)
+rf-ram-dry-m1-n50,omega,3.0657396,2.5550422,exact linear solution (ring_exact_frequencies.py),1.998783e-01,,
+rf-ram-dry-m1-n50,loss_per_period,5.232724e-03,,,,,amplitude loss per period (exact 0)
+rf-ram-dry-m2-n100,omega,2.712577,2.5550422,exact linear solution (ring_exact_frequencies.py),6.165644e-02,,
+rf-ram-dry-m2-n100,loss_per_period,4.637084e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-dry-m2-n100-nc144,omega,2.6797593,2.5550422,exact linear solution (ring_exact_frequencies.py),4.881216e-02,,
+rf-ram-dry-m2-n100-nc144,loss_per_period,4.472302e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-dry-m2-n100-nc64,omega,2.7849902,2.5550422,exact linear solution (ring_exact_frequencies.py),8.999775e-02,,
+rf-ram-dry-m2-n100-nc64,loss_per_period,5.015788e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-dry-m2-n200,omega,2.715584,2.5550422,exact linear solution (ring_exact_frequencies.py),6.283334e-02,,
+rf-ram-dry-m2-n200,loss_per_period,5.839767e-05,,,,,amplitude loss per period (exact 0)
+rf-ram-dry-m2-n25,omega,2.657279,2.5550422,exact linear solution (ring_exact_frequencies.py),4.001373e-02,,
+rf-ram-dry-m2-n25,loss_per_period,2.568903e-02,,,,,amplitude loss per period (exact 0)
+rf-ram-dry-m2-n50,omega,2.7008015,2.5550422,exact linear solution (ring_exact_frequencies.py),5.704772e-02,,
+rf-ram-dry-m2-n50,loss_per_period,3.602204e-03,,,,,amplitude loss per period (exact 0)
+rf-ram-dry-m4-n100,omega,2.5952849,2.5550422,exact linear solution (ring_exact_frequencies.py),1.575030e-02,,
+rf-ram-dry-m4-n100,loss_per_period,4.063054e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-dry-m4-n100-nc128,omega,2.6144221,2.5550422,exact linear solution (ring_exact_frequencies.py),2.324028e-02,,
+rf-ram-dry-m4-n100-nc128,loss_per_period,4.154984e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-dry-m4-n100-nc288,omega,2.5867348,2.5550422,exact linear solution (ring_exact_frequencies.py),1.240393e-02,,
+rf-ram-dry-m4-n100-nc288,loss_per_period,4.023180e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-dry-m4-n200,omega,2.5979201,2.5550422,exact linear solution (ring_exact_frequencies.py),1.678169e-02,,
+rf-ram-dry-m4-n200,loss_per_period,5.114296e-05,,,,,amplitude loss per period (exact 0)
+rf-ram-dry-m4-n25,omega,2.5465768,2.5550422,exact linear solution (ring_exact_frequencies.py),-3.313222e-03,,
+rf-ram-dry-m4-n25,loss_per_period,2.277153e-02,,,,,amplitude loss per period (exact 0)
+rf-ram-dry-m4-n50,omega,2.5849564,2.5550422,exact linear solution (ring_exact_frequencies.py),1.170792e-02,,
+rf-ram-dry-m4-n50,loss_per_period,3.163464e-03,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-moderate-m1-n100,omega,2.1769698,1.8045132,exact linear solution (ring_exact_frequencies.py),2.064028e-01,,
+rf-ram-qm-moderate-m1-n100,loss_per_period,2.308998e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-moderate-m1-n100,wet_dry_ratio,0.70614384,0.70625572,exact linear solution (ring_exact_frequencies.py),-1.584201e-04,,dry: rf-ram-dry-m1-n100 (standard solid)
+rf-ram-qm-moderate-m1-n100-nc32-cons,omega,2.3516588,1.8045132,exact linear solution (ring_exact_frequencies.py),3.032095e-01,,
+rf-ram-qm-moderate-m1-n100-nc32-cons,loss_per_period,3.957758e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-moderate-m1-n100-nc32-cons,wet_dry_ratio,0.70626986,0.70625572,exact linear solution (ring_exact_frequencies.py),2.001418e-05,,dry: rf-ram-dry-m1-n100-nc32 (standard solid)
+rf-ram-qm-moderate-m1-n100-nc32-interp,omega,2.3516915,1.8045132,exact linear solution (ring_exact_frequencies.py),3.032277e-01,,
+rf-ram-qm-moderate-m1-n100-nc32-interp,loss_per_period,3.957774e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-moderate-m1-n100-nc32-interp,wet_dry_ratio,0.70627969,0.70625572,exact linear solution (ring_exact_frequencies.py),3.393919e-05,,dry: rf-ram-dry-m1-n100-nc32 (standard solid)
+rf-ram-qm-moderate-m1-n100-nc72-cons,omega,2.0949785,1.8045132,exact linear solution (ring_exact_frequencies.py),1.609660e-01,,
+rf-ram-qm-moderate-m1-n100-nc72-cons,loss_per_period,1.643386e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-moderate-m1-n100-nc72-cons,wet_dry_ratio,0.70621512,0.70625572,exact linear solution (ring_exact_frequencies.py),-5.749168e-05,,dry: rf-ram-dry-m1-n100-nc72 (standard solid)
+rf-ram-qm-moderate-m1-n100-nc72-interp,omega,2.0949656,1.8045132,exact linear solution (ring_exact_frequencies.py),1.609589e-01,,
+rf-ram-qm-moderate-m1-n100-nc72-interp,loss_per_period,1.643260e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-moderate-m1-n100-nc72-interp,wet_dry_ratio,0.70621076,0.70625572,exact linear solution (ring_exact_frequencies.py),-6.365981e-05,,dry: rf-ram-dry-m1-n100-nc72 (standard solid)
+rf-ram-qm-moderate-m1-n100-pzg,omega,2.1733374,1.8045132,exact linear solution (ring_exact_frequencies.py),2.043899e-01,,
+rf-ram-qm-moderate-m1-n100-pzg,loss_per_period,1.366469e-02,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-moderate-m1-n100-pzg,wet_dry_ratio,0.7049656,0.70625572,exact linear solution (ring_exact_frequencies.py),-1.826713e-03,,dry: rf-ram-dry-m1-n100 (standard solid)
+rf-ram-qm-moderate-m1-n200,omega,2.1801535,1.8045132,exact linear solution (ring_exact_frequencies.py),2.081671e-01,,
+rf-ram-qm-moderate-m1-n200,loss_per_period,-2.567058e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-moderate-m1-n200,wet_dry_ratio,0.70616579,0.70625572,exact linear solution (ring_exact_frequencies.py),-1.273403e-04,,dry: rf-ram-dry-m1-n200 (standard solid)
+rf-ram-qm-moderate-m1-n25,omega,2.1208337,1.8045132,exact linear solution (ring_exact_frequencies.py),1.752941e-01,,
+rf-ram-qm-moderate-m1-n25,loss_per_period,3.565772e-02,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-moderate-m1-n25,wet_dry_ratio,0.70608786,0.70625572,exact linear solution (ring_exact_frequencies.py),-2.376800e-04,,dry: rf-ram-dry-m1-n25 (standard solid)
+rf-ram-qm-moderate-m1-n50,omega,2.1647669,1.8045132,exact linear solution (ring_exact_frequencies.py),1.996404e-01,,
+rf-ram-qm-moderate-m1-n50,loss_per_period,4.715659e-03,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-moderate-m1-n50,wet_dry_ratio,0.7061157,0.70625572,exact linear solution (ring_exact_frequencies.py),-1.982656e-04,,dry: rf-ram-dry-m1-n50 (standard solid)
+rf-ram-qm-moderate-m2-n100,omega,1.9157431,1.8045132,exact linear solution (ring_exact_frequencies.py),6.163986e-02,,
+rf-ram-qm-moderate-m2-n100,loss_per_period,4.007290e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-moderate-m2-n100,wet_dry_ratio,0.7062447,0.70625572,exact linear solution (ring_exact_frequencies.py),-1.561330e-05,,dry: rf-ram-dry-m2-n100 (standard solid)
+rf-ram-qm-moderate-m2-n100-nc144-cons,omega,1.8926123,1.8045132,exact linear solution (ring_exact_frequencies.py),4.882155e-02,,
+rf-ram-qm-moderate-m2-n100-nc144-cons,loss_per_period,3.854763e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-moderate-m2-n100-nc144-cons,wet_dry_ratio,0.70626205,0.70625572,exact linear solution (ring_exact_frequencies.py),8.956013e-06,,dry: rf-ram-dry-m2-n100-nc144 (standard solid)
+rf-ram-qm-moderate-m2-n100-nc144-interp,omega,1.8926094,1.8045132,exact linear solution (ring_exact_frequencies.py),4.881994e-02,,
+rf-ram-qm-moderate-m2-n100-nc144-interp,loss_per_period,3.854321e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-moderate-m2-n100-nc144-interp,wet_dry_ratio,0.70626096,0.70625572,exact linear solution (ring_exact_frequencies.py),7.414845e-06,,dry: rf-ram-dry-m2-n100-nc144 (standard solid)
+rf-ram-qm-moderate-m2-n100-nc64-cons,omega,1.966975,1.8045132,exact linear solution (ring_exact_frequencies.py),9.003083e-02,,
+rf-ram-qm-moderate-m2-n100-nc64-cons,loss_per_period,4.365213e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-moderate-m2-n100-nc64-cons,wet_dry_ratio,0.70627716,0.70625572,exact linear solution (ring_exact_frequencies.py),3.035368e-05,,dry: rf-ram-dry-m2-n100-nc64 (standard solid)
+rf-ram-qm-moderate-m2-n100-nc64-interp,omega,1.9669819,1.8045132,exact linear solution (ring_exact_frequencies.py),9.003464e-02,,
+rf-ram-qm-moderate-m2-n100-nc64-interp,loss_per_period,4.365279e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-moderate-m2-n100-nc64-interp,wet_dry_ratio,0.70627963,0.70625572,exact linear solution (ring_exact_frequencies.py),3.384758e-05,,dry: rf-ram-dry-m2-n100-nc64 (standard solid)
+rf-ram-qm-moderate-m2-n100-pzg,omega,1.9136816,1.8045132,exact linear solution (ring_exact_frequencies.py),6.049744e-02,,
+rf-ram-qm-moderate-m2-n100-pzg,loss_per_period,7.100004e-03,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-moderate-m2-n100-pzg,wet_dry_ratio,0.70548471,0.70625572,exact linear solution (ring_exact_frequencies.py),-1.091684e-03,,dry: rf-ram-dry-m2-n100 (standard solid)
+rf-ram-qm-moderate-m2-n100-tight,omega,1.9157431,1.8045132,exact linear solution (ring_exact_frequencies.py),6.163986e-02,,
+rf-ram-qm-moderate-m2-n100-tight,loss_per_period,4.007352e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-moderate-m2-n100-tight,wet_dry_ratio,0.70624469,0.70625572,exact linear solution (ring_exact_frequencies.py),-1.561691e-05,,dry: rf-ram-dry-m2-n100 (standard solid)
+rf-ram-qm-moderate-m2-n200,omega,1.9178815,1.8045132,exact linear solution (ring_exact_frequencies.py),6.282488e-02,,
+rf-ram-qm-moderate-m2-n200,loss_per_period,1.709680e-05,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-moderate-m2-n200,wet_dry_ratio,0.7062501,0.70625572,exact linear solution (ring_exact_frequencies.py),-7.960682e-06,,dry: rf-ram-dry-m2-n200 (standard solid)
+rf-ram-qm-moderate-m2-n25,omega,1.8766556,1.8045132,exact linear solution (ring_exact_frequencies.py),3.997886e-02,,
+rf-ram-qm-moderate-m2-n25,loss_per_period,2.560037e-02,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-moderate-m2-n25,wet_dry_ratio,0.70623204,0.70625572,exact linear solution (ring_exact_frequencies.py),-3.352864e-05,,dry: rf-ram-dry-m2-n25 (standard solid)
+rf-ram-qm-moderate-m2-n50,omega,1.9074084,1.8045132,exact linear solution (ring_exact_frequencies.py),5.702106e-02,,
+rf-ram-qm-moderate-m2-n50,loss_per_period,3.520192e-03,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-moderate-m2-n50,wet_dry_ratio,0.70623791,0.70625572,exact linear solution (ring_exact_frequencies.py),-2.522055e-05,,dry: rf-ram-dry-m2-n50 (standard solid)
+rf-ram-qm-moderate-m4-n100,omega,1.8329331,1.8045132,exact linear solution (ring_exact_frequencies.py),1.574935e-02,,
+rf-ram-qm-moderate-m4-n100,loss_per_period,4.917188e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-moderate-m4-n100,wet_dry_ratio,0.70625506,0.70625572,exact linear solution (ring_exact_frequencies.py),-9.367912e-07,,dry: rf-ram-dry-m4-n100 (standard solid)
+rf-ram-qm-moderate-m4-n100-nc128-cons,omega,1.8464703,1.8045132,exact linear solution (ring_exact_frequencies.py),2.325124e-02,,
+rf-ram-qm-moderate-m4-n100-nc128-cons,loss_per_period,5.000322e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-moderate-m4-n100-nc128-cons,wet_dry_ratio,0.70626329,0.70625572,exact linear solution (ring_exact_frequencies.py),1.071039e-05,,dry: rf-ram-dry-m4-n100-nc128 (standard solid)
+rf-ram-qm-moderate-m4-n100-nc128-interp,omega,1.846472,1.8045132,exact linear solution (ring_exact_frequencies.py),2.325214e-02,,
+rf-ram-qm-moderate-m4-n100-nc128-interp,loss_per_period,5.000112e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-moderate-m4-n100-nc128-interp,wet_dry_ratio,0.70626391,0.70625572,exact linear solution (ring_exact_frequencies.py),1.158998e-05,,dry: rf-ram-dry-m4-n100-nc128 (standard solid)
+rf-ram-qm-moderate-m4-n100-nc288-cons,omega,1.8269056,1.8045132,exact linear solution (ring_exact_frequencies.py),1.240914e-02,,
+rf-ram-qm-moderate-m4-n100-nc288-cons,loss_per_period,4.881855e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-moderate-m4-n100-nc288-cons,wet_dry_ratio,0.70625935,0.70625572,exact linear solution (ring_exact_frequencies.py),5.141496e-06,,dry: rf-ram-dry-m4-n100-nc288 (standard solid)
+rf-ram-qm-moderate-m4-n100-nc288-interp,omega,1.8269049,1.8045132,exact linear solution (ring_exact_frequencies.py),1.240875e-02,,
+rf-ram-qm-moderate-m4-n100-nc288-interp,loss_per_period,4.881634e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-moderate-m4-n100-nc288-interp,wet_dry_ratio,0.70625909,0.70625572,exact linear solution (ring_exact_frequencies.py),4.761929e-06,,dry: rf-ram-dry-m4-n100-nc288 (standard solid)
+rf-ram-qm-moderate-m4-n100-pzg,omega,1.8318501,1.8045132,exact linear solution (ring_exact_frequencies.py),1.514917e-02,,
+rf-ram-qm-moderate-m4-n100-pzg,loss_per_period,3.845846e-03,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-moderate-m4-n100-pzg,wet_dry_ratio,0.70583776,0.70625572,exact linear solution (ring_exact_frequencies.py),-5.918033e-04,,dry: rf-ram-dry-m4-n100 (standard solid)
+rf-ram-qm-moderate-m4-n200,omega,1.8347977,1.8045132,exact linear solution (ring_exact_frequencies.py),1.678267e-02,,
+rf-ram-qm-moderate-m4-n200,loss_per_period,1.424174e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-moderate-m4-n200,wet_dry_ratio,0.70625641,0.70625572,exact linear solution (ring_exact_frequencies.py),9.698171e-07,,dry: rf-ram-dry-m4-n200 (standard solid)
+rf-ram-qm-moderate-m4-n25,omega,1.7985288,1.8045132,exact linear solution (ring_exact_frequencies.py),-3.316359e-03,,
+rf-ram-qm-moderate-m4-n25,loss_per_period,2.284334e-02,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-moderate-m4-n25,wet_dry_ratio,0.7062535,0.70625572,exact linear solution (ring_exact_frequencies.py),-3.147861e-06,,dry: rf-ram-dry-m4-n25 (standard solid)
+rf-ram-qm-moderate-m4-n50,omega,1.825634,1.8045132,exact linear solution (ring_exact_frequencies.py),1.170445e-02,,
+rf-ram-qm-moderate-m4-n50,loss_per_period,3.242852e-03,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-moderate-m4-n50,wet_dry_ratio,0.7062533,0.70625572,exact linear solution (ring_exact_frequencies.py),-3.429383e-06,,dry: rf-ram-dry-m4-n50 (standard solid)
+rf-ram-qm-strong-m1-n100,omega,0.92716455,0.76865449,exact linear solution (ring_exact_frequencies.py),2.062176e-01,,
+rf-ram-qm-strong-m1-n100,loss_per_period,-7.632704e-05,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-strong-m1-n100,wet_dry_ratio,0.30074442,0.30083828,exact linear solution (ring_exact_frequencies.py),-3.119784e-04,,dry: rf-ram-dry-m1-n100 (standard solid)
+rf-ram-qm-strong-m1-n100-nc32-cons,omega,1.0016978,0.76865449,exact linear solution (ring_exact_frequencies.py),3.031834e-01,,
+rf-ram-qm-strong-m1-n100-nc32-cons,loss_per_period,7.509565e-05,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-strong-m1-n100-nc32-cons,wet_dry_ratio,0.30083826,0.30083828,exact linear solution (ring_exact_frequencies.py),-4.164971e-08,,dry: rf-ram-dry-m1-n100-nc32 (standard solid)
+rf-ram-qm-strong-m1-n100-nc32-interp,omega,1.0017231,0.76865449,exact linear solution (ring_exact_frequencies.py),3.032163e-01,,
+rf-ram-qm-strong-m1-n100-nc32-interp,loss_per_period,7.511022e-05,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-strong-m1-n100-nc32-interp,wet_dry_ratio,0.30084586,0.30083828,exact linear solution (ring_exact_frequencies.py),2.521821e-05,,dry: rf-ram-dry-m1-n100-nc32 (standard solid)
+rf-ram-qm-strong-m1-n100-nc72-cons,omega,0.8923229,0.76865449,exact linear solution (ring_exact_frequencies.py),1.608895e-01,,
+rf-ram-qm-strong-m1-n100-nc72-cons,loss_per_period,-1.347625e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-strong-m1-n100-nc72-cons,wet_dry_ratio,0.30080114,0.30083828,exact linear solution (ring_exact_frequencies.py),-1.234473e-04,,dry: rf-ram-dry-m1-n100-nc72 (standard solid)
+rf-ram-qm-strong-m1-n100-nc72-interp,omega,0.89231289,0.76865449,exact linear solution (ring_exact_frequencies.py),1.608764e-01,,
+rf-ram-qm-strong-m1-n100-nc72-interp,loss_per_period,-1.347824e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-strong-m1-n100-nc72-interp,wet_dry_ratio,0.30079777,0.30083828,exact linear solution (ring_exact_frequencies.py),-1.346606e-04,,dry: rf-ram-dry-m1-n100-nc72 (standard solid)
+rf-ram-qm-strong-m1-n100-pzg,omega,0.92435007,0.76865449,exact linear solution (ring_exact_frequencies.py),2.025560e-01,,
+rf-ram-qm-strong-m1-n100-pzg,loss_per_period,2.411763e-02,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-strong-m1-n100-pzg,wet_dry_ratio,0.29983149,0.30083828,exact linear solution (ring_exact_frequencies.py),-3.346605e-03,,dry: rf-ram-dry-m1-n100 (standard solid)
+rf-ram-qm-strong-m1-n200,omega,0.92854389,0.76865449,exact linear solution (ring_exact_frequencies.py),2.080120e-01,,
+rf-ram-qm-strong-m1-n200,loss_per_period,-4.768005e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-strong-m1-n200,wet_dry_ratio,0.30076135,0.30083828,exact linear solution (ring_exact_frequencies.py),-2.556968e-04,,dry: rf-ram-dry-m1-n200 (standard solid)
+rf-ram-qm-strong-m1-n25,omega,0.90319936,0.76865449,exact linear solution (ring_exact_frequencies.py),1.750395e-01,,
+rf-ram-qm-strong-m1-n25,loss_per_period,3.528710e-02,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-strong-m1-n25,wet_dry_ratio,0.3007016,0.30083828,exact linear solution (ring_exact_frequencies.py),-4.543148e-04,,dry: rf-ram-dry-m1-n25 (standard solid)
+rf-ram-qm-strong-m1-n50,omega,0.92193772,0.76865449,exact linear solution (ring_exact_frequencies.py),1.994176e-01,,
+rf-ram-qm-strong-m1-n50,loss_per_period,4.351561e-03,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-strong-m1-n50,wet_dry_ratio,0.30072277,0.30083828,exact linear solution (ring_exact_frequencies.py),-3.839339e-04,,dry: rf-ram-dry-m1-n50 (standard solid)
+rf-ram-qm-strong-m2-n100,omega,0.81601842,0.76865449,exact linear solution (ring_exact_frequencies.py),6.161927e-02,,
+rf-ram-qm-strong-m2-n100,loss_per_period,4.831997e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-strong-m2-n100,wet_dry_ratio,0.30082774,0.30083828,exact linear solution (ring_exact_frequencies.py),-3.501241e-05,,dry: rf-ram-dry-m2-n100 (standard solid)
+rf-ram-qm-strong-m2-n100-nc144-cons,omega,0.80618299,0.76865449,exact linear solution (ring_exact_frequencies.py),4.882363e-02,,
+rf-ram-qm-strong-m2-n100-nc144-cons,loss_per_period,4.705559e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-strong-m2-n100-nc144-cons,wet_dry_ratio,0.30084157,0.30083828,exact linear solution (ring_exact_frequencies.py),1.093764e-05,,dry: rf-ram-dry-m2-n100-nc144 (standard solid)
+rf-ram-qm-strong-m2-n100-nc144-interp,omega,0.80618073,0.76865449,exact linear solution (ring_exact_frequencies.py),4.882069e-02,,
+rf-ram-qm-strong-m2-n100-nc144-interp,loss_per_period,4.705240e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-strong-m2-n100-nc144-interp,wet_dry_ratio,0.30084072,0.30083828,exact linear solution (ring_exact_frequencies.py),8.130469e-06,,dry: rf-ram-dry-m2-n100-nc144 (standard solid)
+rf-ram-qm-strong-m2-n100-nc64-cons,omega,0.83786988,0.76865449,exact linear solution (ring_exact_frequencies.py),9.004746e-02,,
+rf-ram-qm-strong-m2-n100-nc64-cons,loss_per_period,5.136902e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-strong-m2-n100-nc64-cons,wet_dry_ratio,0.300852,0.30083828,exact linear solution (ring_exact_frequencies.py),4.561000e-05,,dry: rf-ram-dry-m2-n100-nc64 (standard solid)
+rf-ram-qm-strong-m2-n100-nc64-interp,omega,0.83787518,0.76865449,exact linear solution (ring_exact_frequencies.py),9.005436e-02,,
+rf-ram-qm-strong-m2-n100-nc64-interp,loss_per_period,5.137060e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-strong-m2-n100-nc64-interp,wet_dry_ratio,0.3008539,0.30083828,exact linear solution (ring_exact_frequencies.py),5.194008e-05,,dry: rf-ram-dry-m2-n100-nc64 (standard solid)
+rf-ram-qm-strong-m2-n100-pzg,omega,0.81442389,0.76865449,exact linear solution (ring_exact_frequencies.py),5.954483e-02,,
+rf-ram-qm-strong-m2-n100-pzg,loss_per_period,1.258883e-02,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-strong-m2-n100-pzg,wet_dry_ratio,0.30023992,0.30083828,exact linear solution (ring_exact_frequencies.py),-1.988974e-03,,dry: rf-ram-dry-m2-n100 (standard solid)
+rf-ram-qm-strong-m2-n100-tight,omega,0.81601842,0.76865449,exact linear solution (ring_exact_frequencies.py),6.161926e-02,,
+rf-ram-qm-strong-m2-n100-tight,loss_per_period,4.831875e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-strong-m2-n100-tight,wet_dry_ratio,0.30082774,0.30083828,exact linear solution (ring_exact_frequencies.py),-3.501382e-05,,dry: rf-ram-dry-m2-n100 (standard solid)
+rf-ram-qm-strong-m2-n200,omega,0.81693439,0.76865449,exact linear solution (ring_exact_frequencies.py),6.281093e-02,,
+rf-ram-qm-strong-m2-n200,loss_per_period,1.177780e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-strong-m2-n200,wet_dry_ratio,0.30083193,0.30083828,exact linear solution (ring_exact_frequencies.py),-2.108775e-05,,dry: rf-ram-dry-m2-n200 (standard solid)
+rf-ram-qm-strong-m2-n25,omega,0.79935556,0.76865449,exact linear solution (ring_exact_frequencies.py),3.994132e-02,,
+rf-ram-qm-strong-m2-n25,loss_per_period,2.565179e-02,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-strong-m2-n25,wet_dry_ratio,0.30081733,0.30083828,exact linear solution (ring_exact_frequencies.py),-6.962668e-05,,dry: rf-ram-dry-m2-n25 (standard solid)
+rf-ram-qm-strong-m2-n50,omega,0.81246194,0.76865449,exact linear solution (ring_exact_frequencies.py),5.699238e-02,,
+rf-ram-qm-strong-m2-n50,loss_per_period,3.585288e-03,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-strong-m2-n50,wet_dry_ratio,0.30082253,0.30083828,exact linear solution (ring_exact_frequencies.py),-5.235208e-05,,dry: rf-ram-dry-m2-n50 (standard solid)
+rf-ram-qm-strong-m4-n100,omega,0.78075825,0.76865449,exact linear solution (ring_exact_frequencies.py),1.574668e-02,,
+rf-ram-qm-strong-m4-n100,loss_per_period,8.417187e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-strong-m4-n100,wet_dry_ratio,0.30083721,0.30083828,exact linear solution (ring_exact_frequencies.py),-3.557854e-06,,dry: rf-ram-dry-m4-n100 (standard solid)
+rf-ram-qm-strong-m4-n100-nc128-cons,omega,0.7865315,0.76865449,exact linear solution (ring_exact_frequencies.py),2.325754e-02,,
+rf-ram-qm-strong-m4-n100-nc128-cons,loss_per_period,8.472509e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-strong-m4-n100-nc128-cons,wet_dry_ratio,0.30084335,0.30083828,exact linear solution (ring_exact_frequencies.py),1.686089e-05,,dry: rf-ram-dry-m4-n100-nc128 (standard solid)
+rf-ram-qm-strong-m4-n100-nc128-interp,omega,0.78653275,0.76865449,exact linear solution (ring_exact_frequencies.py),2.325916e-02,,
+rf-ram-qm-strong-m4-n100-nc128-interp,loss_per_period,8.472251e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-strong-m4-n100-nc128-interp,wet_dry_ratio,0.30084383,0.30083828,exact linear solution (ring_exact_frequencies.py),1.844547e-05,,dry: rf-ram-dry-m4-n100-nc128 (standard solid)
+rf-ram-qm-strong-m4-n100-nc288-cons,omega,0.7781949,0.76865449,exact linear solution (ring_exact_frequencies.py),1.241184e-02,,
+rf-ram-qm-strong-m4-n100-nc288-cons,loss_per_period,8.394514e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-strong-m4-n100-nc288-cons,wet_dry_ratio,0.30084063,0.30083828,exact linear solution (ring_exact_frequencies.py),7.808613e-06,,dry: rf-ram-dry-m4-n100-nc288 (standard solid)
+rf-ram-qm-strong-m4-n100-nc288-interp,omega,0.77819436,0.76865449,exact linear solution (ring_exact_frequencies.py),1.241113e-02,,
+rf-ram-qm-strong-m4-n100-nc288-interp,loss_per_period,8.394515e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-strong-m4-n100-nc288-interp,wet_dry_ratio,0.30084042,0.30083828,exact linear solution (ring_exact_frequencies.py),7.108339e-06,,dry: rf-ram-dry-m4-n100-nc288 (standard solid)
+rf-ram-qm-strong-m4-n100-pzg,omega,0.77992038,0.76865449,exact linear solution (ring_exact_frequencies.py),1.465663e-02,,
+rf-ram-qm-strong-m4-n100-pzg,loss_per_period,6.915935e-03,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-strong-m4-n100-pzg,wet_dry_ratio,0.30051436,0.30083828,exact linear solution (ring_exact_frequencies.py),-1.076706e-03,,dry: rf-ram-dry-m4-n100 (standard solid)
+rf-ram-qm-strong-m4-n200,omega,0.7815537,0.76865449,exact linear solution (ring_exact_frequencies.py),1.678154e-02,,
+rf-ram-qm-strong-m4-n200,loss_per_period,4.980396e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-strong-m4-n200,wet_dry_ratio,0.30083823,0.30083828,exact linear solution (ring_exact_frequencies.py),-1.462375e-07,,dry: rf-ram-dry-m4-n200 (standard solid)
+rf-ram-qm-strong-m4-n25,omega,0.76609963,0.76865449,exact linear solution (ring_exact_frequencies.py),-3.323814e-03,,
+rf-ram-qm-strong-m4-n25,loss_per_period,2.316619e-02,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-strong-m4-n25,wet_dry_ratio,0.30083508,0.30083828,exact linear solution (ring_exact_frequencies.py),-1.062735e-05,,dry: rf-ram-dry-m4-n25 (standard solid)
+rf-ram-qm-strong-m4-n50,omega,0.77764759,0.76865449,exact linear solution (ring_exact_frequencies.py),1.169979e-02,,
+rf-ram-qm-strong-m4-n50,loss_per_period,3.584784e-03,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-strong-m4-n50,wet_dry_ratio,0.30083586,0.30083828,exact linear solution (ring_exact_frequencies.py),-8.038392e-06,,dry: rf-ram-dry-m4-n50 (standard solid)
+rf-ram-qm-weak-m1-n100,omega,2.9387208,2.4356149,exact linear solution (ring_exact_frequencies.py),2.065622e-01,,
+rf-ram-qm-weak-m1-n100,loss_per_period,5.968105e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-weak-m1-n100,wet_dry_ratio,0.95323304,0.95325818,exact linear solution (ring_exact_frequencies.py),-2.637223e-05,,dry: rf-ram-dry-m1-n100 (standard solid)
+rf-ram-qm-weak-m1-n100-nc32-cons,omega,3.1740762,2.4356149,exact linear solution (ring_exact_frequencies.py),3.031930e-01,,
+rf-ram-qm-weak-m1-n100-nc32-cons,loss_per_period,7.707059e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-weak-m1-n100-nc32-cons,wet_dry_ratio,0.95326516,0.95325818,exact linear solution (ring_exact_frequencies.py),7.320871e-06,,dry: rf-ram-dry-m1-n100-nc32 (standard solid)
+rf-ram-qm-weak-m1-n100-nc32-interp,omega,3.1740843,2.4356149,exact linear solution (ring_exact_frequencies.py),3.031963e-01,,
+rf-ram-qm-weak-m1-n100-nc32-interp,loss_per_period,7.707067e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-weak-m1-n100-nc32-interp,wet_dry_ratio,0.95326758,0.95325818,exact linear solution (ring_exact_frequencies.py),9.857602e-06,,dry: rf-ram-dry-m1-n100-nc32 (standard solid)
+rf-ram-qm-weak-m1-n100-nc72-cons,omega,2.8278046,2.4356149,exact linear solution (ring_exact_frequencies.py),1.610229e-01,,
+rf-ram-qm-weak-m1-n100-nc72-cons,loss_per_period,5.242212e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-weak-m1-n100-nc72-cons,wet_dry_ratio,0.95325005,0.95325818,exact linear solution (ring_exact_frequencies.py),-8.536785e-06,,dry: rf-ram-dry-m1-n100-nc72 (standard solid)
+rf-ram-qm-weak-m1-n100-nc72-interp,omega,2.8278014,2.4356149,exact linear solution (ring_exact_frequencies.py),1.610216e-01,,
+rf-ram-qm-weak-m1-n100-nc72-interp,loss_per_period,5.242174e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-weak-m1-n100-nc72-interp,wet_dry_ratio,0.95324898,0.95325818,exact linear solution (ring_exact_frequencies.py),-9.658979e-06,,dry: rf-ram-dry-m1-n100-nc72 (standard solid)
+rf-ram-qm-weak-m1-n200,omega,2.9429437,2.4356149,exact linear solution (ring_exact_frequencies.py),2.082960e-01,,
+rf-ram-qm-weak-m1-n200,loss_per_period,2.231173e-05,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-weak-m1-n200,wet_dry_ratio,0.95323843,0.95325818,exact linear solution (ring_exact_frequencies.py),-2.071872e-05,,dry: rf-ram-dry-m1-n200 (standard solid)
+rf-ram-qm-weak-m1-n25,omega,2.8631264,2.4356149,exact linear solution (ring_exact_frequencies.py),1.755251e-01,,
+rf-ram-qm-weak-m1-n25,loss_per_period,3.608053e-02,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-weak-m1-n25,wet_dry_ratio,0.9532189,0.95325818,exact linear solution (ring_exact_frequencies.py),-4.121315e-05,,dry: rf-ram-dry-m1-n25 (standard solid)
+rf-ram-qm-weak-m1-n50,omega,2.9223429,2.4356149,exact linear solution (ring_exact_frequencies.py),1.998378e-01,,
+rf-ram-qm-weak-m1-n50,loss_per_period,5.137571e-03,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-weak-m1-n50,wet_dry_ratio,0.95322605,0.95325818,exact linear solution (ring_exact_frequencies.py),-3.370793e-05,,dry: rf-ram-dry-m1-n50 (standard solid)
+rf-ram-qm-weak-m2-n100,omega,2.5857806,2.4356149,exact linear solution (ring_exact_frequencies.py),6.165413e-02,,
+rf-ram-qm-weak-m2-n100,loss_per_period,4.496781e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-weak-m2-n100,wet_dry_ratio,0.95325611,0.95325818,exact linear solution (ring_exact_frequencies.py),-2.170939e-06,,dry: rf-ram-dry-m2-n100 (standard solid)
+rf-ram-qm-weak-m2-n100-nc144-cons,omega,2.554508,2.4356149,exact linear solution (ring_exact_frequencies.py),4.881442e-02,,
+rf-ram-qm-weak-m2-n100-nc144-cons,loss_per_period,4.333933e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-weak-m2-n100-nc144-cons,wet_dry_ratio,0.95326024,0.95325818,exact linear solution (ring_exact_frequencies.py),2.157701e-06,,dry: rf-ram-dry-m2-n100-nc144 (standard solid)
+rf-ram-qm-weak-m2-n100-nc144-interp,omega,2.5545073,2.4356149,exact linear solution (ring_exact_frequencies.py),4.881413e-02,,
+rf-ram-qm-weak-m2-n100-nc144-interp,loss_per_period,4.333909e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-weak-m2-n100-nc144-interp,wet_dry_ratio,0.95325997,0.95325818,exact linear solution (ring_exact_frequencies.py),1.878012e-06,,dry: rf-ram-dry-m2-n100-nc144 (standard solid)
+rf-ram-qm-weak-m2-n100-nc64-cons,omega,2.654832,2.4356149,exact linear solution (ring_exact_frequencies.py),9.000483e-02,,
+rf-ram-qm-weak-m2-n100-nc64-cons,loss_per_period,4.872526e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-weak-m2-n100-nc64-cons,wet_dry_ratio,0.95326437,0.95325818,exact linear solution (ring_exact_frequencies.py),6.495468e-06,,dry: rf-ram-dry-m2-n100-nc64 (standard solid)
+rf-ram-qm-weak-m2-n100-nc64-interp,omega,2.6548337,2.4356149,exact linear solution (ring_exact_frequencies.py),9.000552e-02,,
+rf-ram-qm-weak-m2-n100-nc64-interp,loss_per_period,4.872537e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-weak-m2-n100-nc64-interp,wet_dry_ratio,0.95326498,0.95325818,exact linear solution (ring_exact_frequencies.py),7.132773e-06,,dry: rf-ram-dry-m2-n100-nc64 (standard solid)
+rf-ram-qm-weak-m2-n100-tight,omega,2.5857806,2.4356149,exact linear solution (ring_exact_frequencies.py),6.165413e-02,,
+rf-ram-qm-weak-m2-n100-tight,loss_per_period,4.496825e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-weak-m2-n100-tight,wet_dry_ratio,0.95325611,0.95325818,exact linear solution (ring_exact_frequencies.py),-2.170280e-06,,dry: rf-ram-dry-m2-n100 (standard solid)
+rf-ram-qm-weak-m2-n200,omega,2.5886507,2.4356149,exact linear solution (ring_exact_frequencies.py),6.283251e-02,,
+rf-ram-qm-weak-m2-n200,loss_per_period,4.830645e-05,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-weak-m2-n200,wet_dry_ratio,0.95325744,0.95325818,exact linear solution (ring_exact_frequencies.py),-7.776733e-07,,dry: rf-ram-dry-m2-n200 (standard solid)
+rf-ram-qm-weak-m2-n25,omega,2.5330642,2.4356149,exact linear solution (ring_exact_frequencies.py),4.001015e-02,,
+rf-ram-qm-weak-m2-n25,loss_per_period,2.567153e-02,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-weak-m2-n25,wet_dry_ratio,0.9532549,0.95325818,exact linear solution (ring_exact_frequencies.py),-3.440807e-06,,dry: rf-ram-dry-m2-n25 (standard solid)
+rf-ram-qm-weak-m2-n50,omega,2.574551,2.4356149,exact linear solution (ring_exact_frequencies.py),5.704354e-02,,
+rf-ram-qm-weak-m2-n50,loss_per_period,3.584839e-03,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-weak-m2-n50,wet_dry_ratio,0.95325442,0.95325818,exact linear solution (ring_exact_frequencies.py),-3.951811e-06,,dry: rf-ram-dry-m2-n50 (standard solid)
+rf-ram-qm-weak-m4-n100,omega,2.4739765,2.4356149,exact linear solution (ring_exact_frequencies.py),1.575028e-02,,
+rf-ram-qm-weak-m4-n100,loss_per_period,4.164447e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-weak-m4-n100,wet_dry_ratio,0.95325817,0.95325818,exact linear solution (ring_exact_frequencies.py),-1.488548e-08,,dry: rf-ram-dry-m4-n100 (standard solid)
+rf-ram-qm-weak-m4-n100-nc128-cons,omega,2.4922246,2.4356149,exact linear solution (ring_exact_frequencies.py),2.324249e-02,,
+rf-ram-qm-weak-m4-n100-nc128-cons,loss_per_period,4.255358e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-weak-m4-n100-nc128-cons,wet_dry_ratio,0.95326024,0.95325818,exact linear solution (ring_exact_frequencies.py),2.156451e-06,,dry: rf-ram-dry-m4-n100-nc128 (standard solid)
+rf-ram-qm-weak-m4-n100-nc128-interp,omega,2.492225,2.4356149,exact linear solution (ring_exact_frequencies.py),2.324265e-02,,
+rf-ram-qm-weak-m4-n100-nc128-interp,loss_per_period,4.255341e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-weak-m4-n100-nc128-interp,wet_dry_ratio,0.95326039,0.95325818,exact linear solution (ring_exact_frequencies.py),2.317475e-06,,dry: rf-ram-dry-m4-n100-nc128 (standard solid)
+rf-ram-qm-weak-m4-n100-nc288-cons,omega,2.4658287,2.4356149,exact linear solution (ring_exact_frequencies.py),1.240502e-02,,
+rf-ram-qm-weak-m4-n100-nc288-cons,loss_per_period,4.125224e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-weak-m4-n100-nc288-cons,wet_dry_ratio,0.95325921,0.95325818,exact linear solution (ring_exact_frequencies.py),1.073429e-06,,dry: rf-ram-dry-m4-n100-nc288 (standard solid)
+rf-ram-qm-weak-m4-n100-nc288-interp,omega,2.4658286,2.4356149,exact linear solution (ring_exact_frequencies.py),1.240495e-02,,
+rf-ram-qm-weak-m4-n100-nc288-interp,loss_per_period,4.125160e-04,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-weak-m4-n100-nc288-interp,wet_dry_ratio,0.95325914,0.95325818,exact linear solution (ring_exact_frequencies.py),1.005306e-06,,dry: rf-ram-dry-m4-n100-nc288 (standard solid)
+rf-ram-qm-weak-m4-n200,omega,2.4764895,2.4356149,exact linear solution (ring_exact_frequencies.py),1.678206e-02,,
+rf-ram-qm-weak-m4-n200,loss_per_period,6.234306e-05,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-weak-m4-n200,wet_dry_ratio,0.95325853,0.95325818,exact linear solution (ring_exact_frequencies.py),3.692803e-07,,dry: rf-ram-dry-m4-n200 (standard solid)
+rf-ram-qm-weak-m4-n25,omega,2.4275508,2.4356149,exact linear solution (ring_exact_frequencies.py),-3.310895e-03,,
+rf-ram-qm-weak-m4-n25,loss_per_period,2.277922e-02,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-weak-m4-n25,wet_dry_ratio,0.95326041,0.95325818,exact linear solution (ring_exact_frequencies.py),2.334929e-06,,dry: rf-ram-dry-m4-n25 (standard solid)
+rf-ram-qm-weak-m4-n50,omega,2.4641296,2.4356149,exact linear solution (ring_exact_frequencies.py),1.170741e-02,,
+rf-ram-qm-weak-m4-n50,loss_per_period,3.172591e-03,,,,,amplitude loss per period (exact 0)
+rf-ram-qm-weak-m4-n50,wet_dry_ratio,0.9532577,0.95325818,exact linear solution (ring_exact_frequencies.py),-5.108917e-07,,dry: rf-ram-dry-m4-n50 (standard solid)
+rf-wom-qm-m1-n200,profile,1.757348e-02,0,exact linear solution (womersley_exact.py); value is the relative error,1.757348e-02,,
+rf-wom-qm-m1-n200,flow_amp,6.081136e-03,0,exact linear solution (womersley_exact.py); value is the relative error,6.081136e-03,,
+rf-wom-qm-m1-n200,flow_phase,6.097745e-03,0,exact linear solution (womersley_exact.py); value is the relative error,6.097745e-03,,phase errors in radians
+rf-wom-qm-m1-n200,wallMid_amp,-1.021227e-02,0,exact linear solution (womersley_exact.py); value is the relative error,-1.021227e-02,,
+rf-wom-qm-m1-n200,wallMid_phase,-2.414840e-03,0,exact linear solution (womersley_exact.py); value is the relative error,-2.414840e-03,,phase errors in radians
+rf-wom-qm-m1-n200,speed,-2.295879e-03,0,exact linear solution (womersley_exact.py); value is the relative error,-2.295879e-03,,
+rf-wom-qm-m1-n200,attenuation,-2.336251e-03,0,exact linear solution (womersley_exact.py); value is the relative error,-2.336251e-03,,
+rf-wom-qm-m1-n200,pressure,1.033206e-02,0,exact linear solution (womersley_exact.py); value is the relative error,1.033206e-02,,
+rf-wom-qm-m1-n200,periodicity,2.914164e-05,,,,,
+rf-wom-qm-m2-n100,profile,4.666081e-03,0,exact linear solution (womersley_exact.py); value is the relative error,4.666081e-03,,
+rf-wom-qm-m2-n100,flow_amp,4.707577e-04,0,exact linear solution (womersley_exact.py); value is the relative error,4.707577e-04,,
+rf-wom-qm-m2-n100,flow_phase,1.085769e-03,0,exact linear solution (womersley_exact.py); value is the relative error,1.085769e-03,,phase errors in radians
+rf-wom-qm-m2-n100,wallMid_amp,-8.142354e-04,0,exact linear solution (womersley_exact.py); value is the relative error,-8.142354e-04,,
+rf-wom-qm-m2-n100,wallMid_phase,-2.368651e-03,0,exact linear solution (womersley_exact.py); value is the relative error,-2.368651e-03,,phase errors in radians
+rf-wom-qm-m2-n100,speed,-8.141523e-05,0,exact linear solution (womersley_exact.py); value is the relative error,-8.141523e-05,,
+rf-wom-qm-m2-n100,attenuation,-4.241196e-03,0,exact linear solution (womersley_exact.py); value is the relative error,-4.241196e-03,,
+rf-wom-qm-m2-n100,pressure,2.965773e-03,0,exact linear solution (womersley_exact.py); value is the relative error,2.965773e-03,,
+rf-wom-qm-m2-n100,periodicity,1.248744e-05,,,,,
+rf-wom-qm-m2-n200,profile,4.650710e-03,0,exact linear solution (womersley_exact.py); value is the relative error,4.650710e-03,,
+rf-wom-qm-m2-n200,flow_amp,8.982711e-04,0,exact linear solution (womersley_exact.py); value is the relative error,8.982711e-04,,
+rf-wom-qm-m2-n200,flow_phase,1.341477e-03,0,exact linear solution (womersley_exact.py); value is the relative error,1.341477e-03,,phase errors in radians
+rf-wom-qm-m2-n200,wallMid_amp,-2.336975e-03,0,exact linear solution (womersley_exact.py); value is the relative error,-2.336975e-03,,
+rf-wom-qm-m2-n200,wallMid_phase,-1.513306e-03,0,exact linear solution (womersley_exact.py); value is the relative error,-1.513306e-03,,phase errors in radians
+rf-wom-qm-m2-n200,speed,-4.645466e-04,0,exact linear solution (womersley_exact.py); value is the relative error,-4.645466e-04,,
+rf-wom-qm-m2-n200,attenuation,-2.188643e-03,0,exact linear solution (womersley_exact.py); value is the relative error,-2.188643e-03,,
+rf-wom-qm-m2-n200,pressure,2.958635e-03,0,exact linear solution (womersley_exact.py); value is the relative error,2.958635e-03,,
+rf-wom-qm-m2-n200,periodicity,6.727018e-06,,,,,
+rf-wom-qm-m2-n400,profile,4.646618e-03,0,exact linear solution (womersley_exact.py); value is the relative error,4.646618e-03,,
+rf-wom-qm-m2-n400,flow_amp,1.004175e-03,0,exact linear solution (womersley_exact.py); value is the relative error,1.004175e-03,,
+rf-wom-qm-m2-n400,flow_phase,1.408530e-03,0,exact linear solution (womersley_exact.py); value is the relative error,1.408530e-03,,phase errors in radians
+rf-wom-qm-m2-n400,wallMid_amp,-2.721064e-03,0,exact linear solution (womersley_exact.py); value is the relative error,-2.721064e-03,,
+rf-wom-qm-m2-n400,wallMid_phase,-1.310032e-03,0,exact linear solution (womersley_exact.py); value is the relative error,-1.310032e-03,,phase errors in radians
+rf-wom-qm-m2-n400,speed,-5.617542e-04,0,exact linear solution (womersley_exact.py); value is the relative error,-5.617542e-04,,
+rf-wom-qm-m2-n400,attenuation,-1.695107e-03,0,exact linear solution (womersley_exact.py); value is the relative error,-1.695107e-03,,
+rf-wom-qm-m2-n400,pressure,2.956695e-03,0,exact linear solution (womersley_exact.py); value is the relative error,2.956695e-03,,
+rf-wom-qm-m2-n400,periodicity,9.124826e-06,,,,,
+rf-wom-qm-m2-n50,profile,6.185077e-03,0,exact linear solution (womersley_exact.py); value is the relative error,6.185077e-03,,
+rf-wom-qm-m2-n50,flow_amp,-1.275143e-03,0,exact linear solution (womersley_exact.py); value is the relative error,-1.275143e-03,,
+rf-wom-qm-m2-n50,flow_phase,1.583394e-04,0,exact linear solution (womersley_exact.py); value is the relative error,1.583394e-04,,phase errors in radians
+rf-wom-qm-m2-n50,wallMid_amp,5.125868e-03,0,exact linear solution (womersley_exact.py); value is the relative error,5.125868e-03,,
+rf-wom-qm-m2-n50,wallMid_phase,-6.143528e-03,0,exact linear solution (womersley_exact.py); value is the relative error,-6.143528e-03,,phase errors in radians
+rf-wom-qm-m2-n50,speed,1.392015e-03,0,exact linear solution (womersley_exact.py); value is the relative error,1.392015e-03,,
+rf-wom-qm-m2-n50,attenuation,-1.308044e-02,0,exact linear solution (womersley_exact.py); value is the relative error,-1.308044e-02,,
+rf-wom-qm-m2-n50,pressure,6.868274e-03,0,exact linear solution (womersley_exact.py); value is the relative error,6.868274e-03,,
+rf-wom-qm-m2-n50,periodicity,6.561792e-05,,,,,
+rf-wom-qm-m4-n200,profile,9.599815e-04,0,exact linear solution (womersley_exact.py); value is the relative error,9.599815e-04,,
+rf-wom-qm-m4-n200,flow_amp,-3.445174e-04,0,exact linear solution (womersley_exact.py); value is the relative error,-3.445174e-04,,
+rf-wom-qm-m4-n200,flow_phase,8.373909e-05,0,exact linear solution (womersley_exact.py); value is the relative error,8.373909e-05,,phase errors in radians
+rf-wom-qm-m4-n200,wallMid_amp,-3.461486e-04,0,exact linear solution (womersley_exact.py); value is the relative error,-3.461486e-04,,
+rf-wom-qm-m4-n200,wallMid_phase,-1.184668e-03,0,exact linear solution (womersley_exact.py); value is the relative error,-1.184668e-03,,phase errors in radians
+rf-wom-qm-m4-n200,speed,-5.958079e-06,0,exact linear solution (womersley_exact.py); value is the relative error,-5.958079e-06,,
+rf-wom-qm-m4-n200,attenuation,-1.947544e-03,0,exact linear solution (womersley_exact.py); value is the relative error,-1.947544e-03,,
+rf-wom-qm-m4-n200,pressure,1.531547e-03,0,exact linear solution (womersley_exact.py); value is the relative error,1.531547e-03,,
+rf-wom-qm-m4-n200,periodicity,6.526522e-06,,,,,

@@ -39,7 +39,8 @@ STUDY = {"1a": "1a ring QM sweep", "1d": "1d ring couplings (standard solid)",
          "1c": "1c ring non-conformal (AMI)", "2a": "2a cavity QM L1-L4",
          "2b": "2b cavity interpolate(U) linear", "5b": "5b blob QM time steps",
          "2c": "2c cavity partitioned strict rerun (checkMesh)",
-         "fix": "vST fix verification (build 63d2cc8a9)"}
+         "fix": "vST fix verification (build 63d2cc8a9)",
+         "5a": "5a blob QM steady x1/x2/x4"}
 CASE = {"ram": "ringAddedMass", "wom": "womersleyTube",
         "cav": "cavityFlexibleBottom", "cavpart": "cavityFlexibleBottom",
         "blob": "blobInTreacle"}
@@ -66,10 +67,11 @@ def main():
     ap.add_argument("out", type=Path)
     ap.add_argument("--stream", default="ma-b1")
     ap.add_argument("--machine", default="MeluXina cpu")
+    ap.add_argument("--pattern", default="ma-*")
     args = ap.parse_args()
     (args.out / "provenance").mkdir(parents=True, exist_ok=True)
     rows, qrows, res = [], [], {}
-    for d in sorted(args.runs.glob("ma-*")):
+    for d in sorted(args.runs.glob(args.pattern)):
         rf = d / "ma_result.json"
         if not rf.is_file():
             continue
@@ -136,8 +138,14 @@ def main():
                        ksp_rtol=petsc.get("ksp_rtol", ""),
                        convergence_test="SNES rtol/stol",
                        solid_pc="redundant+lu")
-            notes.append(f"viscousStressTranspose {df['vst']}")
-            if df["case"] in ("ram", "wom"):
+            notes.append("transpose viscous term always on (#618)"
+                         if df.get("vst") is None
+                         else f"viscousStressTranspose {df['vst']}")
+            if df.get("tutorial_schemes"):
+                notes.append("tutorial fvSchemes as merged (#617: ddt "
+                             "backward, linearUpwind grad(U), interpolate(U) "
+                             "as the partitioned file)")
+            elif df["case"] in ("ram", "wom"):
                 notes.append("schemes as tutorial fvSchemes.monolithic (= "
                              "partitioned: Gauss linear, leastSquares, "
                              "ddt(U) backward, ddt(dU) Euler)")
@@ -239,6 +247,16 @@ def main():
                                   f"{r['steps_to_steady_' + rel]} steps, "
                                   f"{r['newton_to_steady_' + rel]} Newton iterations"))
             continue
+        if df["case"] == "blob" and df["item"] == "5a":
+            ref = {1: 0.117231, 2: 0.119691, 4: 0.120206}[df["level"]]
+            qrows.append(dict(run_id=rid, qoi="ux_top", value=f"{r['ux']:.8g}",
+                              reference=f"{ref:.8g}", reference_source=
+                              "WP0 IQN-ILS strict, same level (MS, 85b0c1de6)",
+                              rel_error=f"{(r['ux'] - ref) / abs(ref):.4e}",
+                              notes="t = 3 s steady top point"))
+            qrows.append(dict(run_id=rid, qoi="uy_top", value=f"{r['uy']:.8g}",
+                              notes="t = 3 s steady top point"))
+            continue
         if df["case"] == "blob":
             for q in ("ux", "uy"):
                 qrows.append(dict(run_id=rid, qoi=f"{q}_top_t1", value=f"{r[q]:.8g}",
@@ -254,7 +272,8 @@ def main():
                               value=f"{r['loss_per_period']:.6e}",
                               notes="amplitude loss per period (exact 0)"))
             if df["kind"] == "wet":
-                dry = res.get(f"ma-ram-dry-m{df['factor']}-n{df['steps']}"
+                pre = rid.split("-ram-")[0]
+                dry = res.get(f"{pre}-ram-dry-m{df['factor']}-n{df['steps']}"
                               + (f"-nc{df['solidCells']}" if df.get("solidCells") else ""))
                 if dry and dry["status"] == "completed":
                     ratio = r["omega"] / dry["omega"]

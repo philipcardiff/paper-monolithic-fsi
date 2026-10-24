@@ -12,17 +12,22 @@
 # iterations in the first step (job 5377782). Submit with --ntasks-per-node=NP (and --exclusive for 128).
 
 QM_ROOT=/project/home/p201287/philip/qm-head
-source "$QM_ROOT/env.sh"
+# FOIL_BUILD: build root (env.sh, solids4foam; r0_setup.py copies the
+# tutorial of $WM_PROJECT_USER_DIR/solids4foam); FOIL_PREFIX: run id prefix;
+# FOIL_TUT_SCHEMES=1: keep the tutorial schemes as they are
+BUILD="${FOIL_BUILD:-$QM_ROOT}"
+source "$BUILD/env.sh"
 export PATH="$QM_ROOT/campaign/pybin:$PATH"
 export OMPI_MCA_hwloc_base_binding_policy=none
 export PRTE_MCA_hwloc_default_binding_policy=none
 export OMPI_MCA_rmaps_base_oversubscribe=1
 RUNS=/project/home/p201136/philip-ma/runs
 NP="${FOIL_RANKS:-128}"
-ID="ma-foil-${FOIL_COUPLING:?}-dt${FOIL_DT:?}"
+ID="${FOIL_PREFIX:-ma}-foil-${FOIL_COUPLING:?}-dt${FOIL_DT:?}"
 D="$RUNS/$ID"
 python3 "$QM_ROOT/campaign/ma/ma_foil_setup.py" "$FOIL_COUPLING" "$D" \
-    --dt "$FOIL_DT" --ranks "$NP" --qm-root "$QM_ROOT" || exit 1
+    --dt "$FOIL_DT" --ranks "$NP" --qm-root "$QM_ROOT" \
+    ${FOIL_TUT_SCHEMES:+--tutorial-schemes} || exit 1
 cd "$D" || exit 1
 mkdir -p bin
 export FOAM_USER_APPBIN="$D/bin" PATH="$D/bin:$PATH"
@@ -33,7 +38,8 @@ t0=$(date +%s.%N)
 rc=$?
 t1=$(date +%s.%N)
 python3 "$QM_ROOT/campaign/scripts/provenance.py" "$D" --ranks "$NP" \
-    --run-id "$ID" --out "$D/provenance.json" > /dev/null 2>&1
+    --run-id "$ID" --s4f "$BUILD/solids4foam" --out "$D/provenance.json" \
+    > /dev/null 2>&1
 cat > "$D/run_meta.json" <<EOF
 {"run_id": "$ID", "coupling": "$FOIL_COUPLING", "dt": $FOIL_DT,
  "ranks": $NP, "command": "${cmd[*]}", "node": "$(hostname)",

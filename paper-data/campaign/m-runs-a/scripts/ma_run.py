@@ -69,7 +69,7 @@ def set_partitioned(case, coupling):
 # Run definitions
 # ---------------------------------------------------------------------------
 
-def definitions():
+def definitions(rfix=True):
     out = []
     # 1a: ring QM, 3 levels x mesh 1/2/4 x 25/50/100/200 steps per period,
     # with the dry (standard solid) ring for the wet/dry ratio
@@ -111,10 +111,10 @@ def definitions():
     for r in out:
         r["ranks"] = 1
         r["batch"] = 1
-    return out + definitions2()
+    return out + definitions2(rfix)
 
 
-def definitions2():
+def definitions2(rfix=True):
     out = []
     # 2a: cavity QM L1-L4, steady (ddt(U) Euler as the partitioned file),
     # dt 0.5 to 300 s with the 20 s inlet ramp, as the #597 rerun;
@@ -162,7 +162,41 @@ def definitions2():
         r["batch"] = 2
     return (out + definitions3() + definitions4()
             + definitions4(prefix="mafinal", batch=5)
-            + definitions4(prefix="mafinal4", batch=6))
+            + definitions4(prefix="mafinal4", batch=6)
+            + (definitionsRfix() if rfix else []))
+
+
+def definitionsRfix():
+    """R-fix reruns (#618 + #617 merged, 1252bd2e5): every QM run of agent
+    A with the tutorials' own schemes and no viscousStressTranspose entry
+    (the term is always on). Partitioned runs are not repeated."""
+    out = []
+    base = [r for r in definitions(rfix=False)
+            if r.get("batch") in (1, 2)
+            and (r["case"] in ("cav", "blob")
+                 or r.get("kind") == "dry"
+                 or r.get("coupling") == "monolithic")]
+    seen = set()
+    for r in base:
+        r = dict(r)
+        rid = r["id"].replace("ma-", "rf-", 1).replace("-vstno", "")
+        if "-vstyes" in rid or rid in seen:
+            continue
+        seen.add(rid)
+        r.update(id=rid, batch=7, tutorial_schemes=True)
+        if "vst" in r:
+            r["vst"] = None
+        out.append(r)
+    # Womersley m2 n50 (WP0 cell)
+    out.append(dict(id="rf-wom-qm-m2-n50", item="1e", case="wom",
+                    coupling="monolithic", factor=2, steps=50, vst=None,
+                    petsc=TIGHT, ranks=1, batch=7, tutorial_schemes=True))
+    # blob steady x1/x2/x4 (0b/5a), as WP0: dt 0.01/0.01/0.005 to 3 s
+    for lvl, dt, np in ((1, 0.01, 1), (2, 0.01, 2), (4, 0.005, 4)):
+        out.append(dict(id=f"rf-blob-qm-x{lvl}", item="5a", case="blob",
+                        level=lvl, dt=dt, end_time=3.0, vst=None, petsc={},
+                        ranks=np, batch=7, tutorial_schemes=True))
+    return out
 
 
 def definitions4(prefix="mafix", batch=4):
@@ -333,11 +367,13 @@ def run_cav(ctx, r):
     cav.set_control(case, "endTime", 300.0)
     cav.set_control(case, "deltaT", 0.5)
     cav.ramp_inlet(case, 20.0)
-    set_vst(case, r["vst"])
+    if r["vst"] is not None:
+        set_vst(case, r["vst"])
     schemes = case / "system/fluid/fvSchemes.monolithic"
     # Same schemes as the partitioned fvSchemes (no limiter; #553)
-    sub1(schemes, r"(^\s*div\(phi,U\)\s+)[^;]+;",
-         r"\g<1>Gauss linearUpwind grad(U);")
+    if not r.get("tutorial_schemes"):
+        sub1(schemes, r"(^\s*div\(phi,U\)\s+)[^;]+;",
+             r"\g<1>Gauss linearUpwind grad(U);")
     sub1(schemes, r"(^\s*interpolate\(U\)\s+)[^;]+;",
          rf"\g<1>{r['interp']};")
     cmd = ["./Allrun", "monolithic"]
@@ -460,10 +496,12 @@ def run_blob(ctx, r):
     control = case / "system/controlDict"
     blob.set_entry(control, "endTime", f"{r['end_time']:.10g}")
     blob.set_entry(control, "deltaT", f"{r['dt']:.10g}")
-    sub1(case / "system/fluid/fvSchemes.monolithic",
-         r"(ddt\(U\)\s+)Euler;", r"\g<1>backward;")
-    sub1(case / "system/fluid/fvSchemes.monolithic",
-         r"(^\s*div\(phi,U\)\s+)[^;]+;", r"\g<1>Gauss linearUpwind grad(U);")
+    if not r.get("tutorial_schemes"):
+        sub1(case / "system/fluid/fvSchemes.monolithic",
+             r"(ddt\(U\)\s+)Euler;", r"\g<1>backward;")
+        sub1(case / "system/fluid/fvSchemes.monolithic",
+             r"(^\s*div\(phi,U\)\s+)[^;]+;",
+             r"\g<1>Gauss linearUpwind grad(U);")
     if r.get("p_interface") == "zeroGradient":
         sub1(case / "0/fluid/p.monolithic",
              r"(interface\s*\{[^}]*?)type\s+fixedGradient;\s*"

@@ -38,6 +38,8 @@ sys.dont_write_bytecode = True
 QM_ROOT = Path(os.environ.get("QM_ROOT",
                               "/project/home/p201287/philip/qm-head"))
 FSI = QM_ROOT / "solids4foam/tutorials/fluidSolidInteraction"
+# #618 (merge 4ae081609) removed the viscousStressTranspose switch
+POST_618 = os.environ.get("WP3_POST_618", "no") == "yes"
 
 # Caps, identical for every coupling (README "Failure criterion")
 N_OUTER_CORR = 200      # partitioned coupling iterations per step
@@ -92,13 +94,32 @@ def partitioned_coeffs(path, coupling):
 
 
 def qm_options(case):
-    """viscousStressTranspose no (explicit) and the Newton cap."""
-    sub1(case / "constant/fluid/fluidProperties.monolithic",
-         r"(newtonIcoFluidCoeffs\s*\{\n)",
-         r"\g<1>    viscousStressTranspose no;\n\n")
+    """The Newton cap, and the transpose viscous term as the code provides
+    it: before #618 (85b0c1de6) `viscousStressTranspose no` is set
+    explicitly; from #618 (4ae081609) the switch is gone (the term is always
+    on), so any entry is removed from the copy."""
+    fp = case / "constant/fluid/fluidProperties.monolithic"
+    text = re.sub(r"^\s*viscousStressTranspose\s+\w+;\n", "",
+                  fp.read_text(), flags=re.MULTILINE)
+    fp.write_text(text)
+    if not POST_618:
+        sub1(fp, r"(newtonIcoFluidCoeffs\s*\{\n)",
+             r"\g<1>    viscousStressTranspose no;\n\n")
     sub1(case / "system/fvSolution.monolithic",
          r"(^\s*snes_stol\s+[^;]+;\n)",
          rf'\g<1>            snes_max_it "{SNES_MAX_IT}";\n')
+
+
+def schemes_617(path):
+    """With the #618 build (4ae081609), apply #617 (1252bd2e5, tutorials
+    only) in the copy: ddt(dU) and ddt(p) backward, no
+    interpolate(U) skewCorrected entry, as the partitioned fluid files."""
+    text = path.read_text()
+    text = re.sub(r"^(\s*ddt\((?:U|dU|p)\)\s+)Euler;", r"\g<1>backward;", text,
+                  flags=re.MULTILINE)
+    text = re.sub(r"^\s*interpolate\(U\)\s+skewCorrected linear;\n", "",
+                  text, flags=re.MULTILINE)
+    path.write_text(text)
 
 
 def petsc_tolerances(case):
@@ -112,7 +133,8 @@ def petsc_tolerances(case):
 def schemes_summary(path):
     text = path.read_text()
     out = {}
-    for key in ("ddt(U)", "ddt(dU)", "div(phi,U)"):
+    for key in ("ddt(U)", "ddt(dU)", "ddt(p)", "div(phi,U)",
+                "interpolate(U)"):
         m = re.search(rf"^\s*{re.escape(key)}\s+([^;]+);", text, re.MULTILINE)
         if m:
             out[key] = " ".join(m.group(1).split())
@@ -152,6 +174,8 @@ def setup_ring(args):
     if args.coupling == "qm":
         qm_options(case)
         schemes = case / "system/fluid/fvSchemes.monolithic"
+        if POST_618:
+            schemes_617(schemes)
     else:
         partitioned_coeffs(case / f"constant/fsiProperties.{allrun}",
                            args.coupling)
@@ -207,7 +231,10 @@ def setup_coll(args):
              r"\g<1>\n        useUndeformedArea yes;")
         # BDF2 fluid (the tutorial file says Euler); ddt(dU) stays Euler
         schemes = case / "system/fluid/fvSchemes.monolithic"
-        sub1(schemes, r"^(\s*ddt\(U\)\s+)Euler;", r"\g<1>backward;")
+        if POST_618:
+            schemes_617(schemes)
+        else:
+            sub1(schemes, r"^(\s*ddt\(U\)\s+)Euler;", r"\g<1>backward;")
         cmd = ["./Allrun", "monolithic"]
     else:
         partitioned_coeffs(case / f"constant/fsiProperties.{allrun}",
@@ -245,7 +272,8 @@ def finish(case, meta, cmd):
     meta["caps"] = {"nOuterCorr": N_OUTER_CORR, "snes_max_it": SNES_MAX_IT}
     if meta["coupling"] == "qm":
         meta["petsc"] = petsc_tolerances(case)
-        meta["viscousStressTranspose"] = "no"
+        meta["viscousStressTranspose"] = ("removed (#618, transpose term "
+                                          "always on)" if POST_618 else "no")
     else:
         fsi = (case / "constant").glob("fsiProperties.*")
         text = next(f for f in fsi if "requireAllResidualMeasures"

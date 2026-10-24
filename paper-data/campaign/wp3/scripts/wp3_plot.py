@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Draft robustness maps from runs.csv.
 
-  wp3_plot.py runs.csv OUT_STEM --map 3a|3b
+  wp3_plot.py runs.csv[,runs_qm618.csv] OUT_STEM --map 3a|3b
 
 Each cell of the grid (3a: steps per period x added-mass level; 3b: time
 step x density ratio) holds the four couplings side by side, in a fixed
@@ -35,9 +35,9 @@ CODE = {"cap": "cap", "newton": "Nwt", "mesh": "mesh", "nan": "NaN",
 
 def parse(run_id, which):
     if which == "3a":
-        m = re.match(r"wp3-ram-(\w+)-(\w+)-n(\d+)$", run_id)
+        m = re.match(r"wp3-ram-(\w+?)-(\w+?)-n(\d+)(?:-r618)?$", run_id)
         return m and (m.group(1), int(m.group(3)), m.group(2))
-    m = re.match(r"wp3-coll-(\w+)-dt([\d.e-]+)-rho([\d.e-]+)$", run_id)
+    m = re.match(r"wp3-coll-(\w+?)-dt([\d.e-]+?)-rho([\d.e-]+?)(?:-r618)?$", run_id)
     return m and (m.group(1), float(m.group(2)), float(m.group(3)))
 
 
@@ -48,7 +48,11 @@ def main():
     ap.add_argument("--map", choices=("3a", "3b"), required=True)
     a = ap.parse_args()
     data = {}
-    for r in csv.DictReader(open(a.runs)):
+    rows = []
+    for f in a.runs.split(","):
+        rows += list(csv.DictReader(open(f)))
+    # Later files (e.g. the #618 QM reruns) replace earlier rows
+    for r in rows:
         key = parse(r["run_id"], a.map)
         if key:
             data[key] = r

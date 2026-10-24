@@ -64,6 +64,7 @@ def main():
     ap.add_argument("out")
     ap.add_argument("--map", choices=("3a", "3b"))
     ap.add_argument("--include-smoke", action="store_true")
+    ap.add_argument("--only", help="regex on run_id")
     a = ap.parse_args()
     runs, out = Path(a.runs), Path(a.out)
     (out / "provenance").mkdir(parents=True, exist_ok=True)
@@ -72,6 +73,8 @@ def main():
         if not d.is_dir() or not (d / "wp3_result.json").is_file():
             continue
         if d.name.endswith("-smoke") and not a.include_smoke:
+            continue
+        if a.only and not re.search(a.only, d.name):
             continue
         meta = json.loads((d / "wp3_case.json").read_text())
         if a.map and meta["map"] != a.map:
@@ -142,11 +145,14 @@ def main():
         notes = [f"status {res['status']}, t_reached {res['t_reached']}"
                  f" of {meta['end_time']:.6g}", schemes_note(meta)]
         if qm:
-            notes.append("viscousStressTranspose no")
-            # Coordinator, 23 Oct: the option is to be removed and the wall
-            # treatment of the transpose term hard-coded; QM results at
-            # 85b0c1de6 will be rerun with the fixed build
-            notes.append("pre-vST-fix")
+            # #618 (merge 4ae081609) removed viscousStressTranspose and
+            # hard-coded the transpose wall treatment; earlier QM rows are
+            # superseded
+            if meta.get("viscousStressTranspose", "no") == "no":
+                notes.append("viscousStressTranspose no; pre-#618 "
+                             "(superseded)")
+            else:
+                notes.append("#618 build, transpose term always on")
         if meta["coupling"] == "iqn":
             notes.append("couplingReuse 0")
         if "relaxationFactor" in meta:

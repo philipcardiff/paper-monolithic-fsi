@@ -5,6 +5,7 @@ runs first.
   wp3_tasks.py 3a > tasks_3a.txt
   wp3_tasks.py 3b > tasks_3b.txt
   wp3_tasks.py smoke > tasks_smoke.txt
+  wp3_tasks.py qm618 > tasks_qm618.txt
 """
 import sys
 
@@ -29,6 +30,10 @@ if what == "3a":
     lines = [ring(c, l, n) for n in STEPS for l in LEVELS for c in COUPLINGS]
 elif what == "3b":
     lines = [coll(c, dt, r) for dt in DTS for r in RHOS for c in COUPLINGS]
+elif what == "qm618":
+    # QM arms of 3b and 3a on the #618 build (collapsible first: longer)
+    lines = [coll("qm", dt, r, "-r618") for dt in DTS for r in RHOS] + \
+            [ring("qm", l, n, "-r618") for n in STEPS for l in LEVELS]
 elif what == "smoke":
     lines = [ring(c, "strong", 12, "-smoke") for c in COUPLINGS] + \
             [coll(c, 0.025, 1, "-smoke") for c in COUPLINGS]

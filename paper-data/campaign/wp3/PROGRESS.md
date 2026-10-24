@@ -63,3 +63,19 @@
 - **3b done** (XenoSim 13279, finished before 20:10; longest run 4.6 h;
   55.7 core-hours CPU, no allocation). Pass counts: QM 15/20, RN 11/20,
   IQN-ILS 9/20, Aitken 7/20. See `findings.md`. Registry row done.
+
+## 24 Oct 2026
+
+- Coordinator: #618 (transpose wall treatment hard-coded, the
+  `viscousStressTranspose` switch removed) merged at 4ae081609; #617
+  (tutorial schemes only) merged at 1252bd2e5. Rerun the QM arms of 3a and
+  3b on the fixed build; partitioned arms unaffected. B2 QM runs are not
+  mine (M campaign B2): left to the coordinator.
+- Build `v2.2-1723-g4ae081609` on XenoSim, new tree
+  `~/OpenFOAM/philipc-v2512-qm618` (job 13356). #617 is applied in the run
+  copies (`ddt(dU)`/`ddt(p)` backward, no `interpolate(U) skewCorrected`,
+  as 1252bd2e5's tutorial files); `viscousStressTranspose` removed from the
+  copies (`WP3_POST_618=yes` in `wp3_setup.py`).
+- Registry: 3a/3b rows split; partitioned arms done, pre-#618 QM arms
+  `superseded`, #618 QM reruns claimed (40 runs, run ids `*-r618`,
+  XenoSim, one Slurm job of 16 tasks).

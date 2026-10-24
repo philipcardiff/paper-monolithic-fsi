@@ -245,6 +245,17 @@ def setup_coll(args):
             schemes_617(schemes)
         else:
             sub1(schemes, r"^(\s*ddt\(U\)\s+)Euler;", r"\g<1>backward;")
+        if args.mesh_motion == "diffusion":
+            sub1(case / "constant/fluid/mechanicalProperties.monolithic",
+                 r"(type\s+)neoHookeanElastic;", r"\g<1>diffusionHyperElastic;")
+            sub1(case / "constant/fluid/dynamicMeshDict.monolithic",
+                 r"^(regionName\s+fluid;\n)",
+                 r"\g<1>\n// Stiffen the mesh motion near the moving wall\n"
+                 r"diffusivity     quadratic inverseDistance (interface);\n")
+        if args.monitor_mesh_ksp:
+            sub1(case / "system/fluid/fvSolution.monolithic",
+                 r"(^\s*ksp_converged_reason;\n)",
+                 r"\g<1>            ksp_monitor_true_residual;\n")
         cmd = ["./Allrun", "monolithic"]
     else:
         partitioned_coeffs(case / f"constant/fsiProperties.{allrun}",
@@ -271,6 +282,7 @@ def setup_coll(args):
             case / ("system/solid/fvSchemes.monolithic"
                     if args.coupling == "qm" else "system/solid/fvSchemes")),
         "troughWindow": [0.3, 0.75],
+        "mesh_motion": getattr(args, "mesh_motion", "tutorial"),
     }
     m = re.search(r"^\s*relaxationFactor\s+([^;]+);", fsi_text, re.MULTILINE)
     if m:
@@ -327,6 +339,13 @@ def main():
     p.add_argument("--end", type=float, default=COLL_END)
     # Diagnostics: write every time step, in ASCII
     p.add_argument("--write-every-step", action="store_true")
+    # QM fluid mesh motion: the tutorial's neoHookeanElastic law, or the
+    # diffusionHyperElastic law with a quadratic inverse-distance
+    # diffusivity from the interface (as TurekHron2006)
+    p.add_argument("--mesh-motion", choices=("tutorial", "diffusion"),
+                   default="tutorial")
+    # Diagnostics: Krylov residual monitor on the mesh-motion (D) solve
+    p.add_argument("--monitor-mesh-ksp", action="store_true")
     args = ap.parse_args()
     (setup_ring if args.cmd == "ring" else setup_coll)(args)
 

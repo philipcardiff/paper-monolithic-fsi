@@ -1,0 +1,47 @@
+{
+ "map": "3b",
+ "case": "collapsibleChannel",
+ "coupling": "qm",
+ "rho_ratio": 1.0,
+ "rho_solid": 1.0,
+ "rho_fluid": 1.0,
+ "deltaT": 0.025,
+ "end_time": 0.75,
+ "n_steps": 30,
+ "fluid_level": 2,
+ "solid_mesh": "640x8",
+ "solid": "nonLinearGeometryTotalLagrangianVelocity (StVK)",
+ "interface": "AMI",
+ "fluid_schemes": {
+  "ddt(U)": "backward",
+  "ddt(dU)": "backward",
+  "ddt(p)": "backward",
+  "div(phi,U)": "Gauss linear",
+  "ddtSchemes default": "none",
+  "gradSchemes default": "leastSquares"
+ },
+ "solid_schemes": {
+  "ddtSchemes default": "backward",
+  "gradSchemes default": "leastSquaresS4f"
+ },
+ "troughWindow": [
+  0.3,
+  0.75
+ ],
+ "mesh_motion": "diffusion",
+ "caps": {
+  "nOuterCorr": 200,
+  "snes_max_it": 20
+ },
+ "petsc": {
+  "snes_rtol": "1e-6",
+  "snes_stol": "1e-6",
+  "ksp_rtol": "1e-4",
+  "snes_max_it": "20"
+ },
+ "viscousStressTranspose": "removed (#618, transpose term always on)",
+ "allrun": [
+  "./Allrun",
+  "monolithic"
+ ]
+}

@@ -1,0 +1,24 @@
+{
+ "run_id": "wp3-coll-qm-dt0.025-rho1-r618-kspmon",
+ "status": "mesh",
+ "t_reached": 0.275,
+ "end_time": 0.75,
+ "n_steps_done": 10,
+ "iters_mean": 3.1,
+ "iters_max": 4,
+ "iters_kind": "Newton (coupled system)",
+ "ksp_per_newton_mean": 372.7741935483871,
+ "coupled_snes_fail": null,
+ "other_snes_fail": [
+  0.275,
+  "D",
+  "DIVERGED_LINEAR_SOLVE"
+ ],
+ "fatal": "--> FOAM FATAL ERROR: (openfoam-2512)",
+ "exec_s": 292.91,
+ "rc": 0,
+ "wall_s": 487.892,
+ "history_samples": 10,
+ "history_finite": true,
+ "max_abs_wall": 0.058573838
+}

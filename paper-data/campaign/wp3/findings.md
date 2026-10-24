@@ -96,3 +96,39 @@ marked superseded.
   term is small). In particular, the ~0.2-point QM–partitioned trough gap
   in 3b (−0.65% against −0.43% at Δt 0.003125) is not a transpose-term
   effect.
+
+## QM Δt 0.025 failure: debugging (24 Oct, Philip via coordinator)
+
+Runs on the #618 build, fluid L2, AMI 640×8, ρs/ρf 1 (`3b/meshmotion_debug/`).
+
+1. **Diffusion mesh motion does not fix it.** `diffusionHyperElastic` with
+   `diffusivity quadratic inverseDistance (interface)` (as TurekHron2006,
+   same solid model, same lagged block-Jacobi/LU) passes t = 0.275 s but
+   fails the same way one step later (t = 0.3 s, `DIVERGED_LINEAR_SOLVE`).
+   Mesh-motion Krylov counts of the first linear solve per step: 18 (to
+   t = 0.15), 23, 28, 36, 53, 114, then failure; initial residual roughly
+   doubles each step (5.3, 8.7, 14, 25, 51, 133).
+2. **GMRES stagnates, it is not just slow.** With the neo-Hookean law and
+   `ksp_monitor_true_residual` on D: at t = 0.275 s the true residual falls
+   to 1.4e-3 of its initial value within ~300 iterations and then stays
+   there to 10 000 (rtol not reached). Earlier steps converge in 14–49.
+3. **Not mesh quality, not the interface data.** At t = 0.25 s J_min = 0.94,
+   skewness 0.015 (`checkMesh` OK); interface displacement and velocity
+   profiles are smooth (relative second difference ≤ 0.2%).
+4. **The degradation tracks displacement × increment** (all at ρs/ρf 1):
+   the step's initial mesh-motion residual and the Krylov count rise with
+   the wall deflection, scale with Δt (Δt 0.0125 ≈ ½, Δt 0.00625 ≈ ¼ of
+   the Δt 0.025 values at the same time), peak near the trough (Δt 0.0125:
+   36 iterations at t = 0.35 s) and fall again on the rebound.
+5. **Candidate root cause (code, not tested).** The mesh-motion pseudo-solid
+   (`solids4foamSolidModel` → `nonLinGeomTotalLagTotalDispSolid`, region
+   `fluid`) is built on the fluid mesh that it moves:
+   `meshMotionSolidModelFvMotionSolver::solve()` calls `movePoints` with the
+   current points and then `evolve()`, and the total-Lagrangian residual
+   uses `mesh().Sf()`, `mesh().magSf()` and `fvc::interpolate(J*Finv.T()) &
+   mesh().Sf()` on that moved mesh, while `D` is the total displacement from
+   `points0`. If so, the deformation is counted twice, the operator departs
+   from the frozen compact preconditioner (built on the first geometry) as
+   the total displacement grows, independent of the law — consistent with
+   1, 2 and 4. Testing it needs a solver change (e.g. evaluate the
+   pseudo-solid on `points0`), which is outside the run agent's remit.

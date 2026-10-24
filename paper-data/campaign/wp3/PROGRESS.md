@@ -88,3 +88,9 @@
   QoIs within 5e-6 of pre-#618 (findings.md). Maps re-plotted with the
   #618 QM rows. Registry rerun rows done. B2 reruns (13359): L2 AMI done,
   L4 conformal running (t = 0.64 s of 1.5 at 22:58).
+- 24 Oct, QM Δt 0.025 debugging (Philip via coordinator): diffusion mesh
+  motion (as FSI3) fails one step later (t = 0.3 s); GMRES stagnation at
+  1.4e-3; candidate root cause in the mesh-motion wrapper (TL pseudo-solid
+  evaluated on the moved fluid mesh with a total displacement) — needs a
+  solver-code test; stopped and reported. Tutorial branch
+  `tutorials/collapsible-monolithic-mesh-motion` created locally, unchanged.

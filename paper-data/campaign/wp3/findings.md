@@ -120,7 +120,7 @@ Runs on the #618 build, fluid L2, AMI 640×8, ρs/ρf 1 (`3b/meshmotion_debug/`)
    the wall deflection, scale with Δt (Δt 0.0125 ≈ ½, Δt 0.00625 ≈ ¼ of
    the Δt 0.025 values at the same time), peak near the trough (Δt 0.0125:
    36 iterations at t = 0.35 s) and fall again on the rebound.
-5. **Candidate root cause (code, not tested).** The mesh-motion pseudo-solid
+5. **Candidate root cause (code) — tested and rejected (item 6).** The mesh-motion pseudo-solid
    (`solids4foamSolidModel` → `nonLinGeomTotalLagTotalDispSolid`, region
    `fluid`) is built on the fluid mesh that it moves:
    `meshMotionSolidModelFvMotionSolver::solve()` calls `movePoints` with the
@@ -132,3 +132,45 @@ Runs on the #618 build, fluid L2, AMI 640×8, ρs/ρf 1 (`3b/meshmotion_debug/`)
    the total displacement grows, independent of the law — consistent with
    1, 2 and 4. Testing it needs a solver change (e.g. evaluate the
    pseudo-solid on `points0`), which is outside the run agent's remit.
+
+6. **Moving-reference test (rejected).** A test build (`4ae081609` + one
+   change evolving the pseudo-solid on `points0`; local solids4foam branch
+   `test/mesh-motion-reference-config`, not pushed) still fails at
+   t = 0.3 s (neo-Hookean and diffusion law); with the diffusion law the
+   mesh-motion residuals are unchanged to three digits. Not the cause.
+7. **Singular values (root cause).** `ksp_monitor_singular_value` on the
+   mesh-motion solve (neo-Hookean, unpatched): the largest singular value
+   of the preconditioned operator in the first linear solve grows 1.9
+   (t = 0.1 s), 6.3 (0.2), 13 (0.225), 47 (0.25), ~5.5e3 (0.275); the
+   smallest stays O(0.1–100). The true tangent becomes locally orders of
+   magnitude stiffer than the frozen compact preconditioner, i.e. some
+   cells approach J → 0 **in the first iterate** (the converged meshes have
+   J_min 0.94). With `predictor false` (the default) the first iterate is
+   the old displacement with the new wall displacement, so the whole wall
+   increment sits in the half-cells next to the wall. The largest wall
+   increment per step relative to the half-cell height (1/64 m at fluid
+   level 2) is 0.51, 0.72, 0.93, 1.13 at t = 0.175, 0.2, 0.225, 0.25 s
+   (~1.35 at 0.275 s): the near-wall half-cells fold. This explains the
+   growth with the wall velocity, the Δt scaling, the recovery after the
+   trough, the independence of the law, and why the tutorial (fluid level
+   1, half-cell 1/32 m) never fails.
+8. **Fix: the mesh-motion predictor.** `predictor yes` in the fluid
+   `solidProperties.monolithic` (needs `ddt(D) backward`; `d2dt2(D)` stays
+   `steadyState`, so the motion stays quasi-static). The lagged
+   preconditioner is unchanged. Δt 0.025, ρs/ρf 1: passes to t = 0.75 s
+   with 14–17 Krylov iterations per mesh-motion solve (neo-Hookean) or
+   18–24 (diffusionHyperElastic + quadratic inverse distance), 3.2 Newton
+   iterations per step, trough −1.982% (neo-Hookean) / −1.984% (diffusion).
+   Δt 0.0125: trough −0.21391 m with and without the predictor (identical
+   to 1e-7 m), 15% less wall time. Proposed tutorial change: solids4foam
+   branch `tutorials/collapsible-monolithic-mesh-motion` (bf72e7d65, off
+   `a46bcbae7`): predictor + `ddt(D) backward` + diffusionHyperElastic +
+   `diffusivity quadratic inverseDistance (interface)`.
+9. **Other QM tutorials** with a nonlinear pseudo-solid and no mesh-motion
+   predictor (same failure mode possible at large wall increments per
+   step relative to the near-wall cells): blobInTreacle,
+   cavityFlexibleBottom, membraneRoof (neoHookeanElastic) and
+   TurekHron2006 (diffusionHyperElastic). The linear-elastic ones (3dTube,
+   beamInCrossFlow, foilInWind, mokLidDrivenCavity, perpendicularFlap,
+   ringAddedMass, womersleyTube) have a constant tangent and are not
+   affected by the first iterate. None changed without a test.

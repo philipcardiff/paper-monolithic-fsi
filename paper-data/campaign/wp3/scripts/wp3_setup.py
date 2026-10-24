@@ -252,10 +252,19 @@ def setup_coll(args):
                  r"^(regionName\s+fluid;\n)",
                  r"\g<1>\n// Stiffen the mesh motion near the moving wall\n"
                  r"diffusivity     quadratic inverseDistance (interface);\n")
+        if args.mesh_predictor:
+            sub1(case / "constant/fluid/solidProperties.monolithic",
+                 r"(^\s*solutionAlgorithm\s+PETScSNES;\n)",
+                 r"\g<1>    predictor            yes;\n")
+            sub1(case / "system/fluid/fvSchemes.monolithic",
+                 r"^(\s*ddt\(D\)\s+)steadyState;", r"\g<1>backward;")
         if args.monitor_mesh_ksp:
+            # Diagnostics only: Krylov residuals and extreme singular-value
+            # estimates of the preconditioned mesh-motion operator
             sub1(case / "system/fluid/fvSolution.monolithic",
                  r"(^\s*ksp_converged_reason;\n)",
-                 r"\g<1>            ksp_monitor_true_residual;\n")
+                 r"\g<1>            ksp_monitor_true_residual;\n"
+                 r"            ksp_monitor_singular_value;\n")
         cmd = ["./Allrun", "monolithic"]
     else:
         partitioned_coeffs(case / f"constant/fsiProperties.{allrun}",
@@ -283,6 +292,7 @@ def setup_coll(args):
                     if args.coupling == "qm" else "system/solid/fvSchemes")),
         "troughWindow": [0.3, 0.75],
         "mesh_motion": getattr(args, "mesh_motion", "tutorial"),
+        "mesh_predictor": bool(getattr(args, "mesh_predictor", False)),
     }
     m = re.search(r"^\s*relaxationFactor\s+([^;]+);", fsi_text, re.MULTILINE)
     if m:
@@ -344,6 +354,10 @@ def main():
     # diffusivity from the interface (as TurekHron2006)
     p.add_argument("--mesh-motion", choices=("tutorial", "diffusion"),
                    default="tutorial")
+    # QM fluid mesh motion: start each mesh-motion Newton solve from the
+    # total-Lagrangian predictor (D0 + dt*U + 0.5*dt^2*A) instead of the old
+    # displacement; needs a ddt(D) scheme (d2dt2(D) stays steadyState)
+    p.add_argument("--mesh-predictor", action="store_true")
     # Diagnostics: Krylov residual monitor on the mesh-motion (D) solve
     p.add_argument("--monitor-mesh-ksp", action="store_true")
     args = ap.parse_args()

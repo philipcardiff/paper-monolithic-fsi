@@ -36,9 +36,9 @@ CODE = {"cap": "cap", "newton": "Nwt", "mesh": "mesh", "nan": "NaN",
 
 def parse(run_id, which):
     if which == "3a":
-        m = re.match(r"wp3-ram-(\w+?)-(\w+?)-n(\d+)(?:-r618)?$", run_id)
+        m = re.match(r"wp3-ram-(\w+?)-(\w+?)-n(\d+)(?:-r618(?:mm)?)?$", run_id)
         return m and (m.group(1), int(m.group(3)), m.group(2))
-    m = re.match(r"wp3-coll-(\w+?)-dt([\d.e-]+?)-rho([\d.e-]+?)(?:-r618)?$", run_id)
+    m = re.match(r"wp3-coll-(\w+?)-dt([\d.e-]+?)-rho([\d.e-]+?)(?:-r618(?:mm)?)?$", run_id)
     return m and (m.group(1), float(m.group(2)), float(m.group(3)))
 
 

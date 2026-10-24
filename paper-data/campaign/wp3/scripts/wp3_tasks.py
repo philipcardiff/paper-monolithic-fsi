@@ -34,6 +34,11 @@ elif what == "qm618":
     # QM arms of 3b and 3a on the #618 build (collapsible first: longer)
     lines = [coll("qm", dt, r, "-r618") for dt in DTS for r in RHOS] + \
             [ring("qm", l, n, "-r618") for n in STEPS for l in LEVELS]
+elif what == "qm618mm":
+    # 3b QM arm with the fixed mesh motion (predictor + diffusionHyperElastic
+    # with a quadratic inverse-distance diffusivity)
+    lines = [coll("qm", dt, r, "-r618mm") + " --mesh-predictor "
+             "--mesh-motion diffusion" for dt in DTS for r in RHOS]
 elif what == "smoke":
     lines = [ring(c, "strong", 12, "-smoke") for c in COUPLINGS] + \
             [coll(c, 0.025, 1, "-smoke") for c in COUPLINGS]

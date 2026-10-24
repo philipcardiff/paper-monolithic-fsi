@@ -23,3 +23,15 @@ m4a-fsi3-qmami-1x-C,drag_mean,454.2316666666667,453.97103333333337,V QM-AMI 1x (
 m4a-fsi3-qmami-1x-C,drag_amplitude,22.599733333333347,22.3313,V QM-AMI 1x (paper-fsi-verification:ring-monolithic:paper-data/hronturek_fsi3_monolithic_tutorial_meshes.csv),1.2020e-02,,"Featflow 27.74, error vs Featflow 0.1853"
 m4a-fsi3-qmami-1x-C,lift_amplitude,223.7242,221.7383,V QM-AMI 1x (paper-fsi-verification:ring-monolithic:paper-data/hronturek_fsi3_monolithic_tutorial_meshes.csv),8.9561e-03,,"Featflow 153.91, error vs Featflow 0.4536"
 m4a-fsi3-qmami-1x-C,lift_frequency,5.600193067805028,5.594536194916552,V QM-AMI 1x (paper-fsi-verification:ring-monolithic:paper-data/hronturek_fsi3_monolithic_tutorial_meshes.csv),1.0111e-03,,"Featflow 5.46, error vs Featflow 0.0257"
+mfix-fsi3-1x,ux_mean,-0.00208859105,-0.002232,"V IQN-ILS tutorial 1x (paper-fsi-verification:main:paper-data/hronturek_fsi3_4x_findings.md, section 3 table)",6.4251e-02,,"Featflow -0.00288, error vs Featflow 0.2748"
+mfix-fsi3-1x,ux_amplitude,0.00201741895,0.002163,"V IQN-ILS tutorial 1x (paper-fsi-verification:main:paper-data/hronturek_fsi3_4x_findings.md, section 3 table)",-6.7305e-02,,"Featflow 0.00272, error vs Featflow 0.2583"
+mfix-fsi3-1x,uy_amplitude,0.028474100000000002,0.02985,"V IQN-ILS tutorial 1x (paper-fsi-verification:main:paper-data/hronturek_fsi3_4x_findings.md, section 3 table)",-4.6094e-02,,"Featflow 0.03499, error vs Featflow 0.1862"
+mfix-fsi3-1x,uy_frequency,5.5997147154265985,,,,,"Featflow 5.46, error vs Featflow 0.0256"
+mfix-fsi3-1x,drag_mean,453.64200000000005,456.6,"V IQN-ILS tutorial 1x (paper-fsi-verification:main:paper-data/hronturek_fsi3_4x_findings.md, section 3 table)",-6.4783e-03,,"Featflow 460.5, error vs Featflow 0.0149"
+mfix-fsi3-1x,drag_amplitude,21.66906666666668,22.87,"V IQN-ILS tutorial 1x (paper-fsi-verification:main:paper-data/hronturek_fsi3_4x_findings.md, section 3 table)",-5.2511e-02,,"Featflow 27.74, error vs Featflow 0.2189"
+mfix-fsi3-1x,lift_amplitude,219.03703333333334,229.1,"V IQN-ILS tutorial 1x (paper-fsi-verification:main:paper-data/hronturek_fsi3_4x_findings.md, section 3 table)",-4.3924e-02,,"Featflow 153.91, error vs Featflow 0.4232"
+mfix-fsi3-1x,lift_frequency,5.599752391062458,,,,,"Featflow 5.46, error vs Featflow 0.0256"
+mfix-tube-L1,ur_max_A_m,0.00015965800126262626,0.00015949,pre-#618 QM L1 (3dTube verification README),1.0534e-03,,fix minus pre-fix
+mfix-tube-L1,t_ur_max_A_s,0.007225126262626265,0.007225,pre-#618 QM L1 (3dTube verification README),1.7476e-05,,fix minus pre-fix
+mfix-tube-L1,uz_min_A_m,-8.902305122881357e-05,-8.896e-05,pre-#618 QM L1 (3dTube verification README),-7.0876e-04,,fix minus pre-fix
+mfix-tube-L1,t_uz_min_A_s,0.004756631355932204,,,,,

@@ -1,8 +1,10 @@
 # Run agent C: heavy cases (WP4 FSI3, WP6 3dTube) — progress
 
-Branch `evidence/m-runs-c`. Machine: MeluXina, account p201136. Code: the
-R0 build `/project/home/p201287/philip/qm-head` (solids4foam
-`v2.4-1103-g85b0c1de6`, head of `feature-petsc-snes-quasi-monolithic`).
+Branch `evidence/m-runs-c`. Machine: MeluXina, account p201136.
+Code: since 24 Oct the **#618 build** `/project/home/p201136/philip-agentC/build-4ae0816`
+(compiled at 4ae081609, tree moved to `v2.4-1115-g1252bd2e5` = #618 +
+#617, which changes tutorials only). The 23 Oct 1x checks below used the
+R0 build (`v2.4-1103-g85b0c1de6`, pre-#618) and are superseded.
 Run directories: `/project/home/p201136/philip-agentC/runs/`.
 
 ## Decisions in force (23 Oct 2026)
@@ -15,7 +17,35 @@ Run directories: `/project/home/p201136/philip-agentC/runs/`.
   FSI3 4x and 3dTube L3 wait for the fixed build; then the 1x check is
   rerun on it first.
 
-## 4a — FSI3 QM-AMI, tutorial meshes
+## #618 build (24 Oct)
+
+Tutorial files at 1252bd2e5 used as they are (partitioned schemes;
+TurekHron2006 keeps `interpolate(U) skewCorrected linear`, 3dTube has none,
+as its partitioned file); no `viscousStressTranspose` in any run copy. The
+3dTube driver copy takes `writeInterval` from `$AGENTC_WRITE_INTERVAL`
+(`jobs/setup_copy.py`). Registry: pre-#618 FSI3/3dTube QM rows superseded.
+
+**Batch 1** (Mx 5382225, 1 exclusive node, 36 min, 3 × 8 ranks):
+
+- **FSI3 QM-AMI 1x check: passes.** Against the V IQN-ILS tutorial 1x:
+  `u_x` mean +6.43% (smaller magnitude), `u_y` amplitude −4.61%, drag mean
+  −0.65%, lift amplitude −4.39%; agent A: +6.4 / −4.6 / −0.6 / −4.4%.
+  Against pre-#618 QM-AMI 1x: `u_y` amplitude 28.474 vs 28.831 mm (−1.2%),
+  `u_x` mean −2.0886 vs −2.1424 mm. 1.80 Newton per step (max 4).
+- **3dTube QM L1: done.** `u_r,max(A)` 0.159658 mm (pre-fix 0.15949,
+  +0.1%), `t` 7.225 ms (same), `u_z,min(A)` −0.089023 mm (+0.07%).
+- **3dTube QM L2: failed** at t = 5 ms (could not create its first field
+  directory): the p201136 **file quota** (1 M files) was full. Cause: the
+  1x run wrote fields every 10 steps (702 times × 9 directories). I deleted
+  the 1x times below 6.8 s (187 000 files freed, quota 80%). The 1x solver
+  had finished; its analysis was rerun with `--reuse`. L2 rerun in batch 2.
+
+**Batch 2** (Mx 5382421, 1 exclusive node, submitted 24 Oct ~23:20):
+FSI3 QM-AMI 4x (32 ranks, writes t = 7 s only), 3dTube QM L3 (32 ranks,
+fields every 2.5 ms incl. the 5 ms restart state), 3dTube QM L2 (8 ranks,
+fields every 2.5 ms).
+
+## 4a — FSI3 QM-AMI, tutorial meshes (23 Oct, pre-#618, superseded)
 
 ### 1x check (Mx job 5377601, one exclusive node, 3 × 8 ranks)
 
@@ -70,11 +100,11 @@ the V 1x row has `pass False` too). CSVs: `runs.csv`, `qois.csv`,
 
 ### 4x production
 
-Registry row claimed (M run agent). Waiting for the fixed build.
+Running in batch 2 (Mx 5382421).
 
-## 6a — 3dTube QM L3
+## 6a — 3dTube QM L1–L3
 
-Registry row claimed (M run agent). Waiting for the fixed build.
+L1 done; L2 and L3 running in batch 2 (Mx 5382421).
 
 ## Timing jobs (4b, 6b, 6c, 4c)
 
@@ -87,3 +117,6 @@ approved by Philip 23 Oct (decisions in `TIMING_JOBS.md`); submit from
 | Project | Job | Node-hours |
 |---|---|---|
 | p201136 | 5377601 (4a 1x check, 1 exclusive node, 25.8 min) | 0.43 |
+| p201136 | 5382214 (build, 32 cores, short QOS, 5.5 min) | 0.09 |
+| p201136 | 5382225 (batch 1, 1 exclusive node, 36 min) | 0.60 |
+| p201136 | 5382421 (batch 2) | running |

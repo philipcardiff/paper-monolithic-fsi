@@ -1,0 +1,7 @@
+{"run_id": "mfix-tube-L1", "ranks": 8, "cores": "32-39",
+ "command": "./verification/Allverify --coupling monolithic --levels 1 --cores 8 --time-scheme backward --solid-preconditioner hypre", "write_interval_env": "1e-3",
+ "solver_case": "/project/home/p201136/philip-agentC/runs/fix/mfix-tube-L1/verification/work/monolithic_backward_mesh1", "code_commit": "v2.4-1115-g1252bd2e5",
+ "node": "mel0042", "slurm_job_id": "5382225", "account": "p201136",
+ "exclusive_node": true, "shared_with_other_runs": true,
+ "binding": "taskset -c 32-39; MPI binding none",
+ "rc": 1, "wall_s": 363.1}

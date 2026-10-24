@@ -1,0 +1,17 @@
+{
+ "run_id": "mfix-fsi3-1x",
+ "ranks": 8,
+ "cores": "0-7",
+ "command": "./verification/Allverify --coupling monolithicAMI --levels 1 --cores 8 --write-interval 10 (then --reuse for the analysis)",
+ "solver_case": "/project/home/p201136/philip-agentC/runs/fix/mfix-fsi3-1x/verification/work/monolithicAMI_mesh_1x",
+ "code_commit": "v2.4-1115-g1252bd2e5",
+ "node": "mel0042",
+ "slurm_job_id": "5382225",
+ "account": "p201136",
+ "exclusive_node": true,
+ "shared_with_other_runs": true,
+ "binding": "taskset -c 0-7; MPI binding none",
+ "rc": 1,
+ "wall_s": 2144,
+ "notes": "solver completed (End, t = 7); reconstructPar and the driver analysis then failed on the p201136 file quota; analysis rerun with --reuse; fields kept for t = 6.8-7.0 only (processor dirs)"
+}

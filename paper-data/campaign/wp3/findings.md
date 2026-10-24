@@ -45,3 +45,35 @@ reference: QM −0.95/−0.70/−0.64%.
   (no QM runs until the vST fix).
 - RN is undefined at ρs = 0 with the secant Robin coefficient; the map
   should say "not applicable" rather than "failed" if Philip prefers.
+
+## QM failure at Δt 0.025 (collapsibleChannel): mesh motion, not coupling
+
+Diagnostic copy on the #618 build (`wp3-coll-qm-dt0.025-rho1-r618-diag`,
+same set-up, fields written every step; nothing tuned). Files:
+`3b/meshdiag_dt0.025/` (from `scripts/wp3_meshdiag.sh`).
+
+- The run stops at t = 0.275 s, as before #618 and for every density, in
+  the first linear solve of the fluid mesh-motion problem (pseudo-solid,
+  `solids4foamSolidModel` motion solver, neo-Hookean, PETSc SNES with a
+  matrix-free operator, `lgmres` + block-Jacobi/LU,
+  `snes_lag_preconditioner -2` persisting, i.e. the preconditioner is
+  built once and then frozen): `DIVERGED_ITS` after 10 000 Krylov
+  iterations, SNES reason `DIVERGED_LINEAR_SOLVE`.
+- Mesh-motion history (`d_history.csv`): initial residual per step
+  1.1e-3, 3.8e-3, 1.1e-2, 2.3e-2, 4.3e-2, 7.4e-2, 0.13, 0.23, 0.52, then
+  5.6 at t = 0.275 s; Krylov iterations of the first linear solve 14, 14,
+  14, 15, 16, 18, 21, 29, 49, then 10 000.
+- Mesh at the last state before the failure (t = 0.25 s): `checkMesh`
+  OK, max skewness 0.015, min volume 1.84e-4 (max 1.95e-4);
+  J = V/V0 min 0.941, no cell below 0.1 (`jacobian.json`). The state at
+  the failed solve itself is not written (the solve aborts).
+- The coupled problem is regular up to then: 3 Newton iterations per step,
+  wall midpoint −0.0013 → −0.0586 m smooth and monotonic.
+- Reading: the mesh is not tangled; the mesh-motion linear solver fails as
+  the pseudo-solid departs from the configuration of its frozen
+  preconditioner, with per-step increments that are four times those at
+  Δt 0.00625 (which passes). The failure belongs to the mesh-motion
+  solver set-up, not to the quasi-monolithic coupling.
+
+RN at ρs/ρf = 0 is now recorded as `n/a` (not applicable: the Robin
+coefficient scales with the wall density), grey marker in the map.

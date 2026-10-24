@@ -79,3 +79,8 @@
 - Registry: 3a/3b rows split; partitioned arms done, pre-#618 QM arms
   `superseded`, #618 QM reruns claimed (40 runs, run ids `*-r618`,
   XenoSim, one Slurm job of 16 tasks).
+- Coordinator (24 Oct, relayed): take over the B2 QM reruns (L2 AMI 640×8,
+  L4 conformal 320×8, Δt 0.00625 to 1.5 s, backward + #617) — job 13359
+  (3 tasks; a first submission 13358 reserved 16 CPUs and was cancelled at
+  once); B2 QM rows superseded, reruns claimed. RN ρ 0 → `n/a`.
+  QM Δt 0.025 failure recurs on #618; mesh diagnosis done (findings.md).

@@ -25,6 +25,7 @@ INK = "#0b0b0b"
 MUTED = "#52514e"
 GRID = "#d9d8d4"
 CRITICAL = "#d03b3b"
+GRID_NA = "#a3a29c"  # not applicable (RN at a massless wall)
 COUPLINGS = [("aitken", "Aitken", "s", False), ("iqn", "IQN-ILS", "^", False),
              ("rn", "Robin–Neumann", "D", False), ("qm", "Quasi-monolithic", "o",
                                                   True)]
@@ -82,15 +83,18 @@ def main():
                 if r is None:
                     continue
                 ok = r["status"] == "pass"
-                col = INK if ok else CRITICAL
+                na = r["status"] == "n/a"
+                col = INK if ok else (GRID_NA if na else CRITICAL)
                 ax.plot(i + off[k], j, marker=marker, ms=8, mew=1.4,
                         color=col, mfc=col if filled else "none",
                         linestyle="none", zorder=3)
                 label = (f"{float(r['iters_mean']):.0f}" if ok and
                          r["iters_mean"] else CODE.get(r["status"],
                                                        r["status"]))
+                if na:
+                    label = "n/a"
                 ax.text(i + off[k], j - 0.3, label, ha="center", va="top",
-                        fontsize=6.5, color=MUTED if ok else CRITICAL)
+                        fontsize=6.5, color=MUTED if ok or na else CRITICAL)
     ax.set_xticks(range(len(xs)), xtick)
     ax.set_yticks(range(len(ys)), [ylab[y] for y in ys])
     ax.set_xlim(-0.55, len(xs) - 0.45)
@@ -111,7 +115,11 @@ def main():
     handles.append(Line2D([], [], marker="o", ms=7, color=CRITICAL,
                           mfc="none", linestyle="none",
                           label="failed (cap, Nwt, mesh, NaN, div, t/o)"))
-    ax.legend(handles=handles, loc="upper center", ncol=5, fontsize=7,
+    if a.map == "3b":
+        handles.append(Line2D([], [], marker="D", ms=7, color=GRID_NA,
+                              mfc="none", linestyle="none",
+                              label="not applicable"))
+    ax.legend(handles=handles, loc="upper center", ncol=6, fontsize=7,
               frameon=False, bbox_to_anchor=(0.5, -0.16 - 0.02 * len(ys)),
               handletextpad=0.2, columnspacing=1.0)
     fig.text(0.01, 0.005, "Numbers: mean iterations per step (coupling; "

@@ -1,0 +1,3 @@
+wp3-b2-mono-F4-S320x8-directMap-r618 coll --coupling qm --dt 0.00625 --rho-ratio 1 --level 4 --solid 320 8 --end 1.5
+wp3-b2-mono-F2-S640x8-AMI-r618 coll --coupling qm --dt 0.00625 --rho-ratio 1 --level 2 --solid 640 8 --end 1.5
+wp3-coll-qm-dt0.025-rho1-r618-diag coll --coupling qm --dt 0.025 --rho-ratio 1 --write-every-step

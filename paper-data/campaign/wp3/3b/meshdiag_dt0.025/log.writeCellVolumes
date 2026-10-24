@@ -1,0 +1,45 @@
+/*---------------------------------------------------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2512                                  |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+Build  : _87ed40d2-20251219 OPENFOAM=2512 version=2512
+Arch   : "LSB;label=32;scalar=64"
+Exec   : postProcess -region fluid -func writeCellVolumes -time 0,0.25
+Date   : Oct 24 2026
+Time   : 21:48:01
+Host   : xenosim
+PID    : 2711794
+I/O    : uncollated
+Case   : /home/philipc/OpenFOAM/philipc-v2512-qm618/runs/wp3/wp3-coll-qm-dt0.025-rho1-r618-diag
+nProcs : 1
+trapFpe: Floating point exception trapping enabled (FOAM_SIGFPE).
+memory pool : not available
+fileModificationChecking : Monitoring run-time modified files using timeStampMaster (fileModificationSkew 5, maxFileModificationPolls 20)
+allowSystemOperations : Allowing user-supplied system call operations
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+Create time
+
+Create mesh fluid for time = 0
+
+Time = 0
+
+Reading fields:
+
+Executing functionObjects
+writeCellVolumes writeCellVolumes write:
+    writing cell-volumes field V to 0
+
+Time = 0.25
+
+Reading fields:
+
+Executing functionObjects
+writeCellVolumes writeCellVolumes write:
+    writing cell-volumes field V to 0.25
+
+End
+

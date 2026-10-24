@@ -209,11 +209,20 @@ def setup_coll(args):
     if case.exists():
         shutil.rmtree(case)
     shutil.copytree(drv.CASE_DIR, case, ignore=drv.ignored, symlinks=True)
-    spec = {"name": case.name, "fluid": COLL_LEVEL, "solid": COLL_SOLID,
+    solid = tuple(args.solid)
+    spec = {"name": case.name, "fluid": args.level, "solid": solid,
             "dt": args.dt, "solidType": "linear", "coupling": allrun}
     # Block divisions, deltaT, endTime, AMI, and the IQN-ILS initial
     # relaxation scaled with deltaT^2 (also used as Aitken's initial factor)
-    drv.configure_case(case, spec, COLL_END)
+    drv.configure_case(case, spec, args.end)
+    if args.write_every_step:
+        control = case / "system/controlDict"
+        sub1(control, r"^(writeInterval\s+)[^;]+;", r"\g<1>1;")
+        sub1(control, r"^(writeControl\s+)[^;]+;", r"\g<1>timeStep;")
+        sub1(control, r"^(writeFormat\s+)[^;]+;", r"\g<1>ascii;")
+    ami = re.search(r"^\s*interfaceTransferMethod\s+AMI;",
+                    (case / f"constant/fsiProperties.{allrun}").read_text(),
+                    re.MULTILINE) is not None
 
     rho_s = args.rho_ratio * RHO_FLUID
     sub1(case / "constant/solid/mechanicalProperties",
@@ -221,14 +230,15 @@ def setup_coll(args):
 
     if args.coupling == "qm":
         qm_options(case)
-        # Conservative traction transfer through AMI, as B2
+        # Conservative traction transfer through AMI, as B2 (AMI only)
         fsi = case / "constant/fsiProperties.monolithic"
-        sub1(fsi, r"^(\s*interfaceTransferMethod\s+\w+;)",
+        if ami:
+          sub1(fsi, r"^(\s*interfaceTransferMethod\s+\w+;)",
              r"\g<1>\n\n    // B2: conservative force transfer through AMI\n"
              r"    conservativeTractionTransfer yes;")
-        sub1(case / "0/solid/D",
-             r"^(\s*interface\s*\n\s*\{\s*\n\s*type\s+solidTraction;)",
-             r"\g<1>\n        useUndeformedArea yes;")
+          sub1(case / "0/solid/D",
+               r"^(\s*interface\s*\n\s*\{\s*\n\s*type\s+solidTraction;)",
+               r"\g<1>\n        useUndeformedArea yes;")
         # BDF2 fluid (the tutorial file says Euler); ddt(dU) stays Euler
         schemes = case / "system/fluid/fvSchemes.monolithic"
         if POST_618:
@@ -249,9 +259,9 @@ def setup_coll(args):
     meta = {
         "map": "3b", "case": "collapsibleChannel", "coupling": args.coupling,
         "rho_ratio": args.rho_ratio, "rho_solid": rho_s,
-        "rho_fluid": RHO_FLUID, "deltaT": args.dt, "end_time": COLL_END,
-        "n_steps": round(COLL_END / args.dt), "fluid_level": COLL_LEVEL,
-        "solid_mesh": f"{COLL_SOLID[0]}x{COLL_SOLID[1]}",
+        "rho_fluid": RHO_FLUID, "deltaT": args.dt, "end_time": args.end,
+        "n_steps": round(args.end / args.dt), "fluid_level": args.level,
+        "solid_mesh": f"{solid[0]}x{solid[1]}",
         "solid": "linear reconstruction (TL StVK)" if args.coupling != "qm"
         else "nonLinearGeometryTotalLagrangianVelocity (StVK)",
         "interface": re.search(r"^\s*interfaceTransferMethod\s+(\w+);",
@@ -260,7 +270,7 @@ def setup_coll(args):
         "solid_schemes": schemes_summary(
             case / ("system/solid/fvSchemes.monolithic"
                     if args.coupling == "qm" else "system/solid/fvSchemes")),
-        "troughWindow": [0.3, COLL_END],
+        "troughWindow": [0.3, 0.75],
     }
     m = re.search(r"^\s*relaxationFactor\s+([^;]+);", fsi_text, re.MULTILINE)
     if m:
@@ -310,6 +320,13 @@ def main():
                    required=True)
     p.add_argument("--dt", type=float, required=True)
     p.add_argument("--rho-ratio", type=float, required=True)
+    # B2 reruns: other fluid level, solid mesh and end time
+    p.add_argument("--level", type=int, default=COLL_LEVEL)
+    p.add_argument("--solid", nargs=2, type=int, default=list(COLL_SOLID),
+                   metavar=("NX", "NY"))
+    p.add_argument("--end", type=float, default=COLL_END)
+    # Diagnostics: write every time step, in ASCII
+    p.add_argument("--write-every-step", action="store_true")
     args = ap.parse_args()
     (setup_ring if args.cmd == "ring" else setup_coll)(args)
 

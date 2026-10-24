@@ -24,6 +24,8 @@ runs, README.md) is applied in this order, identically for every coupling:
   crash      any other abnormal end (FOAM FATAL, signal, missing End)
 
 A run that reaches its end time with none of the above is "pass".
+Robin-Neumann at rho_s/rho_f = 0 is "n/a" whatever happened: the Robin
+coefficient scales with the wall density and vanishes.
 """
 
 import os
@@ -197,6 +199,7 @@ def coll_qois(case, meta):
             refs = {1.0: drv.REFERENCE_CSV,
                     0.0: drv.REFERENCE_DIR /
                     "collapsibleChannel_oomph_massless_reference.csv"}
+            q["end_time_value"] = hist[-1][1]
             ref_file = refs.get(meta["rho_ratio"])
             if ref_file is not None and ref_file.is_file():
                 ref = drv.read_reference(ref_file)["wallMid"]
@@ -204,6 +207,18 @@ def coll_qois(case, meta):
                 q["trough_reference"] = rv
                 q["trough_reference_source"] = ref_file.name
                 q["trough_error"] = tv / rv - 1
+                if ref[0][0] <= t_end <= ref[-1][0]:
+                    q["end_reference"] = drv.interpolate(ref, t_end)
+            # oomph-lib at the run's own time step, when it exists
+            dt_ref = {0.025: 40, 0.0125: 80, 0.00625: 160, 0.003125: 320}.get(
+                meta["deltaT"])
+            same = drv.REFERENCE_DIR / f"collapsibleChannel_oomph_dt{dt_ref}.csv"
+            if meta["rho_ratio"] == 1.0 and dt_ref and same.is_file():
+                ref = drv.read_reference(same)["wallMid"]
+                q["trough_reference_same_dt"] = drv.trough(
+                    ref, tuple(meta["troughWindow"]))[1]
+                if ref[0][0] <= t_end <= ref[-1][0]:
+                    q["end_reference_same_dt"] = drv.interpolate(ref, t_end)
     return q
 
 
@@ -242,6 +257,12 @@ def main():
         status = "pass"
     else:
         status = "crash"
+    # Robin-Neumann at rho_s = 0: the Robin coefficient scales with the wall
+    # density and vanishes, so the scheme is not defined (coordinator,
+    # 24 Oct): "n/a", not a coupling failure
+    if meta["map"] == "3b" and meta["coupling"] == "rn" and \
+            meta["rho_ratio"] == 0:
+        status = "n/a"
     # A converged run in which an inner (solid or mesh-motion) SNES solve
     # reported non-convergence but the step still converged is a pass with a
     # note

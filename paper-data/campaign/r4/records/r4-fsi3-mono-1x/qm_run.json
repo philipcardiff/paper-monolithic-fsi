@@ -1,0 +1,31 @@
+{
+ "case": "TurekHron2006",
+ "benchmark": "fsi3",
+ "level": 1,
+ "dt": 0.001,
+ "t_end": 7.0,
+ "ranks": 1,
+ "write_every_steps": 1000,
+ "edits": [
+  "restart yes in solid and fluid mesh-motion solid"
+ ],
+ "coupling": "NewtonQuasiMonolithic",
+ "allrun": "monolithic",
+ "decompose": "regions",
+ "solid_pc": "redundant+lu (S0)",
+ "tol": {
+  "snes_rtol": 1e-06,
+  "snes_stol": 1e-06,
+  "ksp_rtol": 0.0001
+ },
+ "prepare": true,
+ "setup_args": {
+  "cmd": "fsi3",
+  "dest": "/project/home/p201287/philip/qm-final/runs/r4/r4-fsi3-mono-1x",
+  "coupling": "mono",
+  "level": 1,
+  "ranks": 1,
+  "end": 7.0,
+  "tol": "snes_rtol=1e-6,snes_stol=1e-6,ksp_rtol=1e-4"
+ }
+}

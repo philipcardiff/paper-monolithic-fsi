@@ -1,0 +1,30 @@
+{
+ "case": "3dTube",
+ "level": 2,
+ "factor": 2,
+ "dt": 1.25e-05,
+ "t_end": 0.02,
+ "ranks": 16,
+ "edits": [],
+ "coupling": "NewtonQuasiMonolithic",
+ "allrun": "monolithic",
+ "decompose": "monolithic",
+ "solid_pc": "hypre/boomeramg (S1)",
+ "tol": {
+  "snes_rtol": 0.0001,
+  "snes_stol": 0.0001,
+  "ksp_rtol": 0.001
+ },
+ "prepare": true,
+ "setup_args": {
+  "cmd": "tube",
+  "dest": "/project/home/p201287/philip/qm-final/runs/r5/r5-tube-mono-L2-t4",
+  "coupling": "mono",
+  "level": 2,
+  "ranks": 16,
+  "end": 0.02,
+  "write_interval": 0.004,
+  "tol": "snes_rtol=1e-4,snes_stol=1e-4,ksp_rtol=1e-3",
+  "pc": null
+ }
+}

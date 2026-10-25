@@ -1,0 +1,7 @@
+{"run_id": "r4-fsi3-mono-1x", "ranks": 1, "cores": "104",
+ "node": "mel0515", "slurm_job_id": "5384147",
+ "exclusive_node": true, "shared_with_own_jobs_only": true,
+ "binding": "one core per rank (taskset per rank via bindwrap.sh); MPI binding none",
+ "farm_task": "r4-fsi3-mono-1x",
+ "rc": 0, "prepare_s": 19.117,
+ "solver_wall_s": 1978.828}

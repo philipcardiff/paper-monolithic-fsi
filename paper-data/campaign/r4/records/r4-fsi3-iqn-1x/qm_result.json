@@ -1,0 +1,29 @@
+{
+ "run_dir": "/mnt/tier2/project/p201287/philip/qm-final/runs/r4/r4-fsi3-iqn-1x",
+ "log_summary": {
+  "n_steps": 0,
+  "t_last": null,
+  "snes_not_converged": 0,
+  "snes_fail_reasons": [],
+  "exec_s": 4661.24,
+  "clock_s": 5511.0,
+  "ended": false,
+  "fatal": "--> FOAM FATAL ERROR: (openfoam-2512)"
+ },
+ "iterations": {
+  "n_steps": 3937,
+  "iters_mean": 11.84759969519939,
+  "iters_max": 32.0,
+  "iters_total": 46644.0,
+  "final_residual_max": 1.0,
+  "steps_above_tol": 1
+ },
+ "timing": {
+  "window_clock_s": 5343.0,
+  "window_steps": 3936,
+  "clock_s_per_step": 1.357469512195122,
+  "window_clock_s_excl_first": 5337.0,
+  "clock_s_per_step_excl_first": 1.356289707750953
+ },
+ "status": "diverged"
+}

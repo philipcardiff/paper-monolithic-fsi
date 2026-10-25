@@ -1,0 +1,31 @@
+{
+ "case": "3dTube",
+ "level": 1,
+ "factor": 1,
+ "dt": 2.5e-05,
+ "t_end": 0.02,
+ "ranks": 8,
+ "edits": [],
+ "coupling": "NewtonQuasiMonolithic",
+ "allrun": "monolithic",
+ "decompose": "monolithic",
+ "solid_pc": "hypre/boomeramg (S1)",
+ "tol": {
+  "snes_rtol": 1e-10,
+  "snes_stol": 1e-10,
+  "ksp_rtol": 1e-08,
+  "ksp_max_it": 10000
+ },
+ "prepare": true,
+ "setup_args": {
+  "cmd": "tube",
+  "dest": "/project/home/p201287/philip/qm-final/runs/r5/r5-tube-mono-L1-tref",
+  "coupling": "mono",
+  "level": 1,
+  "ranks": 8,
+  "end": 0.02,
+  "write_interval": 0.004,
+  "tol": "snes_rtol=1e-10,snes_stol=1e-10,ksp_rtol=1e-8,ksp_max_it=10000",
+  "pc": null
+ }
+}

@@ -1,0 +1,34 @@
+{
+ "case": "TurekHron2006",
+ "benchmark": "fsi3",
+ "level": 1,
+ "dt": 0.001,
+ "t_end": 7.0,
+ "ranks": 1,
+ "write_every_steps": 1000,
+ "edits": [
+  "conformal monolithic blockMeshDicts used for both regions",
+  "fluid mesh motion: tutorial velocityLaplacian, quadratic inverseDistance(plate cylinder) (pseudo-solid not supported by the partitioned interface)",
+  "requireAllResidualMeasures yes",
+  "restart yes in solid"
+ ],
+ "coupling": "IQNILS",
+ "allrun": "iqnils",
+ "decompose": "regions",
+ "solid_pc": "bjacobi+lu (tutorial partitioned solid)",
+ "tol": {
+  "ctol": 1e-06,
+  "fluid_tol": 1e-08,
+  "nouter": 100
+ },
+ "prepare": true,
+ "setup_args": {
+  "cmd": "fsi3",
+  "dest": "/project/home/p201287/philip/qm-final/runs/r4/r4-fsi3-iqn-1x",
+  "coupling": "iqn",
+  "level": 1,
+  "ranks": 1,
+  "end": 7.0,
+  "tol": "ctol=1e-6,fluid_tol=1e-8,nouter=100"
+ }
+}

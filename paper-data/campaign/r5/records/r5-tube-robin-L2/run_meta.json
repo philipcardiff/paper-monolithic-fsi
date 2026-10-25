@@ -1,0 +1,7 @@
+{"run_id": "r5-tube-robin-L2", "ranks": 16, "cores": "32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47",
+ "node": "mel0515", "slurm_job_id": "5384147",
+ "exclusive_node": true, "shared_with_own_jobs_only": true,
+ "binding": "one core per rank (taskset per rank via bindwrap.sh); MPI binding none",
+ "farm_task": "r5-tube-robin-L2",
+ "rc": 0, "prepare_s": 17.844,
+ "solver_wall_s": 4100.855}

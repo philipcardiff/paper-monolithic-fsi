@@ -1,0 +1,65 @@
+coupling,run_id,qoi,tolerance,status,rel_diff_vs_ref,disc_change_2x_4x,ratio_to_disc,passes_5pct_rule,iters_mean,ksp_per_newton_mean,wall_s_per_step,core_h_per_sim_s
+mono,r4-fsi3-mono-2x-s1e-4,ux_mean,1e-4,completed,0,nan,nan,,2,22.1612,0.56925,1.265
+mono,r4-fsi3-mono-2x-s1e-4,ux_amplitude,1e-4,completed,3.58028e-06,nan,nan,,2,22.1612,0.56925,1.265
+mono,r4-fsi3-mono-2x-s1e-4,uy_amplitude,1e-4,completed,0,nan,nan,,2,22.1612,0.56925,1.265
+mono,r4-fsi3-mono-2x-s1e-4,uy_frequency,1e-4,completed,0,nan,nan,,2,22.1612,0.56925,1.265
+mono,r4-fsi3-mono-2x-s1e-4,drag_mean,1e-4,completed,0,nan,nan,,2,22.1612,0.56925,1.265
+mono,r4-fsi3-mono-2x-s1e-4,drag_amplitude,1e-4,completed,0,nan,nan,,2,22.1612,0.56925,1.265
+mono,r4-fsi3-mono-2x-s1e-4,lift_amplitude,1e-4,completed,0,nan,nan,,2,22.1612,0.56925,1.265
+mono,r4-fsi3-mono-2x-s1e-4,lift_amplitude_smoothed,1e-4,completed,6.23298e-06,nan,nan,,2,22.1612,0.56925,1.265
+mono,r4-fsi3-mono-2x-s1e-6,ux_mean,1e-6,completed,0,nan,nan,,2,22.1612,0.5975,1.32778
+mono,r4-fsi3-mono-2x-s1e-6,ux_amplitude,1e-6,completed,3.58028e-06,nan,nan,,2,22.1612,0.5975,1.32778
+mono,r4-fsi3-mono-2x-s1e-6,uy_amplitude,1e-6,completed,0,nan,nan,,2,22.1612,0.5975,1.32778
+mono,r4-fsi3-mono-2x-s1e-6,uy_frequency,1e-6,completed,0,nan,nan,,2,22.1612,0.5975,1.32778
+mono,r4-fsi3-mono-2x-s1e-6,drag_mean,1e-6,completed,0,nan,nan,,2,22.1612,0.5975,1.32778
+mono,r4-fsi3-mono-2x-s1e-6,drag_amplitude,1e-6,completed,0,nan,nan,,2,22.1612,0.5975,1.32778
+mono,r4-fsi3-mono-2x-s1e-6,lift_amplitude,1e-6,completed,0,nan,nan,,2,22.1612,0.5975,1.32778
+mono,r4-fsi3-mono-2x-s1e-6,lift_amplitude_smoothed,1e-6,completed,6.23298e-06,nan,nan,,2,22.1612,0.5975,1.32778
+mono,r4-fsi3-mono-2x-s1e-8,ux_mean,1e-8,completed,0,nan,nan,,2.994,24.4557,0.8015,1.78111
+mono,r4-fsi3-mono-2x-s1e-8,ux_amplitude,1e-8,completed,0,nan,nan,,2.994,24.4557,0.8015,1.78111
+mono,r4-fsi3-mono-2x-s1e-8,uy_amplitude,1e-8,completed,0,nan,nan,,2.994,24.4557,0.8015,1.78111
+mono,r4-fsi3-mono-2x-s1e-8,uy_frequency,1e-8,completed,0,nan,nan,,2.994,24.4557,0.8015,1.78111
+mono,r4-fsi3-mono-2x-s1e-8,drag_mean,1e-8,completed,0,nan,nan,,2.994,24.4557,0.8015,1.78111
+mono,r4-fsi3-mono-2x-s1e-8,drag_amplitude,1e-8,completed,0,nan,nan,,2.994,24.4557,0.8015,1.78111
+mono,r4-fsi3-mono-2x-s1e-8,lift_amplitude,1e-8,completed,0,nan,nan,,2.994,24.4557,0.8015,1.78111
+mono,r4-fsi3-mono-2x-s1e-8,lift_amplitude_smoothed,1e-8,completed,0,nan,nan,,2.994,24.4557,0.8015,1.78111
+mono,r4-fsi3-mono-2x-sref,ux_mean,ref,completed,0,nan,nan,,3,44.8047,1.09275,2.42833
+mono,r4-fsi3-mono-2x-sref,ux_amplitude,ref,completed,0,nan,nan,,3,44.8047,1.09275,2.42833
+mono,r4-fsi3-mono-2x-sref,uy_amplitude,ref,completed,0,nan,nan,,3,44.8047,1.09275,2.42833
+mono,r4-fsi3-mono-2x-sref,uy_frequency,ref,completed,0,nan,nan,,3,44.8047,1.09275,2.42833
+mono,r4-fsi3-mono-2x-sref,drag_mean,ref,completed,0,nan,nan,,3,44.8047,1.09275,2.42833
+mono,r4-fsi3-mono-2x-sref,drag_amplitude,ref,completed,0,nan,nan,,3,44.8047,1.09275,2.42833
+mono,r4-fsi3-mono-2x-sref,lift_amplitude,ref,completed,0,nan,nan,,3,44.8047,1.09275,2.42833
+mono,r4-fsi3-mono-2x-sref,lift_amplitude_smoothed,ref,completed,0,nan,nan,,3,44.8047,1.09275,2.42833
+iqn,r4-fsi3-iqn-2x-s1e-4,ux_mean,1e-4,not run,nan,nan,nan,,nan,nan,nan,nan
+iqn,r4-fsi3-iqn-2x-s1e-4,ux_amplitude,1e-4,not run,nan,nan,nan,,nan,nan,nan,nan
+iqn,r4-fsi3-iqn-2x-s1e-4,uy_amplitude,1e-4,not run,nan,nan,nan,,nan,nan,nan,nan
+iqn,r4-fsi3-iqn-2x-s1e-4,uy_frequency,1e-4,not run,nan,nan,nan,,nan,nan,nan,nan
+iqn,r4-fsi3-iqn-2x-s1e-4,drag_mean,1e-4,not run,nan,nan,nan,,nan,nan,nan,nan
+iqn,r4-fsi3-iqn-2x-s1e-4,drag_amplitude,1e-4,not run,nan,nan,nan,,nan,nan,nan,nan
+iqn,r4-fsi3-iqn-2x-s1e-4,lift_amplitude,1e-4,not run,nan,nan,nan,,nan,nan,nan,nan
+iqn,r4-fsi3-iqn-2x-s1e-4,lift_amplitude_smoothed,1e-4,not run,nan,nan,nan,,nan,nan,nan,nan
+iqn,r4-fsi3-iqn-2x-s1e-5,ux_mean,1e-5,not run,nan,nan,nan,,nan,nan,nan,nan
+iqn,r4-fsi3-iqn-2x-s1e-5,ux_amplitude,1e-5,not run,nan,nan,nan,,nan,nan,nan,nan
+iqn,r4-fsi3-iqn-2x-s1e-5,uy_amplitude,1e-5,not run,nan,nan,nan,,nan,nan,nan,nan
+iqn,r4-fsi3-iqn-2x-s1e-5,uy_frequency,1e-5,not run,nan,nan,nan,,nan,nan,nan,nan
+iqn,r4-fsi3-iqn-2x-s1e-5,drag_mean,1e-5,not run,nan,nan,nan,,nan,nan,nan,nan
+iqn,r4-fsi3-iqn-2x-s1e-5,drag_amplitude,1e-5,not run,nan,nan,nan,,nan,nan,nan,nan
+iqn,r4-fsi3-iqn-2x-s1e-5,lift_amplitude,1e-5,not run,nan,nan,nan,,nan,nan,nan,nan
+iqn,r4-fsi3-iqn-2x-s1e-5,lift_amplitude_smoothed,1e-5,not run,nan,nan,nan,,nan,nan,nan,nan
+iqn,r4-fsi3-iqn-2x-s1e-6,ux_mean,1e-6,not run,nan,nan,nan,,nan,nan,nan,nan
+iqn,r4-fsi3-iqn-2x-s1e-6,ux_amplitude,1e-6,not run,nan,nan,nan,,nan,nan,nan,nan
+iqn,r4-fsi3-iqn-2x-s1e-6,uy_amplitude,1e-6,not run,nan,nan,nan,,nan,nan,nan,nan
+iqn,r4-fsi3-iqn-2x-s1e-6,uy_frequency,1e-6,not run,nan,nan,nan,,nan,nan,nan,nan
+iqn,r4-fsi3-iqn-2x-s1e-6,drag_mean,1e-6,not run,nan,nan,nan,,nan,nan,nan,nan
+iqn,r4-fsi3-iqn-2x-s1e-6,drag_amplitude,1e-6,not run,nan,nan,nan,,nan,nan,nan,nan
+iqn,r4-fsi3-iqn-2x-s1e-6,lift_amplitude,1e-6,not run,nan,nan,nan,,nan,nan,nan,nan
+iqn,r4-fsi3-iqn-2x-s1e-6,lift_amplitude_smoothed,1e-6,not run,nan,nan,nan,,nan,nan,nan,nan
+iqn,r4-fsi3-iqn-2x-sref,ux_mean,ref,not run,nan,nan,nan,,nan,nan,nan,nan
+iqn,r4-fsi3-iqn-2x-sref,ux_amplitude,ref,not run,nan,nan,nan,,nan,nan,nan,nan
+iqn,r4-fsi3-iqn-2x-sref,uy_amplitude,ref,not run,nan,nan,nan,,nan,nan,nan,nan
+iqn,r4-fsi3-iqn-2x-sref,uy_frequency,ref,not run,nan,nan,nan,,nan,nan,nan,nan
+iqn,r4-fsi3-iqn-2x-sref,drag_mean,ref,not run,nan,nan,nan,,nan,nan,nan,nan
+iqn,r4-fsi3-iqn-2x-sref,drag_amplitude,ref,not run,nan,nan,nan,,nan,nan,nan,nan
+iqn,r4-fsi3-iqn-2x-sref,lift_amplitude,ref,not run,nan,nan,nan,,nan,nan,nan,nan
+iqn,r4-fsi3-iqn-2x-sref,lift_amplitude_smoothed,ref,not run,nan,nan,nan,,nan,nan,nan,nan

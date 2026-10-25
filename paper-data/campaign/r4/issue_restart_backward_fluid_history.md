@@ -77,3 +77,32 @@ as the solid models do.
 - 3dTube (a transient, not a limit cycle) is more sensitive: R5 scaling and
   ablation windows from restarts would compare variants from the same
   restarted state only.
+
+## Addendum (25 Oct, 18:50): the viscous force output changes after a restart
+
+The 2x tolerance-sweep run at the production tolerance
+(`r4-fsi3-mono-2x-s1e-6`, restart from `r4-fsi3-mono-2x` at t = 5 s, same
+settings) reproduces the continuous run's displacement QoIs over 6-7 s to
+1e-4 (u_x mean +2.7e-4, u_y amplitude -1.1e-4, frequency +5e-5), but not
+the forces: drag mean -5.9%, drag amplitude +4.9%, lift amplitude -28%
+(`qois.csv`). In `postProcessing/fluid/forces/*/force.dat` (N, divided here
+by the 0.015 m depth) the PRESSURE force agrees to 0.1 N/m at every compared
+time, while the VISCOUS force jumps at the first restarted step and stays
+different:
+
+```
+t        continuous: pressure (x, y)   viscous (x, y)    restart: pressure (x, y)   viscous (x, y)
+5.0005   443.16  -111.31               30.58   1.54      443.47  -111.37            7.50   38.91
+5.01     433.26  -162.23               26.67   0.15      433.26  -162.22            0.53   54.84
+6.0      433.25   217.80               21.12   0.62      433.31   217.91          -11.45  -65.69
+6.9      457.37   215.56               23.65   0.52      457.53   215.23          -10.56  -54.18
+```
+
+So the dynamics are the same (pressure, displacements) but the viscous
+stress used by the `forces` function object differs after a restart
+(plausibly a field it looks up, e.g. the effective viscosity or velocity
+gradient registered by `newtonIcoFluid`, is read from the time directory or
+not recreated). Which output is correct is not established here; the
+continuous run's small viscous lift (about 1 N/m) is the plausible one.
+Consequence: force QoIs from restarted monolithic runs are not usable;
+displacement QoIs are. Accuracy runs are continuous and unaffected.

@@ -1,0 +1,18 @@
+{
+ "run_dir": "/mnt/tier2/project/p201287/philip/qm-final/runs/r5/r5-tube-mono-L3-t6",
+ "log_summary": {
+  "n_steps": 0,
+  "t_last": null,
+  "snes_not_converged": 0,
+  "snes_fail_reasons": [],
+  "exec_s": null,
+  "clock_s": null,
+  "ended": false,
+  "fatal": "[15] --> FOAM FATAL ERROR: (openfoam-2512)"
+ },
+ "status": "diverged",
+ "iterations": {
+  "n_steps": 0
+ },
+ "timing": {}
+}

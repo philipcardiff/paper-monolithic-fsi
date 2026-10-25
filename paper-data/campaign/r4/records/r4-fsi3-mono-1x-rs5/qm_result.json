@@ -1,0 +1,29 @@
+{
+ "run_dir": "/mnt/tier2/project/p201287/philip/qm-final/runs/r4/r4-fsi3-mono-1x-rs5",
+ "log_summary": {
+  "n_steps": 50,
+  "t_last": "5.05",
+  "snes_not_converged": 0,
+  "snes_fail_reasons": [],
+  "exec_s": 14.42,
+  "clock_s": 27.0,
+  "ended": true,
+  "fatal": null
+ },
+ "iterations": {
+  "n_steps": 50,
+  "iters_mean": 2.0,
+  "iters_max": 2,
+  "ksp_per_newton_mean": 19.92,
+  "ksp_total": 1992,
+  "snes_not_converged": 0
+ },
+ "timing": {
+  "window_clock_s": 27.0,
+  "window_steps": 50,
+  "clock_s_per_step": 0.54,
+  "window_clock_s_excl_first": 18.0,
+  "clock_s_per_step_excl_first": 0.3673469387755102
+ },
+ "status": "completed"
+}

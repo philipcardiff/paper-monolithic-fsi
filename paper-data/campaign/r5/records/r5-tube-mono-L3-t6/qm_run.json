@@ -1,0 +1,33 @@
+{
+ "case": "3dTube",
+ "level": 3,
+ "factor": 4,
+ "dt": 6.25e-06,
+ "t_end": 0.02,
+ "ranks": 64,
+ "edits": [
+  "exact wall arc coordinates in both blockMeshDicts (the tutorial's 4-digit values are not conformal within the directMap tolerance at level 3)"
+ ],
+ "coupling": "NewtonQuasiMonolithic",
+ "allrun": "monolithic",
+ "decompose": "monolithic",
+ "solid_pc": "hypre/boomeramg (S1)",
+ "tol": {
+  "snes_rtol": 1e-06,
+  "snes_stol": 1e-06,
+  "ksp_rtol": 0.0001
+ },
+ "prepare": true,
+ "setup_args": {
+  "cmd": "tube",
+  "dest": "r5-tube-mono-L3-t6",
+  "coupling": "mono",
+  "level": 3,
+  "ranks": 64,
+  "end": 0.02,
+  "write_interval": 0.004,
+  "tol": "snes_rtol=1e-6,snes_stol=1e-6,ksp_rtol=1e-4",
+  "pc": null,
+  "exact_arcs": true
+ }
+}

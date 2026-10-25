@@ -1,0 +1,26 @@
+{
+ "case": "3dTube",
+ "level": 2,
+ "factor": 2,
+ "dt": 1.25e-05,
+ "t_end": 0.02,
+ "ranks": 16,
+ "edits": [],
+ "coupling": "Robin-Neumann",
+ "allrun": "",
+ "decompose": "regions",
+ "solid_pc": "hypre/boomeramg (S1 settings)",
+ "tol": {},
+ "prepare": true,
+ "setup_args": {
+  "cmd": "tube",
+  "dest": "/project/home/p201287/philip/qm-final/runs/r5/r5-tube-robin-L2",
+  "coupling": "robin",
+  "level": 2,
+  "ranks": 16,
+  "end": 0.02,
+  "write_interval": 0.004,
+  "tol": null,
+  "pc": null
+ }
+}

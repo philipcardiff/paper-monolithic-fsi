@@ -1,0 +1,7 @@
+{"run_id": "r5-tube-mono-L1-t6", "ranks": 8, "cores": "56,57,58,59,60,61,62,63",
+ "node": "mel0515", "slurm_job_id": "5384147",
+ "exclusive_node": true, "shared_with_own_jobs_only": true,
+ "binding": "one core per rank (taskset per rank via bindwrap.sh); MPI binding none",
+ "farm_task": "r5-tube-mono-L1-t6",
+ "rc": 0, "prepare_s": 17.297,
+ "solver_wall_s": 692.814}

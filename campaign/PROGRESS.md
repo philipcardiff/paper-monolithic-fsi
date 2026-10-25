@@ -179,14 +179,13 @@ All 2.00 Newton/step. QoI differences vs S0tight: cav S0/S1 ≤ 1.1e-5
 
 ## Open questions for Philip
 
-- Merge PR #624 (restart fix 2: fluid U name clash, frozen mesh-motion
-  stiffness, frozen impK)? CI green. Affects every restarted monolithic
-  run, also those of the paper agents (see log 26 Oct).
 - #618 (merged 24 Oct) makes the viscous stress transpose always on; this
   replaces the 21 Oct "off by default" decision for all reruns at the new
   head.
 
 ## Log
+
+- **2026-10-26** PR #624 merged (7b4eb40b2) on Philip's word. The consistent version for the remaining runs is now the branch head 7b4eb40b2; `qm-final` (18a24427f) lacks it, so restart-based work needs a rebuild.
 
 - **2026-10-26** Restart defect 2 fixed: solids4foam PR #624 (open, CI
   green). Causes: (1) on restart with `restart yes` the mesh-motion solid

@@ -179,11 +179,36 @@ All 2.00 Newton/step. QoI differences vs S0tight: cav S0/S1 ≤ 1.1e-5
 
 ## Open questions for Philip
 
+- Merge PR #624 (restart fix 2: fluid U name clash, frozen mesh-motion
+  stiffness, frozen impK)? CI green. Affects every restarted monolithic
+  run, also those of the paper agents (see log 26 Oct).
 - #618 (merged 24 Oct) makes the viscous stress transpose always on; this
   replaces the 21 Oct "off by default" decision for all reruns at the new
   head.
 
 ## Log
+
+- **2026-10-26** Restart defect 2 fixed: solids4foam PR #624 (open, CI
+  green). Causes: (1) on restart with `restart yes` the mesh-motion solid
+  (built with the fluid mesh, before the fluid fields) registers its own
+  "U"/"U_0", reading the fluid U file, so `forces` uses the mesh-motion
+  velocity for the viscous force and every U written after a restart is
+  the mesh-motion velocity (zero interior); restarting a restarted run
+  fails; also in cavityFlexibleBottom (#616 checked only displacements and
+  norms); (2) mesh-motion stiffness factor (`inverseDistance` diffusivity)
+  recomputed on the deformed mesh; (3) `impK`/`impKf` frozen at
+  construction from the deformed mesh. Missing old-old fluid fields were
+  not a cause. Continuous runs bitwise unchanged; first restarted step
+  matches to ≤ 9e-13 early, ≤ 2.5e-7 at large deformation; viscous force
+  ≤ 1e-7 relative (was O(1)). Remaining solver-tolerance-level differences
+  come from cached preconditioner/Jacobian state. **Impact:** viscous
+  forces from any restarted monolithic run before the fix are wrong
+  (pressure forces, displacements fine); fluid U written by restarted runs
+  is unusable. Issue file updated (fed6ddb, `evidence/campaign-r4r5`).
+  Block with tail: 80×4 p = 1 and p = 3 both 0.650 cm, 3.23 Hz at 8–10 s
+  (literature 0.76–0.81 cm, 2.97–3.3 Hz); both 25 s runs stopped at
+  t ≈ 10–11 s (p = 1 coupling stall, p = 3 solid linear solve); codex
+  investigating (TASK3e).
 
 - **2026-10-25** Philip: hold off on the expensive runs (FSI3 IQN-ILS 4x,
   3dTube L3); the paper agents (runs A/B/C, registry branch

@@ -35,3 +35,6 @@ mfix-tube-L1,ur_max_A_m,0.00015965800126262626,0.00015949,pre-#618 QM L1 (3dTube
 mfix-tube-L1,t_ur_max_A_s,0.007225126262626265,0.007225,pre-#618 QM L1 (3dTube verification README),1.7476e-05,,fix minus pre-fix
 mfix-tube-L1,uz_min_A_m,-8.902305122881357e-05,-8.896e-05,pre-#618 QM L1 (3dTube verification README),-7.0876e-04,,fix minus pre-fix
 mfix-tube-L1,t_uz_min_A_s,0.004756631355932204,,,,,
+mfix-tube-L2,ur_max_A_m,0.00015982600265957448,0.00015978,pre-#618 QM L2 (3dTube verification README),2.8791e-04,,fix minus pre-fix
+mfix-tube-L2,t_ur_max_A_s,0.007224867021276597,0.007226,pre-#618 QM L2 (3dTube verification README),-1.5679e-04,,fix minus pre-fix
+mfix-tube-L2,uz_min_A_m,-8.67136e-05,-8.669e-05,pre-#618 QM L2 (3dTube verification README),-2.7223e-04,,fix minus pre-fix

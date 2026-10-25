@@ -1,0 +1,4 @@
+[23] Cannot calculate the map between interfaces!
+ZoneA and zoneB interfaces are not conformal (zoneA patch = wall, zoneB patch = inner-wall)
+Direct mapping can only be used with conformal interfaces!
+[23] 

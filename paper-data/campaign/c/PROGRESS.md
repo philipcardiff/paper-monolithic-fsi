@@ -45,6 +45,26 @@ FSI3 QM-AMI 4x (32 ranks, writes t = 7 s only), 3dTube QM L3 (32 ranks,
 fields every 2.5 ms incl. the 5 ms restart state), 3dTube QM L2 (8 ranks,
 fields every 2.5 ms).
 
+**Batch 2 status (25 Oct ~09:30)**, Mx 5382421 survived the MeluXina login
+maintenance:
+
+- **3dTube QM L2: done.** `u_r,max(A)` 0.159826 mm (pre-fix 0.15978,
+  +0.03%), `u_z,min(A)` −0.0867136 mm (+0.03%). Clock 8657 s on 8 ranks
+  (pre-fix on xenosim 3398 s); not a timing row, as the node is shared with
+  the 4x.
+- **FSI3 QM-AMI 4x: running**, t = 4.13 s after 12.25 h; about 15 h more
+  (ends ~27–28 h, inside the 44 h limit).
+- **3dTube QM L3: failed at start-up** (`directMap`: "interfaces are not
+  conformal", 5120 unmatched faces; `fix/mfix-tube-L3.failure.txt`). Cause:
+  the tutorial blockMeshDicts give the curved wall with 4-digit arc points,
+  the fluid as two 45° arcs (`0.004619 0.001913`, vertex `0.003536`), the
+  solid as one 90° arc. The two walls differ by up to 1.0 µm (mean 0.67 µm).
+  The `directMap` tolerance is hard-coded at 1% of the smallest edge: about
+  2.5 µm on L1, 1.3 µm on L2 (passes narrowly) and 0.63 µm on L3. A
+  geometry issue in the tutorial, not the solver. **Stopped; needs a
+  decision** (exact arc points in the run copies, AMI for L3, or an
+  upstream fix).
+
 ## 4a — FSI3 QM-AMI, tutorial meshes (23 Oct, pre-#618, superseded)
 
 ### 1x check (Mx job 5377601, one exclusive node, 3 × 8 ranks)
@@ -104,7 +124,7 @@ Running in batch 2 (Mx 5382421).
 
 ## 6a — 3dTube QM L1–L3
 
-L1 done; L2 and L3 running in batch 2 (Mx 5382421).
+L1 and L2 done; L3 failed at start-up (directMap tolerance vs tutorial arc rounding); decision pending.
 
 ## Timing jobs (4b, 6b, 6c, 4c)
 

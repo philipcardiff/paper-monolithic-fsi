@@ -103,3 +103,4 @@
   tasks (13374; 13371 waited for 12 free CPUs, cancelled).
 - B2 reruns (13359) done: L2 AMI trough −0.71% (converged oomph-lib),
   L4 conformal −1.17%; pre-#618 Euler −1.91%/−2.36% (findings.md).
+- 25 Oct 03:40: A/B 13376 never started (needed 4 free CPUs; node full, load 180/192); resubmitted as four 1-CPU jobs 13377–13380 (b-old, b-new, b-pred, b-diff). 3b QM fixed-mesh-motion rerun 13374: 13/20 done.

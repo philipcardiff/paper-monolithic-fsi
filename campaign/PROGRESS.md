@@ -7,28 +7,16 @@ Last updated: 2026-10-25
 
 ## Current phase
 
-**G1 answered (Philip, 22 Oct); phase R starting.** Running now:
-- branch-head build `v2.2-1713-g85b0c1de6` on XenoSim
-  (`~/OpenFOAM/philipc-v2512-qmhead`, job 13104);
-- restart-defect fix (subagent; branch `fix/monolithic-restart`, own tree
-  `~/OpenFOAM/philipc-v2512-qmfix`, PR to follow);
-- block with flexible tail (#615) by codex (Sol model), branch
-  `tutorial/block-with-flexible-tail`, notes in
-  `~/OpenFOAM/philipc-v2512/codex/blockWithTail-runs/NOTES.md`; not part of
-  the paper.
-- XenoSim, head build: B1 repeats of the chosen configurations (13106 cav
-  S0/S0ref 4 ranks, 13107 tube S1/S1ref 16 ranks, 13108 ring S0 serial);
-  B2 collapsibleChannel (Euler, as the README): AMI 640×8 at fluid level 2
-  (13109) and level 4 (13110), conformal 320×8 at level 4 (13111). (The
-  README's fluid levels are refinement factors 1, 2, 4; "level 3" in the G1
-  report means the next one, 4.)
-- MeluXina: head build `qm-head` (5375410, p201136).
-- **R0 done** (subagent β, merged from `evidence/campaign-r0`): 8 of 9
-  paper cases ran to their end time with `backward`; foilInWind aborted at
-  t = 0.95 s of 12 (suspected defect, below). Waiting for Philip on the
-  four R0 questions before R4/R5.
-- B2 on the head done (13109–13111): AMI at fluid level 4 gives −1.83%
-  (level 2: −1.91%); the error is the Euler time step, not the mesh.
+**Phase R on the consistent version.** solids4foam
+`feature-petsc-snes-quasi-monolithic` at **18a24427f**
+(`v2.2-1734-g18a24427f`: #602, #616, #617, #618, #619, #621 merged).
+Builds: MeluXina `/project/home/p201287/philip/qm-final` (5384031, clean);
+XenoSim `~/OpenFOAM/philipc-v2512-qmfinal` (13404, queued).
+- **R4 (FSI3) then R5 (3dTube)**: subagent α, MeluXina p201136, branch
+  `evidence/campaign-r4r5`, `paper-data/campaign/r4/`, `r5/`.
+- Block with tail (not in the paper unless it matches the literature):
+  draft PR #623; high-order solid (p = 1–3) modal matrix 13407 and p = 3
+  partitioned FSI 13408 on XenoSim.
 
 ## Status by stream
 
@@ -199,6 +187,13 @@ All 2.00 Newton/step. QoI differences vs S0tight: cav S0/S1 ≤ 1.1e-5
   head.
 
 ## Log
+
+- **2026-10-25** #621 merged (18a24427f) after adding a foam-extend guard.
+  Consistent-version builds started (MeluXina 5384031 done, clean; XenoSim
+  13404 queued). R4/R5 delegated to subagent α. Block with tail: p = 4 is
+  not supported (orders 1–3); the first p = 3 modal case did not move
+  (`snes_atol` 1e-6 above the residual); codex fixed tolerances and made
+  the comparison controlled (38044d91d); resubmitted 13407/13408.
 
 - **2026-10-25** p201287 files 920 355 → 391 054 of 1M: Philip approved
   archiving inactive directories; `precice-issue587` (275 942 entries),

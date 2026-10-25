@@ -370,12 +370,19 @@ def setup_tube(args):
     binary_writes(control)
     drv.configure_time_scheme(dest, "backward")
     drv.configure_solid_preconditioner(dest, "hypre")
+    if args.exact_arcs:
+        exact_wall_arcs(dest)
+        meta_edits = ["exact wall arc coordinates in both blockMeshDicts "
+                      "(the tutorial's 4-digit values are not conformal within "
+                      "the directMap tolerance at level 3)"]
+    else:
+        meta_edits = []
     coupling = {"mono": "monolithic", "robin": "robin"}[args.coupling]
     drv.configure_coupling(dest, coupling)
     drv.add_monitors(dest, ref)
     tol = parse_tol(args.tol)
     meta = {"case": "3dTube", "level": args.level, "factor": factor, "dt": dt,
-            "t_end": args.end, "ranks": args.ranks, "edits": []}
+            "t_end": args.end, "ranks": args.ranks, "edits": meta_edits}
     for d in [dest / "system/decomposeParDict"] \
             + list(dest.glob("system/*/decomposeParDict")):
         set_entry(d, "numberOfSubdomains", str(args.ranks), top=True)
@@ -408,6 +415,41 @@ def setup_tube(args):
             set_entry(d, "method", "scotch", top=True)
     meta["tol"] = tol
     finish(dest, meta, args)
+
+
+def exact_wall_arcs(dest):
+    """3dTube: put the fluid wall and the solid inner wall on the same exact
+    circle (r = 5 mm). The tutorial writes the wall vertices and arc points
+    to 4 significant digits ((0.003536 0.003536), (0.004619 0.001913)); the
+    fluid wall is two 45-degree arcs and the solid inner wall one 90-degree
+    arc, so the rounded arcs are slightly different curves. At level 3 the
+    face centres then differ by more than the directMap matching tolerance
+    (1% of the smallest edge) and the run stops at start-up ("interfaces are
+    not conformal"). With exact coordinates both arcs lie on one circle and
+    blockMesh places the same points on both (uniform spacing along each arc,
+    40 + 40 against 80 cells per quarter)."""
+    c45 = "0.00353553390593274"
+    c22, s22 = "0.00461939766255643", "0.00191341716182545"
+    reps = {
+        "system/fluid/blockMeshDict": [
+            ("(0.003536 0.003536 0)", f"({c45} {c45} 0)"),
+            ("(0.003536 0.003536 0.05)", f"({c45} {c45} 0.05)"),
+            ("(0.004619 0.001913 0)", f"({c22} {s22} 0)"),
+            ("(0.001913 0.004619 0)", f"({s22} {c22} 0)"),
+            ("(0.004619 0.001913 0.05)", f"({c22} {s22} 0.05)"),
+            ("(0.001913 0.004619 0.05)", f"({s22} {c22} 0.05)")],
+        "system/solid/blockMeshDict": [
+            ("arc 0 3 (0.003536 0.003536 0)", f"arc 0 3 ({c45} {c45} 0)"),
+            ("arc 4 7 (0.003536 0.003536 0.05)", f"arc 4 7 ({c45} {c45} 0.05)")],
+    }
+    for rel, pairs in reps.items():
+        p = dest / rel
+        text = p.read_text()
+        for old, new in pairs:
+            if text.count(old) != 1:
+                die(f"{p}: expected one '{old}'")
+            text = text.replace(old, new)
+        p.write_text(text)
 
 
 # R5 preconditioner ablation variants (monolithic, 3dTube)
@@ -538,6 +580,7 @@ def main():
     b.add_argument("--write-interval", type=float, default=0.004)
     b.add_argument("--tol")
     b.add_argument("--pc")
+    b.add_argument("--exact-arcs", action="store_true")
     c = sub.add_parser("restart")
     c.add_argument("src")
     c.add_argument("dest")

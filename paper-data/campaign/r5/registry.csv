@@ -1,0 +1,10 @@
+run_id,study,window,repeats,notes,status_override
+r5-tube-mono-L1-t6,consistency,,1,,
+r5-tube-mono-L2-t6,consistency + tolerance check,,1,,
+r5-tube-mono-L3-t6,consistency,,1,,
+r5-tube-mono-L1-t4,tolerance check (tutorial tolerances),,1,,
+r5-tube-mono-L2-t4,tolerance check (tutorial tolerances),,1,,
+r5-tube-mono-L1-tref,tolerance check (tight reference),,1,,
+r5-tube-mono-L2-tref,tolerance check (tight reference),,1,,
+r5-tube-robin-L1,consistency (partitioned at the same commit),,1,,
+r5-tube-robin-L2,consistency (partitioned at the same commit),,1,,

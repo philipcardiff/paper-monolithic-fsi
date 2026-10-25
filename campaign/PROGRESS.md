@@ -179,22 +179,20 @@ All 2.00 Newton/step. QoI differences vs S0tight: cav S0/S1 ≤ 1.1e-5
 
 ## Open questions for Philip
 
-From R4/R5 (25 Oct, subagent α interim; branch `evidence/campaign-r4r5`):
-- **IQN-ILS on FSI3 4x**: 13.8 s/step, 14.6 coupling it./step on 16 ranks
-  → ~77 h and ~1 230 core-h for 20 000 steps (over the 48 h job limit and
-  the whole G1 R4 range). Cancelled. Run it (with a restart chain, once
-  restarts are fixed), use fewer steps/levels, or drop partitioned 4x?
-- **3dTube L3 monolithic** (64 ranks): ~22 s/step → ~20 h, ~1 250 core-h
-  vs 160–300 in G1. Running; free while the node is shared for ~8 h more,
-  then ~12 h at half a node. Keep or stop?
-- Review/merge PR #621 (foilInWind processor-point fix; changes
-  `solidModel::correctPointDisplacement`, used by every solid model).
-  Needed before the consistent-version reruns.
 - #618 (merged 24 Oct) makes the viscous stress transpose always on; this
   replaces the 21 Oct "off by default" decision for all reruns at the new
   head.
 
 ## Log
+
+- **2026-10-25** Philip: hold off on the expensive runs (FSI3 IQN-ILS 4x,
+  3dTube L3); the paper agents (runs A/B/C, registry branch
+  `campaign/registry`) may already run them; decide on additional runs
+  after they finish. Stopped `r5-tube-mono-L3-t6` (t = 0.94 ms;
+  `CANCELLED.txt`). The farm's STOP file stays, so no new R4/R5 tasks start;
+  the running FSI3 mono 4x, IQN 2x and tube L2 reference finish. Added the
+  R4/R5 rows to the shared registry (b3507a5); from now on every run is
+  checked and claimed there first.
 
 - **2026-10-25** R4/R5 interim (subagent α, farm 5384147, ~3.5 node-h):
   FSI3 mono 1x u_y amp −40.7%, lift amp +150%; 2x u_x mean −1.1%, u_y amp

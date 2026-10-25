@@ -3,7 +3,7 @@
 Maintained by the coordinator agent. Plan: `paper-fsi-verification/HANDOFF.md`.
 Newest entries first in the log; the status table is always current.
 
-Last updated: 2026-10-24
+Last updated: 2026-10-25
 
 ## Current phase
 
@@ -191,6 +191,9 @@ All 2.00 Newton/step. QoI differences vs S0tight: cav S0/S1 ≤ 1.1e-5
 
 ## Open questions for Philip
 
+- Review/merge PR #621 (foilInWind processor-point fix; changes
+  `solidModel::correctPointDisplacement`, used by every solid model).
+  Needed before the consistent-version reruns.
 - p201287 file quota (920k of 1M after archiving my own runs): the large
   non-campaign directories (`precice-issue587` 276k files,
   `beam-richter-opus` 210k, `fsi-mesh-motion` 53k) are not mine; archive
@@ -200,6 +203,19 @@ All 2.00 Newton/step. QoI differences vs S0tight: cav S0/S1 ≤ 1.1e-5
   head.
 
 ## Log
+
+- **2026-10-25** foilInWind defect fixed: PR #621 (open). Cause:
+  `pointD.correctBoundaryConditions()` sets fixed-value point patches only
+  on ranks holding faces of the patch; a rank sharing an edge point of the
+  `flag` interface patch kept the cell-interpolated value, so the moved
+  fluid mesh did not match across processors. Fix: sync constrained point
+  values across ranks (`pointConstraints::syncUntransformedData`).
+  Verified on MeluXina: 128 ranks to t = 1.5 s with zero processor-point
+  mismatch (old code at a46bcbae7 fails at t = 0.9 s); bitwise-identical
+  results where no dangling points exist (foil 8/32, ring 2/8, cav 4/8
+  ranks). #619 (collapsibleChannel set-up) merged (b98c76f5b). Evidence in
+  `~/OpenFOAM/philipc-v2512-qmfoil/evidence/`; issue file updated
+  (ce33d46). 5.1 node-h on p201136.
 
 - **2026-10-24** Philip's answers to the R0 questions: (1) fix the
   foilInWind defect: subagent started (branch from the new head, PR to

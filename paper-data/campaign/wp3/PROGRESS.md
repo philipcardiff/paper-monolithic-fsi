@@ -101,3 +101,5 @@
   Redone as 13376 from a46bcbae7 with four variants (old, new,
   predictor only, diffusion law only). 3b QM rerun resubmitted with 4
   tasks (13374; 13371 waited for 12 free CPUs, cancelled).
+- B2 reruns (13359) done: L2 AMI trough −0.71% (converged oomph-lib),
+  L4 conformal −1.17%; pre-#618 Euler −1.91%/−2.36% (findings.md).

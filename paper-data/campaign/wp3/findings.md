@@ -174,3 +174,25 @@ Runs on the #618 build, fluid L2, AMI 640×8, ρs/ρf 1 (`3b/meshmotion_debug/`)
    beamInCrossFlow, foilInWind, mokLidDrivenCavity, perpendicularFlap,
    ringAddedMass, womersleyTube) have a constant tangent and are not
    affected by the first iterate. None changed without a test.
+
+## B2 QM reruns on the #618 build (taken over from M campaign B2)
+
+`b2_618/` (XenoSim job 13359; `4ae081609`, #617 schemes in the copies,
+fluid `backward`, Δt 0.00625 s, ρs/ρf 1, to t = 1.5 s, tutorial mesh
+motion — the mesh-motion predictor does not change the trough at
+Δt ≤ 0.0125). oomph-lib: converged reference (trough −0.21600 m,
+t = 1.5 s −0.07655 m) and the same-Δt run `dt160` (−0.21573, −0.07611).
+Partitioned reference: README fluid-mesh study, Robin–Neumann, cubic
+160×8 solid, same Δt (trough L2 −0.21592, L4 −0.21610; no end values).
+
+| Run | Trough (m) | vs converged | vs same Δt | vs RN (README) | t = 1.5 s (m) | end − converged, % of 0.216 | Newton/step | Wall (s) |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| L2, AMI 640×8 (conservative) | −0.21446 | −0.71% | −0.59% | −0.68% | −0.08122 | −2.2% | 2.66 (3) | 3 823 |
+| L4, conformal 320×8 | −0.21346 | −1.17% | −1.05% | −1.22% | −0.07858 | −0.9% | 2.57 (3) | 11 080 |
+
+Pre-#618 B2 (Euler `ddt(U)`, `85b0c1de6`): L2 AMI −0.21162 (−1.91% against
+−0.21573), L4 conformal −0.21063 (−2.36%). The change is almost all the
+time scheme (Euler → backward), as B2 step 3 predicted. With backward the
+L2 AMI 640×8 trough is within 1% of oomph-lib; the conformal L4 run is
+limited by its 320×8 linear solid (static wall −1.12% on 320×8, B2 step 1).
+The RN comparison is across solid models (cubic 160×8 vs linear).

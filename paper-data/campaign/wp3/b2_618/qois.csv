@@ -1,0 +1,7 @@
+run_id,qoi,value,reference,reference_source,rel_error,uncertainty_of_reference,notes
+wp3-b2-mono-F2-S640x8-AMI-r618,status,pass,,,,,WP3 failure criterion (README)
+wp3-b2-mono-F2-S640x8-AMI-r618,t_reached,1.5,,,,,
+wp3-b2-mono-F2-S640x8-AMI-r618,trough_wallMid,-0.21446313,-0.21600112,collapsibleChannel_oomph_reference.csv,-7.1203e-03,,trough at t = 0.46903 s
+wp3-b2-mono-F4-S320x8-directMap-r618,status,pass,,,,,WP3 failure criterion (README)
+wp3-b2-mono-F4-S320x8-directMap-r618,t_reached,1.5,,,,,
+wp3-b2-mono-F4-S320x8-directMap-r618,trough_wallMid,-0.21346453,-0.21600112,collapsibleChannel_oomph_reference.csv,-1.1743e-02,,trough at t = 0.46895 s

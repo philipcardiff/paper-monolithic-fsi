@@ -196,3 +196,32 @@ time scheme (Euler → backward), as B2 step 3 predicted. With backward the
 L2 AMI 640×8 trough is within 1% of oomph-lib; the conformal L4 run is
 limited by its 320×8 linear solid (static wall −1.12% on 320×8, B2 step 1).
 The RN comparison is across solid models (cubic 160×8 vs linear).
+
+## Mesh-motion fix: tutorial A/B and 3b QM rerun (25 Oct)
+
+**Tutorial A/B** (`./Allrun monolithic`, fluid level 1, Δt 0.025 s,
+t = 0–3.5 s, XenoSim 13377–13380, build 4ae081609; all four variants from
+the `a46bcbae7` tutorial, differing only in the named files):
+
+| Variant | Trough (m) | t = 3.5 s (m) | Max |diff| vs old | Mesh-motion Krylov mean/max | Newton/step | Wall (s) |
+|---|---:|---:|---:|---:|---:|---:|
+| old (a46bcbae7) | −0.195658 | −0.123379 | – | 15.7 / 26 | 3.06 | 495 |
+| new (branch bf72e7d65) | −0.195658 | −0.123407 | 2.9e-5 m (0.013% of peak) | 21.5 / 29 | 3.04 | 504 |
+| predictor only | −0.195658 | −0.123379 | 2.1e-6 m | 15.8 / 21 | 3.09 | 535 |
+| diffusion law only | −0.195658 | −0.123407 | 2.9e-5 m | 21.7 / 29 | 3.07 | 569 |
+
+The trough is identical to six digits; the small history difference comes
+from the diffusion law (mesh layout), not the predictor. Wall times are
+on a shared node (indicative). (An earlier A/B, 13370, compared against
+the pre-#617 tutorial and is void: its "old" used Euler `ddt(U)`.) The
+branch `tutorials/collapsible-monolithic-mesh-motion` (bf72e7d65) is
+pushed to solids4foam; no PR.
+
+**3b QM arm rerun with the fixed mesh motion** (`3b/qm618mm/`, run ids
+`*-r618mm`, XenoSim 13374; predictor + diffusionHyperElastic + quadratic
+inverse distance, otherwise as `3b/qm618/`): QM passes **20/20**; the five
+Δt 0.025 cells now pass (3.2 Newton iterations per step, trough −1.98%
+against converged oomph-lib at ρs/ρf 1, −1.97% at ρs/ρf 0 against the
+massless reference). In the 15 cells that passed before, the trough moves
+by at most 1.8e-5 relative and the Newton counts by ≤ 0.06 (table
+`qm618mm_comparison.txt`). `map_3b` now shows these rows.

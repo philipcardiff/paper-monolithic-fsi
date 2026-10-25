@@ -1,0 +1,61 @@
+run_id,qoi,value,reference,reference_source,rel_error,uncertainty_of_reference,notes
+wp3-coll-qm-dt0.003125-rho0-r618mm,status,pass,,,,,WP3 failure criterion (README)
+wp3-coll-qm-dt0.003125-rho0-r618mm,t_reached,0.75,,,,,
+wp3-coll-qm-dt0.003125-rho0-r618mm,trough_wallMid,-0.21456393,-0.21595222,collapsibleChannel_oomph_massless_reference.csv,-6.4287e-03,,trough at t = 0.46785 s
+wp3-coll-qm-dt0.003125-rho0.01-r618mm,status,pass,,,,,WP3 failure criterion (README)
+wp3-coll-qm-dt0.003125-rho0.01-r618mm,t_reached,0.75,,,,,
+wp3-coll-qm-dt0.003125-rho0.01-r618mm,trough_wallMid,-0.21456445,,,,,trough at t = 0.46786 s
+wp3-coll-qm-dt0.003125-rho0.1-r618mm,status,pass,,,,,WP3 failure criterion (README)
+wp3-coll-qm-dt0.003125-rho0.1-r618mm,t_reached,0.75,,,,,
+wp3-coll-qm-dt0.003125-rho0.1-r618mm,trough_wallMid,-0.21456778,,,,,trough at t = 0.46788 s
+wp3-coll-qm-dt0.003125-rho1-r618mm,status,pass,,,,,WP3 failure criterion (README)
+wp3-coll-qm-dt0.003125-rho1-r618mm,t_reached,0.75,,,,,
+wp3-coll-qm-dt0.003125-rho1-r618mm,trough_wallMid,-0.2146023,-0.21600112,collapsibleChannel_oomph_reference.csv,-6.4760e-03,,trough at t = 0.46814 s
+wp3-coll-qm-dt0.003125-rho10-r618mm,status,pass,,,,,WP3 failure criterion (README)
+wp3-coll-qm-dt0.003125-rho10-r618mm,t_reached,0.75,,,,,
+wp3-coll-qm-dt0.003125-rho10-r618mm,trough_wallMid,-0.2147085,,,,,trough at t = 0.47172 s
+wp3-coll-qm-dt0.00625-rho0-r618mm,status,pass,,,,,WP3 failure criterion (README)
+wp3-coll-qm-dt0.00625-rho0-r618mm,t_reached,0.75,,,,,
+wp3-coll-qm-dt0.00625-rho0-r618mm,trough_wallMid,-0.21444439,-0.21595222,collapsibleChannel_oomph_massless_reference.csv,-6.9823e-03,,trough at t = 0.46871 s
+wp3-coll-qm-dt0.00625-rho0.01-r618mm,status,pass,,,,,WP3 failure criterion (README)
+wp3-coll-qm-dt0.00625-rho0.01-r618mm,t_reached,0.75,,,,,
+wp3-coll-qm-dt0.00625-rho0.01-r618mm,trough_wallMid,-0.21444487,,,,,trough at t = 0.46871 s
+wp3-coll-qm-dt0.00625-rho0.1-r618mm,status,pass,,,,,WP3 failure criterion (README)
+wp3-coll-qm-dt0.00625-rho0.1-r618mm,t_reached,0.75,,,,,
+wp3-coll-qm-dt0.00625-rho0.1-r618mm,trough_wallMid,-0.21444604,,,,,trough at t = 0.46874 s
+wp3-coll-qm-dt0.00625-rho1-r618mm,status,pass,,,,,WP3 failure criterion (README)
+wp3-coll-qm-dt0.00625-rho1-r618mm,t_reached,0.75,,,,,
+wp3-coll-qm-dt0.00625-rho1-r618mm,trough_wallMid,-0.2144599,-0.21600112,collapsibleChannel_oomph_reference.csv,-7.1353e-03,,trough at t = 0.46902 s
+wp3-coll-qm-dt0.00625-rho10-r618mm,status,pass,,,,,WP3 failure criterion (README)
+wp3-coll-qm-dt0.00625-rho10-r618mm,t_reached,0.75,,,,,
+wp3-coll-qm-dt0.00625-rho10-r618mm,trough_wallMid,-0.21451613,,,,,trough at t = 0.47098 s
+wp3-coll-qm-dt0.0125-rho0-r618mm,status,pass,,,,,WP3 failure criterion (README)
+wp3-coll-qm-dt0.0125-rho0-r618mm,t_reached,0.75,,,,,
+wp3-coll-qm-dt0.0125-rho0-r618mm,trough_wallMid,-0.21388845,-0.21595222,collapsibleChannel_oomph_massless_reference.csv,-9.5566e-03,,trough at t = 0.46948 s
+wp3-coll-qm-dt0.0125-rho0.01-r618mm,status,pass,,,,,WP3 failure criterion (README)
+wp3-coll-qm-dt0.0125-rho0.01-r618mm,t_reached,0.75,,,,,
+wp3-coll-qm-dt0.0125-rho0.01-r618mm,trough_wallMid,-0.21388866,,,,,trough at t = 0.46948 s
+wp3-coll-qm-dt0.0125-rho0.1-r618mm,status,pass,,,,,WP3 failure criterion (README)
+wp3-coll-qm-dt0.0125-rho0.1-r618mm,t_reached,0.75,,,,,
+wp3-coll-qm-dt0.0125-rho0.1-r618mm,trough_wallMid,-0.21389045,,,,,trough at t = 0.4695 s
+wp3-coll-qm-dt0.0125-rho1-r618mm,status,pass,,,,,WP3 failure criterion (README)
+wp3-coll-qm-dt0.0125-rho1-r618mm,t_reached,0.75,,,,,
+wp3-coll-qm-dt0.0125-rho1-r618mm,trough_wallMid,-0.21390781,-0.21600112,collapsibleChannel_oomph_reference.csv,-9.6912e-03,,trough at t = 0.4697 s
+wp3-coll-qm-dt0.0125-rho10-r618mm,status,pass,,,,,WP3 failure criterion (README)
+wp3-coll-qm-dt0.0125-rho10-r618mm,t_reached,0.75,,,,,
+wp3-coll-qm-dt0.0125-rho10-r618mm,trough_wallMid,-0.21408686,,,,,trough at t = 0.47175 s
+wp3-coll-qm-dt0.025-rho0-r618mm,status,pass,,,,,WP3 failure criterion (README)
+wp3-coll-qm-dt0.025-rho0-r618mm,t_reached,0.75,,,,,
+wp3-coll-qm-dt0.025-rho0-r618mm,trough_wallMid,-0.21169815,-0.21595222,collapsibleChannel_oomph_massless_reference.csv,-1.9699e-02,,trough at t = 0.47236 s
+wp3-coll-qm-dt0.025-rho0.01-r618mm,status,pass,,,,,WP3 failure criterion (README)
+wp3-coll-qm-dt0.025-rho0.01-r618mm,t_reached,0.75,,,,,
+wp3-coll-qm-dt0.025-rho0.01-r618mm,trough_wallMid,-0.21170025,,,,,trough at t = 0.47236 s
+wp3-coll-qm-dt0.025-rho0.1-r618mm,status,pass,,,,,WP3 failure criterion (README)
+wp3-coll-qm-dt0.025-rho0.1-r618mm,t_reached,0.75,,,,,
+wp3-coll-qm-dt0.025-rho0.1-r618mm,trough_wallMid,-0.21170201,,,,,trough at t = 0.47238 s
+wp3-coll-qm-dt0.025-rho1-r618mm,status,pass,,,,,WP3 failure criterion (README)
+wp3-coll-qm-dt0.025-rho1-r618mm,t_reached,0.75,,,,,
+wp3-coll-qm-dt0.025-rho1-r618mm,trough_wallMid,-0.21171626,-0.21600112,collapsibleChannel_oomph_reference.csv,-1.9837e-02,,trough at t = 0.47258 s
+wp3-coll-qm-dt0.025-rho10-r618mm,status,pass,,,,,WP3 failure criterion (README)
+wp3-coll-qm-dt0.025-rho10-r618mm,t_reached,0.75,,,,,
+wp3-coll-qm-dt0.025-rho10-r618mm,trough_wallMid,-0.21187066,,,,,trough at t = 0.47457 s

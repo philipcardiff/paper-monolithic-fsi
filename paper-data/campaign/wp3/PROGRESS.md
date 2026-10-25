@@ -104,3 +104,7 @@
 - B2 reruns (13359) done: L2 AMI trough −0.71% (converged oomph-lib),
   L4 conformal −1.17%; pre-#618 Euler −1.91%/−2.36% (findings.md).
 - 25 Oct 03:40: A/B 13376 never started (needed 4 free CPUs; node full, load 180/192); resubmitted as four 1-CPU jobs 13377–13380 (b-old, b-new, b-pred, b-diff). 3b QM fixed-mesh-motion rerun 13374: 13/20 done.
+- 25 Oct 05:1x: tutorial A/B clean (trough identical to 6 digits; max
+  history difference 0.013% of peak, from the diffusion law); solids4foam
+  branch tutorials/collapsible-monolithic-mesh-motion pushed (bf72e7d65,
+  no PR). 3b QM fixed-mesh-motion rerun: 20/20 pass; map re-plotted.

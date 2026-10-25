@@ -1,0 +1,21 @@
+run | status r618 -> fixed mesh motion | Newton mean | trough value r618 -> fixed (rel change) | trough error vs oomph-lib
+wp3-coll-qm-dt0.003125-rho0      pass ->pass  2.04->2.04   -0.21456742 ->  -0.21456393  -1.6e-05  -6.4287e-03
+wp3-coll-qm-dt0.003125-rho0.01   pass ->pass  2.02->2.02   -0.21456802 ->  -0.21456445  -1.7e-05  
+wp3-coll-qm-dt0.003125-rho0.1    pass ->pass  2.02->2.03   -0.21457154 ->  -0.21456778  -1.8e-05  
+wp3-coll-qm-dt0.003125-rho1      pass ->pass  2.04->2.03   -0.21460605 ->   -0.2146023  -1.7e-05  -6.4760e-03
+wp3-coll-qm-dt0.003125-rho10     pass ->pass  2.02->2.03    -0.2147111 ->   -0.2147085  -1.2e-05  
+wp3-coll-qm-dt0.00625-rho0       pass ->pass  2.79->2.75   -0.21444757 ->  -0.21444439  -1.5e-05  -6.9823e-03
+wp3-coll-qm-dt0.00625-rho0.01    pass ->pass  2.79->2.75   -0.21444846 ->  -0.21444487  -1.7e-05  
+wp3-coll-qm-dt0.00625-rho0.1     pass ->pass  2.83->2.77   -0.21444956 ->  -0.21444604  -1.6e-05  
+wp3-coll-qm-dt0.00625-rho1       pass ->pass  2.74->2.76   -0.21446313 ->   -0.2144599  -1.5e-05  -7.1353e-03
+wp3-coll-qm-dt0.00625-rho10      pass ->pass  2.77->2.73   -0.21451932 ->  -0.21451613  -1.5e-05  
+wp3-coll-qm-dt0.0125-rho0        pass ->pass  2.97->2.98   -0.21389184 ->  -0.21388845  -1.6e-05  -9.5566e-03
+wp3-coll-qm-dt0.0125-rho0.01     pass ->pass  2.98->3.00   -0.21389202 ->  -0.21388866  -1.6e-05  
+wp3-coll-qm-dt0.0125-rho0.1      pass ->pass  2.98->2.98   -0.21389375 ->  -0.21389045  -1.5e-05  
+wp3-coll-qm-dt0.0125-rho1        pass ->pass  3.00->3.00   -0.21391116 ->  -0.21390781  -1.6e-05  -9.6912e-03
+wp3-coll-qm-dt0.0125-rho10       pass ->pass  3.00->3.00   -0.21409022 ->  -0.21408686  -1.6e-05  
+wp3-coll-qm-dt0.025-rho0         mesh ->pass  3.10->3.17             - ->  -0.21169815            -1.9699e-02
+wp3-coll-qm-dt0.025-rho0.01      mesh ->pass  3.10->3.17             - ->  -0.21170025            
+wp3-coll-qm-dt0.025-rho0.1       mesh ->pass  3.10->3.23             - ->  -0.21170201            
+wp3-coll-qm-dt0.025-rho1         mesh ->pass  3.10->3.20             - ->  -0.21171626            -1.9837e-02
+wp3-coll-qm-dt0.025-rho10        mesh ->pass  3.10->3.23             - ->  -0.21187066            

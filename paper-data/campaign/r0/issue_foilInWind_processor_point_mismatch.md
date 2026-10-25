@@ -1,5 +1,10 @@
 # Suspected defect: foilInWind (monolithic, 128 ranks) aborts on a processor-patch face mismatch after mesh motion
 
+**Status (25 Oct 2026): root cause found; fixed in solids4foam PR #621
+(https://github.com/solids4foam/solids4foam/pull/621, branch
+`fix/foilInWind-processor-point-sync`, commit `c8ef68a2d` on `a46bcbae7`),
+open and not merged. See "Resolution" at the end.**
+
 ## Minimal case and commands
 
 - solids4foam `feature-petsc-snes-quasi-monolithic` at `85b0c1de6`
@@ -81,3 +86,58 @@ Discriminating checks (not run):
 
 The failure stops the foilInWind run at tutorial resolution, so R7
 (foilInWind time-step limit) cannot use this run.
+
+## Resolution (25 Oct 2026)
+
+**Cause.** The hypothesis is confirmed, more narrowly. In
+`solidModel::correctPointDisplacement`, `pointD.correctBoundaryConditions()`
+applies a fixed-value point patch only on the ranks that hold faces of that
+patch. The interface displacement mapped from the solid onto the fluid
+mesh-motion `flag` patch is one such patch. A rank that shares a point
+on the patch edge but holds no `flag` face at it keeps the value
+interpolated from the cells (`enhancedVolPointInterpolation`, which is itself
+synchronised). Its copy of the point therefore moves differently.
+OpenFOAM's `pointConstraints::constrain` syncs these "dangling" points, but
+the solid-model path did not. In the failed run, the two differing points
+(0.0925, 0.0547, 0.04) and (0.09125, 0.0547, 0.04) are on the `flag` patch on
+rank 42 and on no `flag` face on rank 116 (from
+`processor42/116/constant/fluid/polyMesh`).
+
+**Fix.** After the boundary conditions and the symmetry correction, every point
+constrained on any rank (`fixesValue()` patch or symmetry plane) gets the
+constrained value on all ranks (`pointConstraints::syncUntransformedData`).
+This is a no-op in serial and where no constrained point is dangling. The
+debug switch `solids4foamSolidModel` prints the largest processor-point
+mismatch of the moved mesh at every step. Nothing was loosened: the
+`processorPolyPatch` matching tolerance is unchanged.
+
+**Verification** (MeluXina, v2512, PETSc 3.22.0). Each "old" run uses the
+same binary with the sync switched off by a temporary environment variable.
+Logs and postProcessing are on XenoSim in
+`~/OpenFOAM/philipc-v2512-qmfoil/evidence/`, compared with `compare.py`
+there.
+- Mismatch of the moved mesh, old against fix:
+  - foilInWind, 128 ranks (failing decomposition): 1.33e-8 m at step 1,
+    growing to 5.0e-8 m on 27 point copies, against 0 at all 600 steps;
+  - foilInWind, 16 ranks: 3.55e-9 m against 0;
+  - foilInWind 8 ranks, ringAddedMass 2/8 ranks, cavityFlexibleBottom 4/8
+    ranks: 0 for both, because no constrained point is dangling.
+- foilInWind, 128 ranks, old code at `a46bcbae7`: it stops at t = 0.9 s
+  with the same error (ranks 42/116, 35). With the fix it runs to t = 1.5 s:
+  600 steps, 1200 converged SNES solves, mismatch 0 (run `foil128-fix`,
+  9540 s).
+- Results unchanged where no mismatch existed: foilInWind 8 ranks (10 steps)
+  and 32 ranks (40 steps), ringAddedMass 2/8 ranks and cavityFlexibleBottom
+  4/8 ranks (40 steps each). The QoI histories and every SNES function norm
+  are bitwise identical.
+- Where the old code had a mismatch, the results change:
+  - foilInWind 16 ranks, to t = 0.05 s: the same Newton iteration counts;
+    the displacement differs by up to 6.2e-12 m out of 7.7e-8 m;
+  - foilInWind 128 ranks, up to t = 0.8975 s: the flag displacement differs
+    by up to 4.0e-9 m out of 3.5e-7 m (1.1%, largest just before the
+    failure), and the force by 3.6e-5 relative.
+- The pre-fix r0 run (`85b0c1de6`) is not a controlled comparison for the
+  QoIs, because the head has merged PRs #602, #616, #617 and #618 since.
+
+**Consequence for the campaign.** foilInWind monolithic runs need PR #621,
+or a head that contains it. A full 12 s run at 128 ranks takes about 21 h.

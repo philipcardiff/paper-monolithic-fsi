@@ -179,6 +179,14 @@ All 2.00 Newton/step. QoI differences vs S0tight: cav S0/S1 ≤ 1.1e-5
 
 ## Open questions for Philip
 
+From R4/R5 (25 Oct, subagent α interim; branch `evidence/campaign-r4r5`):
+- **IQN-ILS on FSI3 4x**: 13.8 s/step, 14.6 coupling it./step on 16 ranks
+  → ~77 h and ~1 230 core-h for 20 000 steps (over the 48 h job limit and
+  the whole G1 R4 range). Cancelled. Run it (with a restart chain, once
+  restarts are fixed), use fewer steps/levels, or drop partitioned 4x?
+- **3dTube L3 monolithic** (64 ranks): ~22 s/step → ~20 h, ~1 250 core-h
+  vs 160–300 in G1. Running; free while the node is shared for ~8 h more,
+  then ~12 h at half a node. Keep or stop?
 - Review/merge PR #621 (foilInWind processor-point fix; changes
   `solidModel::correctPointDisplacement`, used by every solid model).
   Needed before the consistent-version reruns.
@@ -187,6 +195,21 @@ All 2.00 Newton/step. QoI differences vs S0tight: cav S0/S1 ≤ 1.1e-5
   head.
 
 ## Log
+
+- **2026-10-25** R4/R5 interim (subagent α, farm 5384147, ~3.5 node-h):
+  FSI3 mono 1x u_y amp −40.7%, lift amp +150%; 2x u_x mean −1.1%, u_y amp
+  −2.9%, freq +3.6%, drag mean +3.9%, lift amp +46% (vs Featflow). 2x
+  tolerance sweep: snes 1e-4…1e-8 within 6e-6 of the 1e-10 reference.
+  3dTube tutorial tolerances equal 1e-6 to 6 digits (L1, L2); mono vs
+  Robin u_r,max −0.08% (L1), +0.23% (L2). IQN-ILS 1x diverged at
+  t = 5.937 s (recorded). L3 tube needed exact wall arcs for directMap.
+  **Restart defect with `backward` fluid** (issue
+  `r4/issue_restart_backward_fluid_history.md`): first restarted step
+  1.6–1.8% off; no fluid old-old fields written; on 2x the viscous force
+  jumps at restart (drag mean −5.9%, lift amp −28%). Fix subagent started
+  (PR to follow); α paused restart-based work (STOP file). Reference
+  uncertainty for FSI3: use V's ≈1% (V `sectionRecommendedSuite.tex:57`,
+  `sectionCrossBenchmark.tex:137`), not the handoff's 3–5%.
 
 - **2026-10-25** #621 merged (18a24427f) after adding a foam-extend guard.
   Consistent-version builds started (MeluXina 5384031 done, clean; XenoSim

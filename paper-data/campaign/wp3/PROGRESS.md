@@ -94,3 +94,10 @@
   evaluated on the moved fluid mesh with a total displacement) — needs a
   solver-code test; stopped and reported. Tutorial branch
   `tutorials/collapsible-monolithic-mesh-motion` created locally, unchanged.
+- 25 Oct 01:45: tutorial A/B 13370 invalid as an A/B: "old" was the
+  4ae081609 tutorial (pre-#617: Euler ddt(U), skewCorrected), "new" the
+  branch at a46bcbae7 (#617 schemes) + the mesh-motion change, so the
+  troughs (−0.18733 vs −0.19566) mix the time scheme with the change.
+  Redone as 13376 from a46bcbae7 with four variants (old, new,
+  predictor only, diffusion law only). 3b QM rerun resubmitted with 4
+  tasks (13374; 13371 waited for 12 free CPUs, cancelled).

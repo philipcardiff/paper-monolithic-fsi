@@ -194,15 +194,24 @@ All 2.00 Newton/step. QoI differences vs S0tight: cav S0/S1 ≤ 1.1e-5
 - Review/merge PR #621 (foilInWind processor-point fix; changes
   `solidModel::correctPointDisplacement`, used by every solid model).
   Needed before the consistent-version reruns.
-- p201287 file quota (920k of 1M after archiving my own runs): the large
-  non-campaign directories (`precice-issue587` 276k files,
-  `beam-richter-opus` 210k, `fsi-mesh-motion` 53k) are not mine; archive
-  them? (Not touched without Philip's word.)
 - #618 (merged 24 Oct) makes the viscous stress transpose always on; this
   replaces the 21 Oct "off by default" decision for all reruns at the new
   head.
 
 ## Log
+
+- **2026-10-25** p201287 files 920 355 → 391 054 of 1M: Philip approved
+  archiving inactive directories; `precice-issue587` (275 942 entries),
+  `beam-richter-opus` (210 006), `fsi-mesh-motion` (52 697), none written
+  since 11–19 Oct and none used by a running job, tarred to
+  `/project/home/p201287/philip/archive/<name>.tar` (job 5383679; source
+  removed only when the tar member count matched). Block with tail: draft
+  PR #623 opened from codex's text; refined-solid partitioned run (13400,
+  80×4, scaleFactor 0.1) gives a small (≈0.05 cm), slowly decaying response
+  at ≈3.7 Hz (the wake frequency), not the published 0.8 cm / ≈3 Hz
+  lock-in. Codex now tests Philip's suggestion of a high-order (p = 3/4)
+  solid discretisation (TASK3). #621 got a foam-extend guard (07d769bfe)
+  after its fe builds failed; merges when checks pass.
 
 - **2026-10-25** foilInWind defect fixed: PR #621 (open). Cause:
   `pointD.correctBoundaryConditions()` sets fixed-value point patches only

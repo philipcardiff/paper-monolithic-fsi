@@ -185,6 +185,19 @@ All 2.00 Newton/step. QoI differences vs S0tight: cav S0/S1 ≤ 1.1e-5
 
 ## Log
 
+- **2026-10-26** Philip (via the solver-paper session): FSI3 IQN-ILS 4x
+  conformal not run (registry: not planned). 3dTube QM L3 approved, then
+  put **on hold until `development` is merged into the feature branch**;
+  timing windows (agent C's list, ~34 node-h, once for both papers) also
+  wait for that merge and for agent B's TurekHron2006 A/B. Built 496be0c43
+  on MeluXina (`qm-496be`, 5388439, clean). Registry: L3 claimed (b8e5489),
+  now on hold. No processor face-area mismatch in any R4/R5 log
+  (18a24427f has #621). Merge subagent started: PR
+  `merge/development-into-qm` (not merged by us; the coordinating session
+  merges), with a QM A/B (ring, Womersley, blob, cavity L1,
+  collapsibleChannel L2, FSI3 conformal 1x, 3dTube L1) against 496be0c43,
+  and optionally a `meshMotionTotalDisplacement` A/B.
+
 - **2026-10-26** Coordination with the solver-paper coordinating session
   (via Philip). Agreed split: this campaign runs R4 (FSI3 conformal QM and
   IQN-ILS 1x/2x/4x, tolerance sweep), R5 (3dTube QM and RN, L1–L3 incl.

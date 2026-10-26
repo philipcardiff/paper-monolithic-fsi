@@ -207,6 +207,11 @@ campaign. Run owners:
 
 Every run is checked against and claimed in `campaign/registry` first.
 
+Philip, 26 Oct: FSI3 IQN-ILS conformal 4x is not run (the solver paper's
+FSI3 comparison is option (b)); 3dTube L3 goes ahead for QM only
+(exact-arc mesh; RN L3 exists with AMI); timing windows run once for both
+papers after the TurekHron2006 mesh-motion A/B is settled.
+
 **Block with tail:** back in the paper (Philip, 26 Oct) if the solids4foam
 result matches the literature; otherwise left out (solids4foam#615, #623).
 

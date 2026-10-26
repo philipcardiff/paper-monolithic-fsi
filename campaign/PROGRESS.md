@@ -185,6 +185,15 @@ All 2.00 Newton/step. QoI differences vs S0tight: cav S0/S1 ≤ 1.1e-5
 
 ## Log
 
+- **2026-10-26** Coordination now via the board PR
+  philipcardiff/paper-monolithic-fsi#13 (rules in its description; I post as
+  "M campaign coordinator"). Philip's GO for the development merge is on
+  the board. Correction: 3dTube QM L3 had been submitted (Mx 5388457,
+  qm-496be) before the hold; cancelled after 10 min 41 s (~0.18 node-h),
+  directory moved to `r5-tube-mono-L3-t6.onhold-cancelled`; registry row
+  back to claimed (49d317b); rerun scripts on `evidence/campaign-r4r5`
+  (6cff04d). Board corrected.
+
 - **2026-10-26** Philip (via the solver-paper session): FSI3 IQN-ILS 4x
   conformal not run (registry: not planned). 3dTube QM L3 approved, then
   put **on hold until `development` is merged into the feature branch**;

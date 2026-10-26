@@ -1,0 +1,7 @@
+{"run_id": "mfix-fsi3-4x", "ranks": 32, "cores": "0-31",
+ "command": "./verification/Allverify --coupling monolithicAMI --levels 4 --cores 32", "write_interval_env": "",
+ "solver_case": "/project/home/p201136/philip-agentC/runs/fix/mfix-fsi3-4x/verification/work/monolithicAMI_mesh_4x", "code_commit": "v2.4-1115-g1252bd2e5",
+ "node": "mel0330", "slurm_job_id": "5382421", "account": "p201136",
+ "exclusive_node": true, "shared_with_other_runs": true,
+ "binding": "taskset -c 0-31; MPI binding none",
+ "rc": 0, "wall_s": 99022.012}

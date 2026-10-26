@@ -38,3 +38,11 @@ mfix-tube-L1,t_uz_min_A_s,0.004756631355932204,,,,,
 mfix-tube-L2,ur_max_A_m,0.00015982600265957448,0.00015978,pre-#618 QM L2 (3dTube verification README),2.8791e-04,,fix minus pre-fix
 mfix-tube-L2,t_ur_max_A_s,0.007224867021276597,0.007226,pre-#618 QM L2 (3dTube verification README),-1.5679e-04,,fix minus pre-fix
 mfix-tube-L2,uz_min_A_m,-8.67136e-05,-8.669e-05,pre-#618 QM L2 (3dTube verification README),-2.7223e-04,,fix minus pre-fix
+mfix-fsi3-4x,ux_mean,-0.00280011,-0.00288,Featflow level 4 (driver reference JSON),2.7740e-02,,vs V IQN-ILS 4x +0.0923
+mfix-fsi3-4x,ux_amplitude,0.00265059,0.00272,Featflow level 4 (driver reference JSON),-2.5518e-02,,vs V IQN-ILS 4x -0.0913
+mfix-fsi3-4x,uy_amplitude,0.034460450000000004,0.03499,Featflow level 4 (driver reference JSON),-1.5134e-02,,vs V IQN-ILS 4x -0.0488
+mfix-fsi3-4x,uy_frequency,5.5002387812637465,5.46,Featflow level 4 (driver reference JSON),7.3697e-03,,
+mfix-fsi3-4x,drag_mean,460.46703333333335,460.5,Featflow level 4 (driver reference JSON),-7.1589e-05,,vs V IQN-ILS 4x -0.0035
+mfix-fsi3-4x,drag_amplitude,27.065566666666655,27.74,Featflow level 4 (driver reference JSON),-2.4313e-02,,vs V IQN-ILS 4x -0.1738
+mfix-fsi3-4x,lift_amplitude,159.04213333333334,153.91,Featflow level 4 (driver reference JSON),3.3345e-02,,vs V IQN-ILS 4x -0.1015
+mfix-fsi3-4x,lift_frequency,5.500188156789246,5.46,Featflow level 4 (driver reference JSON),7.3605e-03,,

@@ -52,8 +52,7 @@ maintenance:
   +0.03%), `u_z,min(A)` −0.0867136 mm (+0.03%). Clock 8657 s on 8 ranks
   (pre-fix on xenosim 3398 s); not a timing row, as the node is shared with
   the 4x.
-- **FSI3 QM-AMI 4x: running**, t = 4.13 s after 12.25 h; about 15 h more
-  (ends ~27–28 h, inside the 44 h limit).
+- **FSI3 QM-AMI 4x: done** (27.5 h, driver PASS). Analysis: `4a_findings.md`.
 - **3dTube QM L3: failed at start-up** (`directMap`: "interfaces are not
   conformal", 5120 unmatched faces; `fix/mfix-tube-L3.failure.txt`). Cause:
   the tutorial blockMeshDicts give the curved wall with 4-digit arc points,
@@ -61,9 +60,10 @@ maintenance:
   solid as one 90° arc. The two walls differ by up to 1.0 µm (mean 0.67 µm).
   The `directMap` tolerance is hard-coded at 1% of the smallest edge: about
   2.5 µm on L1, 1.3 µm on L2 (passes narrowly) and 0.63 µm on L3. A
-  geometry issue in the tutorial, not the solver. **Stopped; needs a
-  decision** (exact arc points in the run copies, AMI for L3, or an
-  upstream fix).
+  geometry issue in the tutorial, not the solver. Philip chose the upstream fix: **solids4foam PR #625** (exact arc
+  points; fluid and solid walls coincide to 2e-17 m on L1 and L3).
+  3dTube runs (L3, 6b, 6c, 6e) moved to the M coordinator (R5) on 26 Oct;
+  not rerun here.
 
 ## 4a — FSI3 QM-AMI, tutorial meshes (23 Oct, pre-#618, superseded)
 
@@ -128,7 +128,8 @@ L1 and L2 done; L3 failed at start-up (directMap tolerance vs tutorial arc round
 
 ## Timing jobs (4b, 6b, 6c, 4c)
 
-Job list and estimates: `TIMING_JOBS.md` (≈ 34 node-hours). Not submitted;
+Moved to the M coordinator on 26 Oct (it owns timing, with #616/#624);
+`TIMING_JOBS.md` left here for it. Job list and estimates: `TIMING_JOBS.md` (≈ 34 node-hours). Not submitted;
 approved by Philip 23 Oct (decisions in `TIMING_JOBS.md`); submit from
 1 November on the fixed build with #616.
 
@@ -139,4 +140,4 @@ approved by Philip 23 Oct (decisions in `TIMING_JOBS.md`); submit from
 | p201136 | 5377601 (4a 1x check, 1 exclusive node, 25.8 min) | 0.43 |
 | p201136 | 5382214 (build, 32 cores, short QOS, 5.5 min) | 0.09 |
 | p201136 | 5382225 (batch 1, 1 exclusive node, 36 min) | 0.60 |
-| p201136 | 5382421 (batch 2) | running |
+| p201136 | 5382421 (batch 2, 1 exclusive node, 27.5 h) | 27.5 |

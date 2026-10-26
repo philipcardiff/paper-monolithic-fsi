@@ -185,6 +185,22 @@ All 2.00 Newton/step. QoI differences vs S0tight: cav S0/S1 ≤ 1.1e-5
 
 ## Log
 
+- **2026-10-26** Coordination with the solver-paper coordinating session
+  (via Philip). Agreed split: this campaign runs R4 (FSI3 conformal QM and
+  IQN-ILS 1x/2x/4x, tolerance sweep), R5 (3dTube QM and RN, L1–L3 incl.
+  exact-arc L3) and the block with tail; the other session's agents run
+  FSI3 QM-AMI (C), robustness maps and QM mesh-motion tutorial changes
+  (B). Timing windows (agent C's TIMING_JOBS.md, ~34 node-h) to be run
+  once for both papers. Registry check/claim before every run. Note: this
+  campaign is also for the solver paper (M), not V. #622 merged
+  (496be0c43). R4 farm 5384147 finished (11 h 45 min): FSI3 mono 4x and
+  IQN-ILS 2x reached t = 7 s. **Philip: no expensive runs (IQN-ILS 4x,
+  3dTube L3, timing windows) until the code and settings have settled.**
+  Launch conditions: no pending QM-result-changing PRs (incl. a decision on
+  merging `development`/#554); agent B's TurekHron2006 #622 mesh motion
+  landed and a cheap 1x/2x check of its effect on the conformal FSI3
+  results; a fresh build of the final head reproducing B0/B1.
+
 - **2026-10-26** PR #624 merged (7b4eb40b2) on Philip's word. The consistent version for the remaining runs is now the branch head 7b4eb40b2; `qm-final` (18a24427f) lacks it, so restart-based work needs a rebuild.
 
 - **2026-10-26** Restart defect 2 fixed: solids4foam PR #624 (open, CI

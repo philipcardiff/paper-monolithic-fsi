@@ -193,6 +193,23 @@ fixed build ("R-fix"); partitioned results are unaffected:
 The QM results recorded so far (E597 and head) remain as the
 "before the fix" record and may be cited for the effect of the fix.
 
+## 3c. Ownership of runs (26 October 2026)
+
+The coordinating session (claude.ai, owner of this plan) is in charge of the
+campaign. Run owners:
+
+| Owner | Work |
+|---|---|
+| M coordinator (xenosim session, subagent α; branch `evidence/campaign-r4r5`) | R4 FSI3 conformal QM and IQN-ILS 1x/2x/4x and tolerance sweep (option a, now included); R5 3dTube QM/RN L1–L3 (exact-arc L3); all timing windows (4b, 6b, 6c, 4c; needs #616/#624); block with tail (draft #623) |
+| Agent C | FSI3 QM-AMI tutorial meshes 4x (option b) and its analysis; FSI3 field run (4e) if R4 does not cover it |
+| Agent B | Robust QM mesh motion in the other tutorials (after #622) |
+| Agent A | Done (`evidence/m-runs-a-rfix`) |
+
+Every run is checked against and claimed in `campaign/registry` first.
+
+**Block with tail:** back in the paper (Philip, 26 Oct) if the solids4foam
+result matches the literature; otherwise left out (solids4foam#615, #623).
+
 ## 4. Runs (not started)
 
 All runs: the solver branch head at the time of the run (with its commit

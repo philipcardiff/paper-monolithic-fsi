@@ -7,14 +7,19 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=128
 #SBATCH --time=08:00:00
+#SBATCH --signal=B:TERM@900
 #SBATCH --output=/project/home/p201136/philip-ma/slurm-%x-%j.out
 #
 # Timing rows 1d (ring strong m2 n25/50/100: QM, IQN-ILS, RN) and 2a (cavity
 # L1-L4: QM, Aitken), 3 repeats each (ma_run.py batch 8), on one exclusive
 # node. Every arm uses the same build (R-fix, 1252bd2e5). At most 8 runs at
-# once, each pinned (taskset) to its own core complex: first cores 0, 16,
-# ..., 112 (every other CCD, four per socket); the 4-rank L4 runs use the
-# four cores of their complex. Timings: solver ClockTime of log.solids4Foam.
+# once, each pinned (taskset) to its own CCD (8 cores): first cores 0, 16,
+# ..., 112 (every other CCD, one per NUMA domain); a serial run uses one of
+# them, the 4-rank L4 runs four, and the MPI helper process gets its own (a
+# one-core mask cost 35% in clock time outside the solver's CPU time). Timings: solver ClockTime of log.solids4Foam.
+# The runs write to node memory (/dev/shm; the node has no local disk), not
+# to Lustre, so that file-system load does not enter the clock time; the
+# run directories are copied to RUNS at the end (also on failure or time-out).
 # MA_SMOKE=1: a short check of the set-up on a shared node (not a timing
 # row): four cheap runs, slots on the cores Slurm gives the job.
 BUILD=/project/home/p201136/philip-ma/rfix
@@ -35,12 +40,18 @@ if [ "${MA_SMOKE:-0}" = 1 ]; then
     PIN=$(echo "$cpus" | cut -d, -f1,5)
     ONLY=tm-ram-qm-strong-m2-n25-r1,tm-ram-iqn-strong-m2-n25-r1,tm-cav-aitken-L1-r1,tm-cav-qm-L1-r1
 else
-    RUNS=/project/home/p201136/philip-ma/runs-timing
+    RUNS=${MA_RUNS:-/project/home/p201136/philip-ma/runs-timing}
     PIN=0,16,32,48,64,80,96,112
     ONLY=${MA_ONLY:-}
 fi
-echo "runs $RUNS, slots $PIN"
+LOCAL=/dev/shm/ma-timing-$SLURM_JOB_ID
+mkdir -p "$LOCAL" "$RUNS"
+copy_back() { rsync -a "$LOCAL/" "$RUNS/" && echo "copied to $RUNS"; }
+trap 'copy_back; exit 1' TERM
+echo "runs $LOCAL -> $RUNS, slots $PIN"
 python3 "$QM_ROOT/campaign/ma/ma_run.py" --s4f "$BUILD/solids4foam" \
-    --runs "$RUNS" --provenance "$QM_ROOT/campaign/scripts/provenance.py" \
-    --batch 8 --pin "$PIN" --slot-width 4 ${ONLY:+--only "$ONLY"}
+    --runs "$LOCAL" --provenance "$QM_ROOT/campaign/scripts/provenance.py" \
+    --batch 8 --pin "$PIN" --slot-width 8 ${ONLY:+--only "$ONLY"} &
+wait $!
+copy_back && rm -rf "$LOCAL"
 echo "timing done $(date)"

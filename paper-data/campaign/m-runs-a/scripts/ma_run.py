@@ -163,7 +163,7 @@ def definitions2(rfix=True):
     return (out + definitions3() + definitions4()
             + definitions4(prefix="mafinal", batch=5)
             + definitions4(prefix="mafinal4", batch=6)
-            + (definitionsRfix() if rfix else []))
+            + (definitionsRfix() + definitionsTiming() if rfix else []))
 
 
 def definitionsRfix():
@@ -196,6 +196,31 @@ def definitionsRfix():
         out.append(dict(id=f"rf-blob-qm-x{lvl}", item="5a", case="blob",
                         level=lvl, dt=dt, end_time=3.0, vst=None, petsc={},
                         ranks=np, batch=7, tutorial_schemes=True))
+    return out
+
+
+def definitionsTiming(repeats=3):
+    """Timing rows (batch 8, Mx exclusive node): 1d ring strong m2
+    n25/50/100 QM, IQN-ILS, RN and 2a cavity L1-L4 QM and Aitken, each the
+    exact definition of its accuracy run (QM: R-fix batch 7; partitioned:
+    batches 1 and 3), repeated; run with --pin."""
+    base = definitions(rfix=False)
+    rfix = definitionsRfix()
+    pick = ([r for r in rfix if r["case"] == "cav" and r["item"] == "2a"]
+            + [r for r in rfix if r["case"] == "ram"
+               and r.get("kind") == "wet" and r.get("level") == "strong"
+               and r["factor"] == 2 and r["steps"] in (25, 50, 100)
+               and r["item"] == "1a" and "tight" not in r["id"]]
+            + [r for r in base if r["item"] == "1d"]
+            + [r for r in base if r["item"] == "2c"])
+    out = []
+    for k in range(1, repeats + 1):
+        for r in pick:
+            r = dict(r)
+            rid = re.sub(r"^(ma|rf)-", "tm-", r["id"])
+            item = "2a" if r["case"] in ("cav", "cavpart") else "1d"
+            r.update(id=f"{rid}-r{k}", item=f"{item} timing", batch=8)
+            out.append(r)
     return out
 
 
@@ -250,7 +275,13 @@ def cost(r):
 # Execution
 # ---------------------------------------------------------------------------
 
+PIN = threading.local()   # cores of the current run (--pin), or None
+
+
 def run_cmd(cmd, case, log_name):
+    cpus = getattr(PIN, "cpus", None)
+    if cpus:
+        cmd = ["taskset", "-c", cpus] + list(cmd)
     with (case / log_name).open("w") as log:
         t0 = time.time()
         res = subprocess.run(cmd, cwd=case, stdout=log,
@@ -542,6 +573,14 @@ def execute(ctx, r):
                      "cavpart": run_cavpart,
                      "blob": run_blob}[r["case"]](ctx, r)
         out["status"] = "completed"
+        log = case / "log.solids4Foam"
+        if log.is_file():
+            text = log.read_text(errors="replace")
+            for key, word in (("solver_clock_s", "ClockTime"),
+                              ("solver_exec_s", "ExecutionTime")):
+                v = re.findall(rf"{word}\s*=\s*([0-9.eE+-]+)", text)
+                out[key] = float(v[-1]) if v else None
+        out["cpus"] = getattr(PIN, "cpus", None)
     except Exception as error:  # record and carry on
         out = {"status": "failed", "error": str(error),
                "traceback": traceback.format_exc()}
@@ -558,6 +597,35 @@ def execute(ctx, r):
           flush=True)
 
 
+def run_pinned(ctx, todo, starts, width):
+    """One run per slot; a slot is `width` consecutive cores from each start
+    (one core complex), a run of N ranks uses the first N of them."""
+    import queue
+    free = queue.Queue()
+    for c in starts:
+        free.put(c)
+    threads = []
+
+    def worker(r, c):
+        PIN.cpus = f"{c}-{c + r['ranks'] - 1}" if r["ranks"] > 1 else str(c)
+        try:
+            execute(ctx, r)
+        finally:
+            free.put(c)
+
+    for r in todo:
+        if r["ranks"] > width:
+            raise SystemExit(f"{r['id']}: {r['ranks']} ranks > slot width")
+        c = free.get()
+        print(f"{time.strftime('%H:%M:%S')} start {r['id']} on core {c}",
+              flush=True)
+        t = threading.Thread(target=worker, args=(r, c))
+        t.start()
+        threads.append(t)
+    for t in threads:
+        t.join()
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--s4f", required=True, type=Path)
@@ -568,6 +636,9 @@ def main():
     ap.add_argument("--only")
     ap.add_argument("--batch", type=int)
     ap.add_argument("--list", action="store_true")
+    ap.add_argument("--pin", help="first cores of the pinning slots, e.g. "
+                    "0,16,32 (one run per slot; replaces --cores)")
+    ap.add_argument("--slot-width", type=int, default=4)
     args = ap.parse_args()
     todo = definitions()
     if args.batch:
@@ -598,8 +669,12 @@ def main():
                ram_ref=json.loads(ram.REFERENCE_FILE.read_text()),
                wom_ref=json.loads(wom.REFERENCE_FILE.read_text()))
     todo = sorted(todo, key=lambda r: -cost(r))
-    sem = threading.Semaphore(args.cores)
     threads = []
+    if args.pin:
+        run_pinned(ctx, todo, [int(c) for c in args.pin.split(",")],
+                   args.slot_width)
+        return
+    sem = threading.Semaphore(args.cores)
 
     def worker(r):
         try:

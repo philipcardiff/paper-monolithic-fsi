@@ -13,12 +13,18 @@
 # Timing rows 1d (ring strong m2 n25/50/100: QM, IQN-ILS, RN) and 2a (cavity
 # L1-L4: QM, Aitken), 3 repeats each (ma_run.py batch 8), on one exclusive
 # node. Every arm uses the same build (R-fix, 1252bd2e5). At most 8 runs at
-# once, each pinned (taskset) to its own CCD (8 cores): first cores 0, 16,
+# once, each masked (taskset) to its own CCD (8 cores): first cores 0, 16,
 # ..., 112 (every other CCD, one per NUMA domain); a serial run uses one of
-# them, the 4-rank L4 runs four, and the MPI helper process gets its own (a
-# one-core mask cost 35% in clock time outside the solver's CPU time). Timings: solver ClockTime of log.solids4Foam.
-# The runs write to node memory (/dev/shm; the node has no local disk), not
-# to Lustre, so that file-system load does not enter the clock time; the
+# them, the 4-rank L4 runs four.
+# Timings (Philip, 28 October): the solver's CPU time (ExecutionTime of
+# log.solids4Foam, first rank) is the reported figure; its ClockTime is
+# recorded alongside. On MeluXina the clock time carries 13-43 s at start-up
+# and stalls of ~15% while stepping, varying by node and shared by
+# concurrent runs, from outside the node: the set-up checks (jobs 5392144,
+# 5392160, 5392187, 5392196 and ma_timing_probe.sh, 5392204) show the same
+# gap with and without the mask, the thread variables and Lustre output,
+# while the CPU time repeats to ~2%.
+# The runs write to node memory (/dev/shm; the node has no local disk); the
 # run directories are copied to RUNS at the end (also on failure or time-out).
 # MA_SMOKE=1: a short check of the set-up on a shared node (not a timing
 # row): four cheap runs, slots on the cores Slurm gives the job.

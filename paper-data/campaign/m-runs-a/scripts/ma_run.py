@@ -599,9 +599,7 @@ def execute(ctx, r):
 
 def run_pinned(ctx, todo, starts, width):
     """One run per slot; a slot is `width` consecutive cores from each start
-    (one core complex), and every run gets the whole slot as its mask: a
-    run pinned to as many cores as ranks shares them with the MPI helper
-    process, which costs clock time outside the solver's CPU time."""
+    (one CCD), and every run gets the whole slot as its mask."""
     import queue
     free = queue.Queue()
     for c in starts:

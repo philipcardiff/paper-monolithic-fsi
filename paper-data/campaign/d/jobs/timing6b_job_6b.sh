@@ -10,8 +10,7 @@
 # (case, ranks) is re-decomposed once from the reconstructed 5 ms state
 # (redecomp.sh) and reused by the 3 repeats (repeat loop outermost). One run
 # at a time on the exclusive node, ranks pinned to cores 0..N-1. Build
-# a421f063d. The point-displacement monitor jumps at any restart of this case
-# (also at the source rank count); the fluid forces are continuous.
+# a421f063d.
 export QM_ROOT=/project/home/p201287/philip/qm-a421
 export QM_SCRIPTS=/project/home/p201287/philip/qm-final/runs/r4r5-scripts
 S=$QM_SCRIPTS/scripts; D=$QM_ROOT/runs/timing-6b; P=$QM_ROOT/runs/prefix5ms

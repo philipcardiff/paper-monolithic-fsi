@@ -34,3 +34,5 @@ Reading:
   These lie in the wake, which the verification paper found was not asymptotic at 8x′.
   The R4 conformal 1x/2x/4x series should not be used for observed orders or extrapolation.
   It still serves as a same-mesh QM vs IQN-ILS comparison.
+
+Decision (Philip, 29 Oct): R4 stays in §7 only as a same-mesh QM vs IQN-ILS comparison, with this caveat; accuracy and orders come from option (b).

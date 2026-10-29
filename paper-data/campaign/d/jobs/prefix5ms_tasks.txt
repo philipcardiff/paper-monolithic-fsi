@@ -1,0 +1,3 @@
+p5-tube-mono-L2 16 - bash /project/home/p201287/philip/qm-final/runs/r4r5-scripts/scripts/run_task.sh /project/home/p201287/philip/qm-a421/runs/prefix5ms/p5-tube-mono-L2
+p5-tube-robin-L2 16 - bash /project/home/p201287/philip/qm-final/runs/r4r5-scripts/scripts/run_task.sh /project/home/p201287/philip/qm-a421/runs/prefix5ms/p5-tube-robin-L2
+p5-tube-robin-L3 64 - bash /project/home/p201287/philip/qm-final/runs/r4r5-scripts/scripts/run_task.sh /project/home/p201287/philip/qm-a421/runs/prefix5ms/p5-tube-robin-L3

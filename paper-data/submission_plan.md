@@ -130,6 +130,91 @@ partitioned).
    before submitting. MeluXina is also the timing machine (exclusive nodes).
 8. **WP0 and 8a** (mesh layers) are approved to start now.
 
+## 3a. Decisions (Philip, 23 October 2026)
+
+1. **FSI3 comparison (§7):** option (b) for now. Compare QM-AMI on the
+   tutorial meshes with the verification paper's IQN-ILS tutorial-mesh runs
+   (1x/2x/4x, already done). QM-AMI 1x/2x exist; the 4x is a new run (4a).
+   QM against IQN-ILS on the conformal meshes (option a) may come later.
+2. **3dTube (§8):** QM uses `directMap`, the verification paper's
+   Robin–Neumann runs use AMI on the same meshes. State this in §8; no rerun.
+3. **Cavity:** the partitioned runs reduce Δt with the level; this is fine
+   for a steady case and is the point of the cost comparison.
+4. **ringAddedMass:** run Robin–Neumann with the standard solid (1d).
+5. **MeluXina project p201136** is Amirhossein and Colm's project (the
+   "Amir/Colm project" of decision 7 above).
+6. **Shared run registry:** `campaign/registry/registry.csv` (branch
+   `campaign/registry`), seeded from `paper-data/reuse_map.md`. Every run
+   is checked against it and claimed there before submission. Run agents
+   follow `campaign/RUN_AGENT_BRIEF.md`.
+7. **Schemes (23 Oct):** no `cellLimited` or similar limiters. QM runs use
+   the same schemes as the case's partitioned tutorial: least-squares
+   gradients, `linearUpwind grad(U)` (or `Gauss linear` where the
+   partitioned file has it), `backward` in time. solids4foam branch
+   `tutorials/monolithic-schemes-consistent` makes this the tutorial default.
+   The `linearUpwind cellLimited leastSquares 1` entries never applied a
+   limiter (one word is read as a gradient-scheme name; solids4foam#553),
+   so earlier QM results are unaffected; only `ddt(U)` Euler to `backward`
+   changes results.
+8. **`viscousStressTranspose` (open):** `yes` is the formulation consistent
+   with `pimpleFluid` (the term is in the residual and the traction). WP0 on
+   blob shows QM `yes` differing from partitioned by −2.34/−1.04/−0.44%
+   (x1/x2/x4) against −0.33/−0.29/−0.16% for `no`; a diagnostic (agent A)
+   looks for the discrete mismatch. FSI3 4x and 3dTube L3 production runs
+   wait for the decision.
+
+## 3b. Transpose viscous term: fix, then rerun (23 October 2026)
+
+`viscousStressTranspose no` leaves a mesh-independent wall offset on
+womersleyTube (phase 4.8e-4 rad at every mesh); `yes` removes it, but on
+blobInTreacle it turns the QM wall divergence into an O(h) spurious wall
+force (`evidence/m-runs-a`: `paper-data/campaign/wp0/vST_diagnostic.md`,
+`paper-data/campaign/m-runs-a/WP1_findings.md`). Agent A is fixing the
+wall/interface evaluation of the term. Philip's decision: then **remove the
+option** and hard-code the term with the corrected wall evaluation
+(solids4foam branch from agent A; PR by the coordinator), together with
+solids4foam#617 (schemes).
+
+Every QM result at the current head is then superseded and rerun on the
+fixed build ("R-fix"); partitioned results are unaffected:
+
+| Case | QM runs to repeat | Who |
+|---|---|---|
+| blobInTreacle | x1/x2/x4 steady (0b/5a), temporal study (5b) | A |
+| womersleyTube | m1/m2/m4 n200, m2 n50–n400 (1e) | A |
+| ringAddedMass | 1a sweep, 1b, 1c, 1d (wall moves; effect expected small at ν = 1e-7) | A |
+| cavityFlexibleBottom | L1–L4 (2a), 2b | A |
+| foilInWind | Δt 0.0025, 0.005, 0.01 (7a) | A |
+| collapsibleChannel | B2 (13109–13111) and the QM arm of 3b | B |
+| ringAddedMass | QM arm of 3a | B |
+| TurekHron2006 FSI3 | QM-AMI 1x check, then 4x (4a), 4e | C |
+| 3dTube | QM L1/L2 (E597 values superseded), L3 (6a), 6e | C |
+
+The QM results recorded so far (E597 and head) remain as the
+"before the fix" record and may be cited for the effect of the fix.
+
+## 3c. Ownership of runs (26 October 2026)
+
+The coordinating session (claude.ai, owner of this plan) is in charge of the
+campaign. Run owners:
+
+| Owner | Work |
+|---|---|
+| M coordinator (xenosim session, subagent α; branch `evidence/campaign-r4r5`) | R4 FSI3 conformal QM and IQN-ILS 1x/2x/4x and tolerance sweep (option a, now included); R5 3dTube QM/RN L1–L3 (exact-arc L3); all timing windows (4b, 6b, 6c, 4c; needs #616/#624); block with tail (draft #623) |
+| Agent C | FSI3 QM-AMI tutorial meshes 4x (option b) and its analysis; FSI3 field run (4e) if R4 does not cover it |
+| Agent B | Robust QM mesh motion in the other tutorials (after #622) |
+| Agent A | Done (`evidence/m-runs-a-rfix`) |
+
+Every run is checked against and claimed in `campaign/registry` first.
+
+Philip, 26 Oct: FSI3 IQN-ILS conformal 4x is not run (the solver paper's
+FSI3 comparison is option (b)); 3dTube L3 goes ahead for QM only
+(exact-arc mesh; RN L3 exists with AMI); timing windows run once for both
+papers after the TurekHron2006 mesh-motion A/B is settled.
+
+**Block with tail:** back in the paper (Philip, 26 Oct) if the solids4foam
+result matches the literature; otherwise left out (solids4foam#615, #623).
+
 ## 4. Runs (not started)
 
 All runs: the solver branch head at the time of the run (with its commit
@@ -157,7 +242,7 @@ the timing machine; everything else can run anywhere.
 | 1a | ringAddedMass | QM, 3 added-mass levels × mesh 1/2/4 × 25/50/100/200 steps per period (`--study monolithic` + mesh sweep) | Fig. 4.1, case-settings table |
 | 1b | ringAddedMass | QM zero-gradient pressure, moderate and strong levels × mesh 1/2/4, 100 steps per period | Fig. 4.3 |
 | 1c | ringAddedMass | QM non-conformal (`--study nonconformal`), conservative/interpolated × coarser/finer solid | Fig. 4.4 |
-| 1d | ringAddedMass | Strong level, mesh 2, 25/50/100 steps per period: QM, IQN-ILS, RN (**timing**) | Table 4.2 |
+| 1d | ringAddedMass | Strong level, mesh 2, 25/50/100 steps per period: QM, IQN-ILS, RN, all with the standard solid (**timing**) | Table 4.2 |
 | 1e | womersleyTube | QM m1/m2/m4 at 200 steps; m2 at 50/100/200/400 (`--monolithic`); RN and IQN-ILS on the same (for §5) | Table 4.3, Fig. 5.2 |
 | 1f | ring and Womersley | BDF2 start-up check: the same QoIs with a second-order first step, or a start-up window excluded | `\tbd` in §3 |
 
@@ -181,7 +266,7 @@ the timing machine; everything else can run anywhere.
 
 | ID | Case | Runs | Output |
 |---|---|---|---|
-| 4a | TurekHron2006 FSI3 | QM and IQN-ILS, conformal 1x/2x/4x, full runs | Table 7.1, accuracy axis of Fig. 7.1 |
+| 4a | TurekHron2006 FSI3 | Option (b): QM-AMI on the tutorial meshes, 4x full run (1x/2x and IQN-ILS 1x/2x/4x exist; see the registry). Option (a), QM and IQN-ILS on the conformal meshes, deferred | Table 7.1, accuracy axis of Fig. 7.1 |
 | 4b | TurekHron2006 FSI3 | Timing windows (2 periods from a periodic restart), same ranks per level for both (**timing**) | Cost axis of Fig. 7.1 |
 | 4c | TurekHron2006 FSI3 | 2x tolerance sweep: QM `snes_rtol` 1e-4/1e-6/1e-8; IQN-ILS strict 1e-4/1e-5/1e-6 | Fig. 7.1 inset |
 | 4d | TurekHron2006 FSI3 | Order of the QM u_x mean on 2x→4x (from 4a) | Sentence in the verification paper |
@@ -203,7 +288,7 @@ B3 estimate: all of WP5 is under 0.1 core-hours.
 
 | ID | Case | Runs | Output |
 |---|---|---|---|
-| 6a | 3dTube | QM L1–L3, full 20 ms (driver: BDF2, BoomerAMG solid) | Table 8.1 |
+| 6a | 3dTube | QM L3, full 20 ms (driver: BDF2, BoomerAMG solid, `directMap`); L1/L2 exist (registry) | Table 8.1 |
 | 6b | 3dTube | Strong scaling, L2 at 1–64 ranks and L3 at 16–128, QM and RN, 50-step windows (**timing**) | Fig. 8.1 |
 | 6c | 3dTube | Preconditioner and Jacobian settings, L2, 8 ranks, 7 variants (**timing**) | Table 8.2 |
 | 6d | 3dTube and ring | Newton residual histories, matrix-free against assembled Jacobian | Fig. 8.2 |
@@ -235,7 +320,7 @@ B3 estimate: all of WP5 is under 0.1 core-hours.
    - **Agent B, maps:** WP3 as array jobs;
    - **Agent C, heavy:** WP4 and WP6 (accuracy runs now; timing windows
      from 1 November on MeluXina).
-3. **In parallel, here:** 8b (geometry figures) and the template switch,
+3. **In parallel, here:** 8b (geometry figures),
    then the data figures and tables as the CSVs arrive (8d), then 8c.
 4. **Last:** fill the `\tbd`s, final pass on the abstract and Conclusions,
    case-settings table, named tag and Zenodo, cover letter and highlights.

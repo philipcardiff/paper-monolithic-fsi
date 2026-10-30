@@ -19,11 +19,22 @@
 
 ## cavityFlexibleBottom (steady)
 
-| level | QM (s) | Aitken (s) | QM/Aitken |
-|---:|---:|---:|---:|
-| L1 | 137.3 | 34.8 | 3.9 |
-| L2 | 593.1 | 181.3 | 3.3 |
-| L3 | 3423 | 1209 | 2.8 |
-| L4 (4 ranks) | 13166 | 5060 | 2.6 |
+**Correction (30 Oct).** The two couplings do not run the same simulated time:
+- QM uses the tutorial Δt = 0.5 s on every level, to 300 s (600 steps).
+- Aitken uses the tutorial's Δt = 0.5 / 0.25 / 0.125 / 0.0625 s on L1–L4, to 200 s (400 to 3200 steps).
 
-- On this weakly coupled steady case QM costs 2.6–3.9× Aitken. The gap narrows with refinement.
+The whole-run ratio first reported here (QM 3.9 / 3.3 / 2.8 / 2.6× Aitken) therefore did not compare equal work. The fair measure is the cost to reach steady state: the first time after which u_y(A) stays within 1e-4 of its final value, taken from each run's history. The cost to that point is estimated pro rata from the run's ExecutionTime. Aitken's early steps need more coupling iterations than its late ones (4.2–5.0 mean against 2.1–2.8 over the last 10), so the pro-rata estimate slightly *under*-states Aitken's cost.
+
+| level | QM steps / t to steady | QM cost (s) | Aitken steps / t to steady | Aitken cost (s) | QM/Aitken |
+|---:|---:|---:|---:|---:|---:|
+| L1 | 334 / 167 s | 76 | 309 / 154.5 s | 27 | 2.8 |
+| L2 | 336 / 168 s | 332 | 623 / 155.75 s | 141 | 2.4 |
+| L3 | 336 / 168 s | 1917 | 1381 / 172.6 s | 1043 | 1.8 |
+| L4 (4 ranks) | 336 / 168 s | 7373 | 2784 / 174.0 s | 4402 | 1.7 |
+
+- Whole-run ExecutionTime medians: QM 137.3 / 593.1 / 3423 / 13166 s; Aitken 34.8 / 181.3 / 1209 / 5060 s.
+- Newton iterations per step: 1.64–1.67. Krylov iterations per Newton iteration: 24.6 / 29.9 / 45.3 / 89.7.
+- Aitken coupling iterations per step: 4.6 / 5.0 / 4.6 / 4.2.
+- Steady u_y(A), QM − Aitken: −0.47 / −0.18 / −0.085 / −0.055 % (|QM| smaller).
+- Steady F_y, QM − Aitken: −0.59 / −0.24 / −0.12 / −0.078 %.
+- QM costs 1.7–2.8× Aitken to reach steady state; the gap narrows with refinement, because Aitken has to reduce Δt with the mesh.

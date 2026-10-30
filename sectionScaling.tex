@@ -34,7 +34,9 @@ It is used here to check the quasi-monolithic coupling against the partitioned o
 A quarter of the tube is computed with symmetry planes, on the three geometrically similar mesh levels of the companion paper (16\,000, 128\,000 and 1\,024\,000 fluid cells) with the time step halved with the mesh ($2.5\times10^{-5}$, $1.25\times10^{-5}$ and $6.25\times10^{-6}\,\mathrm{s}$), to the end of the response.
 The solid is the geometrically linear velocity solid, and both couplings use BDF2 (\texttt{backward}) in the fluid and the solid.
 The quasi-monolithic coupling maps the interface fields directly between matching faces, which requires the fluid and solid wall points to coincide; the quasi-monolithic runs therefore use the tutorial meshes with the wall arcs placed exactly on both sides (solids4foam PR \#625), whereas the partitioned Robin--Neumann runs of the companion paper predate that change and use AMI interpolation across a mismatch of up to about $1\,\mu\mathrm{m}$ between the two walls.
-\todo{Quantify the effect of the wall-arc change on the partitioned solution (one Robin--Neumann level-1 run on the corrected meshes), or state it as a known set-up difference.}
+Repeating the Robin--Neumann runs on the corrected meshes on levels 1 and 2 changes the displacement and timing quantities by at most $0.13\%$, but the axial pressure wave speed by $+0.22\%$ and $+0.39\%$, a shift that grows with refinement.
+% Data: Mx 5404489, paper-data/campaign/d/rn-exact on evidence/m-runs-d.
+\todo{Robin--Neumann level 3 on the corrected meshes (about 5 node-hours) to confirm that the arc change accounts for the $c_p$ difference on level 3; then quote the comparison against the corrected-mesh partitioned results throughout.}
 The Newton iteration is converged to a relative residual of $10^{-6}$ with a Krylov tolerance of $10^{-4}$; the Robin--Neumann runs meet displacement, pressure and leakage-flux tolerances of $10^{-6}$, $10^{-5}$ and $10^{-5}$ at every step~\citetodo{companion verification paper}.
 % Data: QM a421f063d, Mx 5398197 (L1/L2) and 5399576 (L3);
 % paper-data/campaign/d/l3 on evidence/m-runs-d (3dtube_qm_vs_rn_L1_L3.csv).
@@ -68,8 +70,8 @@ The peak radial displacement $u_{r,\max}$ and its time, the minimum axial displa
 
 Every displacement and timing quantity converges towards the partitioned value under refinement: the largest difference falls from $1.3\%$ on level 1 to $0.2\%$ on level 2 and $0.07\%$ on level 3, well inside the Robin--Neumann discretisation uncertainty of the companion paper.
 The level-to-level changes of the quasi-monolithic solution have the same character as the partitioned ones ($u_{r,\max}$ and $c_w$ non-monotone, $u_{z,\min}$ and $t_\mathrm{arr}$ converging at low order), so the non-asymptotic behaviour belongs to the problem and the mesh family, not to the coupling.
-The exception is the axial pressure wave speed, whose difference grows to $0.87\%$ on level 3; the partitioned value itself changes by $0.88\%$ between levels 2 and 3, against $0.41\%$ between levels 1 and 2, so the difference is dominated by the partitioned level-3 value.
-\todo{Diagnose the $c_p$ difference on level 3 (probe extraction against the pressure field of each coupling) before final wording.}
+The exception is the axial pressure wave speed, whose difference grows to $0.87\%$ on level 3; the partitioned value itself changes by $0.88\%$ between levels 2 and 3, against $0.41\%$ between levels 1 and 2, so the difference is dominated by the partitioned level-3 value; since the wall-arc correction alone moves the partitioned $c_p$ by $0.39\%$ on level 2, most of the level-3 difference is likely to come from the different meshes rather than from the coupling.
+\todo{Final wording after the corrected-mesh Robin--Neumann level-3 run; also check why a micrometre-scale wall change moves $c_p$ (arrival-time extraction).}
 The Newton iteration converges in two iterations at every step on every level, as expected for this linear-elastic, small-strain problem, and the Krylov iterations per Newton iteration grow by a factor of about 1.35 per refinement.
 
 %%--------------------------------------------------------------------------------------------------------------------%%

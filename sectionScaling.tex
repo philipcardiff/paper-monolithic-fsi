@@ -99,6 +99,8 @@ Each variant must reproduce the quantities of interest of the default run to wit
 The variants are: an upper-triangular instead of a full Schur factorisation of the fluid block; the Jacobian and preconditioner rebuilt every Newton iteration instead of every eighth; a Krylov tolerance of $10^{-3}$ instead of $10^{-4}$; an exact LU factorisation of the solid block gathered on one process instead of one BoomerAMG V-cycle; BoomerAMG instead of block-Jacobi ILU(0) for the fluid velocity block; and the assembled approximate Jacobian used as the Newton operator instead of the matrix-free operator (Section~\ref{sec:jfnk_solution}).
 
 % Data: Mx 5400422, a421f063d; paper-data/campaign/d/timing-6c on
+% The 6c (and 6b) windows restart from runs set up with the pre-#625 arc
+% points (paper-monolithic-fsi#17): wall geometry within ~1 um, cost unaffected.
 % evidence/m-runs-d (timing_6c_runs.csv, timing_6c_medians.csv).
 \begin{table}[htbp]
 	\centering

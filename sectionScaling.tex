@@ -29,26 +29,58 @@ It is used here to check the quasi-monolithic coupling against the partitioned o
 % ddt(U) and the solid. The solids4foam tutorial default for this case is
 % Euler (the verification driver sets backward) for the fluid ddt(U). Confirm and record the ddt schemes of every
 % run (runs.csv); rerun any result computed with Euler, and say so here.
-\todo{Time scheme: confirm that every result in this subsection uses BDF2 (backward) for the fluid and the solid (tutorial default for the fluid ddt(U): Euler (the verification driver sets backward)); results computed with Euler must be rerun.}
 %%--------------------------------------------------------------------------------------------------------------------%%
 
 A quarter of the tube is computed with symmetry planes, on the three geometrically similar mesh levels of the companion paper (16\,000, 128\,000 and 1\,024\,000 fluid cells) with the time step halved with the mesh ($2.5\times10^{-5}$, $1.25\times10^{-5}$ and $6.25\times10^{-6}\,\mathrm{s}$), to the end of the response.
-The solid is the geometrically linear velocity solid.
-\todo{Two set-up differences from the companion paper's partitioned runs to resolve before the comparison: (i) the quasi-monolithic variant uses a conformal interface (direct map), the partitioned runs an AMI interface; (ii) the quasi-monolithic variant uses Euler for the fluid \texttt{ddt(U)} (\texttt{system/fluid/fvSchemes.monolithic} at \texttt{257b2e564}), the partitioned runs BDF2. Run with \texttt{backward}, and state the interface treatment of each.}
+The solid is the geometrically linear velocity solid, and both couplings use BDF2 (\texttt{backward}) in the fluid and the solid.
+The quasi-monolithic coupling maps the interface fields directly between matching faces, which requires the fluid and solid wall points to coincide; the quasi-monolithic runs therefore use the tutorial meshes with the wall arcs placed exactly on both sides (solids4foam PR \#625), whereas the partitioned Robin--Neumann runs of the companion paper predate that change and use AMI interpolation across a mismatch of up to about $1\,\mu\mathrm{m}$ between the two walls.
+Repeating the Robin--Neumann runs on the corrected meshes on levels 1 and 2 changes the displacement and timing quantities by at most $0.13\%$, but the axial pressure wave speed by $+0.22\%$ and $+0.39\%$, a shift that grows with refinement.
+% Data: Mx 5404489, paper-data/campaign/d/rn-exact on evidence/m-runs-d.
+\todo{Robin--Neumann level 3 on the corrected meshes (about 5 node-hours) to confirm that the arc change accounts for the $c_p$ difference on level 3; then quote the comparison against the corrected-mesh partitioned results throughout.}
+The Newton iteration is converged to a relative residual of $10^{-6}$ with a Krylov tolerance of $10^{-4}$; the Robin--Neumann runs meet displacement, pressure and leakage-flux tolerances of $10^{-6}$, $10^{-5}$ and $10^{-5}$ at every step~\citetodo{companion verification paper}.
+% Data: QM a421f063d, Mx 5398197 (L1/L2) and 5399576 (L3);
+% paper-data/campaign/d/l3 on evidence/m-runs-d (3dtube_qm_vs_rn_L1_L3.csv).
+% RN: paper-fsi-verification:main:paper-data/3dtube_level3_mesh_study.csv.
 
 \paragraph{Measured.}
-The maximum radial displacement $u_{r,\max}$ and minimum axial displacement $u_{z,\min}$ at point A, the arrival time $t_\mathrm{arr}$ of the pulse and its wave speed $c_p$, compared level by level with the partitioned Robin--Neumann and IQN-ILS results.
+The peak radial displacement $u_{r,\max}$ and its time, the minimum axial displacement $u_{z,\min}$ and its time, and the late radial minimum at point A, the arrival time $t_\mathrm{arr}$ of the pulse at A, and the wave speeds of the pulse along the wall ($c_w$) and along the axis ($c_p$), compared level by level with the partitioned Robin--Neumann results of the companion paper (Table~\ref{tab:tube3d_consistency}).
 
-\todo{Table: 3dTube, quasi-monolithic minus partitioned. Rows: levels 1--3. Columns: relative difference in $u_{r,\max}$, $u_{z,\min}$, $t_\mathrm{arr}$ and $c_p$ against Robin--Neumann; the same against IQN-ILS; Newton iterations per step; Krylov iterations per Newton iteration; coupling iterations per step (Robin--Neumann).}
+\begin{table}[htbp]
+	\centering
+	\caption{Three-dimensional tube: quasi-monolithic minus Robin--Neumann, in per cent of the Robin--Neumann value, on the three mesh levels, and the iteration counts of the quasi-monolithic coupling.}
+	\label{tab:tube3d_consistency}
+	\begin{tabular}{lrrr}
+		\toprule
+		Quantity & Level 1 & Level 2 & Level 3 \\
+		\midrule
+		$u_{r,\max}$ & $-0.18$ & $+0.11$ & $-0.05$ \\
+		time of $u_{r,\max}$ & $+0.32$ & $+0.13$ & $+0.004$ \\
+		$u_{z,\min}$ & $-0.93$ & $-0.13$ & $-0.07$ \\
+		time of $u_{z,\min}$ & $+0.76$ & $+0.09$ & $+0.02$ \\
+		late radial minimum & $+1.30$ & $-0.20$ & $-0.02$ \\
+		$t_\mathrm{arr}$ & $+0.09$ & $+0.07$ & $+0.004$ \\
+		$c_w$ & $-0.13$ & $-0.14$ & $+0.005$ \\
+		$c_p$ & $+0.29$ & $+0.24$ & $+0.87$ \\
+		\midrule
+		Newton iterations per step & 2.0 & 2.0 & 2.0 \\
+		Krylov iterations per Newton iteration & 14.0 & 18.2 & 25.4 \\
+		\bottomrule
+	\end{tabular}
+\end{table}
 
-Expected claims: the differences decrease from \tbd{value} on level 1 to \tbd{value} on level 3.
+Every displacement and timing quantity converges towards the partitioned value under refinement: the largest difference falls from $1.3\%$ on level 1 to $0.2\%$ on level 2 and $0.07\%$ on level 3, well inside the Robin--Neumann discretisation uncertainty of the companion paper.
+The level-to-level changes of the quasi-monolithic solution have the same character as the partitioned ones ($u_{r,\max}$ and $c_w$ non-monotone, $u_{z,\min}$ and $t_\mathrm{arr}$ converging at low order), so the non-asymptotic behaviour belongs to the problem and the mesh family, not to the coupling.
+The exception is the axial pressure wave speed, whose difference grows to $0.87\%$ on level 3; the partitioned value itself changes by $0.88\%$ between levels 2 and 3, against $0.41\%$ between levels 1 and 2, so the difference is dominated by the partitioned level-3 value; since the wall-arc correction alone moves the partitioned $c_p$ by $0.39\%$ on level 2, most of the level-3 difference is likely to come from the different meshes rather than from the coupling.
+\todo{Final wording after the corrected-mesh Robin--Neumann level-3 run; also check why a micrometre-scale wall change moves $c_p$ (arrival-time extraction).}
+The Newton iteration converges in two iterations at every step on every level, as expected for this linear-elastic, small-strain problem, and the Krylov iterations per Newton iteration grow by a factor of about 1.35 per refinement.
 
 %%--------------------------------------------------------------------------------------------------------------------%%
 \subsection{Strong scaling}\label{sec:tube3d_scaling}
 %%--------------------------------------------------------------------------------------------------------------------%%
 
 Level 2 is run on 1, 2, 4, 8, 16, 32 and 64 processes and level 3 on 16, 32, 64 and \tbd{128} processes, over a fixed window of 50 steps from a restart, with the quasi-monolithic coupling and with Robin--Neumann coupling.
-The fluid and solid regions are decomposed together by the \texttt{decomposeParMonolithic} utility of solids4foam, which partitions the fluid and solid cells as one graph, with extra edges across the interface face pairs, so that a process may own fluid cells, solid cells or both; the graph is partitioned with \tbd{decomposition method}.
+The fluid and solid regions are decomposed together by the \texttt{decomposeParMonolithic} utility of solids4foam, which partitions the fluid and solid cells as one graph, with extra edges across the interface face pairs, so that a process may own fluid cells, solid cells or both; for the scaling runs the graph is cut into slabs along the tube axis (the \texttt{simple} method with $1\times1\times N$ subdomains), because the \texttt{scotch} partition of the combined graph left some processes with solid cells only on the finer partitions (for example 13 of 128 processes on level 3), and the coupled solve does not proceed when a process owns no fluid cells~\citetodo{solids4foam issue 639}.
+The slabs give every process fluid and solid cells, with a load imbalance of at most $6\%$ in the fluid cells and $20\%$ in the solid cells.
 % Source: applications/utilities/decomposeParMonolithic/README.md at 257b2e564.
 The solid block is preconditioned by one V-cycle of BoomerAMG, the default of the solids4foam 3dTube verification driver, which replaces the exact LU factorisation gathered on one process because that factorisation dominates the cost on the finer meshes \tbd{confirm with check B1}.
 
@@ -64,17 +96,44 @@ Expected claims: the quasi-monolithic coupling reaches a parallel efficiency of 
 %%--------------------------------------------------------------------------------------------------------------------%%
 % All variants are PETSc options on the tag (A4 Sections 5 and 6, route A).
 
-The default solver settings (Table~\ref{tab:solver_settings}) are examined by changing one setting at a time on level 2 with 8 processes over the same 50-step window.
+The default solver settings (Table~\ref{tab:solver_settings}) are examined by changing one setting at a time on level 2 with 16 processes over a 50-step window restarted from $t = 5\,\mathrm{ms}$, during the passage of the pulse; each variant is run three times and the median execution time is reported.
 Each variant must reproduce the quantities of interest of the default run to within the iterative floor (Section~\ref{sec:protocol}); a variant that does not is reported as such.
-The variants are: an upper-triangular instead of a full Schur factorisation of the fluid block; the Jacobian and preconditioner rebuilt every Newton iteration instead of every eighth; a Krylov tolerance of $10^{-4}$ instead of $10^{-3}$; \tbd{the alternative solid-block preconditioner to the one chosen in check B1}; BoomerAMG instead of block-Jacobi ILU(0) for the fluid velocity block; and the assembled approximate Jacobian used as the Newton operator instead of the matrix-free operator (Section~\ref{sec:jfnk_solution}).
+The variants are: an upper-triangular instead of a full Schur factorisation of the fluid block; the Jacobian and preconditioner rebuilt every Newton iteration instead of every eighth; a Krylov tolerance of $10^{-3}$ instead of $10^{-4}$; an exact LU factorisation of the solid block gathered on one process instead of one BoomerAMG V-cycle; BoomerAMG instead of block-Jacobi ILU(0) for the fluid velocity block; and the assembled approximate Jacobian used as the Newton operator instead of the matrix-free operator (Section~\ref{sec:jfnk_solution}).
 
-\todo{Table: 3dTube preconditioner and Jacobian settings, level 2, 8 processes, 50 steps. Rows: default; Schur upper; lag 1; \texttt{ksp\_rtol} $10^{-4}$; solid block alternative; velocity block BoomerAMG; assembled Jacobian as operator (no \texttt{snes\_mf\_operator}). Columns: Newton iterations per step; Krylov iterations per Newton iteration; wall time per step; peak memory; largest change of a QoI against the default (relative to the iterative floor); outcome.}
+% Data: Mx 5400422, a421f063d; paper-data/campaign/d/timing-6c on
+% The 6c (and 6b) windows restart from runs set up with the pre-#625 arc
+% points (paper-monolithic-fsi#17): wall geometry within ~1 um, cost unaffected.
+% evidence/m-runs-d (timing_6c_runs.csv, timing_6c_medians.csv).
+\begin{table}[htbp]
+	\centering
+	\caption{Three-dimensional tube, level 2, 16 processes, 50 steps from $t = 5\,\mathrm{ms}$: effect of one change at a time to the default solver settings. Time: median solver execution time of three repeats (spread below $0.3\%$). Every variant reproduces the wall displacement of the default run at the end of the window to six significant digits.}
+	\label{tab:tube3d_pc}
+	\begin{tabular}{lrrrr}
+		\toprule
+		Variant & Newton/step & Krylov/Newton & Time (s) & Relative \\
+		\midrule
+		Default & 2.0 & 18.3 & 229 & 1.00 \\
+		Velocity block BoomerAMG & 2.0 & 18.3 & 235 & 1.02 \\
+		Krylov tolerance $10^{-3}$ & 2.7 & 15.8 & 262 & 1.14 \\
+		Schur upper & 2.0 & 25.2 & 283 & 1.23 \\
+		Lag 1 & 2.0 & 18.3 & 287 & 1.25 \\
+		Assembled Jacobian as operator & 8.0 & 16.6 & 298 & 1.30 \\
+		Solid block LU on one process & 2.0 & 18.6 & 1892 & 8.25 \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+The default settings are the fastest of the seven.
+Every variant reaches the same solution, so the choice is one of cost only.
+The largest effect is that of the solid-block preconditioner: the gathered LU factorisation leaves the iteration counts unchanged but multiplies the cost by eight, which is why one BoomerAMG V-cycle is the default on the three-dimensional meshes.
+A looser Krylov tolerance saves Krylov iterations but costs Newton iterations (2.7 instead of 2 per step), and is slower overall.
+Rebuilding the Jacobian and preconditioner at every Newton iteration (lag 1) leaves the iteration counts unchanged and costs $25\%$ more than the default lag of eight, and the upper-triangular Schur factorisation saves the second pressure solve but needs $38\%$ more Krylov iterations, for $23\%$ more time.
+With the assembled approximate Jacobian as the Newton operator, Newton converges only linearly and needs four times as many iterations, which confirms that the approximate Jacobian is suited to building the preconditioner but not to defining the Newton step; its cheaper iterations limit the extra cost to $30\%$ on this problem.
 
 \todo{Figure: Newton residual norm against Newton iteration for one representative time step, matrix-free operator against assembled approximate Jacobian, on 3dTube level 2 and on ringAddedMass (moderate level, factor 2, 100 steps per period), with \texttt{snes\_max\_it} high enough for the assembled-Jacobian run to converge. Reference slopes for linear and quadratic convergence.}
 
-Expected claims: with the assembled approximate Jacobian as the operator, Newton converges linearly with a contraction factor of \tbd{value} per iteration and needs \tbd{factor} as many iterations as with the matrix-free operator, so the approximate Jacobian is suited to building the preconditioner but not to defining the Newton step; lagging the preconditioner over eight iterations reduces the wall time by \tbd{factor} at \tbd{change} in Krylov iterations; \tbd{findings for the Schur factorisation, Krylov tolerance and block preconditioners}.
 
 \paragraph{Discussion: parallel cost of the coupled solve.}
 The coupled linear system brings a preconditioner whose cost is not present in partitioned coupling.
-In the present implementation the solid block is \tbd{factorised on one process / preconditioned by algebraic multigrid} (Section~\ref{sec:lim_solid_pc}), and the three-dimensional tube reaches a parallel efficiency of \tbd{value} on \tbd{N} processes against \tbd{value} for Robin--Neumann (Section~\ref{sec:tube3d_scaling}).
+In the present implementation the solid block is preconditioned by one V-cycle of algebraic multigrid (Section~\ref{sec:lim_solid_pc}), which on level 2 is eight times cheaper than the gathered LU factorisation (Table~\ref{tab:tube3d_pc}), and the three-dimensional tube reaches a parallel efficiency of \tbd{value} on \tbd{N} processes against \tbd{value} for Robin--Neumann (Section~\ref{sec:tube3d_scaling}).
 The joint decomposition of the fluid and solid cells is a further difference: partitioned coupling decomposes each region separately, whereas the coupled residual is distributed as one graph, and the balance of fluid and solid work per process \tbd{did / did not} affect the scaling.

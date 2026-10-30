@@ -71,7 +71,7 @@ At steady state the time-dependent differences between the couplings vanish, so 
 
 \paragraph{Set-up.}
 The flow is at $Re = 100$ and the plate is a St Venant--Kirchhoff solid, computed with the geometrically nonlinear velocity solid (\texttt{nonLinearGeometryTotalLagrangianVelocity}) on a conformal interface.
-The steady state is reached by time stepping with $\Delta t = \tbd{0.5}\,\mathrm{s}$ after an inlet ramp.
+The steady state is reached by time stepping after an inlet ramp, with $\Delta t = 0.5\,\mathrm{s}$ on every level for the quasi-monolithic coupling and, as in the partitioned tutorial, $\Delta t = 0.5$, $0.25$, $0.125$ and $0.0625\,\mathrm{s}$ on levels 1--4 for Aitken coupling.
 Four uniformly refined levels ($\Delta x = 0.1$, $0.05$, $0.025$ and $0.0125\,\mathrm{m}$) are computed with the quasi-monolithic coupling and with partitioned Aitken coupling under the strict convergence test.
 \todo{Check the monitoring-point definition (top surface of the plate, solids4foam PR \#584) and the geometry figure against it.}
 
@@ -83,9 +83,41 @@ A further pair of runs on levels 2 and 3 uses for the quasi-monolithic continuit
 
 \todo{Figure: cavityFlexibleBottom. (a) Relative difference quasi-monolithic minus partitioned in $u_y$(A) and in $F_y$ (log scale) against $\Delta x$ (levels 1--4), with slope-1 and slope-2 triangles; (b) the same for the quasi-monolithic runs with \texttt{linear} continuity-flux interpolation on levels 2 and 3.}
 
-\todo{Table: cavityFlexibleBottom. Columns: level; $\Delta x$; $u_y$(A) quasi-monolithic; $u_y$(A) partitioned; relative difference; $F_y$ quasi-monolithic; $F_y$ partitioned; relative difference; Newton iterations per step; Aitken coupling iterations per step; wall time to steady state (both). Final row: extrapolated values ($p = 2$, levels 3--4). The companion paper reports the partitioned convergence and the reference comparison; this table reports the difference only.}
+% Data: Mx 5400191 (a421f063d), both couplings on the same build and
+% monitoring point; paper-data/campaign/d/timing-ma on evidence/m-runs-d
+% (timing_ma_summary.md). Time to steady: first time after which u_y(A)
+% stays within 1e-4 of its final value; cost pro rata of the median
+% execution time (slightly under-states Aitken, whose early steps need more
+% coupling iterations). Linear-interpolation runs: evidence/m-runs-a-rfix
+% (RFIX_findings.md, build 1252bd2e5, differences against the partitioned
+% strict rerun).
+\begin{table}[htbp]
+	\centering
+	\caption{Channel flow over a cavity with a flexible bottom: steady $u_y$(A) and $F_y$ with the quasi-monolithic (QM) and Aitken couplings, their relative difference $(\mathrm{QM} - \mathrm{Aitken})/|\mathrm{Aitken}|$, iterations per step and cost to steady state (one process; level 4 four processes). Last row: Richardson extrapolation with $p = 2$ from levels 3 and 4.}
+	\label{tab:cavity_m}
+	\small
+	\setlength{\tabcolsep}{3pt}
+	\begin{tabular}{lrrrrrrrrr}
+		\toprule
+		 & \multicolumn{3}{c}{$u_y$(A) (m)} & \multicolumn{3}{c}{$F_y$ (N)} & \multicolumn{2}{c}{Iterations/step} & Cost \\
+		\cmidrule(lr){2-4}\cmidrule(lr){5-7}\cmidrule(lr){8-9}
+		Level & QM & Aitken & Diff. (\%) & QM & Aitken & Diff. (\%) & QM & Aitken & QM/Aitken \\
+		\midrule
+		1 & $-0.203601$ & $-0.204568$ & $+0.47$ & $-5.12263$ & $-5.15280$ & $+0.59$ & 1.67 & 4.6 & 2.8 \\
+		2 & $-0.231044$ & $-0.231456$ & $+0.18$ & $-5.22656$ & $-5.23915$ & $+0.24$ & 1.65 & 5.0 & 2.4 \\
+		3 & $-0.238200$ & $-0.238403$ & $+0.085$ & $-5.25036$ & $-5.25660$ & $+0.12$ & 1.64 & 4.6 & 1.8 \\
+		4 & $-0.239986$ & $-0.240118$ & $+0.055$ & $-5.25599$ & $-5.26008$ & $+0.078$ & 1.66 & 4.2 & 1.7 \\
+		Extrap. & $-0.240581$ & $-0.240690$ & $+0.045$ & $-5.25787$ & $-5.26124$ & $+0.064$ & & & \\
+		\bottomrule
+	\end{tabular}
+\end{table}
 
-Expected claims: the difference between the couplings decreases from \tbd{value} on level 2 to \tbd{value} on level 4, at a rate of \tbd{factor} per halving of $\Delta x$, and the extrapolated values agree to \tbd{value}; with the same continuity-flux interpolation the difference on levels 2 and 3 \tbd{falls to / remains at} \tbd{value}, which \tbd{confirms / rules out} the interpolation as its cause.
+The steady solutions of the two couplings approach each other under refinement (Table~\ref{tab:cavity_m}): the difference in $u_y$(A) falls from $0.47\%$ on level 1 to $0.055\%$ on level 4, by a factor of 2.7, 2.1 and 1.5 per halving of $\Delta x$, and that in $F_y$ from $0.59\%$ to $0.078\%$.
+Both couplings converge at second order between levels 2, 3 and 4 (ratios of successive changes of 4.0 and 4.1 in $u_y$), and their extrapolated values agree to $0.045\%$ in $u_y$ and $0.064\%$ in $F_y$, well within the uncertainty of the extrapolation itself.
+The decrease of the difference slows from a factor of 2.7 to 1.5 per halving, which suggests a lower-order term among the differences of Table~\ref{tab:discretisation_differences}.
+With the same continuity-flux interpolation as the partitioned solver, the difference falls from $0.18\%$ to $0.065\%$ on level 2 and from $0.085\%$ to below $0.001\%$ on level 3, which identifies the \texttt{skewCorrected} interpolation as the main cause.
+\todo{Rerun the two \texttt{linear} interpolation runs on the a421f063d build and monitoring point of the table (they come from build 1252bd2e5 and the partitioned strict rerun) and add level 4, to confirm the first-order term.}
+The quasi-monolithic coupling needs 1.6--1.7 Newton iterations per step on every level with the same time step, whereas the Aitken runs use the tutorial's time step, halved with each level; even so, the quasi-monolithic coupling costs 1.7 to 2.8 times as much as Aitken to reach steady state, the ratio falling with refinement as Aitken's time step falls.
 
 %%--------------------------------------------------------------------------------------------------------------------%%
 \subsection{Pulsatile compliant tube}\label{sec:womersley_consistency}

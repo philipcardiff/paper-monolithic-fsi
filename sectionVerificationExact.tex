@@ -114,9 +114,37 @@ The wet frequency and its error against the exact value, the error of the wet/dr
 
 \todo{Figure: two panels. (a) Error of the wet/dry frequency ratio (absolute, log scale) against mesh refinement factor (1, 2, 4), at 100 steps per period, for the weak, moderate and strong levels; quasi-monolithic only; slope-2 triangle. (b) Amplitude loss per period (\%, log scale) against steps per period (25 to \tbd{200}) on the factor-2 mesh for the dry ring, quasi-monolithic (three levels), IQN-ILS and Robin--Neumann (strong level). Data: campaign stream R1, \texttt{qois.csv}.}
 
-\todo{Table: ringAddedMass cost at the strong level, factor-2 mesh, 25/50/100 steps per period. Columns: coupling (quasi-monolithic, IQN-ILS, Robin--Neumann); steps per period; Newton or coupling iterations per step; Krylov iterations per Newton iteration; wall time per step; ratio error; amplitude loss per period.}
+% Data: Mx 5400191 (a421f063d), paper-data/campaign/d/timing-ma on
+% evidence/m-runs-d (timing_ma_summary.md); ratio errors from the timing
+% runs with the dry frequencies of the same mesh and steps
+% (paper-fsi-verification ring-monolithic, ringAddedMass_monolithic_runs.csv).
+\begin{table}[htbp]
+	\centering
+	\caption{Ring added-mass problem, strong level ($\mu = 10.08$), factor-2 mesh, four periods, one process: iterations, cost and accuracy of the three couplings. Iterations: Newton iterations (quasi-monolithic) or coupling iterations (partitioned) per step. Time: median solver execution time of three repeats per step. Ratio error: error of the wet/dry frequency ratio against the exact value.}
+	\label{tab:ring_cost}
+	\setlength{\tabcolsep}{3pt}
+	\begin{tabular}{lrrrrr}
+		\toprule
+		Coupling & Steps/period & Iterations/step & Time/step (s) & Ratio error (\%) & Loss/period (\%) \\
+		\midrule
+		Quasi-monolithic & 25 & 2.0 & 0.32 & $-0.0070$ & 2.57 \\
+		 & 50 & 2.0 & 0.30 & $-0.0052$ & 0.36 \\
+		 & 100 & 2.0 & 0.29 & $-0.0035$ & 0.048 \\
+		IQN-ILS & 25 & 4.2 & 0.55 & $+0.126$ & 3.77 \\
+		 & 50 & 5.1 & 0.61 & $+0.101$ & 1.50 \\
+		 & 100 & 5.2 & 0.56 & $+0.033$ & 1.15 \\
+		Robin--Neumann & 25 & 46.5 & 4.03 & $-0.0058$ & 2.59 \\
+		 & 50 & 37.3 & 2.50 & $-0.0085$ & 0.38 \\
+		 & 100 & 11.7 & 0.79 & $-0.0085$ & 0.062 \\
+		\bottomrule
+	\end{tabular}
+\end{table}
 
-Expected claims: the ratio error converges at order \tbd{order} to \tbd{finest error} at every added-mass level, the amplitude loss per period equals that of the dry ring to within \tbd{difference}, so that the coupling adds no measurable damping, and each step needs \tbd{2} Newton iterations independent of the added-mass ratio, against \tbd{counts} coupling iterations for IQN-ILS and Robin--Neumann.
+At the strong level every step of the quasi-monolithic coupling converges in two Newton iterations, with 20--22 Krylov iterations per Newton iteration, and a step costs about half as much as an IQN-ILS step at every time step (Table~\ref{tab:ring_cost}).
+IQN-ILS needs four to five coupling iterations per step and, at its coupling tolerance, leaves a ratio error of $0.03$--$0.13\%$ and an amplitude loss above that of the other two couplings; the quasi-monolithic and Robin--Neumann couplings agree with each other in both quantities.
+Robin--Neumann reaches the same accuracy as the quasi-monolithic coupling, but its coupling iterations grow as the time step increases, from 12 per step at 100 steps per period to 47 at 25, so that it is 3 to 13 times as expensive and, unlike the other two, becomes more expensive per period as the time step grows.
+
+Expected claims: the ratio error converges at order \tbd{order} to \tbd{finest error} at every added-mass level, the amplitude loss per period equals that of the dry ring to within \tbd{difference}, so that the coupling adds no measurable damping, and each step needs two Newton iterations independent of the added-mass ratio and of the time step.
 % Recorded before the tag (stale, for orientation only; ringAddedMass
 % verification/README.md lines 319-371): 2.00 Newton iterations per step at
 % every level and step; amplitude loss equal to the dry ring's.

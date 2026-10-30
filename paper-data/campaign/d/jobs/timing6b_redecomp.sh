@@ -4,6 +4,10 @@
 # count), then reconstruct T0 and re-decompose it to N ranks (QM:
 # decomposeParMonolithic; RN: decomposePar per region), for the 6b
 # strong-scaling windows. N = 1 runs serial from the reconstructed state.
+# Method simple, n (1 1 N): slabs along the tube axis. scotch on the
+# monolithic graph can leave ranks with no fluid cells, which hangs QM
+# (solids4foam#639); slabs give every rank fluid and solid cells. RN uses the
+# same slabs so both couplings share one split.
 set -e
 SRC=$1; T0=$2; DEST=$3; N=$4; END=$5
 QM_ROOT=${QM_ROOT:-/project/home/p201287/philip/qm-a421}
@@ -14,7 +18,8 @@ cd $DEST
 for r in fluid solid; do reconstructPar -region $r -time $T0 > log.reconstructPar.$r 2>&1; done
 rm -rf processor*
 for f in system/decomposeParDict system/fluid/decomposeParDict system/solid/decomposeParDict; do
-  [ -f $f ] && sed -i "s/^numberOfSubdomains .*/numberOfSubdomains $N;/" $f
+  [ -f $f ] && sed -i -e "s/^numberOfSubdomains .*/numberOfSubdomains $N;/" \
+    -e "s/^method .*/method simple;\nsimpleCoeffs { n (1 1 $N); delta 0.001; }/" $f
 done
 dec=$(/usr/bin/python3.12 -c "import json;print(json.load(open(\"qm_run.json\"))[\"decompose\"])")
 if [ "$N" -gt 1 ]; then

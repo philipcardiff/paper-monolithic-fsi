@@ -10,7 +10,9 @@
 # (case, ranks) is re-decomposed once from the reconstructed 5 ms state
 # (redecomp.sh) and reused by the 3 repeats (repeat loop outermost). One run
 # at a time on the exclusive node, ranks pinned to cores 0..N-1. Build
-# a421f063d.
+# a421f063d. Slab decomposition (see redecomp.sh, solids4foam#639); each run
+# is killed after 3 h so a hang cannot hold the node, and runs that already
+# reached End are skipped on resubmission.
 export QM_ROOT=/project/home/p201287/philip/qm-a421
 export QM_SCRIPTS=/project/home/p201287/philip/qm-final/runs/r4r5-scripts
 S=$QM_SCRIPTS/scripts; D=$QM_ROOT/runs/timing-6b; P=$QM_ROOT/runs/prefix5ms
@@ -38,7 +40,8 @@ for rep in 1 2 3; do
       [ -d $B ] || continue
       [ -d $R ] || ( source $QM_ROOT/env.sh > /dev/null 2>&1; /usr/bin/python3.12 $S/qm_setup.py restart --from 0.005 --end $end --write-final-only $B $R > /dev/null ) || { echo "setup $R failed"; continue; }
       export FARM_CORES=$(seq -s, 0 $((n-1)))
-      echo "run $R $(date)"; bash $S/run_task.sh $R; echo "rc $? $R"
+      grep -q "^End" $R/log.solids4Foam 2>/dev/null && { echo "skip $R (done)"; continue; }
+      echo "run $R $(date)"; timeout -k 60 3h bash $S/run_task.sh $R; echo "rc $? $R"
     done
   done
 done

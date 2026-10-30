@@ -1,0 +1,8 @@
+variant,median_execution_time_s,median_clock_time_s,newton_per_step,ksp_per_newton,relative_to_base
+base,229.28,237,2.00,18.28,1.000
+vel-amg,234.81,244,2.00,18.28,1.024
+ksp1e-3,261.60,272,2.70,15.76,1.141
+schur-upper,282.99,295,2.00,25.18,1.234
+lag1,286.51,298,2.00,18.28,1.250
+assembled,297.75,310,8.00,16.55,1.299
+solid-S0,1891.89,1943,2.00,18.58,8.251

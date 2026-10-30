@@ -19,3 +19,5 @@
 - **ksp1e-3:** a looser linear tolerance needs more Newton iterations (2.7 vs 2.0), so it costs more overall.
 - **assembled:** needs 8 Newton iterations per step instead of 2, yet costs only 30 % more.
 - **solid-S0:** the iteration counts are the same as base, so its 8× cost comes from the solid-block solve itself.
+
+**Provenance note (30 Oct).** These windows restart from `p5-tube-mono-L2`. That run was set up from the 18a24427f tutorial files, with the 6-digit arc points from before solids4foam#625, not from the a421 tutorial (paper-monolithic-fsi#17). The wall geometry differs by at most about 1 µm and the solver settings are identical, so the timings stand. The same applies to 6b, except QM L3, which restarts from the exact-arc run.

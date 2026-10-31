@@ -1,0 +1,10 @@
+source /Volumes/OpenFOAM/philipc-v2512/claude-runs/htsmooth/src/src4x (rigid 25 s state, mapped); mesh ht_mesh_smooth.py level 3
+restart 25
+end 30.2
+amplitude_factor 1.0
+frequency_factor 1.0
+blend 0.3
+t0 25.0
+ramp 1.0
+nprocs 36
+variants linear,dispLap,pwall,fastp

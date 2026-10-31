@@ -1,0 +1,60 @@
+GAMG:  Solving for p, Initial residual = 2.82124e-06, Final residual = 6.33065e-07, No Iterations 1
+time step continuity errors : sum local = 1.77776e-11, global = -1.01323e-14, cumulative = 2.68095e-09
+ExecutionTime = 6473.74 s  ClockTime = 6890 s
+
+GENF 30.1997 -130.704 124.661
+POWR 30.1997 58.2708
+--> FOAM Warning : 
+    From virtual Foam::Time& Foam::Time::operator++()
+    in file db/Time/Time.C at line 1228
+    Increased the timePrecision from 8 to 9 to distinguish between timeNames at time 30.1999948
+Time = 30.1999948
+
+Evolving fluid model: pimpleFluid
+Courant Number mean: 0.378176 max: 1.5726
+PIMPLE: iteration 1
+GAMG:  Solving for cellDisplacementx, Initial residual = 0.00356945, Final residual = 2.16554e-18, No Iterations 1
+GAMG:  Solving for cellDisplacementy, Initial residual = 0.0029499, Final residual = 3.29605e-18, No Iterations 1
+DILUPBiCG:  Solving for Ux, Initial residual = 0.00128459, Final residual = 5.22003e-08, No Iterations 4
+DILUPBiCG:  Solving for Uy, Initial residual = 0.00559463, Final residual = 1.32966e-07, No Iterations 4
+GAMG:  Solving for p, Initial residual = 0.145307, Final residual = 0.00134849, No Iterations 4
+GAMG:  Solving for p, Initial residual = 0.0116291, Final residual = 4.08608e-05, No Iterations 5
+time step continuity errors : sum local = 1.3853e-09, global = 5.23574e-12, cumulative = 2.68619e-09
+GAMG:  Solving for p, Initial residual = 0.0315188, Final residual = 0.000141738, No Iterations 5
+GAMG:  Solving for p, Initial residual = 0.00278958, Final residual = 1.26052e-05, No Iterations 5
+time step continuity errors : sum local = 4.09936e-10, global = 1.30046e-12, cumulative = 2.68749e-09
+GAMG:  Solving for p, Initial residual = 0.00165506, Final residual = 1.45035e-05, No Iterations 4
+GAMG:  Solving for p, Initial residual = 0.000247433, Final residual = 4.58671e-07, No Iterations 6
+time step continuity errors : sum local = 1.48996e-11, global = 1.46803e-16, cumulative = 2.68749e-09
+PIMPLE: iteration 2
+DILUPBiCG:  Solving for Ux, Initial residual = 0.000125553, Final residual = 1.18118e-07, No Iterations 3
+DILUPBiCG:  Solving for Uy, Initial residual = 8.26306e-05, Final residual = 4.50118e-07, No Iterations 2
+GAMG:  Solving for p, Initial residual = 0.145507, Final residual = 0.00135381, No Iterations 4
+GAMG:  Solving for p, Initial residual = 0.0135563, Final residual = 0.000133463, No Iterations 4
+time step continuity errors : sum local = 3.86471e-09, global = 7.07803e-12, cumulative = 2.69457e-09
+GAMG:  Solving for p, Initial residual = 0.0361712, Final residual = 0.000144267, No Iterations 5
+GAMG:  Solving for p, Initial residual = 0.00313544, Final residual = 1.34543e-05, No Iterations 5
+time step continuity errors : sum local = 3.782e-10, global = -3.33975e-13, cumulative = 2.69423e-09
+GAMG:  Solving for p, Initial residual = 0.00189327, Final residual = 1.53212e-05, No Iterations 4
+GAMG:  Solving for p, Initial residual = 0.000277286, Final residual = 3.81534e-07, No Iterations 6
+time step continuity errors : sum local = 1.07241e-11, global = -1.23383e-15, cumulative = 2.69423e-09
+PIMPLE: iteration 3
+DILUPBiCG:  Solving for Ux, Initial residual = 3.7892e-07, Final residual = 1.09255e-08, No Iterations 1
+DILUPBiCG:  Solving for Uy, Initial residual = 1.0217e-06, Final residual = 5.22281e-08, No Iterations 1
+GAMG:  Solving for p, Initial residual = 0.00181553, Final residual = 1.05455e-05, No Iterations 4
+GAMG:  Solving for p, Initial residual = 0.000101599, Final residual = 6.12998e-07, No Iterations 5
+time step continuity errors : sum local = 1.72191e-11, global = -9.55593e-15, cumulative = 2.69422e-09
+GAMG:  Solving for p, Initial residual = 0.000295828, Final residual = 2.48329e-06, No Iterations 4
+GAMG:  Solving for p, Initial residual = 2.19947e-05, Final residual = 7.38817e-07, No Iterations 3
+time step continuity errors : sum local = 2.07546e-11, global = -1.91549e-14, cumulative = 2.6942e-09
+GAMG:  Solving for p, Initial residual = 2.87823e-05, Final residual = 4.70094e-07, No Iterations 3
+GAMG:  Solving for p, Initial residual = 2.68693e-06, Final residual = 5.84877e-07, No Iterations 1
+time step continuity errors : sum local = 1.64302e-11, global = -8.82205e-15, cumulative = 2.69419e-09
+ExecutionTime = 6474.21 s  ClockTime = 6891 s
+
+GENF 30.2 -131.788 125.801
+POWR 30.2 58.204
+
+End
+
+Finalising parallel run

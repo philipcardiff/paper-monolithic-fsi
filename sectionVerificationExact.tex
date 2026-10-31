@@ -258,9 +258,19 @@ The normal pressure gradient of Equation~\eqref{eqn:interface_pressure_gradient}
 % arm of Allverify --study nonconformal, --levels moderate,strong.
 The moderate and strong levels are run on mesh factors 1, 2 and 4 at 100 steps per period.
 
-\todo{Figure: ringAddedMass, effect of the interface pressure condition. (a) Error of the wet/dry frequency ratio against mesh factor (1, 2, 4), moderate and strong levels, normal-momentum gradient against zero gradient, with slope-1 and slope-2 triangles. (b) Amplitude loss per period for the same runs, with the dry-ring value as a horizontal line.}
+% Data: paper-data/ring_pressure_condition.csv (evidence/m-runs-a-rfix qois.csv, runs 1a and 1b, solids4foam 1252bd2e5);
+% figure: figures/scripts/ring_pressure_condition.py.
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=\linewidth]{figures/ringAddedMass-pressure-condition.pdf}
+	\caption{Ring added-mass problem, quasi-monolithic coupling at 100 steps per period: interface pressure from the normal momentum equation (filled) against a zero normal gradient (open), moderate and strong levels. (a) Magnitude of the relative error of the wet/dry frequency ratio and (b) magnitude of the amplitude loss per period against mesh refinement factor, with the dry ring in (b). The circled point is an amplitude growth of $0.008\%$ per period (strong level, factor 1). solids4foam \texttt{1252bd2e5}.}
+	\label{fig:ring_pressure_condition}
+\end{figure}
 
-Expected claims: with a zero gradient the ratio error converges at first order (\tbd{orders}) and the coupling adds damping of \tbd{amplitude loss per period}, whereas the normal-momentum gradient gives \tbd{second order and no added damping}; the pressure treatment therefore controls the damping of the coupled vibration as well as its frequency.
+With a zero normal pressure gradient the ratio error converges at first order, with observed orders 0.74 and 0.88 at the moderate level and 0.75 and 0.89 at the strong level, and is 300 to 600 times larger on the factor-4 mesh than with the normal-momentum gradient ($0.059\%$ and $0.108\%$, against $9\times10^{-5}\%$ and $4\times10^{-4}\%$; Figure~\ref{fig:ring_pressure_condition}a).
+The zero gradient also damps the coupled vibration: the amplitude loss per period exceeds that of the dry ring by $1.3$, $0.66$ and $0.34$ percentage points at the moderate level and by $2.3$, $1.2$ and $0.65$ at the strong level on the three meshes, halving with each refinement, whereas with the normal-momentum gradient the wet and dry losses differ by at most $0.08$ percentage points (Figure~\ref{fig:ring_pressure_condition}b).
+A zero gradient is consistent only in the limit of a stationary interface; on a moving interface it omits the pressure gradient that accelerates the fluid with the wall, which is the added-mass effect itself; this is consistent with an error that grows with the added mass and falls at first order with the size of the cells adjacent to the interface.
+The interface pressure treatment therefore controls the damping of the coupled vibration as well as its frequency.
 
 \paragraph{Non-conformal transfer.}
 The ring is computed with solid interface meshes coarser and finer than the fluid interface mesh, coupled through the AMI weights, once with interpolated traction and once with the conservative transfer of Equation~\eqref{eqn:conservative_transfer}.

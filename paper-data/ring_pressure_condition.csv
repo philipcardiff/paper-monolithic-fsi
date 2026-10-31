@@ -1,0 +1,16 @@
+run_id,level,factor,pressure_bc,wet_dry_ratio,ratio_rel_error,loss_per_period
+rf-ram-dry-m1-n100,dry,1,,,,6.796371e-04
+rf-ram-dry-m2-n100,dry,2,,,,4.637084e-04
+rf-ram-dry-m4-n100,dry,4,,,,4.063054e-04
+rf-ram-qm-moderate-m1-n100,moderate,1,normalMomentum,0.70614384,-1.584201e-04,2.308998e-04
+rf-ram-qm-moderate-m1-n100-pzg,moderate,1,zeroGradient,0.7049656,-1.826713e-03,1.366469e-02
+rf-ram-qm-moderate-m2-n100,moderate,2,normalMomentum,0.7062447,-1.561330e-05,4.007290e-04
+rf-ram-qm-moderate-m2-n100-pzg,moderate,2,zeroGradient,0.70548471,-1.091684e-03,7.100004e-03
+rf-ram-qm-moderate-m4-n100,moderate,4,normalMomentum,0.70625506,-9.367912e-07,4.917188e-04
+rf-ram-qm-moderate-m4-n100-pzg,moderate,4,zeroGradient,0.70583776,-5.918033e-04,3.845846e-03
+rf-ram-qm-strong-m1-n100,strong,1,normalMomentum,0.30074442,-3.119784e-04,-7.632704e-05
+rf-ram-qm-strong-m1-n100-pzg,strong,1,zeroGradient,0.29983149,-3.346605e-03,2.411763e-02
+rf-ram-qm-strong-m2-n100,strong,2,normalMomentum,0.30082774,-3.501241e-05,4.831997e-04
+rf-ram-qm-strong-m2-n100-pzg,strong,2,zeroGradient,0.30023992,-1.988974e-03,1.258883e-02
+rf-ram-qm-strong-m4-n100,strong,4,normalMomentum,0.30083721,-3.557854e-06,8.417187e-04
+rf-ram-qm-strong-m4-n100-pzg,strong,4,zeroGradient,0.30051436,-1.076706e-03,6.915935e-03

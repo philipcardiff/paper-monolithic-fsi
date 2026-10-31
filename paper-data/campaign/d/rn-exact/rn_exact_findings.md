@@ -1,7 +1,7 @@
 # 3dTube RN on the exact-arc meshes (L1, L2, L3)
 
 - **Run:** MeluXina job 5404489 (p201136, 1:17 h), build a421f063d. The a421 tutorial with the exact wall arcs (solids4foam#625; `QM_S4F` set, see paper-monolithic-fsi#17). Robin–Neumann `fsiProperties.robin`, backward, 20 ms, L1 on 4 ranks and L2 on 16. Run dirs: `Mx:/project/home/p201287/philip/qm-a421/runs/rn-exact/rn-L{1,2,3}`.
-- **L3:** job 5404701 (3:19 h, 64 ranks), 3200 steps, 3.18 coupling iterations per step (max 9). Post-processed with `../l3/qm_post_issue641.py` (solids4foam#641); the unpatched result is kept on Mx as `qm_result.json.post-error`.
+- **L3:** job 5404701 (3:19 h, 128 ranks), 3200 steps, 3.18 coupling iterations per step (max 9). Post-processed with `../l3/qm_post_issue641.py` (solids4foam#641); the unpatched result is kept on Mx as `qm_result.json.post-error`.
 - **Data:** `rn_exact_vs_old_and_qm.csv`. "Old" = the companion paper's RN (15a652f09, pre-#625 6-digit arc points, a wall mismatch of up to about 1 µm).
 
 ## Effect of the arc change on RN

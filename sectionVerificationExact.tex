@@ -33,7 +33,8 @@ This section verifies the method against two exact solutions and uses them to ex
 		\bottomrule
 	\end{tabular}
 \end{table}
-\todo{Cases in solids4foam with a monolithic variant that are not used in the paper: beamInCrossFlow, perpendicularFlap, membraneRoof, mokLidDrivenCavity, TurekHron2006 FSI1. Decide whether any of them belongs in the supplementary material (e.g.\ mokLidDrivenCavity as a further enclosed-fluid robustness case, Section~\ref{sec:robustness}).}
+% Decision (Philip, 31 Oct 2026): unused monolithic variants go to Appendix app:additional_cases for now.
+The remaining solids4foam tutorials with a quasi-monolithic variant (beamInCrossFlow, perpendicularFlap, membraneRoof, mokLidDrivenCavity and Hron--Turek FSI1) are not needed for this assessment and are listed in Appendix~\ref{app:additional_cases}.
 
 %%--------------------------------------------------------------------------------------------------------------------%%
 \subsection{Assessment protocol}\label{sec:protocol}
@@ -279,7 +280,7 @@ The ring is computed with solid interface meshes coarser and finer than the flui
 % conservativeTractionTransfer no and once yes, with
 % interfaceFluxDiagnostics yes (logs rel_imbalance). RAM uses
 % linearGeometryVelocity, so useUndeformedArea is not needed.
-The total interface force and power transferred are logged on both sides of the interface at every step.
+The total interface force transferred is logged on both sides of the interface at every step.
 
 % Data: paper-data/ring_nonconformal.csv (MeluXina 5407040, a421f063d, interfaceFluxDiagnostics yes; ratios
 % identical to the R-fix 1c runs at 1252bd2e5); figure: figures/scripts/ring_nonconformal.py.
@@ -295,10 +296,11 @@ With the conservative transfer the total force on the solid equals that of the f
 With interpolated traction the imbalance is $3$--$9\times10^{-5}$ and does not decrease with refinement, but it is not an error of the transfer: on the factor-2 and factor-4 meshes it equals that of the conformal direct map to within $10\%$ ($2$--$3\times10^{-5}$ at the strong level, $5$--$8\times10^{-5}$ at the moderate level), which arises because the linear-geometry solid integrates the traction over its undeformed face areas while the fluid integrates over the deformed faces.
 The frequency ratio is not affected by the choice of transfer at the reported precision: the interpolated and conservative results differ by at most $2.6\times10^{-5}$ relative on every mesh and level, and on the factor-4 mesh the ratio error on a non-conformal interface is $1.9\times10^{-5}$ or less, against $4\times10^{-6}$ or less on the conformal interface (Figure~\ref{fig:ring_nonconformal}b).
 
-Two further ingredients were established during development and cannot be switched off in the released code: removing a one-step lag of the interface force in the velocity solid reduced the amplitude loss per period of the ring at 100 steps per period from $2.0$, $10.6$ and $18.3\%$ to $0.17$, $0.71$ and $1.26\%$ (weak, moderate, strong), and evaluating the viscous traction as the momentum wall flux rather than from the deviatoric stress raised the observed spatial order of the blobInTreacle displacement, a stationary-wall case, from $1.4$ to $2.0$.
+Two further ingredients were established during development and cannot be switched off in the released code, so their effect is quoted from the solids4foam commits that introduced them rather than rerun: removing a one-step lag of the interface force in the velocity solid reduced the amplitude loss per period of the ring at 100 steps per period from $2.0$, $10.6$ and $18.3\%$ to $0.17$, $0.71$ and $1.26\%$ (weak, moderate, strong), and evaluating the viscous traction as the momentum wall flux rather than from the deviatoric stress raised the observed spatial order of the blobInTreacle displacement, a stationary-wall case, from $1.4$ to $2.0$.
 % Sources: ringAddedMass/verification/README.md "Defects found by this
 % study" and commit messages dcbe04505 -> c008e8dd1 (force lag, both states
 % with zeroGradient interface pressure); blobInTreacle/verification/README.md
 % lines 203-208, states 0698d55cd -> dbfda65ba (traction only). A4 Sections
 % 2 and 3a. Numbers recorded at those commits, not rerun from the tag.
-\todo{Confirm that the two historical before/after pairs may be quoted from the commits that made the change (A4 route C), and that the stationary-wall qualification of the traction result stays after the deforming-wall traction correction (Section~\ref{sec:womersley_consistency}).}
+% Decision (Philip, 31 Oct 2026): quoting these historical pairs is approved, and the
+% stationary-wall qualification stays.

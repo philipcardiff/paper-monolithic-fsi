@@ -180,7 +180,7 @@ A harmonic pressure wave travelling along an axisymmetric thick-walled elastic t
 The tube of the companion paper is used unchanged ($h/R = 0.1$, $L/R = 15$, Womersley number $5.01$, $\rho_s h/(\rho_f R) = 0.1$), with exact travelling-wave data at both ends and exact initial fields, on a wedge mesh.
 Meshes are refined by factors 1, 2 and 4 at 200 steps per period, and 50 to 400 steps per period are used on the factor-2 mesh.
 First Fourier coefficients over periods 5--6 are compared with the exact solution; the fluid and the solid both use BDF2, and the Newton tolerances are tightened to $10^{-8}$ (Krylov $10^{-6}$) so that the iterative error is negligible.
-The partitioned runs of the companion paper need a flux-consistent treatment of the tube ends (the \texttt{pimpleFluid} option \texttt{fluxConsistentPatches}) to recover second order in time; the quasi-monolithic runs use the tutorial end conditions unchanged and converge at second order in time without it (Table~\ref{tab:womersley_m}).
+The partitioned runs of the companion paper need a flux-consistent treatment of the tube ends (the \texttt{pimpleFluid} option \texttt{fluxConsistentPatches}) to recover second order in time; the quasi-monolithic runs, with the end conditions of the tutorial's quasi-monolithic variant and no such option, converge at second order in time (Table~\ref{tab:womersley_m}).
 
 \paragraph{Measured.}
 Errors and observed orders in space and time of the velocity profile, the flow-rate amplitude and phase, the wall displacement amplitude and phase, the wave speed and the attenuation; Newton and Krylov iterations; and cost against IQN-ILS and Robin--Neumann on the factor-2 mesh at 100 steps per period.

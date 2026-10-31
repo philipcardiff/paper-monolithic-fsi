@@ -96,7 +96,14 @@ A further pair of runs on levels 2 and 3 uses for the quasi-monolithic continuit
 % A2 (a), run A1: interpolate(U) linear in system/fluid/fvSchemes.monolithic;
 % also checkMesh on the final states of both couplings (run A0).
 
-\todo{Figure: cavityFlexibleBottom. (a) Relative difference quasi-monolithic minus partitioned in $u_y$(A) and in $F_y$ (log scale) against $\Delta x$ (levels 1--4), with slope-1 and slope-2 triangles; (b) the same for the quasi-monolithic runs with \texttt{linear} continuity-flux interpolation on levels 2 and 3.}
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.85\textwidth]{figures/cavityFlexibleBottom-consistency}
+	\caption{Channel flow over a cavity with a flexible bottom: magnitude of the quasi-monolithic minus Aitken difference in $u_y$(A) and $F_y$ against the cell size, with the default \texttt{skewCorrected} and with \texttt{linear} interpolation of the velocity in the continuity flux; open markers: negative difference.}
+	\label{fig:cavity_consistency}
+\end{figure}
+% Data: paper-data/cavity_interp_vs_aitken.csv; linear runs Mx 5406163, 5406302 (a421f063d),
+% evidence/m-runs-d:paper-data/campaign/d/cav-linear.
 
 % Data: Mx 5400191 (a421f063d), both couplings on the same build and
 % monitoring point; paper-data/campaign/d/timing-ma on evidence/m-runs-d
@@ -130,8 +137,8 @@ A further pair of runs on levels 2 and 3 uses for the quasi-monolithic continuit
 The steady solutions of the two couplings approach each other under refinement (Table~\ref{tab:cavity_m}): the difference in $u_y$(A) falls from $0.47\%$ on level 1 to $0.055\%$ on level 4, by a factor of 2.7, 2.1 and 1.5 per halving of $\Delta x$, and that in $F_y$ from $0.59\%$ to $0.078\%$.
 Both couplings converge at second order between levels 2, 3 and 4 (ratios of successive changes of 4.0 and 4.1 in $u_y$), and their extrapolated values agree to $0.045\%$ in $u_y$ and $0.064\%$ in $F_y$, well within the uncertainty of the extrapolation itself.
 The decrease of the difference slows from a factor of 2.7 to 1.5 per halving, which suggests a lower-order term among the differences of Table~\ref{tab:discretisation_differences}.
-With the same continuity-flux interpolation as the partitioned solver, the difference falls from $0.18\%$ to $0.065\%$ on level 2 and from $0.085\%$ to below $0.001\%$ on level 3, which identifies the \texttt{skewCorrected} interpolation as the main cause.
-\todo{Rerun the two \texttt{linear} interpolation runs on the a421f063d build and monitoring point of the table (they come from build 1252bd2e5 and the partitioned strict rerun) and add level 4, to confirm the first-order term.}
+With the same continuity-flux interpolation as the partitioned solver (\texttt{linear}), the difference in $u_y$ falls from $0.18\%$ to $0.066\%$ on level 2, from $0.085\%$ to $0.0004\%$ on level 3 and from $0.055\%$ to $-0.0067\%$ on level 4, and that in $F_y$ to $-0.0068\%$ on level 4 (Figure~\ref{fig:cavity_consistency}): it changes sign between levels 3 and 4 and stays below $0.01\%$, so the \texttt{skewCorrected} interpolation is the source of the slowly decreasing difference, and what remains is of the size of the other second-order differences of Table~\ref{tab:discretisation_differences}.
+With \texttt{linear} interpolation the quasi-monolithic $u_y$ converges at second order like Aitken's (ratio of successive changes 4.10, against 4.05).
 The quasi-monolithic coupling needs 1.6--1.7 Newton iterations per step on every level with the same time step, whereas the Aitken runs use the tutorial's time step, halved with each level; even so, the quasi-monolithic coupling costs 1.7 to 2.8 times as much as Aitken to reach steady state, the ratio falling with refinement as Aitken's time step falls.
 
 %%--------------------------------------------------------------------------------------------------------------------%%

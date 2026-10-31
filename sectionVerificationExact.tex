@@ -94,8 +94,8 @@ The run tables, the extracted quantities of interest, the provenance records and
 		womersleyTube        & BDF2  & lin. & lin.  & LG & 0.5 & DM & $10^{-6}$ & $10^{-4}$ & upper, LU & -- \\
 		cavityFlexibleBottom & Euler\textsuperscript{a} & LUD & skew\textsuperscript{b} & TL & 0.1 & DM & $10^{-6}$ & $10^{-4}$ & upper, LU & -- \\
 		collapsibleChannel   & BDF2  & lin. & lin.  & TL & 0.1 & DM & $10^{-6}$ & $10^{-4}$ & upper, LU & -- \\
-		FSI3                 & BDF2  & LUD  & skew  & TL & 0.5 & \tbd{DM/AMI} & $10^{-6}$ & $10^{-4}$ & upper, LU & -- \\
-		blobInTreacle        & BDF2  & LUD  & skew  & LG & \tbd{none} & DM & $10^{-6}$ & $10^{-4}$ & upper, LU & -- \\
+		FSI3                 & BDF2  & LUD  & skew  & TL & 0.5 & DM & $10^{-6}$ & $10^{-4}$ & upper, LU & -- \\
+		blobInTreacle        & BDF2  & LUD  & skew  & LG & 0.1\textsuperscript{c} & DM & $10^{-6}$ & $10^{-4}$ & upper, LU & -- \\
 		3dTube               & BDF2  & LUD  & lin.  & LG & 0.1 & DM & $10^{-6}$\textsuperscript{$\ast$} & $10^{-4}$\textsuperscript{$\ast$} & full, AMG\textsuperscript{$\ast$} & 8 \\
 		foilInWind           & BDF2  & LUD  & skew  & TL & 0.5 & DM & $10^{-4}$ & $10^{-4}$ & upper, LU & -- \\
 		\bottomrule
@@ -104,9 +104,10 @@ The run tables, the extracted quantities of interest, the provenance records and
 	\parbox{0.95\linewidth}{\footnotesize
 	\textsuperscript{a}~Steady target: only the steady state is compared, and no temporal order is claimed.
 	\textsuperscript{b}~Also run with \texttt{linear} (Section~\ref{sec:cavity_m}).
+	\textsuperscript{c}~The default \texttt{diffStencilLaplacian} stabilisation of solids4foam; the tutorial has no \texttt{stabilisation} entry.
 	\textsuperscript{$\ast$}~The 3dTube tutorial uses $10^{-4}$, $10^{-3}$ and redundant LU; the paper runs use the values shown.}
 \end{table}
-\todo{Agent B: confirm the collapsibleChannel, FSI3, blobInTreacle and foilInWind rows against the run files (FSI3 transfer and mesh-motion law; blobInTreacle solid stabilisation) and mark any deviation from the tutorial.}
+\todo{Agent B: the collapsibleChannel, FSI3, blobInTreacle and foilInWind rows are checked against the \texttt{a421f063d} tutorial files; recheck against the run files when those campaign runs are made, and state the FSI3 mesh-motion law once the mesh gate settles.}
 
 %%--------------------------------------------------------------------------------------------------------------------%%
 \subsection{Ring added-mass problem}\label{sec:ring_m}

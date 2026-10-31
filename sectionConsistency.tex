@@ -38,8 +38,22 @@ The term can be included in the quasi-monolithic coupling (\texttt{viscousStress
 	\caption{Differences between the quasi-monolithic (\texttt{newtonIcoFluid}, velocity solid) and partitioned (\texttt{pimpleFluid}, displacement solid) discretisations, and how each difference behaves under refinement.}
 	\label{tab:discretisation_differences}
 	% threeparttable (sn-jnl) prints the caption only with a tabular
-	\begin{tabular}{p{0.9\linewidth}}
-	\todo{Table: condensed from the A2 difference catalogue (items D1--D17). Columns: item; quasi-monolithic; partitioned; behaviour of the difference (vanishes at $O(h^2)$, $O(h)$, $O(\Delta t^2)$, zero at steady state, identical). Rows: convection flux and linearisation; continuity flux interpolation; Rhie--Chow term; interface pressure condition; interface velocity and wall flux; mesh motion (solver, and when the mesh is moved); solid time integration; solid spatial operator and stabilisation; convergence test. Keep only the rows that a reader needs to interpret Sections~\ref{sec:cavity_m} and~\ref{sec:womersley_consistency}; the traction row reads ``identical after the correction''.}
+	% Source: paper-data/a2_discretisation_differences.md (items D1--D17), condensed.
+	\begin{tabular}{p{0.14\linewidth}p{0.26\linewidth}p{0.26\linewidth}p{0.20\linewidth}}
+		\toprule
+		Item & Quasi-monolithic & Partitioned & Difference \\
+		\midrule
+		Convection & Newton on the flux of the current iterate; cavity: \texttt{linearUpwind} with a cell limiter & Picard on the flux of the previous corrector; cavity: unlimited \texttt{linearUpwind} & none at convergence; the limiter is between $O(h)$ and $O(h^2)$ \\
+		Continuity flux & $\nabla\cdot$ of the interpolated velocity, \texttt{skewCorrected linear} & $\nabla\cdot\phi$, with $\phi$ from the momentum predictor, \texttt{linear} & $O(h^2)$ on smooth meshes, lower near the cavity plate corners \\
+		Pressure--velocity coupling & Rhie--Chow stabilisation term in the residual & PISO flux correction & $O(h^2)$ \\
+		Interface pressure & fixed gradient from the momentum equation & zero gradient (Aitken, IQN-ILS) or Robin condition (Robin--Neumann) & $O(h)$ in the wall pressure \\
+		Interface traction & fluid wall viscous flux & fluid wall viscous flux & identical after the correction \\
+		Interface velocity and wall flux & solid velocity extrapolated to the face; absolute flux in continuity & BDF2 of the face centres, normal part from the mesh flux & $O(\Delta t^2)$; zero at steady state \\
+		Mesh motion & pseudo-solid, total displacement; moved once per step to the predicted solid displacement & velocity Laplacian, incremental; moved every coupling iteration & different interior meshes, $O(h^2)$; $O(\Delta t^2)$ in time; zero at steady state \\
+		Solid time integration & BDF2 on velocity & BDF2 on displacement (womersleyTube), Euler (cavity) & equivalent for the linear solid; none at steady state \\
+		Solid spatial operator & face stress with \texttt{diffStencilLaplacian} stabilisation & the same, on displacement & identical \\
+		Convergence test & Newton residual and step tolerances & coupling tolerance, strict test & iterative; kept below the discretisation differences (Section~\ref{sec:protocol}) \\
+		\bottomrule
 	\end{tabular}
 \end{table}
 
@@ -48,7 +62,7 @@ The term can be included in the quasi-monolithic coupling (\texttt{viscousStress
 % TIME-SCHEME NOTE (Philip, 22 Oct 2026), for anyone adding results here:
 % this case is steady (pseudo-time stepping), so the Euler scheme is acceptable
 % for the fluid ddt(U); record the ddt schemes of every run with the results.
-\todo{Time scheme: steady case; Euler pseudo-time stepping is acceptable (tutorial default for the fluid: Euler). Record the ddt schemes used.}
+% ddt schemes (a421f063d run files, timing-ma, 31 Oct 2026): QM fluid ddt(U) Euler, solid backward; Aitken fluid and solid Euler.
 %%--------------------------------------------------------------------------------------------------------------------%%
 % Set-up: companion paper sectionBenchmarkSuite.tex "Flexible-bottom cavity";
 % solids4foam origin/verification/cavityflexiblebottom-partitioned-fine @
@@ -71,7 +85,7 @@ At steady state the time-dependent differences between the couplings vanish, so 
 
 \paragraph{Set-up.}
 The flow is at $Re = 100$ and the plate is a St Venant--Kirchhoff solid, computed with the geometrically nonlinear velocity solid (\texttt{nonLinearGeometryTotalLagrangianVelocity}) on a conformal interface.
-The steady state is reached by time stepping after an inlet ramp, with $\Delta t = 0.5\,\mathrm{s}$ on every level for the quasi-monolithic coupling and, as in the partitioned tutorial, $\Delta t = 0.5$, $0.25$, $0.125$ and $0.0625\,\mathrm{s}$ on levels 1--4 for Aitken coupling.
+The steady state is reached by time stepping after an inlet ramp, with $\Delta t = 0.5\,\mathrm{s}$ on every level for the quasi-monolithic coupling and, as in the partitioned tutorial, $\Delta t = 0.5$, $0.25$, $0.125$ and $0.0625\,\mathrm{s}$ on levels 1--4 for Aitken coupling; the fluid uses the Euler scheme in this pseudo-time (the solid: BDF2 for the quasi-monolithic coupling and Euler for Aitken), which does not affect the steady state.
 Four uniformly refined levels ($\Delta x = 0.1$, $0.05$, $0.025$ and $0.0125\,\mathrm{m}$) are computed with the quasi-monolithic coupling and with partitioned Aitken coupling under the strict convergence test.
 \todo{Check the monitoring-point definition (top surface of the plate, solids4foam PR \#584) and the geometry figure against it.}
 

@@ -72,14 +72,40 @@ The run tables, the extracted quantities of interest, the provenance records and
 
 \begin{table}[htbp]
 	\centering
-	\small
-	\caption{Discretisation and solver settings of the quasi-monolithic runs.}
+	\footnotesize
+	\setlength{\tabcolsep}{2pt}
+	\caption{Discretisation and solver settings of the quasi-monolithic runs.
+	All cases use a Newton line-search method with a matrix-free operator and an assembled approximate Jacobian as preconditioning matrix, \texttt{jacobian-div(phi,U)} \texttt{Gauss upwind} in that matrix, LGMRES (restart 200) with a multiplicative field split between solid and fluid, and, in the fluid block, a Schur complement split with the \texttt{selfp} approximation, block-Jacobi ILU(0) on the velocity block and one BoomerAMG V-cycle on the pressure Schur complement.
+	$\Delta$: \texttt{ddt(U)} of the fluid (\texttt{ddt(D)} of the mesh motion is \texttt{backward} or not needed).
+	Conv.: \texttt{div(phi,U)}, \texttt{linear} (lin.) or \texttt{linearUpwind grad(U)} (LUD).
+	Flux: \texttt{interpolate(U)} in the continuity flux, \texttt{linear} (lin.) or \texttt{skewCorrected linear} (skew).
+	Solid: \texttt{linearGeometryVelocity} (LG) or \texttt{nonLinearGeometryTotalLagrangianVelocity} (TL); $\alpha_s$: scale factor of the solid stabilisation (\texttt{diffStencilLaplacian}).
+	Transf.: direct map (DM) or AMI.
+	Tol.: \texttt{snes\_rtol} $=$ \texttt{snes\_stol}; KSP: \texttt{ksp\_rtol}.
+	Schur: Schur factorisation; solid PC: preconditioner of the solid block, redundant LU or BoomerAMG (AMG); lag: Jacobian and preconditioner lag in Newton iterations, persisting across time steps (--: rebuilt every iteration).
+	Source: the \texttt{*.monolithic} tutorial files at \texttt{a421f063d} and the run files of the campaign, which differ from the tutorial only where marked${}^{\ast}$.}
 	\label{tab:solver_settings}
-	% threeparttable (sn-jnl) prints the caption only with a tabular
-	\begin{tabular}{p{0.9\linewidth}}
-	\todo{Table: one row per case (ringAddedMass, womersleyTube, cavityFlexibleBottom, collapsibleChannel, FSI3, blobInTreacle, 3dTube, foilInWind). Columns: fluid \texttt{ddt(U)} scheme; \texttt{div(phi,U)} scheme; velocity solid (\texttt{linearGeometryVelocity} or \texttt{nonLinearGeometryTotalLagrangianVelocity}); solid stabilisation factor; interface transfer (direct map or AMI); \texttt{snes\_rtol}/\texttt{snes\_stol}; \texttt{ksp\_rtol}; Schur factorisation; solid-block preconditioner; Jacobian/preconditioner lag. Source: the \texttt{fvSchemes.monolithic}/\texttt{fvSolution.monolithic} files at the tag (the campaign records them in the \texttt{notes} column of each \texttt{runs.csv}). Use \texttt{backward} for \texttt{ddt(U)} wherever a temporal order is claimed; list any case that cannot.}
+	\begin{tabular}{lllllllllll}
+		\toprule
+		Case & $\Delta$ & Conv. & Flux & Solid & $\alpha_s$ & Transf. & Tol. & KSP & Schur, solid PC & Lag \\
+		\midrule
+		ringAddedMass        & BDF2  & lin. & lin.  & LG & 0.5 & DM & $10^{-6}$ & $10^{-4}$ & upper, LU & -- \\
+		womersleyTube        & BDF2  & lin. & lin.  & LG & 0.5 & DM & $10^{-6}$ & $10^{-4}$ & upper, LU & -- \\
+		cavityFlexibleBottom & Euler\textsuperscript{a} & LUD & skew\textsuperscript{b} & TL & 0.1 & DM & $10^{-6}$ & $10^{-4}$ & upper, LU & -- \\
+		collapsibleChannel   & BDF2  & lin. & lin.  & TL & 0.1 & DM & $10^{-6}$ & $10^{-4}$ & upper, LU & -- \\
+		FSI3                 & BDF2  & LUD  & skew  & TL & 0.5 & \tbd{DM/AMI} & $10^{-6}$ & $10^{-4}$ & upper, LU & -- \\
+		blobInTreacle        & BDF2  & LUD  & skew  & LG & \tbd{none} & DM & $10^{-6}$ & $10^{-4}$ & upper, LU & -- \\
+		3dTube               & BDF2  & LUD  & lin.  & LG & 0.1 & DM & $10^{-6}$\textsuperscript{$\ast$} & $10^{-4}$\textsuperscript{$\ast$} & full, AMG\textsuperscript{$\ast$} & 8 \\
+		foilInWind           & BDF2  & LUD  & skew  & TL & 0.5 & DM & $10^{-4}$ & $10^{-4}$ & upper, LU & -- \\
+		\bottomrule
 	\end{tabular}
+	\par\smallskip
+	\parbox{0.95\linewidth}{\footnotesize
+	\textsuperscript{a}~Steady target: only the steady state is compared, and no temporal order is claimed.
+	\textsuperscript{b}~Also run with \texttt{linear} (Section~\ref{sec:cavity_m}).
+	\textsuperscript{$\ast$}~The 3dTube tutorial uses $10^{-4}$, $10^{-3}$ and redundant LU; the paper runs use the values shown.}
 \end{table}
+\todo{Agent B: confirm the collapsibleChannel, FSI3, blobInTreacle and foilInWind rows against the run files (FSI3 transfer and mesh-motion law; blobInTreacle solid stabilisation) and mark any deviation from the tutorial.}
 
 %%--------------------------------------------------------------------------------------------------------------------%%
 \subsection{Ring added-mass problem}\label{sec:ring_m}

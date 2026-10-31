@@ -36,5 +36,20 @@ interpolation; ddt backward), sampling (`cell`, midPoint). Differences: fluid
 model (newtonIcoFluid with Rhie-Chow pressure stabilisation vs pimpleFluid),
 wall velocity condition (fixedValue set by the coupling vs
 `elasticWallVelocity` from the mesh motion), solid model (velocity vs total
-displacement), mesh motion law. Not isolated; candidates that do not vanish
-with h and dt: the fluid wall velocity condition.
+displacement), mesh motion law.
+
+## Stiff-wall test (MeluXina 5407376, a421f063d, 31 Oct 2026)
+The QM coupling requires a fixedValue wall velocity, so the wall condition
+cannot be swapped. Instead, m2-n200 was rerun for QM and RN with the tutorial
+solid (E = 2e4) and with E = 2e7 (wall amplitude -95 %):
+
+| E | QM-RN max (cell) | axis | wall cell | flow_amp QM / RN |
+|---|---|---|---|---|
+| 2e4 | 7.09e-4 (18) | 3.9e-5 | 4.5e-4 | 8.983e-4 / 9.385e-4 |
+| 2e7 | 6.84e-4 (18) | 2.2e-5 | 4.3e-4 | -0.189094 / -0.189096 |
+
+The tutorial-wall pair reproduces the earlier runs exactly. The difference
+survives a nearly rigid wall, so it comes from the fluid discretisation
+(newtonIcoFluid vs pimpleFluid), not from the wall motion or the wall
+velocity condition. Driver and comparison: Mx qm-a421/runs/wom-wall/
+{wom_wall.py, compare.py}. Execution time QM 545 s, RN 1114 s (tutorial wall).

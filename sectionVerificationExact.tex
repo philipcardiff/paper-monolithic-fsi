@@ -166,7 +166,7 @@ Every quasi-monolithic step converges in two Newton iterations at every added-ma
 % ddt(U) and the solid. The solids4foam tutorial default for this case is
 % backward for the fluid ddt(U). Confirm and record the ddt schemes of every
 % run (runs.csv); rerun any result computed with Euler, and say so here.
-\todo{Time scheme: confirm that every result in this subsection uses BDF2 (backward) for the fluid and the solid (tutorial default for the fluid ddt(U): backward); results computed with Euler must be rerun.}
+% Confirmed 31 Oct 2026: ddt(U) backward in every run (runs.csv of evidence/m-runs-a-rfix); solid default backward (tutorial *.monolithic).
 %%--------------------------------------------------------------------------------------------------------------------%%
 % Set-up: companion paper sectionBenchmarkSuite.tex "Pulsatile compliant tube";
 % solids4foam 257b2e564 tutorials/fluidSolidInteraction/womersleyTube/
@@ -179,16 +179,43 @@ A harmonic pressure wave travelling along an axisymmetric thick-walled elastic t
 \paragraph{Set-up.}
 The tube of the companion paper is used unchanged ($h/R = 0.1$, $L/R = 15$, Womersley number $5.01$, $\rho_s h/(\rho_f R) = 0.1$), with exact travelling-wave data at both ends and exact initial fields, on a wedge mesh.
 Meshes are refined by factors 1, 2 and 4 at 200 steps per period, and 50 to 400 steps per period are used on the factor-2 mesh.
-First Fourier coefficients over periods 5--6 are compared with the exact solution.
+First Fourier coefficients over periods 5--6 are compared with the exact solution; the fluid and the solid both use BDF2, and the Newton tolerances are tightened to $10^{-8}$ (Krylov $10^{-6}$) so that the iterative error is negligible.
 \todo{The partitioned runs of the companion paper use the \texttt{pimpleFluid} option \texttt{fluxConsistentPatches} on the tube ends. State the equivalent treatment of the end flux in \texttt{newtonIcoFluid}, or show that the quasi-monolithic temporal order does not depend on it.}
 
 \paragraph{Measured.}
 Errors and observed orders in space and time of the velocity profile, the flow-rate amplitude and phase, the wall displacement amplitude and phase, the wave speed and the attenuation; Newton and Krylov iterations; and cost against IQN-ILS and Robin--Neumann on the factor-2 mesh at 100 steps per period.
 The difference between the couplings is discussed in Section~\ref{sec:womersley_consistency}.
 
-\todo{Table: womersleyTube, quasi-monolithic. Rows: velocity profile (max.), flow-rate amplitude, flow-rate phase, wall displacement amplitude, wall displacement phase, wave speed, attenuation. Columns: mesh order (factors 1/2/4); time order (50/100/200 and 100/200/400 steps per period); finest-mesh error. Same layout as the companion paper's table, but quasi-monolithic only, so that the two tables do not repeat each other; do not reproduce the partitioned columns here.}
+% Data: evidence/m-runs-a-rfix:paper-data/campaign/m-runs-a-rfix/qois.csv (build 1252bd2e5, R-fix);
+% orders from successive differences of the values.
+\begin{table}[htbp]
+	\centering
+	\caption{Pulsatile compliant tube, quasi-monolithic coupling (build \texttt{1252bd2e5}): observed orders in space (factors 1/2/4 at 200 steps per period) and time (factor-2 mesh), and the error on the factor-4 mesh at 200 steps per period. Errors are relative, except phases (rad).}
+	\label{tab:womersley_m}
+	\begin{tabular}{lrrrr}
+		\toprule
+		Quantity & Space & Time 50/100/200 & Time 100/200/400 & Error, factor 4 \\
+		\midrule
+		Velocity profile (max.) & 1.81 & --$^{a}$ & 1.91 & $9.6\times10^{-4}$ \\
+		Flow-rate amplitude & 2.06 & 2.03 & 2.01 & $-3.4\times10^{-4}$ \\
+		Flow-rate phase & 1.92 & 1.86 & 1.93 & $8.4\times10^{-5}$ \\
+		Wall displacement amplitude & 1.98 & 1.96 & 1.99 & $-3.5\times10^{-4}$ \\
+		Wall displacement phase & 1.46 & 2.14 & 2.07 & $-1.2\times10^{-3}$ \\
+		Wave speed & 2.00 & 1.94 & 1.98 & $-6.0\times10^{-6}$ \\
+		Attenuation & --$^{b}$ & 2.11 & 2.06 & $-1.9\times10^{-3}$ \\
+		Pressure amplitude & 2.37 & --$^{a}$ & 1.88 & $1.5\times10^{-3}$ \\
+		\bottomrule
+	\end{tabular}
 
-Expected claims: every quantity converges at second order in space and time (observed orders \tbd{range}), with \tbd{2} Newton iterations per step and \tbd{factor} of the wall time of IQN-ILS.
+	\smallskip
+	{\footnotesize $^{a}$ change between 100 and 200 steps per period below $2\times10^{-5}$, so no order is formed. $^{b}$ the error changes by less than $15\%$ between meshes and not monotonically.}
+\end{table}
+
+Every quantity converges at second order in time (observed orders 1.86--2.14, Table~\ref{tab:womersley_m}), and the flow rate, the wall displacement amplitude, the wave speed and the pressure converge at second order in space (1.92--2.37; the velocity profile at 1.81), with every quasi-monolithic step converging in two Newton iterations and 23--28 Krylov iterations per Newton iteration; the partitioned runs need 15--16 (IQN-ILS) and 11--18 (Robin--Neumann) coupling iterations per step at the strict test.
+The wall displacement phase and the attenuation are the exceptions: their errors fall only from $2.4$ to $1.2\times10^{-3}\,\mathrm{rad}$ and from $0.23\%$ to $0.19\%$ between the factor-1 and factor-4 meshes, and about $1.2\times10^{-3}\,\mathrm{rad}$ and $0.15\%$ remain on the factor-2 mesh when the time step is extrapolated to zero.
+Robin--Neumann shows the same phase and attenuation to within $5\times10^{-5}\,\mathrm{rad}$ and $3\times10^{-4}$ (Section~\ref{sec:womersley_consistency}), so this error belongs to the discretisation the two couplings share, not to the coupling.
+\todo{Identify the shared wall-phase and attenuation error (finite tube length and end data, the wedge, or the extraction over periods 5--6); check against the companion paper's partitioned table.}
+The timings of these runs were taken on a shared node and are not reported.
 
 %%--------------------------------------------------------------------------------------------------------------------%%
 \subsection{Effect of the interface treatment}\label{sec:interface_comparison}

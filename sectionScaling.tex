@@ -80,18 +80,28 @@ The Newton iteration converges in two iterations at every step on every level, a
 \subsection{Strong scaling}\label{sec:tube3d_scaling}
 %%--------------------------------------------------------------------------------------------------------------------%%
 
-Level 2 is run on 1, 2, 4, 8, 16, 32 and 64 processes and level 3 on 16, 32, 64 and \tbd{128} processes, over a fixed window of 50 steps from a restart, with the quasi-monolithic coupling and with Robin--Neumann coupling.
+Level 2 is run on 1, 2, 4, 8, 16, 32 and 64 processes and level 3 on 16, 32, 64 and 128 processes, over a fixed window of 50 steps restarted from $t = 5\,\mathrm{ms}$, with the quasi-monolithic coupling and with Robin--Neumann coupling.
+All runs use one exclusive node of the MeluXina system (two 64-core AMD EPYC 7H12 processors, with eight NUMA domains of 16 cores each), one run at a time, with the processes pinned to consecutive cores; the time reported is the median \texttt{ExecutionTime} of three repeats, which agree within $4\%$.
 The fluid and solid regions are decomposed together by the \texttt{decomposeParMonolithic} utility of solids4foam, which partitions the fluid and solid cells as one graph, with extra edges across the interface face pairs, so that a process may own fluid cells, solid cells or both; for the scaling runs the graph is cut into slabs along the tube axis (the \texttt{simple} method with $1\times1\times N$ subdomains), because the \texttt{scotch} partition of the combined graph left some processes with solid cells only on the finer partitions (for example 13 of 128 processes on level 3), and the coupled solve does not proceed when a process owns no fluid cells~\citetodo{solids4foam issue 639}.
 The slabs give every process fluid and solid cells, with a load imbalance of at most $6\%$ in the fluid cells and $20\%$ in the solid cells.
 % Source: applications/utilities/decomposeParMonolithic/README.md at 257b2e564.
-The solid block is preconditioned by one V-cycle of BoomerAMG, the default of the solids4foam 3dTube verification driver, which replaces the exact LU factorisation gathered on one process because that factorisation dominates the cost on the finer meshes \tbd{confirm with check B1}.
+The solid block is preconditioned by one V-cycle of BoomerAMG, the default of the solids4foam 3dTube verification driver, which replaces the exact LU factorisation gathered on one process because that factorisation dominates the cost on the finer meshes: on level 2 with 16 processes it makes a run 8.25 times as expensive at unchanged iteration counts (Table~\ref{tab:tube3d_pc}).
 
 \paragraph{Measured.}
-Wall time per step and parallel efficiency relative to the smallest process count of each level, Newton iterations per step and Krylov iterations per Newton iteration as functions of the process count, and peak memory per process.
+Time per step and parallel efficiency, Newton iterations per step and Krylov iterations per Newton iteration as functions of the process count (Figure~\ref{fig:tube3d_scaling}).
 
-\todo{Figure: 3dTube strong scaling. (a) Wall time per step against number of processes (log--log), levels 2 and 3, quasi-monolithic (filled) and Robin--Neumann (open), with ideal-scaling lines. (b) Parallel efficiency against number of processes. (c) Krylov iterations per Newton iteration against number of processes (quasi-monolithic), showing the effect of the block-Jacobi ILU(0) velocity block and of the solid-block preconditioner.}
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=\textwidth]{figures/3dTube-strong-scaling}
+	\caption{Three-dimensional tube, strong scaling over a 50-step window: (a) \texttt{ExecutionTime} per step, with ideal scaling from 16 processes (dotted) and the processes of one NUMA domain shaded; (b) parallel efficiency relative to 16 processes; (c) Krylov iterations per Newton iteration of the quasi-monolithic coupling. Medians of three repeats.}
+	\label{fig:tube3d_scaling}
+\end{figure}
 
-Expected claims: the quasi-monolithic coupling reaches a parallel efficiency of \tbd{value} on \tbd{N} processes on level \tbd{level}, against \tbd{value} for Robin--Neumann; the Krylov iterations per Newton iteration grow by \tbd{factor} from 1 to \tbd{N} processes; the wall time per step of the quasi-monolithic coupling is \tbd{factor} that of Robin--Neumann at \tbd{N} processes.
+Within one NUMA domain neither coupling scales well: on level 2 the time per step falls by a factor of only 3.6 (quasi-monolithic) and 5.3 (Robin--Neumann) from 1 to 16 processes, whereas going from 16 to 32 processes, which adds the memory channels of a second domain, roughly halves it for both (Figure~\ref{fig:tube3d_scaling}a).
+Both solvers are therefore limited by memory bandwidth on this node, and the efficiency is measured from 16 processes, one full domain.
+On level 3 the quasi-monolithic coupling keeps an efficiency of 1.06 and 1.04 on 32 and 64 processes and 0.78 on 128 processes, about 8000 fluid cells per process, against 1.08, 1.16 and 0.85 for Robin--Neumann; on level 2 it falls to 0.69 on 64 processes, about 2000 fluid cells per process, against 0.77.
+The Krylov iterations per Newton iteration do not change with the process count (18.0--18.6 on level 2 from 1 to 64 processes, 27.2--27.5 on level 3 from 16 to 128), and Newton converges in two iterations per step throughout, so neither the block-Jacobi ILU(0) velocity block nor the BoomerAMG solid block loses effectiveness as the domain is partitioned; the somewhat lower efficiency than Robin--Neumann lies in the cost per Krylov iteration, not in the iteration count.
+Over these windows the quasi-monolithic coupling costs 3.0 times as much as Robin--Neumann on level 3 with 16 processes and 3.3 times with 128, and 1.3 to 2.0 times on level 2 from 1 to 64 processes: with its Robin interface condition the partitioned coupling needs only about three coupling iterations per step on this case, so the tube is a case in which a well-tuned partitioned coupling is cheaper.
 
 %%--------------------------------------------------------------------------------------------------------------------%%
 \subsection{Effect of the preconditioner and Jacobian settings}\label{sec:tube3d_pc_study}
@@ -137,5 +147,5 @@ With the assembled approximate Jacobian as the Newton operator, Newton converges
 
 \paragraph{Discussion: parallel cost of the coupled solve.}
 The coupled linear system brings a preconditioner whose cost is not present in partitioned coupling.
-In the present implementation the solid block is preconditioned by one V-cycle of algebraic multigrid (Section~\ref{sec:lim_solid_pc}), which on level 2 is eight times cheaper than the gathered LU factorisation (Table~\ref{tab:tube3d_pc}), and the three-dimensional tube reaches a parallel efficiency of \tbd{value} on \tbd{N} processes against \tbd{value} for Robin--Neumann (Section~\ref{sec:tube3d_scaling}).
-The joint decomposition of the fluid and solid cells is a further difference: partitioned coupling decomposes each region separately, whereas the coupled residual is distributed as one graph, and the balance of fluid and solid work per process \tbd{did / did not} affect the scaling.
+In the present implementation the solid block is preconditioned by one V-cycle of algebraic multigrid (Section~\ref{sec:lim_solid_pc}), which on level 2 is eight times cheaper than the gathered LU factorisation (Table~\ref{tab:tube3d_pc}), and on level 3 of the three-dimensional tube the method reaches a parallel efficiency, relative to 16 processes, of 0.78 on 128 processes against 0.85 for Robin--Neumann, with Krylov iteration counts independent of the process count (Section~\ref{sec:tube3d_scaling}).
+The joint decomposition of the fluid and solid cells is a further difference: partitioned coupling decomposes each region separately, whereas the coupled residual is distributed as one graph, and the slab partitions used here balance the fluid cells to within $6\%$ but the solid cells only to within $20\%$; the efficiency nevertheless stays at or above 0.78 on level 3 up to 128 processes, and a partition that weights the combined fluid and solid work was not tested.

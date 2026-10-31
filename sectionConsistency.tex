@@ -141,10 +141,10 @@ The quasi-monolithic coupling needs 1.6--1.7 Newton iterations per step on every
 % ddt(U) and the solid. The solids4foam tutorial default for this case is
 % backward for the fluid ddt(U). Confirm and record the ddt schemes of every
 % run (runs.csv); rerun any result computed with Euler, and say so here.
-\todo{Time scheme: confirm that every result in this subsection uses BDF2 (backward) for the fluid and the solid (tutorial default for the fluid ddt(U): backward); results computed with Euler must be rerun.}
+% Confirmed 31 Oct 2026: ddt(U) backward in every run used here (runs.csv of evidence/m-runs-a, m-runs-a-rfix, m-runs-wp0).
 %%--------------------------------------------------------------------------------------------------------------------%%
-% Data: the R1 womersleyTube runs (Section 4.3) and the partitioned
-% Robin-Neumann and IQN-ILS runs of the companion paper, both from the tag.
+% Data: QM before the correction = ma-wom-qm-vstno (evidence/m-runs-a) and wp0-wom-qm-vstno-m2n50; after = rf-wom-qm (evidence/m-runs-a-rfix, 1252bd2e5);
+% RN and IQN-ILS = ma-wom-{rn,iqn} (strict test) and wp0-wom-{rn,iqn}-m2n50. paper-data/womersley_consistency.csv.
 % A2 (b): before the correction, the monolithic wall radial amplitude differed
 % from Robin-Neumann by -3.2e-4 to -3.5e-4 (relative) on mesh factors 2 and 4
 % at every step, the fluid quantities by 7e-5 or less (production CSVs
@@ -155,9 +155,16 @@ Both couplings are compared on mesh factors 1, 2 and 4 at 200 steps per period a
 
 \paragraph{Measured.}
 Differences between the quasi-monolithic and the Robin--Neumann and IQN-ILS solutions in every quantity of Section~\ref{sec:womersley_m}, as functions of mesh factor and time step; the difference between Robin--Neumann and IQN-ILS sets the scale of the partitioned spread.
-The Fourier analysis is repeated over periods 4--5 to exclude a start-up transient.
 
-\todo{Figure: womersleyTube, quasi-monolithic minus Robin--Neumann. Relative difference in wall radial displacement amplitude, wall phase, axial displacement amplitude and flow-rate amplitude (four markers) against mesh factor (left) and steps per period (right); open symbols before the traction correction, filled after; horizontal band for the IQN-ILS minus Robin--Neumann spread.}
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.85\textwidth]{figures/womersleyTube-consistency}
+	\caption{Pulsatile compliant tube: magnitude of the quasi-monolithic minus Robin--Neumann difference (relative; phase in rad) before (open) and after (filled) the traction correction, (a) against mesh factor at 200 steps per period and (b) against steps per period on the factor-2 mesh. Grey: the largest IQN-ILS minus Robin--Neumann difference of the four quantities, the partitioned spread.}
+	\label{fig:womersley_consistency}
+\end{figure}
 
-Expected claims: before the correction, the wall amplitude differs by a constant \tbd{value} on every mesh and time step while the fluid quantities agree to \tbd{value}; after it, every difference \tbd{decreases under refinement / is below the partitioned spread}.
-\todo{Pending reruns with the corrected traction (R1). If the correction does not remove the whole offset, report the remainder and the next candidate from A2 (partitioned coupling tolerance, run B3).}
+Before the correction the wall-displacement phase of the quasi-monolithic solution differs from Robin--Neumann by $-4.8\times10^{-4}\,\mathrm{rad}$ on every mesh and time step ($-5.2\times10^{-4}$ on factor 1), and the wall amplitude by $-3.2$ to $-3.6\times10^{-4}$ on factors 2 and 4, while the flow rate, the wave speed and the pressure agree to $8\times10^{-5}$ or better (Figure~\ref{fig:womersley_consistency}): an offset that refinement does not remove, as expected from a traction that is missing a term on a deforming wall.
+After the correction the phase difference falls tenfold, to $(2.6$--$4.6)\times10^{-5}\,\mathrm{rad}$, and the attenuation difference to $1.4\times10^{-5}$ or less on factors 2 and 4.
+The wall-amplitude difference halves, to $-1.4$ to $-1.7\times10^{-4}$, but does not decrease with refinement; it is of the size of the partitioned spread, the IQN-ILS minus Robin--Neumann difference in the same quantity being $+1.7$ to $+3.8\times10^{-4}$ on factors 1 and 2 at every step but $-0.7\times10^{-4}$ on factor 4.
+The maximum error of the velocity profile is the one quantity whose difference is above the partitioned spread: $-2.4$ to $-3.2\times10^{-4}$ on every cell from 100 to 400 steps per period, unchanged by the correction, against $4\times10^{-5}$ or less between IQN-ILS and Robin--Neumann.
+\todo{Velocity-profile difference ($-3\times10^{-4}$, unchanged by the traction correction, above the partitioned spread): check the extraction (maximum over the profile at one station) and the continuity-flux and wall-pressure differences of Table~\ref{tab:discretisation_differences} before attributing it.}

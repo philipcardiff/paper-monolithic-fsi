@@ -281,9 +281,19 @@ The ring is computed with solid interface meshes coarser and finer than the flui
 % linearGeometryVelocity, so useUndeformedArea is not needed.
 The total interface force and power transferred are logged on both sides of the interface at every step.
 
-\todo{Figure: ringAddedMass on non-conformal interfaces. (a) Relative imbalance of the total interface force and (b) of the interface power (log scale) against mesh factor, for interpolated and conservative transfer and for coarser and finer solid interfaces. (c) Error of the wet/dry ratio for the same runs, with the conformal result for reference.}
+% Data: paper-data/ring_nonconformal.csv (MeluXina 5407040, a421f063d, interfaceFluxDiagnostics yes; ratios
+% identical to the R-fix 1c runs at 1252bd2e5); figure: figures/scripts/ring_nonconformal.py.
+% The code logs the force balance only, not the interface power.
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=\linewidth]{figures/ringAddedMass-nonconformal.pdf}
+	\caption{Ring added-mass problem on non-conformal interfaces, quasi-monolithic coupling, strong level, 100 steps per period: (a) largest relative imbalance of the total interface force over the run and (b) magnitude of the relative error of the wet/dry frequency ratio against mesh refinement factor, for a conformal interface (direct map) and for solid interfaces with $32$ (coarser) and $72$ (finer) circumferential faces per mesh factor against $48$ on the fluid side, with interpolated (open) and conservative (filled) traction transfer. solids4foam \texttt{a421f063d}.}
+	\label{fig:ring_nonconformal}
+\end{figure}
 
-Expected claims: with conservative transfer the force and power balance to \tbd{round-off level}, whereas interpolation leaves an imbalance of \tbd{size} that decreases at order \tbd{order}; the frequency ratio \tbd{is / is not} affected at the reported precision.
+With the conservative transfer the total force on the solid equals that of the fluid to round-off, with a relative imbalance below $3\times10^{-15}$ at every step, mesh and level (Figure~\ref{fig:ring_nonconformal}a).
+With interpolated traction the imbalance is $3$--$9\times10^{-5}$ and does not decrease with refinement, but it is not an error of the transfer: on the factor-2 and factor-4 meshes it equals that of the conformal direct map to within $10\%$ ($2$--$3\times10^{-5}$ at the strong level, $5$--$8\times10^{-5}$ at the moderate level), which arises because the linear-geometry solid integrates the traction over its undeformed face areas while the fluid integrates over the deformed faces.
+The frequency ratio is not affected by the choice of transfer at the reported precision: the interpolated and conservative results differ by at most $2.6\times10^{-5}$ relative on every mesh and level, and on the factor-4 mesh the ratio error on a non-conformal interface is $1.9\times10^{-5}$ or less, against $4\times10^{-6}$ or less on the conformal interface (Figure~\ref{fig:ring_nonconformal}b).
 
 Two further ingredients were established during development and cannot be switched off in the released code: removing a one-step lag of the interface force in the velocity solid reduced the amplitude loss per period of the ring at 100 steps per period from $2.0$, $10.6$ and $18.3\%$ to $0.17$, $0.71$ and $1.26\%$ (weak, moderate, strong), and evaluating the viscous traction as the momentum wall flux rather than from the deviatoric stress raised the observed spatial order of the blobInTreacle displacement, a stationary-wall case, from $1.4$ to $2.0$.
 % Sources: ringAddedMass/verification/README.md "Defects found by this

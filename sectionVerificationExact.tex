@@ -88,7 +88,7 @@ The run tables, the extracted quantities of interest, the provenance records and
 % ddt(U) and the solid. The solids4foam tutorial default for this case is
 % backward for the fluid ddt(U). Confirm and record the ddt schemes of every
 % run (runs.csv); rerun any result computed with Euler, and say so here.
-\todo{Time scheme: confirm that every result in this subsection uses BDF2 (backward) for the fluid and the solid (tutorial default for the fluid ddt(U): backward); results computed with Euler must be rerun.}
+% Confirmed 31 Oct 2026: ddt(U) backward (fluid) and default backward (solid) in the a421f063d run files (timing-ma) and the tutorial *.monolithic files.
 %%--------------------------------------------------------------------------------------------------------------------%%
 % Set-up: solids4foam origin/feature-petsc-snes-quasi-monolithic @ 257b2e564,
 % tutorials/fluidSolidInteraction/ringAddedMass/README.md (Table 1) and
@@ -108,12 +108,18 @@ The question here is whether the quasi-monolithic coupling reproduces the exact 
 A ring of mean radius $a = 1\,\mathrm{m}$ and thickness $h = 0.1\,\mathrm{m}$ (plane strain, $E = 1\,\mathrm{MPa}$, $\nu = 0.3$, $\rho_s = 1000\,\mathrm{kg/m^3}$) is surrounded by fluid out to a rigid wall of radius $b = 1.5\,\mathrm{m}$; one quadrant is modelled with symmetry planes.
 The fluid density is chosen to give added-mass ratios $\mu = 0.101$, $1.008$ and $10.08$ (weak, moderate and strong), and a dry ring is run with each mesh and time step.
 The solid is the geometrically linear velocity solid (\texttt{linearGeometryVelocity}) with the standard second-order discretisation, and the interface is conformal.
-Meshes are refined by factors 1, 2 and 4 at 100 steps per period, and the time step is varied from 25 to \tbd{100 or 200} steps per period on the factor-2 mesh.
+Meshes are refined by factors 1, 2 and 4 at 100 steps per period, and the time step is varied from 25 to 100 steps per period on the factor-2 mesh; the fluid and the solid both use the second-order backward (BDF2) scheme.
 
 \paragraph{Measured.}
 The wet frequency and its error against the exact value, the error of the wet/dry frequency ratio, and the amplitude loss per period, together with Newton iterations per step and Krylov iterations per Newton iteration; IQN-ILS and Robin--Neumann are run on the same meshes and steps for the iteration counts and timings.
 
-\todo{Figure: two panels. (a) Error of the wet/dry frequency ratio (absolute, log scale) against mesh refinement factor (1, 2, 4), at 100 steps per period, for the weak, moderate and strong levels; quasi-monolithic only; slope-2 triangle. (b) Amplitude loss per period (\%, log scale) against steps per period (25 to \tbd{200}) on the factor-2 mesh for the dry ring, quasi-monolithic (three levels), IQN-ILS and Robin--Neumann (strong level). Data: campaign stream R1, \texttt{qois.csv}.}
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.85\textwidth]{figures/ringAddedMass-accuracy}
+	\caption{Ring added-mass problem. (a) Error of the wet/dry frequency ratio against the mesh refinement factor at 100 steps per period, quasi-monolithic (filled) and IQN-ILS (open), for the three added-mass levels. (b) Amplitude loss per period against steps per period on the factor-2 mesh, strong level, with the dry ring.}
+	\label{fig:ring_accuracy}
+\end{figure}
+% Data: paper-data/ring_monolithic_{mesh,runs}.csv (paper-fsi-verification ring-monolithic, ff150e4); script figures/scripts/ring_accuracy.py.
 
 % Data: Mx 5400191 (a421f063d), paper-data/campaign/d/timing-ma on
 % evidence/m-runs-d (timing_ma_summary.md); ratio errors from the timing
@@ -145,7 +151,10 @@ At the strong level every step of the quasi-monolithic coupling converges in two
 IQN-ILS needs four to five coupling iterations per step and, at its coupling tolerance, leaves a ratio error of $0.03$--$0.13\%$ and an amplitude loss above that of the other two couplings; the quasi-monolithic and Robin--Neumann couplings agree with each other in both quantities.
 Robin--Neumann reaches the same accuracy as the quasi-monolithic coupling, but its coupling iterations grow as the time step increases, from 12 per step at 100 steps per period to 47 at 25, so that it is 3 to 13 times as expensive and, unlike the other two, becomes more expensive per period as the time step grows.
 
-Expected claims: the ratio error converges at order \tbd{order} to \tbd{finest error} at every added-mass level, the amplitude loss per period equals that of the dry ring to within \tbd{difference}, so that the coupling adds no measurable damping, and each step needs two Newton iterations independent of the added-mass ratio and of the time step.
+Under mesh refinement at 100 steps per period, the ratio error of the quasi-monolithic coupling falls faster than second order at every added-mass level (observed orders 3.2--3.3 at the strong level, 3.3--4.1 at the moderate level and higher at the weak level), to below $4\times10^{-4}\%$ on the factor-4 mesh (Figure~\ref{fig:ring_accuracy}a): the wet and dry runs share the solid and temporal errors, which cancel in the ratio.
+The IQN-ILS ratio error converges at order 1.8--1.9 and is 25 to 600 times larger on the factor-4 mesh.
+The coupling adds no measurable damping: at the strong level the amplitude loss per period of the quasi-monolithic coupling equals that of the dry ring to within 0.004 percentage points at every time step (Figure~\ref{fig:ring_accuracy}b), so the loss is the numerical damping of BDF2 in the ring itself, which falls by a factor of 7--8 per halving of the time step; on all three meshes and levels at 100 steps per period the wet and dry losses differ by at most 0.08 percentage points, against 0.06 to 2.1 percentage points of additional loss for IQN-ILS.
+Every quasi-monolithic step converges in two Newton iterations at every added-mass level and time step on the factor-2 mesh.
 % Recorded before the tag (stale, for orientation only; ringAddedMass
 % verification/README.md lines 319-371): 2.00 Newton iterations per step at
 % every level and step; amplitude loss equal to the dry ring's.

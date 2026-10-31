@@ -41,11 +41,12 @@ This section verifies the method against two exact solutions and uses them to ex
 % Source of the protocol: campaign/HANDOFF.md (origin/campaign/handoff),
 % Section 4 "Common protocol" and Section 6 "Data formats".
 
-Every result in Sections~\ref{sec:verification_exact} to~\ref{sec:limitations} is computed with the solids4foam release \tbd{tag name and commit}, built with OpenFOAM \tbd{v2512}, PETSc \tbd{version} and HYPRE \tbd{version}, and both couplings are run from the same build.
+Every result in Sections~\ref{sec:verification_exact} to~\ref{sec:limitations} is computed with the solids4foam release \tbd{tag name} (campaign build \texttt{v2.2-1808}, commit \texttt{a421f063d}, unless a run table states otherwise), built with OpenFOAM v2512 and GCC 13.3, PETSc 3.22.0 and HYPRE 2.31.0, and both couplings are run from the same build.
+% Source: provenance.json of the 6b runs (Mx 5402592).
 The quasi-monolithic coupling is compared with the partitioned Dirichlet--Neumann coupling accelerated by Aitken relaxation or IQN-ILS and with Robin--Neumann coupling~\citep{Tukovic2018b}, using for each case the partitioned schemes and settings of the companion paper~\citetodo{companion verification paper}.
 
 \paragraph{Equal tolerances.}
-The Newton iterations of the quasi-monolithic coupling are stopped by the relative residual and step tolerances \tbd{snes\_rtol, snes\_stol}, fixed for each case before the campaign (Table~\ref{tab:solver_settings}).
+The Newton iterations of the quasi-monolithic coupling are stopped by the relative residual and step tolerances (\texttt{snes\_rtol} and \texttt{snes\_stol}), fixed for each case before the campaign (Table~\ref{tab:solver_settings}).
 Their iterative error is measured by repeating selected runs with both tolerances reduced a hundredfold.
 The partitioned runs use the strict coupling convergence test of the companion paper, which requires every interface residual measure to be below the tolerance, with a coupling tolerance chosen so that their iterative error is no larger than that of the quasi-monolithic runs.
 Differences between the couplings are therefore not differences in how far each is converged.
@@ -56,8 +57,8 @@ No new reference values are formed in this paper.
 Where no independent reference exists, the two couplings are compared with each other on the same meshes and time steps.
 
 \paragraph{Cost.}
-Timings are taken on exclusive nodes of one machine type, \tbd{machine, CPU model, interconnect}, with fixed process pinning, as the median of \tbd{three} repeats.
-Unless stated otherwise, a fixed window of time steps is timed from a restart, and the cost is reported as wall time per step and as core-hours per simulated second.
+Timings are taken on exclusive nodes of the MeluXina system (two 64-core AMD EPYC 7H12 processors per node, with eight NUMA domains of 16 cores), each run on a single node with the processes pinned to consecutive cores, as the median of three repeats.
+Unless stated otherwise, a fixed window of time steps is timed from a restart, and the cost is the solver's \texttt{ExecutionTime}, the processor time of the first process, which, unlike the elapsed time, does not count time spent waiting on the shared file system.
 Newton iterations per step and Krylov iterations per Newton iteration (quasi-monolithic), and coupling iterations per step (partitioned), are extracted from the solver logs.
 Timings from different machines are never compared.
 
@@ -67,7 +68,7 @@ A run that does not complete is reported as such and is not repeated with other 
 
 \paragraph{Provenance and data.}
 Each run records the solids4foam commit, the OpenFOAM, PETSc and HYPRE versions, the compiler and flags, the host and CPU model, the number of processes and the full set of PETSc options.
-The run tables, the extracted quantities of interest, the provenance records and the scripts that produce every figure and table are available in \tbd{repository path and Zenodo DOI}.
+The run tables, the extracted quantities of interest, the provenance records and the scripts that produce every figure and table are available in the \texttt{paper-data} directory of the paper repository \tbd{public URL and Zenodo DOI}.
 
 \begin{table}[htbp]
 	\centering

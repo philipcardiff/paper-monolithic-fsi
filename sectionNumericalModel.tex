@@ -210,6 +210,9 @@ For a fluid control volume $P$ of volume $\Omega_P$, the discrete momentum resid
        +
        \nu \bb{k}_f \cdot
        \left( \bb{\nabla} \bb{v} \right)_f
+       +
+       \nu \bb{\Gamma}_f \cdot
+       \mathrm{dev}_2\!\left[ \left( \bb{\nabla} \bb{v} \right)^{T} \right]_f
        -
        \phi^\mathrm{rel}_f
        \widetilde{\bb{v}}_f
@@ -249,8 +252,10 @@ The second term is the non-orthogonal correction, where
 and $\left( \bb{\nabla} \bb{v} \right)_f$ is obtained by interpolating the cell-centred least-squares velocity gradients (Equation~\eqref{eqn:least_squares_gradient}) to the face.
 This correction introduces the usual extended stencil associated with non-orthogonal
 finite-volume diffusion terms.
+The third term is the transpose part of the viscous stress, with $\mathrm{dev}_2(\bb{A}) = \bb{A} - \tfrac{2}{3}\mathrm{tr}(\bb{A})\,\bb{I}$, evaluated explicitly from the interpolated least-squares velocity gradient, as in the partitioned fluid solver of solids4foam.
+Its divergence vanishes for a divergence-free velocity with constant viscosity, but its boundary flux does not vanish on a deforming wall, where it is part of the physical traction (Section~\ref{sec:fluid_differences}); on walls with a prescribed velocity, including the interface, its boundary value is therefore taken from the wall velocity, as described for the traction in Section~\ref{sec:interface_conditions}.
 
-The third face term is the ALE convection contribution. The relative volumetric flux
+The fourth face term is the ALE convection contribution. The relative volumetric flux
 through face $f$ is defined by Equation~\eqref{eqn:relative_flux}.
 %\begin{equation}
 %    \phi^\mathrm{rel}_f
@@ -446,12 +451,14 @@ The fluid pressure on the interface is a prescribed-gradient (Neumann) condition
     \hat{\bb{n}}_f \cdot
     \left[
     \bb{\nabla}\cdot\left(\nu \bb{\nabla}\bb{v}\right)_{P}
+    +
+    \bb{\nabla}\cdot\left\{\nu\, \mathrm{dev}_2\!\left[\left(\bb{\nabla}\bb{v}\right)^{T}\right]\right\}_{P}
     -
     \left(\frac{\partial \bb{v}}{\partial t}\right)_f
     \right],
     \label{eqn:interface_pressure_gradient}
 \end{equation}
-where the viscous term is evaluated in the fluid cell $P$ adjacent to the interface face $f$, as in the momentum residual, and the interface acceleration is the BDF2 difference (with the time scheme of the fluid velocity) of the interface velocity in Equation~\eqref{eqn:mapped_solid_velocity}.
+where the viscous terms, including the transpose part, are evaluated in the fluid cell $P$ adjacent to the interface face $f$, as in the momentum residual, and the interface acceleration is the BDF2 difference (with the time scheme of the fluid velocity) of the interface velocity in Equation~\eqref{eqn:mapped_solid_velocity}.
 The convective term does not appear, as the fluid moves with the wall.
 The interface pressure, which gives the solid traction, is then extrapolated from the adjacent cell using this gradient.
 Because the gradient depends on the interface acceleration, this condition carries the added-mass effect of the fluid on the solid; with it, the interface pressure and the added mass are second-order accurate in space, whereas a zero normal pressure gradient on the interface is first order.
@@ -467,14 +474,30 @@ The fluid force on interface face $f$ is
     +
     \nu
     \left(\bb{\nabla}\bb{v}\right)^{\perp}_f
+    +
+    \bb{q}_f
     \right]
     |\bb{\Gamma}_f|,
     \label{eqn:interface_fluid_traction}
 \end{equation}
 where $p$ is the kinematic pressure and $(\bb{\nabla}\bb{v})^{\perp}_f = (\bb{v}_f - \bb{v}_P)/(\hat{\bb{n}}_f \cdot \bb{d}_f)$ is the compact face-normal gradient of the velocity, with $\bb{d}_f$ here the vector from the centre of the adjacent cell $P$ to the face centre; this is the boundary-face form of the diffusion term in Equation~\eqref{eqn:fluid_momentum_residual}, which has no non-orthogonal correction on boundary faces.
-The viscous part is thus the boundary flux of the momentum equation's viscous term, so that the force applied to the solid is the momentum that the fluid loses through the interface.
-It omits the transpose part of the viscous stress, $\nu\,\hat{\bb{n}}_f \cdot (\bb{\nabla}\bb{v})^T_f$, which vanishes on a stationary or rigidly moving no-slip wall but not on a deforming one (Section~\ref{sec:fluid_differences}).
-The implementation can add this part, together with the corresponding explicit term in the momentum residual (the option \texttt{viscousStressTranspose}), but the option is off by default and is not used in this work.
+The second viscous part, $\bb{q}_f$, is the wall value of the transpose part of the viscous stress, $\nu\,\hat{\bb{n}}_f \cdot \mathrm{dev}_2[(\bb{\nabla}\bb{v})^T]_f$, which vanishes on a stationary or rigidly moving no-slip wall but not on a deforming one (Section~\ref{sec:fluid_differences}).
+Rather than from the boundary value of the cell-centred gradient, whose tangential derivatives would carry the near-wall error of the cell velocities, it is evaluated from the wall velocity itself,
+\begin{equation}
+    \bb{q}_f
+    =
+    \nu
+    \left[
+    \left(\bb{I} - \hat{\bb{n}}_f\hat{\bb{n}}_f\right)\cdot\left(\bb{G}_f \cdot \hat{\bb{n}}_f\right)
+    -
+    \hat{\bb{n}}_f\, \mathrm{tr}\left(\bb{G}_f\right)
+    \right],
+    \label{eqn:interface_transpose_traction}
+\end{equation}
+where $\bb{G}_f$ is the surface gradient of the wall velocity, from an inverse-square-distance weighted least-squares fit over the neighbouring faces of the wall, and the normal derivative of the normal velocity is taken from continuity.
+This fit is zero for a rigid translation, also on a curved wall, and exact for a linearly varying wall velocity on any face spacing.
+The same value enters the wall flux of the transpose term in the momentum residual, so the viscous part of Equation~\eqref{eqn:interface_fluid_traction} is the boundary flux of the momentum equation's viscous terms, and the force applied to the solid is the momentum that the fluid loses through the interface.
+% Source: newtonIcoFluid/README.md (Interface Viscous Force) at a421f063d; solids4foam PR #618.
 
 \paragraph{Mass flux.}
 On the interface, the relative (ALE) flux in the convective term is set to zero, consistent with the no-slip condition, while the flux in the continuity equation, Equation~\eqref{eqn:fluid_pressure_residual}, is the absolute flux of the interface velocity, $\bb{\Gamma}_f \cdot \bb{v}^{\Gamma}_f$, i.e.\ the same flux that would convect momentum.
@@ -505,9 +528,9 @@ Optionally, a conservative transfer distributes the fluid face forces to the sol
     \label{eqn:conservative_transfer}
 \end{equation}
 and the solid applies the resulting nominal traction on its undeformed face areas.
-Then $\sum_s \bb{F}_{S,s}\cdot\bb{v}_{S,s} = -\sum_f \bb{t}_{F,f}|\bb{\Gamma}_f| \cdot \bb{v}^{\Gamma}_f$, so the power transferred across the interface balances exactly, and, where the weights of each fluid face sum to one, so does the total interface force; in practice both balance to round-off.
+Then $\sum_s \bb{F}_{S,s}\cdot\bb{v}_{S,s} = -\sum_f \bb{t}_{F,f}|\bb{\Gamma}_f| \cdot \bb{v}^{\Gamma}_f$, so the power transferred across the interface balances exactly, and, where the weights of each fluid face sum to one, so does the total interface force; the logged total interface force balances to round-off (Section~\ref{sec:interface_comparison}).
 For the geometrically nonlinear solid, this requires the interface traction to be applied on the undeformed area (rather than the deformed area $|\bb{\Gamma}^n_s|$ of Equation~\eqref{eqn:face_force}).
-\todo{Confirm which campaign cases (if any) use conservativeTractionTransfer; ringAddedMass nonconformal study.}
+The conservative transfer is used only in the non-conformal ring study of Section~\ref{sec:interface_comparison}; every other case has a conformal interface and uses the direct map.
 
 The displacement that moves the fluid mesh (Section~\ref{sec:fluid_mesh_motion}) is transferred with the same face weights for the face values and with the point transfer of the interface mapping for the mesh points.
 
@@ -693,6 +716,7 @@ across face $f$ is
     \min\left(\phi^{\mathrm{rel}}_{F,f},0\right)\bb{I}.
     \label{eqn:Jmm_offdiag}
 \end{equation}
+The explicit transpose part of the viscous stress is not included in $\tilde{\bb{J}}_{mm}$; the matrix-free Jacobian action accounts for it.
 Here the convective contribution in the approximate Jacobian is always based on first-order upwinding, independently of the convection scheme used in the nonlinear residual (linear or limited second-order upwind interpolation in the cases considered).
 
 The pressure-gradient coupling block is obtained by differentiating the cell-centred pressure-gradient term in the momentum equation with respect to the cell-centred pressure.

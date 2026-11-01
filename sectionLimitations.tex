@@ -71,7 +71,7 @@ The method has no globalisation beyond a backtracking line search; adaptive time
 
 % Check B1: evidence/campaign-g1:paper-data/campaign/b1/findings.md
 % (solids4foam 257b2e564; ring factor 2 moderate, cavity L3, 3dTube L2).
-In the two-dimensional cases of this paper, the solid block of the preconditioner is factorised exactly with a sparse LU factorisation, of which every process holds a complete copy (PETSc \texttt{redundant}).
+In the two-dimensional cases of this paper, the solid block of the preconditioner is factorised exactly with a sparse LU factorisation, of which every process holds a complete copy.
 This is robust, and affordable because the solid block is small compared with the fluid block in these cases, but its cost and memory do not fall with the process count and grow with the size of the solid.
 On level 2 of the three-dimensional tube the factorisation takes the same time on 16 processes as on 4, with its memory growing from 9 to 25\,GB, and one V-cycle of BoomerAMG is 4 and 12 times faster on 4 and 16 processes at the same Newton and Krylov iteration counts; it is therefore used for the tube (Sections~\ref{sec:tube3d_pc_study} and~\ref{sec:tube3d_scaling}).
 On the small solid blocks of the two-dimensional cases the exact factorisation remains the cheaper choice: BoomerAMG doubles the Krylov iterations on the ring and costs 1.4--1.9 times as much, and on the cavity it costs 10--14\% more.
@@ -124,6 +124,6 @@ The partitioned couplings with which it is compared are available on all support
 
 \paragraph{Scope and modularity.}
 Partitioned coupling in solids4foam combines any of its fluid and solid models, including displacement-based solids with high-order reconstruction, and runs on every supported OpenFOAM line~\citep{Tukovic2018, Cardiff2025}.
-The quasi-monolithic coupling is restricted to the \texttt{newtonIcoFluid} fluid model and the velocity solids (Section~\ref{sec:numerical_methods}), to the OpenFOAM.com line with PETSc (Section~\ref{sec:lim_platform}), and to the standard second-order solid reconstruction, which limits its accuracy on thin structures (Section~\ref{sec:lim_thin_solid}).
+The quasi-monolithic coupling is restricted to the coupled Newton fluid model of solids4foam (\texttt{newtonIcoFluid}) and the velocity solids (Section~\ref{sec:numerical_methods}), to the OpenFOAM.com line with PETSc (Section~\ref{sec:lim_platform}), and to the standard second-order solid reconstruction, which limits its accuracy on thin structures (Section~\ref{sec:lim_thin_solid}).
 A new physical model enters the quasi-monolithic coupling only with its contribution to the residual and to the approximate Jacobian, whereas it enters partitioned coupling through its interface data alone.
 Where both couplings apply, the choice is thus between a solver that converges independently of the added mass at a higher cost per iteration, and a modular solver whose cost and reliability depend on the added mass and on its acceleration settings.

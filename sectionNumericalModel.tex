@@ -535,7 +535,7 @@ Optionally, a conservative transfer distributes the fluid face forces to the sol
 and the solid applies the resulting nominal traction on its undeformed face areas.
 Then $\sum_s \bb{F}_{S,s}\cdot\bb{v}_{S,s} = -\sum_f \bb{t}_{F,f}|\bb{\Gamma}_f| \cdot \bb{v}^{\Gamma}_f$, so the power transferred across the interface balances exactly, and, where the weights of each fluid face sum to one, so does the total interface force; the logged total interface force balances to round-off (Section~\ref{sec:interface_comparison}).
 For the geometrically nonlinear solid, this requires the interface traction to be applied on the undeformed area (rather than the deformed area $|\bb{\Gamma}^n_s|$ of Equation~\eqref{eqn:face_force}).
-The conservative transfer is used only in the non-conformal ring study of Section~\ref{sec:interface_comparison}; every other case has a conformal interface and uses the direct map.
+The conservative transfer is used in the non-conformal ring study of Section~\ref{sec:interface_comparison} and for the $640\times8$ solid of the collapsible channel (Section~\ref{sec:robustness_collapsible}); every other case has a conformal interface and uses the direct map.
 
 The displacement that moves the fluid mesh (Section~\ref{sec:fluid_mesh_motion}) is transferred with the same face weights for the face values and with the point transfer of the interface mapping for the mesh points.
 
@@ -1002,7 +1002,7 @@ The velocity block $\tilde{\bb{J}}_{mm}$ is approximated by block Jacobi, with a
 The Schur complement is approximated by $\hat{S}_p$ in Equation~\eqref{eqn:schur_complement_approx} and preconditioned by one V-cycle of the BoomerAMG algebraic multigrid method of HYPRE~\citep{hypre}.
 Each inner block is applied once (no inner Krylov iterations), so the preconditioner is a fixed linear operator and a standard (non-flexible) Krylov method can be used.
 
-The solid block $\tilde{\bb{J}}_{ss}$, which is much smaller than the fluid block in the cases considered, is preconditioned either by an exact sparse LU factorisation, of which every process holds a complete copy in parallel (PETSc \texttt{redundant}), or by one V-cycle of BoomerAMG.
+The solid block $\tilde{\bb{J}}_{ss}$, which is much smaller than the fluid block in the cases considered, is preconditioned either by an exact sparse LU factorisation, of which every process holds a complete copy in parallel (a replicated factorisation), or by one V-cycle of BoomerAMG.
 The tutorial settings use the LU factorisation, which is the cheaper choice for the small two-dimensional solid blocks; for the three-dimensional tube, whose finer solid meshes make the gathered factorisation dominate the cost, BoomerAMG is used (the converged solution does not depend on the choice).
 Every case of Sections~\ref{sec:verification_exact}--\ref{sec:accuracy_cost} uses the LU factorisation and the three-dimensional tube of Section~\ref{sec:scaling_3d} uses BoomerAMG (Table~\ref{tab:solver_settings}).
 
@@ -1054,7 +1054,7 @@ with the face transfer of Section~\ref{sec:interface_conditions} for the face va
 Appropriate prescribed-displacement or symmetry conditions are applied on the
 remaining fluid-domain boundaries.
 
-The interior fluid mesh displacement is computed by treating the fluid mesh as a pseudo-solid: a solids4foam solid model is used as the mesh motion solver of the fluid mesh (the \texttt{solids4foamSolidModel} motion solver), so that any of the solid models and constitutive laws of the toolbox can be selected for the mesh motion.
+The interior fluid mesh displacement is computed by treating the fluid mesh as a pseudo-solid: a solids4foam solid model is used as the mesh motion solver of the fluid mesh \footnote{In the implementation, this is the \texttt{solids4foamSolidModel} mesh motion solver.}, so that any of the solid models and constitutive laws of the toolbox can be selected for the mesh motion.
 In this work, a linear-geometry (small-strain) total-displacement model with a linear elastic law, or a total Lagrangian model with a neo-Hookean law, is used.
 For the former, the unknown $\bb{D}^{\Gamma}$, which is the total fluid mesh displacement relative to the initial fluid configuration, satisfies
 \begin{equation}
@@ -1164,21 +1164,21 @@ block. The fluid block contains the velocity and pressure unknowns, while the
 solid block contains the solid velocity unknowns. Index sets of the fluid and solid unknowns are used to extract the region sub-vectors during the residual and Jacobian evaluation and to define the outer fluid--solid field split.
 Within the fluid block, the velocity components and the pressure of each cell are stored contiguously, so the inner velocity--pressure split is defined by the block size of the fluid unknowns.
 
-The nonlinear residual is evaluated through callbacks supplied to the PETSc nonlinear solver \emph{SNES}.
+The nonlinear residual is evaluated through callbacks supplied to the scalable nonlinear equation solvers (SNES) component of PETSc.
 For each nonlinear trial vector, the trial values are copied into the corresponding OpenFOAM finite-volume fields.
 Boundary conditions and interface transfers are then updated, and the fluid momentum equation, fluid pressure equation and
 solid momentum equation are inserted into the coupled residual vector.
 PETSc applies the Newton--Krylov operator in a matrix-free manner, while the approximate Jacobian
 $\tilde{\bb{J}}$ is supplied as the preconditioning matrix.
-The four blocks of $\tilde{\bb{J}}$ (Equation~\eqref{eqn:block_preconditioner}) are assembled as separate sparse matrices of a nested PETSc matrix, the fluid and solid blocks by the respective region models and the coupling blocks by the coupling interface, and are then converted to a single distributed sparse (AIJ) matrix, from which the field-split preconditioner of Section~\ref{sec:fieldsplit} extracts its sub-blocks using the index sets.
+The four blocks of $\tilde{\bb{J}}$ (Equation~\eqref{eqn:block_preconditioner}) are assembled as separate sparse matrices of a nested PETSc matrix, the fluid and solid blocks by the respective region models and the coupling blocks by the coupling interface, and are then converted to a single distributed compressed sparse-row matrix, from which the field-split preconditioner of Section~\ref{sec:fieldsplit} extracts its sub-blocks using the index sets.
 
 The interface transfers of Section~\ref{sec:interface_conditions} operate on the complete interface: in parallel, the interface face values of each region are gathered to all processes, transferred with the face weights, and the local values extracted.
 The current implementation supports a single fluid--solid interface, which may be conformal or non-conformal.
 
 In parallel, the fluid and solid meshes are decomposed into subdomains.
-The two regions may be decomposed independently, in which case each process owns cells of both regions, or together, by partitioning a single graph formed by the cell adjacency of both regions plus edges across the interface, with optional per-region cell weights (the \texttt{decomposeParMonolithic} utility).
+The two regions may be decomposed independently, in which case each process owns cells of both regions, or together, by partitioning a single graph formed by the cell adjacency of both regions plus edges across the interface, with optional per-region cell weights (a joint fluid--solid partitioning utility of solids4foam).
 The combined decomposition can assign some processes cells of only one region, which is useful when one region is much smaller than the other, and it keeps cells on either side of the interface on the same processes where possible.
-The runs of Section~\ref{sec:scaling_3d} use the combined decomposition with slab partitions (Section~\ref{sec:tube3d_scaling}); the other parallel runs, on two-dimensional cases with small solids, decompose the two regions independently with the method of the tutorial (Scotch, or a simple geometric split for the Hron--Turek benchmark).
+The runs of Section~\ref{sec:scaling_3d} use the combined decomposition with slab partitions (Section~\ref{sec:tube3d_scaling}); the other parallel runs, on two-dimensional cases with small solids, decompose the two regions independently with the method of the tutorial (the Scotch graph partitioner~\citep{Pellegrini2012}, or a simple geometric split for the Hron--Turek benchmark).
 
 The time-step procedure is summarised in Algorithm~\ref{alg:quasi_monolithic_fsi}, and the residual evaluation used inside the nonlinear solve is summarised in Algorithm~\ref{alg:coupled_residual}.
 Figure~\ref{fig:time_step_flowchart} shows the time-step procedure as a flowchart.

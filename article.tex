@@ -175,10 +175,10 @@ The implementation, built on solids4foam and PETSc, and all case set-ups are rel
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \bmhead{Data Availability}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-The quasi-monolithic solver presented is part of the open-source solids4foam toolbox, available at \url{https://github.com/solids4foam/solids4foam}; at the time of writing, it is on the \texttt{feature-petsc-snes-quasi-monolithic} branch (pull request \#233 into the \texttt{development} branch).
+The quasi-monolithic solver presented is part of the open-source solids4foam toolbox, available at \url{https://github.com/solids4foam/solids4foam}; the results of this paper were computed with commit \texttt{a421f063d} of its \texttt{feature-petsc-snes-quasi-monolithic} branch (pull request \#233 into the \texttt{development} branch), to be released as \tbd{release tag, Zenodo DOI}.
 \todo{Before submission, replace the branch with the solids4foam version used for the final results (a named tag with a Zenodo DOI); until then, the commit of each result is recorded with its data.}
-The monolithic variants of the test cases are distributed with the solids4foam tutorials (\texttt{./Allrun monolithic}), and the verification scripts with the corresponding \texttt{verification} directories.
-\todo{Confirm where the cases, raw data and plotting scripts of this paper are archived (paper repository and/or data DOI); the previous text pointed to solids4foam/solid-benchmarks.}
+The quasi-monolithic variants of the test cases are distributed with the solids4foam tutorials (run with \texttt{./Allrun monolithic}), with their verification scripts in the \texttt{verification} directory of each tutorial. The run tables, extracted quantities, provenance records and the scripts that produce every figure and table are in the \texttt{paper-data} directory of the paper repository, \tbd{public URL and data DOI}.
+\todo{Complete before submission (Philip, 1 Nov: release tag and Zenodo DOI just before submission): the solids4foam release tag and DOI, the public URL of the paper repository and the data DOI.}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -195,8 +195,9 @@ We acknowledge LuxProvide for the computing time on the MeluXina supercomputer (
 \bmhead{CRediT authorship contribution statement}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \textbf{Philip Cardiff:} Conceptualization, Methodology, Software, Investigation, Writing -- original draft, Writing -- review \& editing, Supervision, Funding acquisition.
-\textbf{Emad Tandis:} \tbd{roles}.
-\textbf{Ivan Batisti\'{c}:} \tbd{roles}.
+\textbf{Emad Tandis:} Investigation, Validation, Writing -- review \& editing \tbd{confirm}.
+\textbf{Ivan Batisti\'{c}:} Software (velocity-based solid and JFNK solid discretisation), Methodology, Writing -- review \& editing \tbd{confirm}.
+\todo{CRediT statement to be confirmed by each author. Emad Tandis's contribution to this paper is not identifiable from the text (his independent ANSYS/COMSOL reference solutions are used only in the companion verification paper): confirm his role, or whether he remains an author of this paper.}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \bmhead{Declaration of competing interest}

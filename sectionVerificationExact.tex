@@ -80,7 +80,7 @@ The run tables, the extracted quantities of interest, the provenance records and
 	$\Delta$: \texttt{ddt(U)} of the fluid (\texttt{ddt(D)} of the mesh motion is \texttt{backward} or not needed).
 	Conv.: \texttt{div(phi,U)}, \texttt{linear} (lin.) or \texttt{linearUpwind grad(U)} (LUD).
 	Flux: \texttt{interpolate(U)} in the continuity flux, \texttt{linear} (lin.) or \texttt{skewCorrected linear} (skew).
-	Solid: \texttt{linearGeometryVelocity} (LG) or \texttt{nonLinearGeometryTotalLagrangianVelocity} (TL); $\alpha_s$: scale factor of the solid stabilisation (\texttt{diffStencilLaplacian}).
+	Solid: \texttt{linearGeometryVelocity} (LG) or \texttt{nonLinearGeometryTotalLagrangianVelocity} (TL); $\alpha_d$: scale factor of the solid stabilisation (\texttt{diffStencilLaplacian}, Equation~\eqref{eqn:rhie_chow_s}).
 	Transf.: direct map (DM) or AMI.
 	Tol.: \texttt{snes\_rtol} $=$ \texttt{snes\_stol}; KSP: \texttt{ksp\_rtol}.
 	Schur: Schur factorisation; solid PC: preconditioner of the solid block, redundant LU or BoomerAMG (AMG); lag: Jacobian and preconditioner lag in Newton iterations, persisting across time steps (--: rebuilt every iteration).
@@ -88,12 +88,12 @@ The run tables, the extracted quantities of interest, the provenance records and
 	\label{tab:solver_settings}
 	\begin{tabular}{lllllllllll}
 		\toprule
-		Case & $\Delta$ & Conv. & Flux & Solid & $\alpha_s$ & Transf. & Tol. & KSP & Schur, solid PC & Lag \\
+		Case & $\Delta$ & Conv. & Flux & Solid & $\alpha_d$ & Transf. & Tol. & KSP & Schur, solid PC & Lag \\
 		\midrule
 		ringAddedMass        & BDF2  & lin. & lin.  & LG & 0.5 & DM & $10^{-6}$ & $10^{-4}$ & upper, LU & -- \\
 		womersleyTube        & BDF2  & lin. & lin.  & LG & 0.5 & DM & $10^{-6}$ & $10^{-4}$ & upper, LU & -- \\
 		cavityFlexibleBottom & Euler\textsuperscript{a} & LUD & skew\textsuperscript{b} & TL & 0.1 & DM & $10^{-6}$ & $10^{-4}$ & upper, LU & -- \\
-		collapsibleChannel   & BDF2  & lin. & lin.  & TL & 0.1 & DM & $10^{-6}$ & $10^{-4}$ & upper, LU & -- \\
+		collapsibleChannel   & BDF2  & lin. & lin.  & TL & 0.1 & AMI\textsuperscript{d} & $10^{-6}$ & $10^{-4}$ & upper, LU & -- \\
 		FSI3                 & BDF2  & LUD  & skew  & TL & 0.5 & DM & $10^{-6}$ & $10^{-4}$ & upper, LU & -- \\
 		blobInTreacle        & BDF2  & LUD  & skew  & LG & 0.1\textsuperscript{c} & DM & $10^{-6}$ & $10^{-4}$ & upper, LU & -- \\
 		3dTube               & BDF2  & LUD  & lin.  & LG & 0.1 & DM & $10^{-6}$\textsuperscript{$\ast$} & $10^{-4}$\textsuperscript{$\ast$} & full, AMG\textsuperscript{$\ast$} & 8 \\
@@ -105,6 +105,7 @@ The run tables, the extracted quantities of interest, the provenance records and
 	\textsuperscript{a}~Steady target: only the steady state is compared, and no temporal order is claimed.
 	\textsuperscript{b}~Also run with \texttt{linear} (Section~\ref{sec:cavity_m}).
 	\textsuperscript{c}~The default \texttt{diffStencilLaplacian} stabilisation of solids4foam; the tutorial has no \texttt{stabilisation} entry.
+	\textsuperscript{d}~The tutorial uses a conformal solid mesh and DM; the runs of Section~\ref{sec:robustness_collapsible} use a $640\times8$ solid mesh through AMI with conservative traction transfer.
 	\textsuperscript{$\ast$}~The 3dTube tutorial uses $10^{-4}$, $10^{-3}$ and redundant LU; the paper runs use the values shown.}
 \end{table}
 \todo{Agent B: the collapsibleChannel, FSI3, blobInTreacle and foilInWind rows are checked against the \texttt{a421f063d} tutorial files; recheck against the run files when those campaign runs are made, and state the FSI3 mesh-motion law once the mesh gate settles.}

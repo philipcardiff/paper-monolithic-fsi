@@ -275,7 +275,7 @@ through face $f$ is defined by Equation~\eqref{eqn:relative_flux}.
 %where $\bb{v}^{\Gamma}_f$ is the face mesh velocity.
 The face flux $\bb{\Gamma}_f \cdot \bb{v}_f$ in $\phi^\mathrm{rel}_f$ is evaluated from the current Newton iterate, so the convective term is treated fully implicitly.
 In the current work, the convected velocity $\widetilde{\bb{v}}_f$ is evaluated using a second-order upwind scheme, in which the velocity is extrapolated from the upwind cell centre using the (limited) cell-centred velocity gradient, or by central differencing (linear interpolation) for low-Reynolds-number cases.
-\todo{State the convection scheme for each case in the results sections (solids4foam monolithic tutorials use limited linearUpwind, linear or upwind).}
+The scheme used in each case is listed in Table~\ref{tab:solver_settings}: central differencing for the ring, the pulsatile tube and the collapsible channel, and the unlimited second-order upwind scheme otherwise.
 
 The second face summation term on the right-hand side of Equation~\eqref{eqn:fluid_momentum_residual} is the volume integral of the pressure gradient $\left( \bb{\nabla} p \right)_P$, computed from the least-squares formula in Equation~\eqref{eqn:least_squares_gradient}.
 
@@ -401,7 +401,7 @@ $\bb{\mathcal{D}}_{s,P}$ is a stabilisation term -- similar to $\mathcal{D}_{p,P
 \end{eqnarray}
 where $\bar{K}$ is a stiffness-type parameter that gives the stabilisation term an appropriate scale and dimension: $\bar{K} = 2\mu_S + \lambda_S$ for a linear elastic solid, with $\mu_S$ and $\lambda_S$ the Lam\'e parameters, and the equivalent scalar tangent stiffness, evaluated at the start of the analysis, for finite strain laws.
 The user-defined parameter $\alpha_d > 0$ globally scales the amount of stabilisation.
-\todo{Fix $\alpha_d$ per case: the solids4foam monolithic tutorials use 0.5 (ringAddedMass, womersleyTube, TurekHron2006, perpendicularFlap, beamInCrossFlow, foilInWind) or 0.1 (cavityFlexibleBottom, collapsibleChannel, 3dTube, membraneRoof, mokLidDrivenCavity).}
+The cases of this paper use $\alpha_d = 0.5$ or $0.1$ (Table~\ref{tab:solver_settings}).
 The displacement gradient $\left( \bb{\nabla}_0 \bb{D} \right)^{n}_f$ is obtained by interpolating the cell-centred least-squares displacement gradients (Equation~\eqref{eqn:least_squares_gradient}, evaluated on the reference mesh) to the face.
 As the stabilisation is formed from the new-time displacement in Equation~\eqref{eqn:solid_bdf2_displacement}, it is also a function of the trial solid velocity.
 
@@ -608,19 +608,24 @@ The Krylov solver is restarted LGMRES with left preconditioning (the PETSc defau
 As the first Newton iteration of a time step is limited by the nonlinearity of the residual, a relative linear tolerance much tighter than the nonlinear reduction achieved per iteration only adds Krylov iterations, each of which costs a residual evaluation.
 The nonlinear iterations are terminated when the coupled residual norm, relative to its value at the start of the time step, or the norm of the Newton correction, relative to that of the current iterate, falls below a prescribed tolerance.
 The Newton update in Equation~\eqref{eqn:newton_update} uses the full step ($s_k = 1$) unless stated otherwise; a backtracking or $\ell_2$-minimising line search can be selected for strongly nonlinear cases.
-\todo{Final campaign values: snes\_rtol (1e-6 or 1e-4 in the tutorials), ksp\_rtol (1e-4 or 1e-3), LGMRES restart, and which cases use a line search (foilInWind: bt; membraneRoof: l2).}
+% a421f063d *.monolithic: snes_rtol = snes_stol 1e-6 (1e-4 foilInWind, 3dTube
+% tutorial), ksp_rtol 1e-4 (1e-3 3dTube tutorial), ksp_gmres_restart 200,
+% snes_linesearch_type basic except foilInWind (bt).
+The Newton tolerance is $10^{-6}$ for both criteria and the Krylov tolerance $10^{-4}$ in every case except the flag of Section~\ref{sec:lim_foil} ($10^{-4}$ for Newton), with an LGMRES restart length of 200 (Table~\ref{tab:solver_settings}); the full step is used in every case except that flag, which uses a backtracking line search.
 
 \paragraph{System scaling.}
 The fluid residuals are written per unit fluid density (kinematic pressure), whereas the solid residual is a force, so the two blocks can differ in magnitude by many orders.
 Before the residual norm is formed, the fluid rows (momentum and continuity) are multiplied by a scale factor $s_F$ and the solid rows by $s_S$; the same factors scale the corresponding rows of $\tilde{\bb{J}}$.
 Row scaling does not change the solution, but it balances the contributions of the two blocks to the residual norm used for the convergence test and to the Krylov iterations.
 By default $s_S$ is the average over the solid cells of $1/(\mu_S \Delta t)$, evaluated once with the initial time step and not updated when the time step is adapted, and $s_F = 1$; $s_F = 10^{8}$ in all the cases of this work.
-\todo{Confirm s\_F and s\_S for every campaign case.}
+% a421f063d: fluidSystemScaleFactor 1e+08 in every *.monolithic fsiProperties;
+% no solid scale-factor entry, so s_S takes its default.
+The solid factor $s_S$ takes its default value in every case.
 
 \paragraph{Jacobian and preconditioner lagging.}
 Because $\tilde{\bb{J}}$ only builds the preconditioner, it need not be reassembled at every Newton iteration.
 By default it is reassembled, and the preconditioner rebuilt, at each Newton iteration; optionally, both are reused for a fixed number of Newton iterations, also across time steps (PETSc lagging), which reduces the cost per time step without changing the converged solution.
-\todo{State the lag used per case (3dTube and beamInCrossFlow tutorials: 8, persisting across time steps).}
+Only the three-dimensional tube uses lagging, with both reused for eight Newton iterations and across time steps; in all other cases they are rebuilt at every Newton iteration (Table~\ref{tab:solver_settings}).
 
 \paragraph{Adaptive time stepping.}
 Optionally, the time step is adapted to the number of Newton iterations $N_k$ of the previous step: it is increased (by at most a factor of 1.5) when $N_k$ is below a lower target and decreased (by at most a factor of 2) when $N_k$ exceeds an upper target (by default, when fewer than two or more than seven Newton iterations are needed), within prescribed bounds $[\Delta t_{\min}, \Delta t_{\max}]$.
@@ -776,7 +781,10 @@ term. For a compact Laplacian-type representation of the stabilisation,
 where $\alpha_p/a_{P,f}$ is the face pressure-stabilisation coefficient arising
 from the Rhie--Chow stabilisation in Equation~\eqref{eqn:rhie_chow}. Here
 $a_{P,f}$ denotes the face-interpolated compact momentum diagonal coefficient.
-\todo{In the implementation, $\tilde{J}_{pp}$ is built from $1/a_{P,f}$ times a separate Jacobian scale factor (default 1) rather than $\alpha_p/a_{P,f}$; the two coincide for $\alpha_p = 1$, used in all cases here. Mention only if a case uses $\alpha_p \neq 1$.}
+% Implementation: J_pp is built from 1/a_P,f times pressureScaleFactor
+% (default 1) rather than alpha_p/a_P,f; both are 1 (fluid stabilisation
+% scaleFactor 1.0, pressureScaleFactor 1.0) in every *.monolithic tutorial at
+% a421f063d, so the two coincide here.
 In addition to this compact part, the contribution of the interpolated-gradient term in Equation~\eqref{eqn:rhie_chow}, whose stencil extends to the neighbours of the neighbours, is also inserted into $\tilde{J}_{pp}$, so that the pressure block contains the complete linear stabilisation operator.
 
 The block $\tilde{J}_{pp}$ is therefore a compact pressure--pressure coupling
@@ -995,7 +1003,7 @@ Each inner block is applied once (no inner Krylov iterations), so the preconditi
 
 The solid block $\tilde{\bb{J}}_{ss}$, which is much smaller than the fluid block in the cases considered, is preconditioned either by an exact sparse LU factorisation, gathered on a single process in parallel, or by one V-cycle of BoomerAMG.
 The tutorial settings use the LU factorisation, which is the cheaper choice for the small two-dimensional solid blocks; for the three-dimensional tube, whose finer solid meshes make the gathered factorisation dominate the cost, BoomerAMG is used (the converged solution does not depend on the choice).
-\todo{Confirm per case from the campaign (check B1 on the cavity and 3dTube): which solid-block preconditioner each case of Sections~\ref{sec:verification_exact}--\ref{sec:scaling_3d} uses. Source for 3dTube: solids4foam \texttt{tutorials/fluidSolidInteraction/3dTube/verification/README.md} (option \texttt{--solid-preconditioner}, default BoomerAMG, merged with \#604).}
+Every case of Sections~\ref{sec:verification_exact}--\ref{sec:accuracy_cost} uses the LU factorisation and the three-dimensional tube of Section~\ref{sec:scaling_3d} uses BoomerAMG (Table~\ref{tab:solver_settings}).
 
 
 %%--------------------------------------------------------------------------------------------------------------------%%
@@ -1078,7 +1086,12 @@ Equation~\eqref{eqn:mesh_motion_pseudo_solid} is written in compact integral for
 It is assembled cell-by-cell over the fluid mesh in the same cell-centred finite-volume framework as the fluid and solid momentum equations.
 The coefficients $\mu^\Gamma$ and $\lambda^\Gamma$ are artificial stiffness parameters used only to control the distribution of the mesh motion; they do not represent material properties of the fluid.
 For the neo-Hookean variant, the bracketed linear elastic stress is replaced by the neo-Hookean stress of the pseudo-solid, scaled by the same factor $\delta$.
-\todo{State the mesh-motion law per case: in the solids4foam monolithic tutorials, linearElastic (ringAddedMass, womersleyTube, perpendicularFlap, beamInCrossFlow, foilInWind, 3dTube, mokLidDrivenCavity), neoHookeanElastic (cavityFlexibleBottom, collapsibleChannel, membraneRoof, blobInTreacle) and diffusionHyperElastic with quadratic inverse-distance stiffening (TurekHron2006).}
+% a421f063d constant/fluid/{solid,mechanical}Properties.monolithic and
+% dynamicMeshDict.monolithic.
+A third variant, used where the mesh near a thin or slender structure must stay nearly rigid, is a hyperelastic law whose stiffness is multiplied by the inverse square of the distance to selected patches (\texttt{diffusionHyperElastic} with quadratic inverse-distance diffusivity).
+The linear elastic law is used for the ring, the pulsatile tube, the three-dimensional tube and the flag; the neo-Hookean law for the cavity and the half-cylinder; and the inverse-distance law, stiffened towards the interface, for the collapsible channel and towards the flag and the cylinder for the Hron--Turek benchmark.
+With the two nonlinear laws, the Newton iteration of the pseudo-solid starts from a displacement extrapolated in time with the rate and acceleration of the mesh displacement at the previous step (a second-order Taylor step) rather than from the previous displacement, which keeps the first iterate from folding the cells next to the interface when the interface moves by more than their height in one step (Section~\ref{sec:robustness_collapsible}).
+\todo{FSI3 mesh family of Section~\ref{sec:fsi3_m}: add its mesh-motion law (geometrically linear pseudo-solid with linear inverse-distance diffusivity, evaluated on the reference configuration) once the FSI3 gate is passed.}
 
 The dimensionless scalar $\delta$ in Equation~\eqref{eqn:mesh_motion_pseudo_solid} is an optional stiffness scale factor ($\delta = 1$ when it is not used; with it, the laws are referred to as \texttt{diffusionElastic} and \texttt{diffusionHyperElastic} in the implementation).
 Its purpose is to bias the artificial stiffness so that fluid cells close to moving boundaries translate almost rigidly with the boundary, while the bulk of the
@@ -1164,7 +1177,7 @@ The current implementation supports a single fluid--solid interface, which may b
 In parallel, the fluid and solid meshes are decomposed into subdomains.
 The two regions may be decomposed independently, in which case each process owns cells of both regions, or together, by partitioning a single graph formed by the cell adjacency of both regions plus edges across the interface, with optional per-region cell weights (the \texttt{decomposeParMonolithic} utility).
 The combined decomposition can assign some processes cells of only one region, which is useful when one region is much smaller than the other, and it keeps cells on either side of the interface on the same processes where possible.
-\todo{State which decomposition each parallel run in Section 8 uses.}
+The runs of Section~\ref{sec:scaling_3d} use the combined decomposition with slab partitions (Section~\ref{sec:tube3d_scaling}); the other parallel runs, on two-dimensional cases with small solids, decompose the two regions independently with the method of the tutorial (Scotch, or a simple geometric split for the Hron--Turek benchmark).
 
 The time-step procedure is summarised in Algorithm~\ref{alg:quasi_monolithic_fsi}, and the residual evaluation used inside the nonlinear solve is summarised in Algorithm~\ref{alg:coupled_residual}.
 Figure~\ref{fig:time_step_flowchart} shows the time-step procedure as a flowchart.

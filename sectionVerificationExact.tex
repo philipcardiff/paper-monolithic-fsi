@@ -101,7 +101,7 @@ The question here is whether the quasi-monolithic coupling reproduces the exact 
 \paragraph{Set-up.}
 A ring of mean radius $a = 1\,\mathrm{m}$ and thickness $h = 0.1\,\mathrm{m}$ (plane strain, $E = 1\,\mathrm{MPa}$, $\nu = 0.3$, $\rho_s = 1000\,\mathrm{kg/m^3}$) is surrounded by fluid out to a rigid wall of radius $b = 1.5\,\mathrm{m}$; one quadrant is modelled with symmetry planes.
 The fluid density is chosen to give added-mass ratios $\mu = 0.101$, $1.008$ and $10.08$ (weak, moderate and strong), and a dry ring is run with each mesh and time step.
-The solid is the geometrically linear velocity solid (\texttt{linearGeometryVelocity}) with the standard second-order discretisation, and the interface is conformal.
+The solid is the geometrically linear velocity solid with the standard second-order discretisation, and the interface is conformal.
 Meshes are refined by factors 1, 2 and 4 at 100 steps per period, and the time step is varied from 25 to 100 steps per period on the factor-2 mesh; the fluid and the solid both use the second-order backward (BDF2) scheme.
 
 \paragraph{Measured.}

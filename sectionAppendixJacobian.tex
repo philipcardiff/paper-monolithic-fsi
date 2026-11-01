@@ -1,0 +1,234 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Entries of the approximate Jacobian}\label{app:jacobian}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+This appendix gives the entries of the blocks of the approximate Jacobian $\tilde{\bb{J}}$ of Equations~\eqref{eqn:block_preconditioner} and~\eqref{eqn:fluid_block_preconditioner}, summarised in Section~\ref{sec:approximate_block_preconditioner}.
+$\mathcal{F}^{\mathrm{int}}_P$ denotes the internal faces of cell $P$, $\bb{d}_f$ the vector joining the centres of the two cells sharing face $f$, and $\hat{\bb{n}}_f$ the unit face normal.
+
+For a fluid cell $P$, the diagonal block of the approximate momentum operator
+is formed from the compact diffusion contribution, the BDF2 time derivative and
+a first-order upwind linearisation of the convection term,
+\begin{align}
+    \left[\tilde{\bb{J}}_{mm}\right]_{PP}
+    =
+    &-
+    \sum_{f \in \mathcal{F}^{\mathrm{int}}_P}
+    \nu
+    \frac{|\bb{\Gamma}_{F,f}|}
+         {\hat{\bb{n}}_{F,f} \cdot \bb{d}_{F,f}}
+    \bb{I}
+    -
+    \frac{3}{2\Delta t}
+    \Omega_{F,P}
+    \bb{I}
+    \notag \\
+    &-
+    \sum_{f \in \mathcal{F}^{\mathrm{int}}_P}
+    \max\left(\phi^{\mathrm{rel}}_{F,f},0\right)\bb{I},
+    \label{eqn:Jmm_diag}
+\end{align}
+while the off-diagonal block associated with a neighbouring fluid cell $Q$
+across face $f$ is
+\begin{equation}
+    \left[\tilde{\bb{J}}_{mm}\right]_{PQ}
+    =
+    \nu
+    \frac{|\bb{\Gamma}_{F,f}|}
+         {\hat{\bb{n}}_{F,f} \cdot \bb{d}_{F,f}}
+    \bb{I}
+    -
+    \min\left(\phi^{\mathrm{rel}}_{F,f},0\right)\bb{I}.
+    \label{eqn:Jmm_offdiag}
+\end{equation}
+The explicit transpose part of the viscous stress is not included in $\tilde{\bb{J}}_{mm}$; the matrix-free Jacobian action accounts for it.
+Here the convective contribution in the approximate Jacobian is always based on first-order upwinding, independently of the convection scheme used in the nonlinear residual (linear or limited second-order upwind interpolation in the cases considered).
+
+The pressure-gradient coupling block is obtained by differentiating the cell-centred pressure-gradient term in the momentum equation with respect to the cell-centred pressure.
+If $\bb{g}_{P,Q}$ denotes the least-squares gradient coefficient multiplying the pressure in cell $Q$ when evaluating $(\bb{\nabla}p)_P$, then
+\begin{equation}
+    \left[\tilde{\bb{J}}_{mp}\right]_{P Q}
+    =
+    -
+    \Omega_{F,P}
+    \bb{g}_{P,Q},
+    \label{eqn:Jmp}
+\end{equation}
+which is a $d\times 1$ block in $d$ spatial dimensions.
+The continuity block is formed from the derivative of the discrete pressure
+equation with respect to the cell-centred velocity. For an internal face $f$
+shared by cells $P$ and $Q$, using the interpolation weight $w_f$ for the value
+from cell $P$,
+\begin{align}
+    \left[\tilde{\bb{J}}_{pm}\right]_{PP}
+    &=
+    -
+    \sum_{f \in \mathcal{F}^{\mathrm{int}}_P}
+    w_f \bb{\Gamma}_{F,f}^{T},
+    \label{eqn:Jpm_diag}
+    \\
+    \left[\tilde{\bb{J}}_{pm}\right]_{PQ}
+    &=
+    -
+    \left(1-w_f\right)\bb{\Gamma}_{F,f}^{T},
+    \label{eqn:Jpm_offdiag}
+\end{align}
+which are $1\times d$ blocks.
+
+The pressure block $\tilde{J}_{pp}$ is obtained from the pressure-stabilisation
+term. For a compact Laplacian-type representation of the stabilisation,
+\begin{align}
+    \left[\tilde{J}_{pp}\right]_{PP}
+    &=
+    -
+    \sum_{f \in \mathcal{F}^{\mathrm{int}}_P}
+    \frac{\alpha_p}{a_{P,f}}
+    \frac{|\bb{\Gamma}_{F,f}|}
+         {\hat{\bb{n}}_{F,f} \cdot \bb{d}_{F,f}},
+    \label{eqn:Jpp_diag}
+    \\
+    \left[\tilde{J}_{pp}\right]_{PQ}
+    &=
+    \frac{\alpha_p}{a_{P,f}}
+    \frac{|\bb{\Gamma}_{F,f}|}
+         {\hat{\bb{n}}_{F,f} \cdot \bb{d}_{F,f}},
+    \label{eqn:Jpp_offdiag}
+\end{align}
+where $\alpha_p/a_{P,f}$ is the face pressure-stabilisation coefficient arising
+from the Rhie--Chow stabilisation in Equation~\eqref{eqn:rhie_chow}. Here
+$a_{P,f}$ denotes the face-interpolated compact momentum diagonal coefficient.
+In addition to this compact part, the contribution of the interpolated-gradient term in Equation~\eqref{eqn:rhie_chow}, whose stencil extends to the neighbours of the neighbours, is also inserted into $\tilde{J}_{pp}$, so that the pressure block contains the complete linear stabilisation operator.
+
+The block $\tilde{J}_{pp}$ is therefore a compact pressure--pressure coupling
+introduced by the finite-volume pressure stabilisation, rather than by a
+physical pressure diffusion term.
+Algebraically, it approximates the pressure coupling that would arise through the velocity block when the velocity is
+eliminated from the coupled momentum--pressure system.
+This connection motivates its use in the velocity--pressure split strategy discussed below.
+
+The block
+$\tilde{\bb{J}}_{fs}
+=
+\left[\tilde{\bb{J}}_{ms};\tilde{\bb{J}}_{ps}\right]$
+represents the dependence of the fluid momentum and pressure equations on the
+mapped solid interface velocity. In these blocks, the solid interface face
+velocity is approximated by the velocity of the adjacent solid cell (i.e.\ the
+gradient extrapolation of Section~\ref{sec:interface_conditions} is neglected),
+and the transfer weights $w_{fs}$ of
+Equation~\eqref{eqn:solid_to_fluid_transfer} are applied. For an interface
+face $f$ and a solid face $s$ that overlaps it, the fluid
+momentum-row contribution arises from the Dirichlet boundary contribution to
+the compact diffusion operator and is approximated by
+\begin{equation}
+    \left[\tilde{\bb{J}}_{ms}\right]_{P Q}
+    =
+    w_{fs}\,
+    \nu
+    \frac{|\bb{\Gamma}_{F,f}|}
+         {\hat{\bb{n}}_{F,f} \cdot \bb{d}_{F,f}}
+    \bb{I},
+    \label{eqn:fluid_solid_velocity_momentum_coupling}
+\end{equation}
+where $P$ is the fluid cell adjacent to face $f$ and $Q$ is the solid cell
+adjacent to face $s$; contributions from several faces are summed. This is a
+$d\times d$ block in $d$ spatial dimensions. The
+pressure-equation contribution is the derivative of the interface normal
+velocity flux with respect to the mapped solid velocity,
+\begin{equation}
+    \left[\tilde{\bb{J}}_{ps}\right]_{P Q}
+    =
+    -
+    w_{fs}\,
+    \bb{\Gamma}_{F,f}^{T},
+    \label{eqn:fluid_solid_velocity_pressure_coupling}
+\end{equation}
+which is a $1\times d$ block. The sign follows the pressure residual definition
+in Equation~\eqref{eqn:fluid_pressure_residual}.
+
+The solid block $\tilde{\bb{J}}_{ss}$ is approximated using a compact
+diffusion-like operator combined with the velocity time-derivative and damping
+terms. This extends the displacement-based approximate Jacobian of
+\citet{Cardiff2026} to the present velocity formulation. For a solid cell $P$,
+the diagonal block is
+\begin{align}
+    \left[\tilde{\bb{J}}_{ss}\right]_{PP}
+    =
+    &-
+    \sum_{f \in \mathcal{F}^{\mathrm{int}}_P}
+    \frac{2\Delta t}{3}
+    \bar{K}_f
+    \frac{|\bb{\Gamma}_{S,0,f}|}
+         {\hat{\bb{n}}_{S,0,f} \cdot \bb{d}_{S,0,f}}
+    \bb{I}
+    \notag \\
+    &-
+    \frac{3}{2\Delta t}
+    \rho_{S,0} \Omega_{0,P}
+    \bb{I}
+    -
+    c_d \rho_{S,0} \Omega_{0,P}
+    \bb{I},
+    \label{eqn:Jss_diag}
+\end{align}
+while the off-diagonal block associated with a neighbouring solid cell $Q$
+across face $f$ is
+\begin{equation}
+    \left[\tilde{\bb{J}}_{ss}\right]_{PQ}
+    =
+    \frac{2\Delta t}{3}
+    \bar{K}_f
+    \frac{|\bb{\Gamma}_{S,0,f}|}
+         {\hat{\bb{n}}_{S,0,f} \cdot \bb{d}_{S,0,f}}
+    \bb{I}.
+    \label{eqn:Jss_offdiag}
+\end{equation}
+Here $\bar{K}$ is the stiffness of Equation~\eqref{eqn:rhie_chow_s}, and the
+factor $2\Delta t/3$ is the derivative of the new-time displacement in
+Equation~\eqref{eqn:solid_bdf2_displacement} with respect to the solid
+velocity, which arises from expressing the compact displacement
+diffusion operator $\bb{\nabla}_0\cdot(\bar{K}\bb{\nabla}_0\bb{D})$, used as an
+approximation of the divergence of the stress, in terms of the solid velocity
+unknown.
+This approximation provides a compact first-neighbour solid block for the
+approximate Jacobian, but it is not a consistent linearisation of the nonlinear
+total Lagrangian constitutive response.
+
+For a solid interface face $s$ associated with solid cell $P$, overlapped by a
+fluid interface face $f$ whose adjacent fluid cell is $Q$, the pressure part of
+$\tilde{\bb{J}}_{sf}
+=
+\left[\tilde{\bb{J}}_{sm},\tilde{\bb{J}}_{sp}\right]$
+gives the derivative of the solid momentum equation with respect to the
+adjacent fluid pressure. With the kinematic-pressure convention, the
+contribution is approximated as
+\begin{equation}
+    \left[\tilde{\bb{J}}_{sp}\right]_{P Q}
+    =
+    w_{sf}\, \rho_F |\bb{\Gamma}_{S,s}|\, \hat{\bb{n}}_{F,f},
+    \label{eqn:pressure_coupling_approximation}
+\end{equation}
+in which the interface pressure is approximated by the pressure of the adjacent
+fluid cell, $|\bb{\Gamma}_{S,s}|$ is the solid interface face area and
+$\hat{\bb{n}}_{F,f}$ is the outward fluid unit normal, used, as in the residual,
+because the fluid and solid normals differ on a non-conformal curved interface.
+This is a $d\times 1$ block.
+
+When viscous tractions are transferred, the derivative of the solid interface
+force with respect to the adjacent fluid velocity is approximated by a compact
+normal-gradient contribution,
+\begin{equation}
+    \left[\tilde{\bb{J}}_{sm}\right]_{P Q}
+    =
+    w_{sf}\,
+    \rho_F \nu
+    \frac{|\bb{\Gamma}_{S,s}|}
+         {\hat{\bb{n}}_{F,f} \cdot \bb{d}_{F,f}}
+    \left(
+    \bb{I}
+    +
+    \hat{\bb{n}}_{F,f} \otimes \hat{\bb{n}}_{F,f}
+    \right),
+    \label{eqn:viscous_coupling_approximation}
+\end{equation}
+which is a $d\times d$ block.
+The normal--normal term $\hat{\bb{n}}_{F,f} \otimes \hat{\bb{n}}_{F,f}$ is retained from the linearisation of the full viscous stress, although the residual uses the normal-gradient form of Equation~\eqref{eqn:interface_fluid_traction}; this is one of the approximations of $\tilde{\bb{J}}$.
+The pressure and viscous coupling blocks are multiplied by $\rho_F$ because the fluid equations use the kinematic pressure while the solid traction is a force per unit area.

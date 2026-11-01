@@ -140,7 +140,11 @@ All transient cases of this work use BDF2 for both the fluid and the solid; stea
 BDF2 needs two old time levels, so it is started with one Euler step: on the first time step the backward scheme of OpenFOAM.com, used throughout this work, reverts to the Euler coefficients, and the solid displacement update of Equation~\eqref{eqn:solid_bdf2_displacement} does the same.
 With a constant time step this start keeps the global error of second order, although \citet{Nishikawa2019bdf2} showed that a BDF1 start can give a large start-up error in BDF2 for stiff problems, in particular when the first step is taken smaller than the following ones; here the first step equals the following ones, and the quantities of interest are periodic, steady or taken after the starting transient \tbd{confirm for the ring and Womersley studies, which start from exact initial fields}.
 After a retry (Section~\ref{sec:jfnk_solution}) the step is reduced to a quarter, and it is subsequently increased by at most a factor of 1.5 per step, so the variable-step BDF2 coefficients are used with these step ratios.
-\todo{Several solids4foam tutorials default to the Euler scheme for the fluid ddt(U) (3dTube, blobInTreacle, cavityFlexibleBottom, collapsibleChannel, membraneRoof, mokLidDrivenCavity, perpendicularFlap at solver commit 85b0c1de6); verification drivers may override this (the 3dTube driver uses backward). Every campaign run must record its ddt schemes; the case sections carry a reminder.}
+% Since solids4foam 6dc42799b (23 Oct 2026) every quasi-monolithic tutorial at
+% a421f063d uses backward for the fluid ddt(U), ddt(dU), ddt(p) and the solid
+% (system/{fluid,solid}/fvSchemes.monolithic); the only exception is the steady
+% cavityFlexibleBottom, whose fluid uses Euler pseudo-time stepping.
+\todo{Every campaign run must record its ddt schemes (tutorial defaults at \texttt{a421f063d}: \texttt{backward} throughout, except the fluid of the steady cavityFlexibleBottom); the case sections carry a reminder.}
 
 
 %%--------------------------------------------------------------------------------------------------------------------%%

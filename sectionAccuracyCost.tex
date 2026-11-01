@@ -15,7 +15,7 @@ This section compares the quasi-monolithic coupling with partitioned IQN-ILS cou
 % ddt(U) and the solid. The solids4foam tutorial default for this case is
 % backward for the fluid ddt(U). Confirm and record the ddt schemes of every
 % run (runs.csv); rerun any result computed with Euler, and say so here.
-\todo{Time scheme: confirm that every result in this subsection uses BDF2 (backward) for the fluid and the solid (tutorial default for the fluid ddt(U): backward); results computed with Euler must be rerun.}
+\todo{Time scheme: confirm that every result in this subsection uses BDF2 (backward) for the fluid and the solid (tutorial default at \texttt{a421f063d}: backward for both regions); results computed with Euler must be rerun.}
 %%--------------------------------------------------------------------------------------------------------------------%%
 % Set-up: companion paper sectionBenchmarkSuite.tex "Hron--Turek family";
 % solids4foam 257b2e564 tutorials/fluidSolidInteraction/TurekHron2006/
@@ -67,7 +67,7 @@ The observed order of the quasi-monolithic $u_x$ mean between factors 2 and 4 is
 % ddt(U) and the solid. The solids4foam tutorial default for this case is
 % Euler for the fluid ddt(U). Confirm and record the ddt schemes of every
 % run (runs.csv); rerun any result computed with Euler, and say so here.
-\todo{Time scheme: confirm that every result in this subsection uses BDF2 (backward) for the fluid and the solid (tutorial default for the fluid ddt(U): Euler); results computed with Euler must be rerun.}
+\todo{Time scheme: confirm that every result in this subsection uses BDF2 (backward) for the fluid and the solid (tutorial default at \texttt{a421f063d}: backward for both regions); results computed with Euler must be rerun.}
 %%--------------------------------------------------------------------------------------------------------------------%%
 % Set-up: solids4foam 257b2e564 tutorials/fluidSolidInteraction/
 % blobInTreacle/README.md (case overview and parameter table) and
@@ -83,18 +83,18 @@ Repeating their temporal study with the present cell-centred finite volume formu
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[scale=1]{figures/blobInTreacle-geometry}
-	\caption{Elastic half-cylinder in a viscous channel flow: geometry (in m), boundary conditions and top point A.}
+	\caption{Elastic half-cylinder in a viscous channel flow: geometry (in m), boundary conditions and top point A; the mesh drawn is finer than the factor-1 mesh.}
 	\label{fig:blob_geom_m}
 \end{figure}
-\todo{Check Figure~\ref{fig:blob_geom_m} against the tutorial: half-cylinder radius $0.5\,\mathrm{m}$ centred at $(1.5, -0.5)\,\mathrm{m}$ in the channel $[0, 6.5]\times[-0.5, 1]\,\mathrm{m}$ (blobInTreacle README). The earlier draft of this section gave other dimensions and material values; these are superseded.}
+% Figure checked against the blobInTreacle README and blockMeshDict at a421f063d:
+% radius 0.5 m centred at (1.5, -0.5) m in the channel [0, 6.5] x [-0.5, 1] m.
 
 \paragraph{Set-up.}
 A linear elastic half-cylinder of radius $0.5\,\mathrm{m}$ ($\lambda_s = 500\,\mathrm{Pa}$, $\mu_s = 50\,\mathrm{Pa}$, $\rho_s = 1\,\mathrm{kg/m^3}$) is attached to the floor of a channel carrying a fluid of the same density and kinematic viscosity $1\,\mathrm{m^2/s}$, so that the Reynolds number is of order one and the added mass is strong.
 A parabolic inlet velocity is ramped up over $2\,\mathrm{s}$, after which the flow settles to a steady state.
 The solid is the geometrically linear velocity solid, and both regions use BDF2 in time.
-% The monolithic tutorial variant at 257b2e564 sets ddt(U) Euler in
-% system/fluid/fvSchemes.monolithic; the temporal study must use backward.
-\todo{The quasi-monolithic tutorial variant uses Euler for the fluid \texttt{ddt(U)} (\texttt{system/fluid/fvSchemes.monolithic} at \texttt{257b2e564}); the temporal study must be run with \texttt{backward}, and the mesh study should use the same scheme.}
+% The quasi-monolithic variant uses backward for the fluid and the solid since
+% solids4foam 6dc42799b (Euler for the fluid before, e.g. at 257b2e564).
 
 \paragraph{Measured.}
 The temporal study follows~\citet{Liu2014} and the partitioned study of the companion paper: $\Delta t = 0.25$ to $0.03125\,\mathrm{s}$, halved each time, to $t = 1\,\mathrm{s}$, with the self-convergence of the top-point displacement $u_x$(A) and of the $\ell_2$ norm of the change in the interface position.

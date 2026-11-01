@@ -84,7 +84,7 @@ At steady state the time-dependent differences between the couplings vanish, so 
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[scale=1]{figures/cavityFlexibleBottom-geometry}
-	\caption{Channel flow over a cavity with a flexible bottom: geometry, boundary conditions and monitoring point A.}
+	\caption{Channel flow over a cavity with a flexible bottom: geometry, boundary conditions and monitoring point A (as in the companion paper~\protect\citetodo{companion verification paper}).}
 	\label{fig:cavity_geom_m}
 \end{figure}
 
@@ -120,13 +120,13 @@ A further pair of runs on levels 2 and 3 uses for the quasi-monolithic continuit
 % strict rerun).
 \begin{table}[htbp]
 	\centering
-	\caption{Channel flow over a cavity with a flexible bottom: steady $u_y$(A) and $F_y$ with the quasi-monolithic (QM) and Aitken couplings, their relative difference $(\mathrm{QM} - \mathrm{Aitken})/|\mathrm{Aitken}|$, iterations per step and cost to steady state (one process; level 4 four processes). Last row: Richardson extrapolation with $p = 2$ from levels 3 and 4.}
+	\caption{Channel flow over a cavity with a flexible bottom: steady $u_y$(A) and $F_y$ with the quasi-monolithic (QM) and Aitken couplings, their relative difference $(\mathrm{QM} - \mathrm{Aitken})/|\mathrm{Aitken}|$, iterations per step and elapsed time to steady state (one process; level 4 four processes). $F_y$ is per unit depth. Last row: Richardson extrapolation with $p = 2$ from levels 3 and 4.}
 	\label{tab:cavity_m}
 	\small
 	\setlength{\tabcolsep}{3pt}
 	\begin{tabular}{lrrrrrrrrr}
 		\toprule
-		 & \multicolumn{3}{c}{$u_y$(A) (m)} & \multicolumn{3}{c}{$F_y$ (N)} & \multicolumn{2}{c}{Iterations/step} & Cost \\
+		 & \multicolumn{3}{c}{$u_y$(A) (m)} & \multicolumn{3}{c}{$F_y$ (N/m)} & \multicolumn{2}{c}{Iterations/step} & Cost \\
 		\cmidrule(lr){2-4}\cmidrule(lr){5-7}\cmidrule(lr){8-9}
 		Level & QM & Aitken & Diff. (\%) & QM & Aitken & Diff. (\%) & QM & Aitken & QM/Aitken \\
 		\midrule

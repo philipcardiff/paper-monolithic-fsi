@@ -10,7 +10,7 @@ The gradient operator $\bb{\nabla}$ is treated as a standard vector operator, co
 The subscript $0$ on the gradient, $\bb{\nabla}_0$, indicates differentiation with respect to the initial (reference) coordinates.
 Body forces are expressed per unit mass throughout.
 
-The present work considers the dynamic interaction between an incompressible Newtonian fluid and a deformable elastic solid, with the notation of the companion paper~\citetodo{companion verification paper}.
+The present work considers the dynamic interaction between an incompressible Newtonian fluid and a deformable elastic solid, as illustrated in Figure~\ref{fig:fsi_problem}; the notation is that of the companion paper~\citetodo{companion verification paper}.
 At time $t$, the coupled system occupies the moving domain
 \begin{equation}
     \Omega(t) = \Omega_F(t) \cup \Omega_S(t),
@@ -28,6 +28,22 @@ on which the fluid and solid satisfy kinematic compatibility and dynamic tractio
 The solid is formulated in a total Lagrangian description with respect to its initial configuration $\Omega_{S,0}$, while the fluid is formulated on the current moving domain $\Omega_F(t)$ using an arbitrary Lagrangian--Eulerian (ALE) description.
 The solid velocity $\bb{v}_S$, rather than the solid displacement, is the primary solid unknown, so that velocity is the unknown on both sides of the interface.
 For notational compactness, the explicit time dependence of moving domains and boundaries is omitted where no ambiguity arises.
+
+\begin{figure}[htbp]
+    \centering
+    \subfigure[Initial configurations of the fluid (left) and solid (right) domains, showing the initial volumes $\Omega_0$, boundaries $\Gamma_0$ and outward-facing unit normals $\hat{\bb{n}}_0$]
+    {
+        \label{fig:fsi_problem_initial}
+        \includegraphics[width=0.8\textwidth]{figures/fsi_problem_initial}
+    }
+    \subfigure[Deformed configurations of the fluid (left) and solid (right) domains at time $t$, showing the deformed volumes $\Omega(t)$, boundaries $\Gamma(t)$ and outward-facing unit normals $\hat{\bb{n}}(t)$]
+    {
+        \label{fig:fsi_problem_current}
+        \includegraphics[width=0.8\textwidth]{figures/fsi_problem_current}
+    }
+    \caption{Representative fluid--solid interaction problem, where the subscript $F$ denotes fluid-domain quantities and the subscript $S$ denotes solid-domain quantities. Image adapted from \citet{Richter2012}.}
+    \label{fig:fsi_problem}
+\end{figure}
 
 
 

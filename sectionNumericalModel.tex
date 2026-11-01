@@ -2,6 +2,24 @@
 \section{Method}\label{sec:numerical_methods}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+% Provenance notes for this section (comments consolidated here, 1 Nov 2026):
+% - Time schemes: since solids4foam 6dc42799b (23 Oct 2026) every quasi-monolithic
+%   tutorial at a421f063d uses backward for the fluid ddt(U), ddt(dU), ddt(p) and the
+%   solid (system/{fluid,solid}/fvSchemes.monolithic); the only exception is the
+%   steady cavityFlexibleBottom, whose fluid uses Euler pseudo-time stepping. Every
+%   campaign run records its ddt schemes (runs.csv).
+% - Interface viscous force: newtonIcoFluid/README.md (Interface Viscous Force) at
+%   a421f063d; solids4foam PR #618.
+% - Tolerances at a421f063d *.monolithic: snes_rtol = snes_stol 1e-6 (1e-4 foilInWind,
+%   3dTube tutorial), ksp_rtol 1e-4 (1e-3 3dTube tutorial), ksp_gmres_restart 200,
+%   snes_linesearch_type basic except foilInWind (bt).
+% - Scaling: fluidSystemScaleFactor 1e+08 in every *.monolithic fsiProperties; no solid
+%   scale-factor entry, so s_S takes its default.
+% - J_pp is built from 1/a_P,f times pressureScaleFactor (default 1) rather than
+%   alpha_p/a_P,f; both are 1 (fluid stabilisation scaleFactor 1.0,
+%   pressureScaleFactor 1.0) in every *.monolithic tutorial at a421f063d.
+% - JFNK differencing: PETSc MatMFFD default (Walker-Pernice, error_rel = sqrt(eps)).
+
 % Outline of subsections
 %\subsection{Overview}
 %\subsection{Finite-volume discretisation}
@@ -96,7 +114,6 @@ The solid displacement, which is not an independent unknown in the coupled Newto
 All transient cases of this work use BDF2 for both the fluid and the solid; steady problems computed by pseudo-time stepping (the flexible-bottom cavity) may use the first-order Euler scheme, since their pseudo-time history is not part of the result.
 BDF2 needs two old time levels, so it is started with one Euler step: on the first time step the backward scheme of OpenFOAM.com, used throughout this work, reverts to the Euler coefficients, and the solid displacement update of Equation~\eqref{eqn:solid_bdf2_displacement} does the same.
 With a constant time step this start keeps the global error of second order, although \citet{Nishikawa2019bdf2} showed that a BDF1 start can give a large start-up error in BDF2 for stiff problems, in particular when the first step is taken smaller than the following ones; here the first step equals the following ones, and the quantities of interest are periodic, steady or taken after the starting transient: the pulsatile tube is analysed over its last two of six periods, and the frequency of the ring is measured with its first zero crossing excluded.
-After a retry (Section~\ref{sec:jfnk_solution}) the step is reduced to a quarter, and it is subsequently increased by at most a factor of 1.5 per step, so the variable-step BDF2 coefficients are used with these step ratios.
 
 %%--------------------------------------------------------------------------------------------------------------------%%
 \subsection{Discrete coupled residual}
@@ -443,43 +460,23 @@ The displacement that moves the fluid mesh (Section~\ref{sec:fluid_mesh_motion})
 \label{sec:jfnk_solution}
 %%--------------------------------------------------------------------------------------------------------------------%%
 
-The discrete coupled residual in Equation~\eqref{eqn:coupled_residual} defines
-a nonlinear algebraic system for the unknown vector $\bb{\mathcal{U}}$. This system is
-solved using a Newton--Krylov method. At nonlinear iteration $k$, the Newton
-correction $\Delta \bb{\mathcal{U}}_k$ formally satisfies
+The coupled residual of Equation~\eqref{eqn:coupled_residual} is solved by a Newton--Krylov method: at iteration $k$, the correction satisfies
 \begin{equation}
     \bb{J}(\bb{\mathcal{U}}_k)
     \Delta \bb{\mathcal{U}}_k
     =
     -
     \bb{R}(\bb{\mathcal{U}}_k),
-    \label{eqn:newton_linear_system}
-\end{equation}
-where
-\begin{equation}
-    \bb{J}(\bb{\mathcal{U}}_k)
-    =
-    \left.
-    \frac{\partial \bb{R}}{\partial \bb{\mathcal{U}}}
-    \right|_{\bb{\mathcal{U}}_k}
-\end{equation}
-is the Jacobian of the coupled residual. The nonlinear iterate is then updated
-as
-\begin{equation}
+    \qquad
     \bb{\mathcal{U}}_{k+1}
     =
     \bb{\mathcal{U}}_k
     +
     s_k \Delta \bb{\mathcal{U}}_k ,
-    \label{eqn:newton_update}
+    \label{eqn:newton_linear_system}
 \end{equation}
-where $s_k$ is a damping or line-search parameter.
-
-In the present work, the linear system in
-Equation~\eqref{eqn:newton_linear_system} is solved using a Krylov method, but
-the exact Jacobian matrix is not assembled. Instead, the action of the Jacobian
-on a Krylov vector is approximated by a finite-difference directional
-derivative of the residual,
+with $\bb{J} = \partial\bb{R}/\partial\bb{\mathcal{U}}$ and a step length $s_k$.
+The Jacobian is not assembled; its action on a Krylov vector $\bb{w}$ is the finite-difference directional derivative of the residual,
 \begin{equation}
     \bb{J}(\bb{\mathcal{U}}_k) \bb{w}
     \approx
@@ -491,18 +488,13 @@ derivative of the residual,
     {\epsilon},
     \label{eqn:jfnk_operator}
 \end{equation}
-where $\bb{w}$ is a Krylov vector and $\epsilon$ is the finite-difference perturbation.
-Thus, the nonlinear residual evaluation described in Section~\ref{sec:discrete_coupled_residual} defines the Newton operator used by the Krylov solver.
+with the default differencing parameter of PETSc~\citep{PETSc}, $\epsilon = e_r\sqrt{1+\|\bb{\mathcal{U}}_k\|}/\|\bb{w}\|$ and $e_r$ the square root of the machine precision, applied to the scaled residual (see below).
+The residual evaluation of Section~\ref{sec:discrete_coupled_residual} thus defines the Newton operator.
+The assembled approximate Jacobian $\tilde{\bb{J}}$ of Section~\ref{sec:approximate_block_preconditioner} is used only as the preconditioning matrix; it affects the convergence of the linear iterations but not the converged solution.
+Used as the Newton operator itself, it gives only linear convergence (Section~\ref{sec:tube3d_pc_study}), and it is not used so for the production results.
 
-Although the exact Jacobian is not assembled, preconditioning remains essential for robustness and efficiency. An approximate block matrix $\tilde{\bb{J}}$ is therefore assembled and used only to construct the preconditioner for the Krylov solve (the PETSc option \texttt{-snes\_mf\_operator}): the Krylov operator is the finite-difference action in Equation~\eqref{eqn:jfnk_operator}, while $\tilde{\bb{J}}$ is the preconditioning matrix.
-This matrix is not required to be a consistent linearisation of $\bb{R}(\bb{\mathcal{U}})$; it only affects the convergence of the linear iterations, not the converged nonlinear solution, provided the nonlinear solve reaches the specified tolerances. The construction of this approximate block preconditioner is described in Section~\ref{sec:approximate_block_preconditioner}.
-Using $\tilde{\bb{J}}$ as the Newton operator itself, in place of Equation~\eqref{eqn:jfnk_operator}, gives a quasi-Newton method that converges only linearly, as $\tilde{\bb{J}}$ retains only compact-stencil approximations of the diffusive, convective, constitutive and interface contributions to the true Jacobian; it is not used in this work.
-
-The Krylov solver is restarted LGMRES with left preconditioning (the PETSc default), terminated at a prescribed relative reduction of the preconditioned linear residual norm.
-As the first Newton iteration of a time step is limited by the nonlinearity of the residual, a relative linear tolerance much tighter than the nonlinear reduction achieved per iteration only adds Krylov iterations, each of which costs a residual evaluation.
-The nonlinear iterations are terminated when the coupled residual norm, relative to its value at the start of the time step, or the norm of the Newton correction, relative to that of the current iterate, falls below a prescribed tolerance.
-The Newton update in Equation~\eqref{eqn:newton_update} uses the full step ($s_k = 1$) unless stated otherwise; a backtracking or $\ell_2$-minimising line search can be selected for strongly nonlinear cases.
-The Newton tolerance is $10^{-6}$ for both criteria and the Krylov tolerance $10^{-4}$ in every case except the flag of Section~\ref{sec:lim_foil} ($10^{-4}$ for Newton), with an LGMRES restart length of 200 (Table~\ref{tab:solver_settings}); the full step is used in every case except that flag, which uses a backtracking line search.
+The Krylov solver is restarted LGMRES with left preconditioning, stopped at a relative reduction of the preconditioned linear residual; since the first Newton iteration of a step is limited by the nonlinearity, a tighter linear tolerance only adds Krylov iterations, each costing one residual evaluation.
+The Newton iteration stops when either the coupled residual norm, relative to its value at the start of the step, or the Newton step norm, relative to the current iterate, falls below its tolerance: $10^{-6}$ for both, with a Krylov tolerance of $10^{-4}$ and the full step $s_k = 1$, in every case except the flag of Section~\ref{sec:lim_foil} ($10^{-4}$ and a backtracking line search; Table~\ref{tab:solver_settings}).
 
 \paragraph{System scaling.}
 The fluid residuals are written per unit fluid density (kinematic pressure), whereas the solid residual is a force, so the two blocks can differ in magnitude by many orders.
@@ -511,18 +503,11 @@ Row scaling does not change the solution, but it balances the contributions of t
 By default $s_S$ is the average over the solid cells of $1/(\mu_S \Delta t)$, evaluated once with the initial time step and not updated when the time step is adapted, and $s_F = 1$; $s_F = 10^{8}$ in all the cases of this work.
 The solid factor $s_S$ takes its default value in every case.
 
-\paragraph{Jacobian and preconditioner lagging.}
-Because $\tilde{\bb{J}}$ only builds the preconditioner, it need not be reassembled at every Newton iteration.
-By default it is reassembled, and the preconditioner rebuilt, at each Newton iteration; optionally, both are reused for a fixed number of Newton iterations, also across time steps (PETSc lagging), which reduces the cost per time step without changing the converged solution.
-Only the three-dimensional tube uses lagging, with both reused for eight Newton iterations and across time steps; in all other cases they are rebuilt at every Newton iteration (Table~\ref{tab:solver_settings}).
+\paragraph{Jacobian lagging and adaptive time stepping.}
+$\tilde{\bb{J}}$ and the preconditioner are rebuilt at every Newton iteration, except on the three-dimensional tube, where they are reused for eight Newton iterations and across time steps, which reduces the cost without changing the converged solution.
+The implementation can also adapt the time step to the number of Newton iterations and retry a failed step with a quarter of the time step; this is off in every run of this paper, whose accuracy results are for a constant time step, and a failed nonlinear solve stops the run.
 
-\paragraph{Adaptive time stepping.}
-Optionally, the time step is adapted to the number of Newton iterations $N_k$ of the previous step: it is increased (by at most a factor of 1.5) when $N_k$ is below a lower target and decreased (by at most a factor of 2) when $N_k$ exceeds an upper target (by default, when fewer than two or more than seven Newton iterations are needed), within prescribed bounds $[\Delta t_{\min}, \Delta t_{\max}]$.
-If the nonlinear solve fails to converge, the fluid, solid and mesh fields and the time are restored to their values at the start of the step, and the step is retried with $\Delta t/4$ (bounded below by $\Delta t_{\min}$), up to a maximum number of retries.
-Without adaptive time stepping, a failed nonlinear solve stops the simulation.
-Adaptive time stepping is off in every run of this paper (Section~\ref{sec:limitations}), whose accuracy results are for a constant time step.
 
-%%--------------------------------------------------------------------------------------------------------------------%%
 \subsection{Approximate block preconditioner}
 \label{sec:approximate_block_preconditioner}
 %%--------------------------------------------------------------------------------------------------------------------%%

@@ -58,7 +58,9 @@ Where no independent reference exists, the two couplings are compared with each 
 
 \paragraph{Cost.}
 Timings are taken on exclusive nodes of the MeluXina system (two 64-core AMD EPYC 7H12 processors per node, with eight NUMA domains of 16 cores), each run on a single node with the processes pinned to consecutive cores, as the median of three repeats.
-Unless stated otherwise, a fixed window of time steps is timed from a restart, and the cost is the solver's \texttt{ExecutionTime}, the processor time of the first process, which, unlike the elapsed time, does not count time spent waiting on the shared file system.
+Unless stated otherwise, a fixed window of time steps is timed from a restart, and the cost is the elapsed (wall-clock) time of the window, excluding start-up, as the median of three repeats; the solver CPU time of the first process is recorded for reference.
+On these nodes the elapsed time exceeds the CPU time by 1--4\% except in the strong-scaling study, where stalls on the shared file system make it 11--39\% larger and spread it by up to 34\% between repeats (Section~\ref{sec:tube3d_scaling}).
+The two-dimensional studies of Sections~\ref{sec:blob_m} and~\ref{sec:lim_foil} were run on a workstation, on which the elapsed and CPU times agree to within 1\%.
 Newton iterations per step and Krylov iterations per Newton iteration (quasi-monolithic), and coupling iterations per step (partitioned), are extracted from the solver logs.
 Timings from different machines are never compared.
 
@@ -121,22 +123,22 @@ The wet frequency and its error against the exact value, the error of the wet/dr
 % (paper-fsi-verification ring-monolithic, ringAddedMass_monolithic_runs.csv).
 \begin{table}[htbp]
 	\centering
-	\caption{Ring added-mass problem, strong level ($\mu = 10.08$), factor-2 mesh, four periods, one process: iterations, cost and accuracy of the three couplings. Iterations: Newton iterations (quasi-monolithic) or coupling iterations (partitioned) per step. Time: median solver execution time of three repeats per step. Ratio error: error of the wet/dry frequency ratio against the exact value.}
+	\caption{Ring added-mass problem, strong level ($\mu = 10.08$), factor-2 mesh, four periods, one process: iterations, cost and accuracy of the three couplings. Iterations: Newton iterations (quasi-monolithic) or coupling iterations (partitioned) per step. Time: median elapsed time per step of three repeats. Ratio error: error of the wet/dry frequency ratio against the exact value.}
 	\label{tab:ring_cost}
 	\setlength{\tabcolsep}{3pt}
 	\begin{tabular}{lrrrrr}
 		\toprule
 		Coupling & Steps/period & Iterations/step & Time/step (s) & Ratio error (\%) & Loss/period (\%) \\
 		\midrule
-		Quasi-monolithic & 25 & 2.0 & 0.32 & $-0.0070$ & 2.57 \\
-		 & 50 & 2.0 & 0.30 & $-0.0052$ & 0.36 \\
+		Quasi-monolithic & 25 & 2.0 & 0.31 & $-0.0070$ & 2.57 \\
+		 & 50 & 2.0 & 0.31 & $-0.0052$ & 0.36 \\
 		 & 100 & 2.0 & 0.29 & $-0.0035$ & 0.048 \\
 		IQN-ILS & 25 & 4.2 & 0.55 & $+0.126$ & 3.77 \\
-		 & 50 & 5.1 & 0.61 & $+0.101$ & 1.50 \\
-		 & 100 & 5.2 & 0.56 & $+0.033$ & 1.15 \\
-		Robin--Neumann & 25 & 46.5 & 4.03 & $-0.0058$ & 2.59 \\
-		 & 50 & 37.3 & 2.50 & $-0.0085$ & 0.38 \\
-		 & 100 & 11.7 & 0.79 & $-0.0085$ & 0.062 \\
+		 & 50 & 5.1 & 0.62 & $+0.101$ & 1.50 \\
+		 & 100 & 5.2 & 0.57 & $+0.033$ & 1.15 \\
+		Robin--Neumann & 25 & 46.5 & 4.12 & $-0.0058$ & 2.59 \\
+		 & 50 & 37.3 & 2.55 & $-0.0085$ & 0.38 \\
+		 & 100 & 11.7 & 0.80 & $-0.0085$ & 0.062 \\
 		\bottomrule
 	\end{tabular}
 \end{table}

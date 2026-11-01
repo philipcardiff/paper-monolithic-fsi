@@ -604,7 +604,7 @@ The Schur complement is approximated by $\hat{S}_p$ in Equation~\eqref{eqn:schur
 Each inner block is applied once (no inner Krylov iterations), so the preconditioner is a fixed linear operator and a standard (non-flexible) Krylov method can be used.
 
 The solid block $\tilde{\bb{J}}_{ss}$, which is much smaller than the fluid block in the cases considered, is preconditioned either by an exact sparse LU factorisation, of which every process holds a complete copy in parallel (a replicated factorisation), or by one V-cycle of BoomerAMG.
-The tutorial settings use the LU factorisation, which is the cheaper choice for the small two-dimensional solid blocks; for the three-dimensional tube, whose finer solid meshes make the gathered factorisation dominate the cost, BoomerAMG is used (the converged solution does not depend on the choice).
+The tutorial settings use the LU factorisation, which is the cheaper choice for the small two-dimensional solid blocks; for the three-dimensional tube, whose finer solid meshes make the replicated factorisation dominate the cost, BoomerAMG is used (the converged solution does not depend on the choice).
 Every case of Sections~\ref{sec:verification_exact}--\ref{sec:accuracy_cost} uses the LU factorisation and the three-dimensional tube of Section~\ref{sec:scaling_3d} uses BoomerAMG (Table~\ref{tab:solver_settings}).
 
 

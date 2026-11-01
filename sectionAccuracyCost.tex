@@ -32,7 +32,7 @@ The FSI3 problem of~\citet{Turek2006}, an elastic flag behind a rigid cylinder o
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[scale=1]{figures/HronTurek3-geometry}
-	\caption{Hron--Turek FSI3: geometry and monitoring point A.}
+	\caption{Hron--Turek FSI3: geometry and monitoring point A (as in the companion paper~\protect\citetodo{companion verification paper}).}
 	\label{fig:fsi3_geom_m}
 \end{figure}
 \todo{Replace the mesh in Figure~\ref{fig:fsi3_geom_m} with the conformal-interface mesh used here (carried over from the earlier draft).}
@@ -83,7 +83,7 @@ Repeating their temporal study with the present cell-centred finite volume formu
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[scale=1]{figures/blobInTreacle-geometry}
-	\caption{Elastic half-cylinder in a viscous channel flow: geometry (in m), boundary conditions and top point A; the mesh drawn is finer than the factor-1 mesh.}
+	\caption{Elastic half-cylinder in a viscous channel flow: geometry (in m), boundary conditions and top point A; the mesh drawn is finer than the factor-1 mesh (as in the companion paper~\protect\citetodo{companion verification paper}).}
 	\label{fig:blob_geom_m}
 \end{figure}
 % Figure checked against the blobInTreacle README and blockMeshDict at a421f063d:
@@ -117,22 +117,22 @@ Both couplings are run serially on the same workstation and build.
 The temporal sequence of the quasi-monolithic coupling is broadly compatible with second-order convergence (Figure~\ref{fig:blob_time}): the observed orders of $u_x$(A) are 2.31, 3.17 and 1.77 and those of the interface position 3.68, 2.91 and 2.61, consistent with the second-order self-convergence reported by~\citet{Liu2014} for their finite element formulation.
 IQN-ILS converges at a similar rate from the largest steps (orders 2.05 and 3.67 for $u_x$(A), 2.14 and 3.31 for the interface) but stops at an iterative floor of about $10^{-5}\,\mathrm{m}$ in $u_x$(A) and $5\times10^{-5}\,\mathrm{m}$ in the interface position, which its tolerance of $10^{-6}$ sets: below $\Delta t = 0.03125\,\mathrm{s}$ the successive change no longer falls.
 Tightening the IQN-ILS tolerance does not remove the floor, as the interface residual then stagnates at about $2.5\times10^{-8}$, the level set by the inner fluid and solid solver tolerances.
-The quasi-monolithic coupling needs 2.0--3.0 Newton iterations per step and IQN-ILS 14--24 coupling iterations, and the five quasi-monolithic runs together take $11\,\mathrm{s}$ against $76\,\mathrm{s}$ for IQN-ILS, seven times less, although the quasi-monolithic runs use the tighter tolerances.
+The quasi-monolithic coupling needs 2.0--3.0 Newton iterations per step and IQN-ILS 14--24 coupling iterations, and the five quasi-monolithic runs together take $12\,\mathrm{s}$ against $78\,\mathrm{s}$ for IQN-ILS, seven times less, although the quasi-monolithic runs use the tighter tolerances.
 At the smallest step the two couplings differ by $0.71\%$ in $u_x$(A), the same as their difference in the steady state on this mesh (Table~\ref{tab:blob_mesh}), which is therefore a spatial and not a temporal difference.
 
 \begin{table}[htbp]
 	\centering
 	\footnotesize
-	\caption{Elastic half-cylinder: steady top-point displacement $u_x$(A) at $t = 3\,\mathrm{s}$ on mesh factors 1, 2 and 4, relative difference between the couplings, observed order, Richardson extrapolation with the observed order, and serial solver time to $t = 3\,\mathrm{s}$.}
+	\caption{Elastic half-cylinder: steady top-point displacement $u_x$(A) at $t = 3\,\mathrm{s}$ on mesh factors 1, 2 and 4, relative difference between the couplings, observed order, Richardson extrapolation with the observed order, and serial elapsed time to $t = 3\,\mathrm{s}$.}
 	\label{tab:blob_mesh}
 	\begin{tabular}{lrrrrr}
 		\toprule
 		Factor & \multicolumn{2}{c}{$u_x$(A) (m)} & Difference & \multicolumn{2}{c}{Time (s)} \\
 		& quasi-monolithic & IQN-ILS & & quasi-monolithic & IQN-ILS \\
 		\midrule
-		1 & 0.116390 & 0.117260 & $-0.74\%$ & 19 & 148 \\
-		2 & 0.119224 & 0.119688 & $-0.39\%$ & 71 & 643 \\
-		4 & 0.119991 & 0.120206\textsuperscript{a} & $-0.18\%$ & 947 & --\textsuperscript{a} \\
+		1 & 0.116390 & 0.117260 & $-0.74\%$ & 19 & 149 \\
+		2 & 0.119224 & 0.119688 & $-0.39\%$ & 72 & 645 \\
+		4 & 0.119991 & 0.120206\textsuperscript{a} & $-0.18\%$ & 940 & --\textsuperscript{a} \\
 		\midrule
 		Observed order & 1.89 & 2.23 & & & \\
 		Extrapolated & 0.120276 & 0.120346 & $-0.06\%$ & & \\

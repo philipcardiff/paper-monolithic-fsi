@@ -161,7 +161,8 @@ Where the displacement gradient remains small, a small-strain (linear geometry) 
 where $\text{sym}[ \bb{A} ] = \frac{1}{2} (\bb{A} + \bb{A}^T)$ denotes the symmetric part.
 Both formulations share the velocity form of Equations~\eqref{eqn:solid_displacement_velocity} and \eqref{eqn:solid_momentum_TL}.
 Planar two-dimensional cases assume plane strain, and axisymmetric cases (the compliant tube of Section~\ref{sec:womersley_m}) are solved on a wedge mesh one cell thick in the circumferential direction.
-\todo{Confirm the constitutive laws against the final case list: all monolithic tutorials at solids4foam fdcc397e2 use Saint Venant--Kirchhoff with the total Lagrangian velocity solid or Hooke's law with the small-strain velocity solid; check the laws required by the Jaiman/Liu half-cylinder and block-with-tail cases if they are included.}
+% Checked against constant/solid/{solid,mechanical}Properties(.monolithic) at a421f063d.
+The St Venant--Kirchhoff law is used with the total Lagrangian velocity solid (flexible-bottom cavity, collapsible channel, Hron--Turek FSI3 and the flag of Section~\ref{sec:lim_foil}) and Hooke's law with the small-strain velocity solid (ring, pulsatile tube, half-cylinder, which \citet{Liu2014} also model as linear elastic, and three-dimensional tube).
 
 The solid boundary conditions considered are prescribed velocity (zero on clamped boundaries), prescribed traction (including traction-free boundaries) and symmetry conditions; interface conditions coupling the solid to the fluid are described in Section~\ref{sec:fsi_interface}.
 

@@ -8,7 +8,7 @@
 % still waits for its results.
 
 This paper has presented a quasi-monolithic cell-centred finite volume method for fluid--solid interaction, in which the arbitrary Lagrangian--Eulerian fluid momentum and continuity equations and the total Lagrangian solid momentum equation in velocity form are solved as one nonlinear system by a Jacobian-free Newton--Krylov method, with the fluid mesh motion treated outside the Newton system~\citep{Liu2014, JaimanJoshi2022}.
-The method was verified against exact solutions, compared with the partitioned solver of solids4foam on the same discretisation, and assessed for robustness, cost and parallel scaling against Aitken, IQN-ILS and Robin--Neumann partitioned coupling at equal verified accuracy, using the references and the strict coupling convergence test of the companion verification study~\citetodo{companion verification paper}.
+The method was verified against exact solutions, compared with the partitioned solver of solids4foam on matched meshes and time steps, and, as a complete solver, assessed for robustness against Aitken, IQN-ILS and Robin--Neumann partitioned coupling and for cost against IQN-ILS and Robin--Neumann at matched verified error, using the references and the strict coupling convergence test of the companion verification study~\citetodo{companion verification paper}.
 The main findings, in the order of the contributions listed in Section~\ref{sec:intro}, are as follows.
 
 \paragraph{Newton operator and preconditioner.}

@@ -13,7 +13,7 @@
 % No monolithic driver and no recorded monolithic study (A1 Section 1.9).
 
 A pressure pulse travelling through a fluid-filled elastic tube (Figure~\ref{fig:tube3d_geom_m}) is the standard three-dimensional test of strongly coupled FSI under strong added mass, with $\rho_s/\rho_f = 1.2$~\citep{kuttler2008fixed, Degroote2009}; its set-up, the partitioned three-level study and the literature references are given in the companion paper~\citetodo{companion verification paper}.
-It is used here to check the quasi-monolithic coupling against the partitioned one in three dimensions and to measure how the cost of the method and of its preconditioner grows with problem size and process count.
+It is used here to check the quasi-monolithic coupling against the partitioned one in three dimensions and to measure how the cost of the method and of its preconditioner grows with problem size and process count; as in Section~\ref{sec:accuracy_cost}, the costs compared are those of the complete solvers, whose discretisations differ in the ways listed in Section~\ref{sec:consistency_partitioned}.
 
 \begin{figure}[htbp]
 	\centering

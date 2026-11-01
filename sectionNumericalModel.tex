@@ -359,7 +359,7 @@ Because the coupled unknown contains the solid velocity $\bb{v}_S^n$ rather than
 and is therefore an implicit function of the current trial value of $\bb{v}_S \equiv \bb{v}_S^n$ during the nonlinear solve.
 The displacement and the acceleration are thus defined by the same time-integration scheme, and the stress, the interface traction and the inertia term are all evaluated at the new time $t^n$.
 No part of the internal or interface force is lagged to the previous time level, as it would be, for example, with a trapezoidal average of the face forces at $t^{n-1}$ and $t^n$.
-Since the interface traction enters the solid residual at the same time level as the fluid unknowns that produce it, the coupling itself introduces no time lag; the only numerical damping is that of the BDF2 scheme, which damps high-frequency modes.
+Since the interface traction enters the solid residual at the same time level as the fluid unknowns that produce it, the coupling itself introduces no time lag; the numerical damping of the complete scheme, from the BDF2 time discretisation, the spatial discretisation and stabilisation, the mesh prediction and the finite solver tolerances, is assessed numerically (Section~\ref{sec:ring_m}).
 
 For a solid control volume $P$ of initial volume $\Omega_{0,P}$, the discrete solid equation is written as
 \begin{eqnarray}
@@ -533,7 +533,7 @@ Optionally, a conservative transfer distributes the fluid face forces to the sol
     \label{eqn:conservative_transfer}
 \end{equation}
 and the solid applies the resulting nominal traction on its undeformed face areas.
-Then $\sum_s \bb{F}_{S,s}\cdot\bb{v}_{S,s} = -\sum_f \bb{t}_{F,f}|\bb{\Gamma}_f| \cdot \bb{v}^{\Gamma}_f$, so the power transferred across the interface balances exactly, and, where the weights of each fluid face sum to one, so does the total interface force; the logged total interface force balances to round-off (Section~\ref{sec:interface_comparison}).
+Then $\sum_s \bb{F}_{S,s}\cdot\bb{v}_{S,s} = -\sum_f \bb{t}_{F,f}|\bb{\Gamma}_f| \cdot \bb{v}^{\Gamma}_f$, so the interface power evaluated with these face values balances exactly, and, where the weights of each fluid face sum to one, so does the total interface force; these are identities of the transfer operator at the interface faces, and they do not by themselves imply discrete conservation of momentum or energy by the complete discretisation, in which, for example, the solid face velocity is reconstructed from cell values; the logged total interface force balances to round-off (Section~\ref{sec:interface_comparison}).
 For the geometrically nonlinear solid, this requires the interface traction to be applied on the undeformed area (rather than the deformed area $|\bb{\Gamma}^n_s|$ of Equation~\eqref{eqn:face_force}).
 The conservative transfer is used in the non-conformal ring study of Section~\ref{sec:interface_comparison} and for the $640\times8$ solid of the collapsible channel (Section~\ref{sec:robustness_collapsible}); every other case has a conformal interface and uses the direct map.
 
@@ -632,6 +632,7 @@ Only the three-dimensional tube uses lagging, with both reused for eight Newton 
 Optionally, the time step is adapted to the number of Newton iterations $N_k$ of the previous step: it is increased (by at most a factor of 1.5) when $N_k$ is below a lower target and decreased (by at most a factor of 2) when $N_k$ exceeds an upper target (by default, when fewer than two or more than seven Newton iterations are needed), within prescribed bounds $[\Delta t_{\min}, \Delta t_{\max}]$.
 If the nonlinear solve fails to converge, the fluid, solid and mesh fields and the time are restored to their values at the start of the step, and the step is retried with $\Delta t/4$ (bounded below by $\Delta t_{\min}$), up to a maximum number of retries.
 Without adaptive time stepping, a failed nonlinear solve stops the simulation.
+Adaptive time stepping is off in every run of this paper (Section~\ref{sec:limitations}), whose accuracy results are for a constant time step.
 
 
 %%--------------------------------------------------------------------------------------------------------------------%%
@@ -1036,7 +1037,7 @@ Following \citet{Liu2014} and \citet[Algorithm~2]{JaimanJoshi2022}, the interfac
     \label{eqn:solid_predicted_displacement}
 \end{equation}
 which is interpolated to the solid mesh points.
-The constant-step coefficients of Equation~\eqref{eqn:solid_predicted_displacement} are used also when the time step is adapted.
+The constant-step coefficients of Equation~\eqref{eqn:solid_predicted_displacement} are used also when the time step is adapted, so the predicted interface position is then not second-order accurate; every run in this paper uses a constant time step, and its temporal-accuracy results hold only for that case.
 The predicted displacement $\bb{D}_S^{n,*}$ is used only to move the fluid mesh; the solid stress is evaluated from the implicit displacement of Equation~\eqref{eqn:solid_bdf2_displacement}, which replaces $\bb{D}_S^{n,*}$ once the coupled solve has converged.
 As the mesh displacement is a total displacement and the prediction at the next step starts from the corrected $\bb{D}_S^{n}$, the prediction error does not accumulate over time steps.
 
@@ -1149,7 +1150,7 @@ For the BDF2 time scheme used in the present work, the swept volume from two con
     \label{eqn:gcl_swept_volume}
 \end{equation}
 where $\mathcal{V}^{n}_{f}$ and $\mathcal{V}^{n-1}_{f}$ are the volumes swept by face $f$ over the most recent and previous time steps, and the weights are those of the BDF2 temporal discretisation (with the Euler scheme, $\phi^{\Gamma,n}_f = \mathcal{V}^{n}_{f}/\Delta t$).
-This construction enforces the discrete geometric conservation law: a uniform flow field passing through the moving mesh produces zero net contribution from the mesh motion, so spurious mass sources from the ALE convective flux are eliminated.
+This construction enforces the discrete geometric conservation law for the mesh fluxes: a uniform flow field passing through the moving mesh produces zero net contribution from the mesh motion, so spurious mass sources from the ALE convective flux are eliminated. On the fluid--solid interface, the imposed fluid velocity is the solid velocity, which differs from the swept-volume rate of the predicted interface by the error of the mesh prediction, a time-discretisation error.
 
 
 %%--------------------------------------------------------------------------------------------------------------------%%

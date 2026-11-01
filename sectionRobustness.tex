@@ -19,7 +19,7 @@ For each run the outcome (Section~\ref{sec:protocol}), the mean number of Newton
 % ddt(U) and the solid. The solids4foam tutorial default for this case is
 % backward for the fluid ddt(U). Confirm and record the ddt schemes of every
 % run (runs.csv); rerun any result computed with Euler, and say so here.
-\todo{Time scheme: confirm that every result in this subsection uses BDF2 (backward) for the fluid and the solid (tutorial default for the fluid ddt(U): backward); results computed with Euler must be rerun.}
+\todo{Time scheme: confirm that every result in this subsection uses BDF2 (backward) for the fluid and the solid (tutorial default at \texttt{a421f063d}: backward for both regions); results computed with Euler must be rerun.}
 %%--------------------------------------------------------------------------------------------------------------------%%
 % Set-up as Section 4.2. Map: HANDOFF R3. Driver: ringAddedMass/verification/
 % Allverify (density levels via its fluid-density setting); the extension
@@ -39,7 +39,7 @@ Expected claims: the quasi-monolithic coupling completes every cell with \tbd{nu
 % ddt(U) and the solid. The solids4foam tutorial default for this case is
 % Euler for the fluid ddt(U). Confirm and record the ddt schemes of every
 % run (runs.csv); rerun any result computed with Euler, and say so here.
-\todo{Time scheme: confirm that every result in this subsection uses BDF2 (backward) for the fluid and the solid (tutorial default for the fluid ddt(U): Euler); results computed with Euler must be rerun.}
+\todo{Time scheme: confirm that every result in this subsection uses BDF2 (backward) for the fluid and the solid (tutorial default at \texttt{a421f063d}: backward for both regions); results computed with Euler must be rerun.}
 %%--------------------------------------------------------------------------------------------------------------------%%
 % Set-up: companion paper sectionBenchmarkSuite.tex "Collapsible channel";
 % solids4foam 257b2e564 tutorials/fluidSolidInteraction/collapsibleChannel/
@@ -57,7 +57,9 @@ It combines strong added mass with large deformation and fluid mesh motion, and 
 Fluid level 2 of the companion paper is used, with the wall computed by the geometrically nonlinear velocity solid on \tbd{a conformal $160\times8$ mesh / a finer solid mesh coupled through AMI with conservative traction transfer}.
 The density ratio $\rho_s/\rho_f$ takes the values 10, 1, 0.1, 0.01 and 0 (massless wall), crossed with $\Delta t = 0.025$, $0.0125$, $0.00625$ and $0.003125\,\mathrm{s}$, and each run continues to the first trough of the wall midpoint or to $t = 1.5\,\mathrm{s}$.
 The quantity of interest is the first trough of the wall-midpoint displacement, compared with oomph-lib at the same time step.
-\todo{The quasi-monolithic tutorial variant uses Euler for the fluid \texttt{ddt(U)} (\texttt{system/fluid/fvSchemes.monolithic} at \texttt{257b2e564}); use \texttt{backward} (check the partitioned set-up of the companion paper), or the error against oomph-lib includes a first-order time error.}
+% The quasi-monolithic variant uses backward for the fluid and the solid since
+% solids4foam 6dc42799b (Euler for the fluid before); the comparison with
+% oomph-lib therefore carries no first-order time error.
 \todo{Decision at gate G1 from check B2: with the linear-reconstruction velocity solid on the conformal solid meshes the trough error is set by the solid (Section~\ref{sec:lim_thin_solid}). If a finer solid mesh through AMI brings it to about 1\% at acceptable cost, report accuracy as well as robustness here and state the solid mesh; otherwise the map is a robustness result only and the hatching threshold is relaxed accordingly.}
 
 \todo{Figure: collapsibleChannel robustness map, same layout as the ringAddedMass map. Horizontal axis: $\Delta t$ (0.003125 to 0.025 s; log). Vertical axis: $\rho_s/\rho_f$ (10, 1, 0.1, 0.01, 0; the massless row separated). Colour: outcome; label: mean iterations per step; hatching: trough error against oomph-lib above \tbd{threshold}.}
@@ -73,7 +75,7 @@ Where the quasi-monolithic coupling fails, the cause is \tbd{e.g.\ inversion of 
 % TIME-SCHEME NOTE (Philip, 22 Oct 2026), for anyone adding results here:
 % this case is steady (pseudo-time stepping), so the Euler scheme is acceptable
 % for the fluid ddt(U); record the ddt schemes of every run with the results.
-\todo{Time scheme: steady case; Euler pseudo-time stepping is acceptable (tutorial default for the fluid: Euler). Record the ddt schemes used.}
+\todo{Time scheme: steady case; Euler pseudo-time stepping is acceptable (tutorial default for the fluid at \texttt{a421f063d}: Euler; solid: backward). Record the ddt schemes used.}
 %%--------------------------------------------------------------------------------------------------------------------%%
 % Optional in HANDOFF R3 (cheap). Level 3, dt = 0.0625 ... 1.0 s.
 

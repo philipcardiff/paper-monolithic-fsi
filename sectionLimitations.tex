@@ -102,7 +102,10 @@ With the stiffened pseudo-solid mesh-motion laws used here (\texttt{diffusionEla
 % foam-extend.
 
 The quasi-monolithic coupling requires the OpenFOAM.com (ESI) line of OpenFOAM and PETSc; solids4foam builds without it on the other OpenFOAM lines and without PETSc.
-The results of this paper were obtained with OpenFOAM \tbd{v2512} and PETSc \tbd{version}; the coupling also builds with OpenFOAM v2312 and v2412 with PETSc.
+% MeluXina build qm-a421: OpenFOAM-v2512, foss/2024a (GCC 13.3), PETSc/3.22.0;
+% workstation build (macOS, Clang): PETSc 3.22.2.
+The results of this paper were obtained with OpenFOAM v2512 and PETSc 3.22; the coupling also builds with OpenFOAM v2312 and v2412 with PETSc.
+\todo{Confirm the PETSc version of any xenosim build used for campaign results (MeluXina: 3.22.0; workstation: 3.22.2).}
 The partitioned couplings with which it is compared are available on all supported OpenFOAM lines.
 
 \paragraph{Scope and modularity.}

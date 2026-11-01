@@ -118,7 +118,7 @@ The variants are: an upper-triangular instead of a full Schur factorisation of t
 % evidence/m-runs-d (timing_6c_runs.csv, timing_6c_medians.csv).
 \begin{table}[htbp]
 	\centering
-	\caption{Three-dimensional tube, level 2, 16 processes, 50 steps from $t = 5\,\mathrm{ms}$: effect of one change at a time to the default solver settings. Time: median elapsed time of three repeats (spread below $2\%$). Every variant reproduces the wall displacement of the default run at the end of the window to six significant digits. $^{*}$The assembled-Jacobian run stops on the step-norm test after 8 iterations at every step, at a relative residual of $1.7\times10^{-5}$ instead of the $10^{-6}$ of the residual test met by the other variants; meeting the residual test takes 12 iterations (Figure~\ref{fig:newton_convergence}).}
+	\caption{Three-dimensional tube, level 2, 16 processes, 50 steps from $t = 5\,\mathrm{ms}$: effect of one change at a time to the default solver settings. Time: median elapsed time of three repeats (spread below $2\%$). Every variant reproduces the wall displacement of the default run at the end of the window to six significant digits. $^{*}$With the step-norm test disabled, so that the run stops on the same relative residual of $10^{-6}$ as the other variants (largest final residual $8.3\times10^{-7}$); with the default step-norm test it stops after 8 iterations at $1.8\times10^{-5}$, at 1.31 times the default cost. The default run is unchanged with the step-norm test disabled.}
 	\label{tab:tube3d_pc}
 	\begin{tabular}{lrrrr}
 		\toprule
@@ -129,7 +129,7 @@ The variants are: an upper-triangular instead of a full Schur factorisation of t
 		Krylov tolerance $10^{-3}$ & 2.7 & 15.8 & 264 & 1.15 \\
 		Schur upper & 2.0 & 25.2 & 287 & 1.25 \\
 		Lag 1 & 2.0 & 18.3 & 290 & 1.26 \\
-		Assembled Jacobian as operator$^{*}$ & 8.0 & 16.6 & 302 & 1.31 \\
+		Assembled Jacobian as operator$^{*}$ & 12.0 & 16.1 & 418 & 1.82 \\
 		Solid block replicated LU & 2.0 & 18.6 & 1846 & 8.03 \\
 		\bottomrule
 	\end{tabular}
@@ -140,8 +140,7 @@ Every variant reaches the same solution, so the choice is one of cost only.
 The largest effect is that of the solid-block preconditioner: the replicated LU factorisation leaves the iteration counts unchanged but multiplies the cost by eight, which is why one BoomerAMG V-cycle is the default on the three-dimensional meshes.
 A looser Krylov tolerance saves Krylov iterations but costs Newton iterations (2.7 instead of 2 per step), and is slower overall.
 Rebuilding the Jacobian and preconditioner at every Newton iteration (lag 1) leaves the iteration counts unchanged and costs $26\%$ more than the default lag of eight, and the upper-triangular Schur factorisation saves the second pressure solve but needs $38\%$ more Krylov iterations, for $25\%$ more time.
-With the assembled approximate Jacobian as the Newton operator, Newton converges only linearly (Figure~\ref{fig:newton_convergence}): on the tube the residual falls by a factor of $0.2$--$0.7$ per iteration and meets the $10^{-6}$ tolerance after 12 iterations, against 2 for the matrix-free operator, and the run in Table~\ref{tab:tube3d_pc} stops earlier, after 8, only because the step-norm test is met first.
-Its extra cost of $30\%$ is therefore a lower bound.
+With the assembled approximate Jacobian as the Newton operator, Newton converges only linearly (Figure~\ref{fig:newton_convergence}): on the tube the residual falls by a factor of $0.2$--$0.7$ per iteration and meets the $10^{-6}$ tolerance after 12 iterations per step, against 2 for the matrix-free operator, and costs 1.8 times the matrix-free default (Table~\ref{tab:tube3d_pc}).
 On the ring, whose added mass is stronger, the rate is $0.85$ per iteration and 50 iterations reduce the residual only to $10^{-5}$, while the matrix-free operator meets $10^{-6}$ in 2 iterations.
 This confirms that the approximate Jacobian is suited to building the preconditioner but not to defining the Newton step.
 With the matrix-free operator the rate is set by the Krylov tolerance, as expected of an inexact Newton method: each iteration reduces the residual by a factor of $10^{-4}$--$5\times10^{-4}$ with the default tolerance of $10^{-4}$, and tightening it to $10^{-8}$ makes the convergence superlinear, which the default tolerance does not need at the residual tolerance used.

@@ -34,16 +34,17 @@ All quasi-monolithic results in this paper use this form.
 % Source: newtonIcoFluid/README.md at a421f063d; RFIX_findings.md (evidence/m-runs-a-rfix, 1252bd2e5).
 % An earlier optional form (viscousStressTranspose, PR #611) evaluated the wall value from adjacent cell values and moved the
 % steady blobInTreacle displacement 2.3/1.0/0.4% from the partitioned value on x1/x2/x4; the adopted form gives -0.72/-0.39/-0.18%.
-On the steady blobInTreacle problem, where the wall is stationary in the converged state, the quasi-monolithic displacement differs from the partitioned one by $-0.72$, $-0.39$ and $-0.18\%$ on the three meshes and extrapolates to within $0.05\%$ of the partitioned extrapolation; the effect of the term on a deforming wall is shown in Section~\ref{sec:womersley_consistency}.
+On the steady blobInTreacle problem, where the wall is stationary in the converged state, the quasi-monolithic displacement differs from the partitioned one by $-0.74$, $-0.39$ and $-0.18\%$ on the three meshes and extrapolates to within $0.06\%$ of the partitioned extrapolation; the effect of the term on a deforming wall is shown in Section~\ref{sec:womersley_consistency}.
 
 \begin{table}[htbp]
 	\centering
-	\small
+	\footnotesize
+	\setlength{\tabcolsep}{3pt}
 	\caption{Differences between the quasi-monolithic (\texttt{newtonIcoFluid}, velocity solid) and partitioned (\texttt{pimpleFluid}, displacement solid) discretisations, and how each difference behaves under refinement.}
 	\label{tab:discretisation_differences}
 	% threeparttable (sn-jnl) prints the caption only with a tabular
 	% Source: paper-data/a2_discretisation_differences.md (items D1--D17), condensed.
-	\begin{tabular}{p{0.14\linewidth}p{0.26\linewidth}p{0.26\linewidth}p{0.20\linewidth}}
+	\begin{tabular}{p{0.13\linewidth}p{0.25\linewidth}p{0.25\linewidth}p{0.21\linewidth}}
 		\toprule
 		Item & Quasi-monolithic & Partitioned & Difference \\
 		\midrule

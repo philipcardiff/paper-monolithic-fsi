@@ -422,7 +422,10 @@ The same value enters the wall flux of the transpose term in the momentum residu
 
 \paragraph{Mass flux.}
 On the interface, the relative (ALE) flux in the convective term is set to zero, consistent with the no-slip condition, while the flux in the continuity equation, Equation~\eqref{eqn:fluid_pressure_residual}, is the absolute flux of the interface velocity, $\bb{\Gamma}_f \cdot \bb{v}^{\Gamma}_f$, i.e.\ the same flux that would convect momentum.
-Since the fluid mesh is moved to a predicted interface position (Section~\ref{sec:fluid_mesh_motion}), this flux differs slightly from the volume swept by the interface face during the time step; the difference can be monitored by the implementation as a diagnostic.
+Because the mesh is moved to the predicted interface position $\bb{D}_S^{n,*}$ (Section~\ref{sec:fluid_mesh_motion}), the wall flux $\bb{\Gamma}_f\cdot\bb{v}^\Gamma_f$ differs from the mesh flux $\phi^\Gamma_f$ of Equation~\eqref{eqn:gcl_swept_volume} by $\varepsilon_f$.
+With the solid displacement updated by BDF2 from the converged velocity, $\varepsilon_f$ is the BDF2 rate of the prediction error $\bb{D}_S^{n} - \bb{D}_S^{n,*} = O(\Delta t^3)$, so $\varepsilon_f = O(\Delta t^2)$; its sum over the steps telescopes, so the volume that crosses the wall relative to the mesh stays of the order of the current prediction error and does not accumulate.
+Setting the relative flux in the convective term to zero on the interface omits $\varepsilon_f \bb{v}_f$, which is of the same order.
+Measured after the start-up, $\sum_f|\varepsilon_f|/\sum_f|\phi^\Gamma_f|$ falls from $2.5\times10^{-2}$ to $1.4\times10^{-4}$ on the collapsible channel ($\Delta t = 0.025$ to $0.003125\,\mathrm{s}$) and from $1.4\times10^{-2}$ to $2.8\times10^{-5}$ on the ring (25 to 200 steps per period) as $\Delta t$ is halved three times, and the leakage accumulated on the channel to $t = 0.75\,\mathrm{s}$ falls from $2.5\times10^{-4}$ to $1.7\times10^{-6}$ of the swept volume; the start-up is discussed in Section~\ref{sec:lim_mesh_motion}.
 
 \paragraph{Transfer between non-conformal interfaces.}
 Interface quantities are transferred between the fluid and solid interface faces with face-area weights.
@@ -692,7 +695,7 @@ The mesh face flux $\phi^{\Gamma}_f$ is computed from the volumes swept by the f
 \end{equation}
 where $\mathcal{V}^{n}_{f}$ and $\mathcal{V}^{n-1}_{f}$ are the volumes swept by face $f$ over the most recent and previous steps.
 This enforces the discrete geometric conservation law for the mesh fluxes: a uniform flow through the moving mesh produces no spurious mass source.
-On the fluid--solid interface, the imposed fluid velocity is the solid velocity, which differs from the swept-volume rate of the predicted interface by the error of the mesh prediction, a time-discretisation error.
+On the fluid--solid interface, the imposed fluid velocity is the solid velocity, which differs from the swept-volume rate of the predicted interface by a time-discretisation error (Section~\ref{sec:interface_conditions}).
 
 \subsection{Implementation and solution algorithm}
 \label{sec:implementation_details}

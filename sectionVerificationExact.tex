@@ -91,7 +91,7 @@ The run tables, the extracted quantities of interest, the provenance records and
 		Case & $\Delta$ & Conv. & Flux & Solid & $\alpha_d$ & Transf. & Tol. & KSP & Schur, solid PC & Lag \\
 		\midrule
 		ringAddedMass        & BDF2  & lin. & lin.  & LG & 0.5 & DM & $10^{-6}$ & $10^{-4}$ & upper, LU & -- \\
-		womersleyTube        & BDF2  & lin. & lin.  & LG & 0.5 & DM & $10^{-6}$ & $10^{-4}$ & upper, LU & -- \\
+		womersleyTube        & BDF2  & lin. & lin.  & LG & 0.5 & DM & $10^{-6}$\textsuperscript{f} & $10^{-4}$\textsuperscript{f} & upper, LU & -- \\
 		cavityFlexibleBottom & Euler\textsuperscript{a} & LUD & skew\textsuperscript{b} & TL & 0.1 & DM & $10^{-6}$ & $10^{-4}$ & upper, LU & -- \\
 		collapsibleChannel   & BDF2  & lin. & lin.  & TL & 0.1 & AMI\textsuperscript{d} & $10^{-6}$ & $10^{-4}$ & upper, LU & -- \\
 		FSI3                 & BDF2  & LUD  & skew  & TL & 0.5 & DM & $10^{-6}$ & $10^{-4}$ & upper, LU & -- \\
@@ -107,6 +107,7 @@ The run tables, the extracted quantities of interest, the provenance records and
 	\textsuperscript{c}~The default \texttt{diffStencilLaplacian} stabilisation of solids4foam; the tutorial has no \texttt{stabilisation} entry.
 	\textsuperscript{d}~The tutorial uses a conformal solid mesh and DM; the runs of Section~\ref{sec:robustness_collapsible} use a $640\times8$ solid mesh through AMI with conservative traction transfer.
 	\textsuperscript{e}~The temporal study of Section~\ref{sec:blob_m} uses $10^{-8}$ and $10^{-6}$.
+	\textsuperscript{f}~The runs of Sections~\ref{sec:womersley_m} and~\ref{sec:womersley_consistency} use $10^{-8}$ and $10^{-6}$.
 	\textsuperscript{$\ast$}~The 3dTube tutorial uses $10^{-4}$, $10^{-3}$ and redundant LU; the paper runs use the values shown.}
 \end{table}
 % Agent B, 1 Nov 2026: collapsibleChannel, blobInTreacle and foilInWind rows

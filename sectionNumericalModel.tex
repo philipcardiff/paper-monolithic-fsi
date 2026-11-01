@@ -535,7 +535,7 @@ Optionally, a conservative transfer distributes the fluid face forces to the sol
 and the solid applies the resulting nominal traction on its undeformed face areas.
 Then $\sum_s \bb{F}_{S,s}\cdot\bb{v}_{S,s} = -\sum_f \bb{t}_{F,f}|\bb{\Gamma}_f| \cdot \bb{v}^{\Gamma}_f$, so the power transferred across the interface balances exactly, and, where the weights of each fluid face sum to one, so does the total interface force; the logged total interface force balances to round-off (Section~\ref{sec:interface_comparison}).
 For the geometrically nonlinear solid, this requires the interface traction to be applied on the undeformed area (rather than the deformed area $|\bb{\Gamma}^n_s|$ of Equation~\eqref{eqn:face_force}).
-The conservative transfer is used only in the non-conformal ring study of Section~\ref{sec:interface_comparison}; every other case has a conformal interface and uses the direct map.
+The conservative transfer is used in the non-conformal ring study of Section~\ref{sec:interface_comparison} and for the $640\times8$ solid of the collapsible channel (Section~\ref{sec:robustness_collapsible}); every other case has a conformal interface and uses the direct map.
 
 The displacement that moves the fluid mesh (Section~\ref{sec:fluid_mesh_motion}) is transferred with the same face weights for the face values and with the point transfer of the interface mapping for the mesh points.
 

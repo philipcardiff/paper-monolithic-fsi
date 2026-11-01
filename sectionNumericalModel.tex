@@ -144,7 +144,8 @@ After a retry (Section~\ref{sec:jfnk_solution}) the step is reduced to a quarter
 % a421f063d uses backward for the fluid ddt(U), ddt(dU), ddt(p) and the solid
 % (system/{fluid,solid}/fvSchemes.monolithic); the only exception is the steady
 % cavityFlexibleBottom, whose fluid uses Euler pseudo-time stepping.
-\todo{Every campaign run must record its ddt schemes (tutorial defaults at \texttt{a421f063d}: \texttt{backward} throughout, except the fluid of the steady cavityFlexibleBottom); the case sections carry a reminder.}
+% Every campaign run records its ddt schemes (runs.csv); tutorial defaults at
+% a421f063d: backward throughout, except the fluid of the steady cavityFlexibleBottom.
 
 
 %%--------------------------------------------------------------------------------------------------------------------%%

@@ -12,7 +12,7 @@
 % Schur factorisation, redundant+LU solid block; from #599, 873a8d0e4).
 % No monolithic driver and no recorded monolithic study (A1 Section 1.9).
 
-A pressure pulse travelling through a fluid-filled elastic tube (Figure~\ref{fig:tube3d_geom_m}) is the standard three-dimensional test of strongly coupled FSI under strong added mass, with $\rho_s/\rho_f = 1.2$~\citep{kuttler2008fixed, Degroote2009}; its set-up, the partitioned three-level study and the literature references are given in the companion paper~\citetodo{companion verification paper}.
+A pressure pulse travelling through a fluid-filled elastic tube (Figures~\ref{fig:tube3d_geom_m} and~\ref{fig:tube3d_field}) is the standard three-dimensional test of strongly coupled FSI under strong added mass, with $\rho_s/\rho_f = 1.2$~\citep{kuttler2008fixed, Degroote2009}; its set-up, the partitioned three-level study and the literature references are given in the companion paper~\citetodo{companion verification paper}.
 It is used here to check the quasi-monolithic coupling against the partitioned one in three dimensions and to measure how the cost of the method and of its preconditioner grows with problem size and process count; as in Section~\ref{sec:accuracy_cost}, the costs compared are those of the complete solvers, whose discretisations differ in the ways listed in Section~\ref{sec:consistency_partitioned}.
 
 \begin{figure}[htbp]
@@ -20,6 +20,13 @@ It is used here to check the quasi-monolithic coupling against the partitioned o
 	\includegraphics[scale=1]{figures/3dTube-geometry}
 	\caption{Three-dimensional elastic tube: geometry and base mesh (dimensions in mm), and monitoring point A (as in the companion paper~\protect\citetodo{companion verification paper}).}
 	\label{fig:tube3d_geom_m}
+\end{figure}
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=\textwidth]{figures/3dTube-field}
+	\caption{Three-dimensional elastic tube at $t = 4\,\mathrm{ms}$, quasi-monolithic coupling on the tutorial mesh: fluid kinematic pressure on the longitudinal symmetry plane of the half tube (the quarter model reflected) and the wall coloured by its displacement magnitude, drawn displaced and magnified ten times. The pulse, applied at the inlet (left) for $3\,\mathrm{ms}$, travels along the tube and dilates the wall as it passes.}
+	\label{fig:tube3d_field}
 \end{figure}
 
 %%--------------------------------------------------------------------------------------------------------------------%%

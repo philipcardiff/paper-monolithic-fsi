@@ -52,7 +52,7 @@ Summed over the 20 cells, the quasi-monolithic runs take about half the wall tim
 % before a421f063d); B2 accuracy check: wp3/b2_618/. Every run: fluid and
 % solid ddt backward.
 
-A thin elastic section of a channel wall collapses under a ramped external pressure and then oscillates~\citetodo{companion verification paper} (Figure~\ref{fig:collapsible_geom}); the problem modifies that of~\citet{Jensen2003} and \citet{Heil2004} so that it is well posed for a continuum solid, and its reference is an independently converged oomph-lib solution.
+A thin elastic section of a channel wall collapses under a ramped external pressure and then oscillates~\citetodo{companion verification paper} (Figure~\ref{fig:collapsible_geom}; Figure~\ref{fig:collapsible_field} shows the wall near its first trough); the problem modifies that of~\citet{Jensen2003} and \citet{Heil2004} so that it is well posed for a continuum solid, and its reference is an independently converged oomph-lib solution.
 It combines strong added mass with large deformation and fluid mesh motion, and the published problem has a massless wall, for which Dirichlet--Neumann coupling completes only at the largest time step of the map.
 
 \begin{figure}[htbp]
@@ -60,6 +60,13 @@ It combines strong added mass with large deformation and fluid mesh motion, and 
 	\includegraphics[width=\textwidth]{figures/collapsibleChannel-geometry}
 	\caption{Collapsible channel: geometry (in m, not to scale vertically; the wall is $0.05\,\mathrm{m}$ thick), boundary conditions and the wall midpoint.}
 	\label{fig:collapsible_geom}
+\end{figure}
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=\textwidth]{figures/collapsibleChannel-field}
+	\caption{Collapsible channel near the first trough ($t = 0.475\,\mathrm{s}$), quasi-monolithic coupling on the tutorial meshes with $\Delta t = 0.00625\,\mathrm{s}$ and $\rho_s/\rho_f = 1$: fluid kinematic pressure and the wall, drawn in its displaced position and coloured by its displacement magnitude (no magnification); the wall is clamped at $y = 1\,\mathrm{m}$ at both ends. The region $4.8 \le x \le 15.2\,\mathrm{m}$ is shown.}
+	\label{fig:collapsible_field}
 \end{figure}
 
 \paragraph{Set-up.}

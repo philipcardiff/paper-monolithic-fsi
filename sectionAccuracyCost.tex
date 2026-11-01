@@ -142,7 +142,15 @@ At the smallest step the two couplings differ by $0.71\%$ in $u_x$(A), the same 
 	\parbox{0.9\linewidth}{\footnotesize \textsuperscript{a}~From the earlier run of the same set-up on four processes (solids4foam \texttt{85b0c1de6}); on the present build the serial IQN-ILS run reached the limit of 100 coupling iterations in a step at $t = 1.26\,\mathrm{s}$. The factor-1 and factor-2 values of the two builds agree to $2.5\times10^{-4}$ relative.}
 \end{table}
 
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=\textwidth]{figures/blobInTreacle-field}
+	\caption{Elastic half-cylinder at steady state ($t = 3\,\mathrm{s}$), quasi-monolithic coupling on the factor-2 mesh: fluid velocity magnitude and the half-cylinder, drawn in its displaced position and coloured by its displacement magnitude (no magnification), with its undeformed outline (black).}
+	\label{fig:blob_field}
+\end{figure}
+
 \paragraph{Mesh convergence.}
+The steady solution is shown in Figure~\ref{fig:blob_field}: the flow accelerates over the half-cylinder, which leans downstream by about $0.12\,\mathrm{m}$ at its top.
 Both couplings converge at close to second order in space (Table~\ref{tab:blob_mesh}), and their steady displacements differ by $0.74$, $0.39$ and $0.18\%$ on the three meshes, halving with each refinement, and by $0.06\%$ after extrapolation, so the two couplings converge to the same solution; this difference is discussed with the other discretisation differences in Section~\ref{sec:consistency_partitioned}.
 The quasi-monolithic coupling needs 2.0, 2.0 and 2.6 Newton iterations per step on the three meshes, with 24, 36 and 62 Krylov iterations per Newton iteration, whereas IQN-ILS needs 18 and 26 coupling iterations per step on the two coarser meshes, with steps of up to 86 and 98 iterations; the quasi-monolithic runs are eight to nine times faster.
 With equal fluid and solid densities and a viscous flow, the partitioned iterations converge slowly on this case, and the quasi-monolithic coupling gains correspondingly.

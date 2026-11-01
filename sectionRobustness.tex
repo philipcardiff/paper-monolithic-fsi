@@ -53,7 +53,7 @@ Summed over the 20 cells, the quasi-monolithic runs take about half the wall tim
 % solid ddt backward.
 
 A thin elastic section of a channel wall collapses under a ramped external pressure and then oscillates~\citetodo{companion verification paper} (Figure~\ref{fig:collapsible_geom}); the problem modifies that of~\citet{Jensen2003} and \citet{Heil2004} so that it is well posed for a continuum solid, and its reference is an independently converged oomph-lib solution.
-It combines strong added mass with large deformation and fluid mesh motion, and the published problem has a massless wall, which Dirichlet--Neumann coupling cannot compute.
+It combines strong added mass with large deformation and fluid mesh motion, and the published problem has a massless wall, for which Dirichlet--Neumann coupling completes only at the largest time step of the map.
 
 \begin{figure}[htbp]
 	\centering
@@ -99,7 +99,7 @@ This failure belongs to the mesh motion, not to the coupled Newton iteration (Se
 
 \paragraph{Discussion.}
 Robustness with respect to the added mass and robustness with respect to the time step are distinct properties.
-Solving the interface conditions within the Newton iteration removes the dependence of convergence on the added mass: on both cases the Newton iteration count is independent of the density ratio over three orders of magnitude, and on the collapsible channel the quasi-monolithic coupling computes the massless wall, where Dirichlet--Neumann iterations cannot converge~\citep{Kuttler2006} and the Robin--Neumann coefficient is undefined.
+Solving the interface conditions within the Newton iteration made the convergence insensitive to the added mass in both maps: the Newton iteration count did not change with the density ratio over the three orders of magnitude tested, and on the collapsible channel the quasi-monolithic coupling computes the massless wall at the three smaller time steps, where Aitken and IQN-ILS reach the iteration cap, consistent with the added-mass instability of Dirichlet--Neumann iterations growing as the time step decreases~\citep{Causin2005}, and where the Robin--Neumann coefficient is undefined.
 It does not remove the dependence on the nonlinearity of the coupled problem over one step: in the flag of Section~\ref{sec:lim_foil}, Newton stagnates at $\Delta t = 0.01\,\mathrm{s}$, as IQN-ILS does, and both couplings need half that step.
 The quasi-monolithic coupling is therefore the more reliable choice where the added mass is strong and the step is limited by accuracy rather than by the nonlinearity, as in the ring and the collapsible channel, and not necessarily where large steps through strongly nonlinear transients are wanted.
 The robustness of the partitioned couplings, in turn, depends on settings such as the Robin coefficient and the IQN-ILS history, which are those of the companion paper~\citetodo{companion verification paper} for every case (Section~\ref{sec:protocol}); the maps above do not measure how far other settings would extend them.

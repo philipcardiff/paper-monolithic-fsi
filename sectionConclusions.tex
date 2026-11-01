@@ -34,7 +34,7 @@ The quasi-monolithic coupling completes every cell of the robustness maps of the
 At equal error against the Featflow reference on Hron--Turek FSI3, the quasi-monolithic coupling costs \tbd{factor} times \tbd{more/less} than IQN-ILS, and below an error of \tbd{value} the reference uncertainty, not the coupling, limits the comparison (Section~\ref{sec:fsi3_m}).
 In time, the quasi-monolithic coupling converges at order \tbd{order} on the elastic half-cylinder of \citet{Liu2014} (Section~\ref{sec:blob_m}).
 On the three-dimensional tube, the method reaches a parallel efficiency of 0.78 on 128 processes relative to 16, against 0.85 for Robin--Neumann (Section~\ref{sec:tube3d_scaling}).
-In one case, a thin flag in air, Newton stagnates at the time step at which IQN-ILS converges, and the quasi-monolithic coupling requires \tbd{a quarter} of that step, at \tbd{factor} times the partitioned cost (Section~\ref{sec:lim_foil}): convergence of the method is independent of the added mass but not of the nonlinearity of the coupled problem over a step.
+In one case, a thin flag in air with little added mass, Newton stagnates during the start-up at the time step of the partitioned tutorial, as IQN-ILS does, and both couplings need half that step, at which the quasi-monolithic coupling costs 1.5 times as much as IQN-ILS (Section~\ref{sec:lim_foil}): convergence of the method is independent of the added mass but not of the nonlinearity of the coupled problem over a step.
 
 \paragraph{Outlook.}
 Several extensions follow from the limitations identified in Section~\ref{sec:limitations}.

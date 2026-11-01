@@ -13,7 +13,7 @@ This section reports where the method, as implemented and released, is limited: 
 % ddt(U) and the solid. The solids4foam tutorial default for this case is
 % backward for the fluid ddt(U). Confirm and record the ddt schemes of every
 % run (runs.csv); rerun any result computed with Euler, and say so here.
-\todo{Time scheme: confirm that every result in this subsection uses BDF2 (backward) for the fluid and the solid (tutorial default for the fluid ddt(U): backward); results computed with Euler must be rerun.}
+% Every run here: fluid ddt(U), ddt(dU), ddt(p) and solid backward (runs.csv, tutorial).
 %%--------------------------------------------------------------------------------------------------------------------%%
 % Set-up: solids4foam origin/fix/foilInWind-monolithic-timestep @ b157ecaf3
 % (solids4foam PR #602), tutorials/fluidSolidInteraction/foilInWind/README.md
@@ -34,24 +34,29 @@ No reference solution exists; the case is used to compare the time step and cost
 \end{figure}
 
 \paragraph{Measured.}
-The quasi-monolithic coupling is run with $\Delta t = 0.01$, $0.005$ and $0.0025\,\mathrm{s}$ to $t = 0.2\,\mathrm{s}$, and partitioned IQN-ILS with $\Delta t = 0.01\,\mathrm{s}$.
-For each run the Newton residual history, the line-search step lengths and the step at which Newton stalls, if it does, are recorded, together with the cost to $t = 0.2\,\mathrm{s}$ and the trailing-edge displacement and drag histories.
+Both couplings are run to $t = 0.2\,\mathrm{s}$, through the start-up, with $\Delta t = 0.01$, $0.005$ and $0.0025\,\mathrm{s}$; IQN-ILS uses the strict convergence test with the tutorial tolerance of $10^{-5}$ and at most 50 coupling iterations, and the quasi-monolithic coupling the tutorial Newton tolerance of $10^{-4}$, a backtracking line search and at most 50 Newton iterations.
+Adaptive time stepping, which the implementation provides, is off in every run.
+The cost is compared at $\Delta t = 0.005\,\mathrm{s}$ on the same eight processes of one workstation.
+% QM: evidence/m-runs-a-rfix 7a (1252bd2e5, 128 ranks, MeluXina); IQN-ILS:
+% evidence/m-runs-a 7a (85b0c1de6, 8 ranks); equal-rank pair: local Mac
+% Studio, a421f063d-equivalent build, ~/claude-runs/agent-b-foil (1 Nov 2026).
 
-\todo{Figure: foilInWind. (a) Newton residual norm against Newton iteration in the first step that stalls at $\Delta t = 0.01\,\mathrm{s}$, with the line-search step length on a second axis, against the same time interval at $\Delta t = 0.0025\,\mathrm{s}$. (b) Streamwise trailing-edge displacement against time to $t = 0.2\,\mathrm{s}$: quasi-monolithic at the working time step(s), IQN-ILS at $0.01\,\mathrm{s}$.}
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=\textwidth]{figures/foilInWind-stall}
+	\caption{Flexible foil behind a rigid block, $\Delta t = 0.01\,\mathrm{s}$: (a) Newton residual of the quasi-monolithic coupling relative to its value at the start of each step, and (b) interface residual of IQN-ILS, against the iteration count, for each step until the run stops; dotted: tolerance.}
+	\label{fig:foil_stall}
+\end{figure}
 
-\todo{Table: foilInWind to $t = 0.2\,\mathrm{s}$. Rows: quasi-monolithic at $\Delta t = 0.01$, $0.005$, $0.0025\,\mathrm{s}$; IQN-ILS at $0.01\,\mathrm{s}$. Columns: outcome; time of the first stalled step; Newton or coupling iterations per step; Krylov iterations per Newton iteration; processes; wall time; core-hours.}
-
-With $\Delta t = 0.01\,\mathrm{s}$, the time step at which IQN-ILS converges, Newton stagnates in the early part of the start-up: the line search reduces the step and the residual stalls \tbd{at a fraction of its initial value}, in serial and in parallel.
-% Recorded at b157ecaf3 (commit message and README): stagnation in the step to
-% t = 0.05 s; residual 646 -> 530, line search stalls at about 150; right
-% preconditioning, unlimited convection and other matrix-free differencing
-% parameters stall the same way; at 0.0025 s every step converges in 2-4
-% Newton iterations; ~55 min on 2 processes against 13 min for IQN-ILS
-% (Apple M1 Ultra). Confirm all of this from the tag (R7).
-Right preconditioning, unlimited convection and other differencing parameters of the matrix-free product stall in the same way, so the stagnation is attributed to the nonlinearity of the coupled problem over a large step rather than to the linear solver: \tbd{evidence from R7, e.g.\ the Newton direction is accurate but the full step increases the residual}.
-With $\Delta t = 0.0025\,\mathrm{s}$, a quarter of the partitioned step, every step converges in \tbd{range} Newton iterations, and the run to $t = 0.2\,\mathrm{s}$ costs \tbd{factor} as much as IQN-ILS.
-The method has no globalisation beyond a backtracking line search, and adaptive time stepping on Newton failure, which the implementation provides (\texttt{adjustTimeStep}), \tbd{was not used for this comparison}.
-\todo{Check that adaptive time stepping (\texttt{adjustTimeStep}, \texttt{maxTimeStepRetries}) is off in the R7 runs, and decide whether one run with it on belongs here. Decide whether pseudo-transient continuation or another globalisation is mentioned as future work in Section~\ref{sec:conclusion}.}
+\paragraph{Results.}
+With $\Delta t = 0.01\,\mathrm{s}$ neither coupling completes the start-up (Figure~\ref{fig:foil_stall}).
+The Newton iteration needs 4 to 5 iterations in the first three steps and 7 in the fourth, and in the fifth, at $t = 0.05\,\mathrm{s}$, the residual falls to $37\%$ of its initial value within about 15 iterations and then stagnates, with the line search shortening the step, until the iteration limit is reached.
+The coupling iterations of IQN-ILS grow in the same way, 4, 5, 5, 6, 8, 10 and 18 in the first seven steps, and at $t = 0.08\,\mathrm{s}$ the interface residual stagnates at $2.5\times10^{-5}$, above the tolerance, for the remaining iterations.
+Right preconditioning, unlimited convection and other differencing parameters of the matrix-free product stall in the same way, so the stagnation of Newton is attributed to the nonlinearity of the coupled problem over a large step rather than to the linear solver; that IQN-ILS fails at nearly the same time supports this.
+With $\Delta t = 0.005\,\mathrm{s}$ both couplings complete, the quasi-monolithic coupling with 3.3 Newton iterations per step (at most 4) and 36 Krylov iterations per Newton iteration, and IQN-ILS with 5.4 coupling iterations per step (at most 8); on eight processes the quasi-monolithic run takes $337\,\mathrm{s}$ and the IQN-ILS run $229\,\mathrm{s}$, 1.5 times less.
+With $\Delta t = 0.0025\,\mathrm{s}$ the counts fall to 2.9 Newton and 4.7 coupling iterations per step.
+On this case, with a dense solid ($\rho_s/\rho_f \approx 1700$) and therefore little added mass, the quasi-monolithic coupling brings no gain in robustness and costs more per step than IQN-ILS.
+The method has no globalisation beyond a backtracking line search; adaptive time stepping on Newton failure, or a continuation method, would let it pass such start-ups automatically, and is not assessed here.
 
 %%--------------------------------------------------------------------------------------------------------------------%%
 \subsection{Solid block of the preconditioner}\label{sec:lim_solid_pc}

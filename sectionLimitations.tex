@@ -56,7 +56,7 @@ Right preconditioning, unlimited convection and other differencing parameters of
 With $\Delta t = 0.005\,\mathrm{s}$ both couplings complete, the quasi-monolithic coupling with 3.3 Newton iterations per step (at most 4) and 36 Krylov iterations per Newton iteration, and IQN-ILS with 5.4 coupling iterations per step (at most 8); on eight processes the quasi-monolithic run takes $337\,\mathrm{s}$ and the IQN-ILS run $229\,\mathrm{s}$, 1.5 times less.
 With $\Delta t = 0.0025\,\mathrm{s}$ the counts fall to 2.9 Newton and 4.7 coupling iterations per step.
 On this case, with a dense solid ($\rho_s/\rho_f \approx 1700$) and therefore little added mass, the quasi-monolithic coupling brings no gain in robustness and costs more per step than IQN-ILS.
-The method has no globalisation beyond a backtracking line search; adaptive time stepping on Newton failure, or a continuation method, would let it pass such start-ups automatically, and is not assessed here.
+The method has no globalisation beyond a backtracking line search; adaptive time stepping on Newton failure, or a continuation method, may let it pass such start-ups automatically, but neither is assessed here.
 
 %%--------------------------------------------------------------------------------------------------------------------%%
 \subsection{Solid block of the preconditioner}\label{sec:lim_solid_pc}

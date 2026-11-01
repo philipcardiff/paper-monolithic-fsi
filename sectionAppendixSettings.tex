@@ -1,0 +1,46 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Discretisation and solver settings}\label{app:settings}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Table~\ref{tab:solver_settings} lists the settings of the quasi-monolithic runs of each case.
+
+\begin{table}[htbp]
+	\centering
+	\footnotesize
+	\setlength{\tabcolsep}{2pt}
+	\caption{Discretisation and solver settings of the quasi-monolithic runs.
+	All cases use a Newton line search with the matrix-free operator, the approximate Jacobian of Appendix~\ref{app:jacobian} (with first-order upwind convection) as preconditioning matrix, restarted LGMRES (restart 200) with a multiplicative fluid--solid field split and, in the fluid block, the Schur complement split of Section~\ref{sec:fieldsplit}.
+	$\Delta$: time scheme of the fluid.
+	Conv.: convection scheme, central (lin.) or second-order upwind (LUD).
+	Flux: velocity interpolation in the continuity flux, linear (lin.) or skewness-corrected linear (skew).
+	Solid: small-strain (LG) or total Lagrangian (TL) velocity solid; $\alpha_d$: solid stabilisation factor (Equation~\eqref{eqn:rhie_chow_s}).
+	Transf.: direct map (DM) or AMI.
+	Tol.: relative Newton residual and step tolerances; KSP: relative Krylov tolerance.
+	Schur: Schur factorisation (upper triangular or full); solid PC: replicated LU or one BoomerAMG V-cycle (AMG); lag: Jacobian and preconditioner reuse in Newton iterations, persisting across steps (--: rebuilt every iteration).
+	Source: the quasi-monolithic tutorial variants at solids4foam \texttt{a421f063d} and the campaign run files, which differ from the tutorials only where marked${}^{\ast}$.
+	Implementation names: Jacobian convection \texttt{jacobian-div(phi,U) Gauss upwind}; Schur approximation \texttt{selfp}; LG/TL \texttt{linearGeometryVelocity}/\texttt{nonLinearGeometryTotalLagrangianVelocity}; stabilisation \texttt{diffStencilLaplacian}; tolerances \texttt{snes\_rtol}, \texttt{snes\_stol}, \texttt{ksp\_rtol}; replicated LU \texttt{redundant}.}
+	\label{tab:solver_settings}
+	\begin{tabular}{lllllllllll}
+		\toprule
+		Case & $\Delta$ & Conv. & Flux & Solid & $\alpha_d$ & Transf. & Tol. & KSP & Schur, solid PC & Lag \\
+		\midrule
+		Ring & BDF2  & lin. & lin.  & LG & 0.5 & DM & $10^{-6}$ & $10^{-4}$ & upper, LU & -- \\
+		Pulsatile tube & BDF2  & lin. & lin.  & LG & 0.5 & DM & $10^{-6}$\textsuperscript{f} & $10^{-4}$\textsuperscript{f} & upper, LU & -- \\
+		Cavity & Euler\textsuperscript{a} & LUD & skew\textsuperscript{b} & TL & 0.1 & DM & $10^{-6}$ & $10^{-4}$ & upper, LU & -- \\
+		Collapsible channel & BDF2  & lin. & lin.  & TL & 0.1 & AMI\textsuperscript{d} & $10^{-6}$ & $10^{-4}$ & upper, LU & -- \\
+		Hron--Turek FSI3 & BDF2  & LUD  & skew  & TL & 0.5 & DM & $10^{-6}$ & $10^{-4}$ & upper, LU & -- \\
+		Half-cylinder & BDF2  & LUD  & skew  & LG & 0.1\textsuperscript{c} & DM & $10^{-6}$\textsuperscript{e} & $10^{-4}$\textsuperscript{e} & upper, LU & -- \\
+		3-D tube & BDF2  & LUD  & lin.  & LG & 0.1 & DM & $10^{-6}$\textsuperscript{$\ast$} & $10^{-4}$\textsuperscript{$\ast$} & full, AMG\textsuperscript{$\ast$} & 8 \\
+		3-D flag & BDF2  & LUD  & skew  & TL & 0.5 & DM & $10^{-4}$ & $10^{-4}$ & upper, LU & -- \\
+		\bottomrule
+	\end{tabular}
+	\par\smallskip
+	\parbox{0.95\linewidth}{\footnotesize
+	\textsuperscript{a}~Steady target: only the steady state is compared, and no temporal order is claimed.
+	\textsuperscript{b}~Also run with linear interpolation (Section~\ref{sec:cavity_m}).
+	\textsuperscript{c}~The default solid stabilisation of solids4foam; the tutorial does not set it.
+	\textsuperscript{d}~The tutorial uses a conformal solid mesh and DM; the runs of Section~\ref{sec:robustness_collapsible} use a $640\times8$ solid mesh through AMI with conservative traction transfer.
+	\textsuperscript{e}~The temporal study of Section~\ref{sec:blob_m} uses $10^{-8}$ and $10^{-6}$.
+	\textsuperscript{f}~The runs of Sections~\ref{sec:womersley_m} and~\ref{sec:womersley_consistency} use $10^{-8}$ and $10^{-6}$.
+	\textsuperscript{$\ast$}~The tutorial uses $10^{-4}$, $10^{-3}$ and redundant LU; the paper runs use the values shown.}
+\end{table}

@@ -22,19 +22,18 @@ This section verifies the method against two exact solutions and uses them to ex
 		\toprule
 		Case & Section & Question & Reference \\
 		\midrule
-		ringAddedMass & \ref{sec:ring_m}, \ref{sec:interface_comparison}, \ref{sec:robustness_ring} & added mass, interface treatment, robustness & exact \\
-		womersleyTube & \ref{sec:womersley_m}, \ref{sec:womersley_consistency} & viscous traction on a deforming wall & exact \\
-		cavityFlexibleBottom & \ref{sec:cavity_m} & consistency with partitioned coupling & partitioned, same meshes \\
-		collapsibleChannel & \ref{sec:robustness_collapsible} & robustness, massless wall & oomph-lib \\
+		Ring added mass & \ref{sec:ring_m}, \ref{sec:interface_comparison}, \ref{sec:robustness_ring} & added mass, interface treatment, robustness & exact \\
+		Pulsatile compliant tube & \ref{sec:womersley_m}, \ref{sec:womersley_consistency} & viscous traction on a deforming wall & exact \\
+		Flexible-bottom cavity & \ref{sec:cavity_m} & consistency with partitioned coupling & partitioned, same meshes \\
+		Collapsible channel & \ref{sec:robustness_collapsible} & robustness, massless wall & oomph-lib \\
 		Hron--Turek FSI3 & \ref{sec:fsi3_m} & work--precision & Featflow \\
-		blobInTreacle & \ref{sec:blob_m} & temporal accuracy & self-convergence \\
-		3dTube & \ref{sec:scaling_3d} & parallel scaling, preconditioner & partitioned, same levels \\
-		foilInWind & \ref{sec:lim_foil} & time-step limit & partitioned \\
+		Elastic half-cylinder & \ref{sec:blob_m} & temporal accuracy & self-convergence \\
+		Pressure-pulse tube (3-D) & \ref{sec:scaling_3d} & parallel scaling, preconditioner & partitioned, same levels \\
+		Flexible flag in air (3-D) & \ref{sec:lim_foil} & time-step limit & partitioned \\
 		\bottomrule
 	\end{tabular}
 \end{table}
-% Decision (Philip, 31 Oct 2026): unused monolithic variants go to Appendix app:additional_cases for now.
-The remaining solids4foam tutorials with a quasi-monolithic variant (beamInCrossFlow, perpendicularFlap, membraneRoof, mokLidDrivenCavity and Hron--Turek FSI1) are not needed for this assessment and are listed in Appendix~\ref{app:additional_cases}.
+% Decision (Philip, 1 Nov 2026): the unused monolithic variants are parked in working/parked/ (not in the paper).
 
 %%--------------------------------------------------------------------------------------------------------------------%%
 \subsection{Assessment protocol}\label{sec:protocol}
@@ -46,11 +45,11 @@ Every result in Sections~\ref{sec:verification_exact} to~\ref{sec:limitations} i
 % Source: provenance.json of the 6b runs (Mx 5402592).
 The quasi-monolithic coupling is compared with the partitioned Dirichlet--Neumann coupling accelerated by Aitken relaxation or IQN-ILS and with Robin--Neumann coupling~\citep{Tukovic2018b}, using for each case the partitioned schemes and settings of the companion paper~\citetodo{companion verification paper}.
 
-\paragraph{Equal tolerances.}
-The Newton iterations of the quasi-monolithic coupling are stopped by the relative residual and step tolerances (\texttt{snes\_rtol} and \texttt{snes\_stol}), fixed for each case before the campaign (Table~\ref{tab:solver_settings}).
+\paragraph{Control of iterative error.}
+The Newton iterations of the quasi-monolithic coupling stop when either the relative nonlinear residual or the relative Newton step falls below its tolerance, both fixed for each case before the campaign (Table~\ref{tab:solver_settings} in Appendix~\ref{app:settings}).
 Their iterative error is measured by repeating selected runs with both tolerances reduced a hundredfold.
 The partitioned runs use the strict coupling convergence test of the companion paper, which requires every interface residual measure to be below the tolerance, with a coupling tolerance chosen so that their iterative error is no larger than that of the quasi-monolithic runs.
-Differences between the couplings are therefore not differences in how far each is converged.
+The residual definitions of the two couplings differ, so equal tolerances do not by themselves mean equal iterative error; it is the repeated runs that bound the iterative error of each coupling below the differences reported.
 
 \paragraph{Accuracy.}
 Errors are measured against the references of the companion paper, with the uncertainty stated there: exact solutions (Section~\ref{sec:verification_exact}), the oomph-lib solution for the collapsible channel (Section~\ref{sec:robustness}) and the Featflow tables for FSI3 (Section~\ref{sec:accuracy_cost}).
@@ -71,45 +70,7 @@ A run that does not complete is reported as such and is not repeated with other 
 Each run records the solids4foam commit, the OpenFOAM, PETSc and HYPRE versions, the compiler and flags, the host and CPU model, the number of processes and the full set of PETSc options.
 The run tables, the extracted quantities of interest, the provenance records and the scripts that produce every figure and table are available in the \texttt{paper-data} directory of the paper repository \tbd{public URL and Zenodo DOI}.
 
-\begin{table}[htbp]
-	\centering
-	\footnotesize
-	\setlength{\tabcolsep}{2pt}
-	\caption{Discretisation and solver settings of the quasi-monolithic runs.
-	All cases use a Newton line-search method with a matrix-free operator and an assembled approximate Jacobian as preconditioning matrix, \texttt{jacobian-div(phi,U)} \texttt{Gauss upwind} in that matrix, LGMRES (restart 200) with a multiplicative field split between solid and fluid, and, in the fluid block, a Schur complement split with the \texttt{selfp} approximation, block-Jacobi ILU(0) on the velocity block and one BoomerAMG V-cycle on the pressure Schur complement.
-	$\Delta$: \texttt{ddt(U)} of the fluid (\texttt{ddt(D)} of the mesh motion is \texttt{backward} or not needed).
-	Conv.: \texttt{div(phi,U)}, \texttt{linear} (lin.) or \texttt{linearUpwind grad(U)} (LUD).
-	Flux: \texttt{interpolate(U)} in the continuity flux, \texttt{linear} (lin.) or \texttt{skewCorrected linear} (skew).
-	Solid: \texttt{linearGeometryVelocity} (LG) or \texttt{nonLinearGeometryTotalLagrangianVelocity} (TL); $\alpha_d$: scale factor of the solid stabilisation (\texttt{diffStencilLaplacian}, Equation~\eqref{eqn:rhie_chow_s}).
-	Transf.: direct map (DM) or AMI.
-	Tol.: \texttt{snes\_rtol} $=$ \texttt{snes\_stol}; KSP: \texttt{ksp\_rtol}.
-	Schur: Schur factorisation; solid PC: preconditioner of the solid block, redundant LU or BoomerAMG (AMG); lag: Jacobian and preconditioner lag in Newton iterations, persisting across time steps (--: rebuilt every iteration).
-	Source: the \texttt{*.monolithic} tutorial files at \texttt{a421f063d} and the run files of the campaign, which differ from the tutorial only where marked${}^{\ast}$.}
-	\label{tab:solver_settings}
-	\begin{tabular}{lllllllllll}
-		\toprule
-		Case & $\Delta$ & Conv. & Flux & Solid & $\alpha_d$ & Transf. & Tol. & KSP & Schur, solid PC & Lag \\
-		\midrule
-		ringAddedMass        & BDF2  & lin. & lin.  & LG & 0.5 & DM & $10^{-6}$ & $10^{-4}$ & upper, LU & -- \\
-		womersleyTube        & BDF2  & lin. & lin.  & LG & 0.5 & DM & $10^{-6}$\textsuperscript{f} & $10^{-4}$\textsuperscript{f} & upper, LU & -- \\
-		cavityFlexibleBottom & Euler\textsuperscript{a} & LUD & skew\textsuperscript{b} & TL & 0.1 & DM & $10^{-6}$ & $10^{-4}$ & upper, LU & -- \\
-		collapsibleChannel   & BDF2  & lin. & lin.  & TL & 0.1 & AMI\textsuperscript{d} & $10^{-6}$ & $10^{-4}$ & upper, LU & -- \\
-		FSI3                 & BDF2  & LUD  & skew  & TL & 0.5 & DM & $10^{-6}$ & $10^{-4}$ & upper, LU & -- \\
-		blobInTreacle        & BDF2  & LUD  & skew  & LG & 0.1\textsuperscript{c} & DM & $10^{-6}$\textsuperscript{e} & $10^{-4}$\textsuperscript{e} & upper, LU & -- \\
-		3dTube               & BDF2  & LUD  & lin.  & LG & 0.1 & DM & $10^{-6}$\textsuperscript{$\ast$} & $10^{-4}$\textsuperscript{$\ast$} & full, AMG\textsuperscript{$\ast$} & 8 \\
-		foilInWind           & BDF2  & LUD  & skew  & TL & 0.5 & DM & $10^{-4}$ & $10^{-4}$ & upper, LU & -- \\
-		\bottomrule
-	\end{tabular}
-	\par\smallskip
-	\parbox{0.95\linewidth}{\footnotesize
-	\textsuperscript{a}~Steady target: only the steady state is compared, and no temporal order is claimed.
-	\textsuperscript{b}~Also run with \texttt{linear} (Section~\ref{sec:cavity_m}).
-	\textsuperscript{c}~The default \texttt{diffStencilLaplacian} stabilisation of solids4foam; the tutorial has no \texttt{stabilisation} entry.
-	\textsuperscript{d}~The tutorial uses a conformal solid mesh and DM; the runs of Section~\ref{sec:robustness_collapsible} use a $640\times8$ solid mesh through AMI with conservative traction transfer.
-	\textsuperscript{e}~The temporal study of Section~\ref{sec:blob_m} uses $10^{-8}$ and $10^{-6}$.
-	\textsuperscript{f}~The runs of Sections~\ref{sec:womersley_m} and~\ref{sec:womersley_consistency} use $10^{-8}$ and $10^{-6}$.
-	\textsuperscript{$\ast$}~The 3dTube tutorial uses $10^{-4}$, $10^{-3}$ and redundant LU; the paper runs use the values shown.}
-\end{table}
+
 % Agent B, 1 Nov 2026: collapsibleChannel, blobInTreacle and foilInWind rows
 % checked against the run files (wp3 3b qm618mm, agent-b-blob, agent-b-foil).
 \todo{FSI3 row: recheck against the run files of the Section~\ref{sec:fsi3_m} study once it is run.}
@@ -140,7 +101,7 @@ The question here is whether the quasi-monolithic coupling reproduces the exact 
 \paragraph{Set-up.}
 A ring of mean radius $a = 1\,\mathrm{m}$ and thickness $h = 0.1\,\mathrm{m}$ (plane strain, $E = 1\,\mathrm{MPa}$, $\nu = 0.3$, $\rho_s = 1000\,\mathrm{kg/m^3}$) is surrounded by fluid out to a rigid wall of radius $b = 1.5\,\mathrm{m}$; one quadrant is modelled with symmetry planes.
 The fluid density is chosen to give added-mass ratios $\mu = 0.101$, $1.008$ and $10.08$ (weak, moderate and strong), and a dry ring is run with each mesh and time step.
-The solid is the geometrically linear velocity solid (\texttt{linearGeometryVelocity}) with the standard second-order discretisation, and the interface is conformal.
+The solid is the geometrically linear velocity solid with the standard second-order discretisation, and the interface is conformal.
 Meshes are refined by factors 1, 2 and 4 at 100 steps per period, and the time step is varied from 25 to 100 steps per period on the factor-2 mesh; the fluid and the solid both use the second-order backward (BDF2) scheme.
 
 \paragraph{Measured.}

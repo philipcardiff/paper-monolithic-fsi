@@ -6,7 +6,7 @@
 % A2, paper-data/a2_discretisation_differences.md (origin/evidence/
 % a2-fluid-discretisation-differences), whose draft text is adapted below.
 
-The quasi-monolithic and partitioned couplings in solids4foam solve the same continuum problem with different fluid solvers (\texttt{newtonIcoFluid} and \texttt{pimpleFluid}) and different solid formulations (velocity and displacement), so their solutions should differ only by discretisation error and should approach each other under refinement.
+The quasi-monolithic and partitioned couplings in solids4foam solve the same continuum problem with different fluid solvers (the coupled Newton fluid solver of solids4foam, \texttt{newtonIcoFluid}, and its segregated pressure-correction solver, \texttt{pimpleFluid}, both referred to below by their role) and different solid formulations (velocity and displacement), so their solutions should differ only by discretisation error and should approach each other under refinement.
 This section states where the two discretisations differ and tests the expectation on a steady and a transient case.
 It is a consistency check between two formulations that share much of their code, not an independent verification.
 
@@ -22,9 +22,9 @@ It is a consistency check between two formulations that share much of their code
 
 The two couplings share the solid discretisation, the face interpolation of the stresses and the solid stabilisation, and, for the linear solid, their time integration: the BDF2 velocity formulation with BDF2 kinematics is algebraically identical to the backward second time derivative used by the displacement solid.
 They differ in the fluid and at the interface (Table~\ref{tab:discretisation_differences}).
-In the fluid, \texttt{newtonIcoFluid} solves the convection with the flux of the current iterate, adds the Rhie--Chow term to the continuity residual as a stabilisation without a time-step correction, and builds the continuity flux from the same interpolated velocity that convects momentum, whereas \texttt{pimpleFluid} convects with the flux of the previous pressure corrector and imposes continuity on the Rhie--Chow-corrected flux.
+In the fluid, the Newton fluid solver treats the convection with the flux of the current iterate, adds the Rhie--Chow term to the continuity residual as a stabilisation without a time-step correction, and builds the continuity flux from the same interpolated velocity that convects momentum, whereas the pressure-correction solver convects with the flux of the previous pressure corrector and imposes continuity on the Rhie--Chow-corrected flux.
 At the interface, the quasi-monolithic fluid sets the normal pressure gradient from the normal momentum equation, receives the solid velocity extrapolated to the interface faces, and moves its mesh once per step to the extrapolated interface displacement with a pseudo-solid, whereas the partitioned fluid uses a zero-gradient or Robin pressure condition, takes its wall velocity from the motion of its own mesh, and moves the mesh with a Laplacian smoother to the current solid displacement in every coupling iteration.
-All of these differences vanish under mesh and time-step refinement.
+All of these differences are consistent discretisation differences, expected to vanish under mesh and time-step refinement; Section~\ref{sec:womersley_consistency} reports where measured offsets remain on the finest meshes.
 
 One difference did not.
 The quasi-monolithic interface traction was the wall flux of the viscous term of the momentum equation, $\mu\,\partial\bb{v}/\partial n$, whereas the partitioned traction is $\hat{\bb{n}}\cdot 2\mu\bb{D}(\bb{v})$.
@@ -34,13 +34,13 @@ All quasi-monolithic results in this paper use this form.
 % Source: newtonIcoFluid/README.md at a421f063d; RFIX_findings.md (evidence/m-runs-a-rfix, 1252bd2e5).
 % An earlier optional form (viscousStressTranspose, PR #611) evaluated the wall value from adjacent cell values and moved the
 % steady blobInTreacle displacement 2.3/1.0/0.4% from the partitioned value on x1/x2/x4; the adopted form gives -0.72/-0.39/-0.18%.
-On the steady blobInTreacle problem, where the wall is stationary in the converged state, the quasi-monolithic displacement differs from the partitioned one by $-0.74$, $-0.39$ and $-0.18\%$ on the three meshes and extrapolates to within $0.06\%$ of the partitioned extrapolation; the effect of the term on a deforming wall is shown in Section~\ref{sec:womersley_consistency}.
+On the elastic half-cylinder, whose wall is stationary in the converged state, the two couplings extrapolate to within $0.06\%$ (Section~\ref{sec:blob_m}); the effect of the term on a deforming wall is shown in Section~\ref{sec:womersley_consistency}.
 
 \begin{table}[htbp]
 	\centering
 	\footnotesize
 	\setlength{\tabcolsep}{3pt}
-	\caption{Differences between the quasi-monolithic (\texttt{newtonIcoFluid}, velocity solid) and partitioned (\texttt{pimpleFluid}, displacement solid) discretisations, and how each difference behaves under refinement.}
+	\caption{Differences between the quasi-monolithic (Newton fluid solver, velocity solid) and partitioned (pressure-correction fluid solver, displacement solid) discretisations, and how each difference behaves under refinement.}
 	\label{tab:discretisation_differences}
 	% threeparttable (sn-jnl) prints the caption only with a tabular
 	% Source: paper-data/a2_discretisation_differences.md (items D1--D17), condensed.
@@ -48,15 +48,15 @@ On the steady blobInTreacle problem, where the wall is stationary in the converg
 		\toprule
 		Item & Quasi-monolithic & Partitioned & Difference \\
 		\midrule
-		Convection & Newton on the flux of the current iterate; cavity: \texttt{linearUpwind} with a cell limiter & Picard on the flux of the previous corrector; cavity: unlimited \texttt{linearUpwind} & none at convergence; the limiter is between $O(h)$ and $O(h^2)$ \\
-		Continuity flux & $\nabla\cdot$ of the interpolated velocity, \texttt{skewCorrected linear} & $\nabla\cdot\phi$, with $\phi$ from the momentum predictor, \texttt{linear} & $O(h^2)$ on smooth meshes, lower near the cavity plate corners \\
+		Convection & Newton on the flux of the current iterate; cavity: second-order upwind with a cell limiter & Picard on the flux of the previous corrector; cavity: unlimited second-order upwind & none at convergence; the limiter is between $O(h)$ and $O(h^2)$ \\
+		Continuity flux & $\nabla\cdot$ of the interpolated velocity, skewness-corrected linear & $\nabla\cdot\phi$, with $\phi$ from the momentum predictor, linear & $O(h^2)$ on smooth meshes, lower near the cavity plate corners \\
 		Pressure--velocity coupling & Rhie--Chow stabilisation term in the residual & PISO flux correction & $O(h^2)$ \\
 		Interface pressure & fixed gradient from the momentum equation & zero gradient (Aitken, IQN-ILS) or Robin condition (Robin--Neumann) & $O(h)$ in the wall pressure \\
 		Interface traction & fluid wall viscous flux & fluid wall viscous flux & identical after the correction \\
 		Interface velocity and wall flux & solid velocity extrapolated to the face; absolute flux in continuity & BDF2 of the face centres, normal part from the mesh flux & $O(\Delta t^2)$; zero at steady state \\
 		Mesh motion & pseudo-solid, total displacement; moved once per step to the predicted solid displacement & velocity Laplacian, incremental; moved every coupling iteration & different interior meshes, $O(h^2)$; $O(\Delta t^2)$ in time; zero at steady state \\
-		Solid time integration & BDF2 on velocity & BDF2 on displacement (womersleyTube), Euler (cavity) & equivalent for the linear solid; none at steady state \\
-		Solid spatial operator & face stress with \texttt{diffStencilLaplacian} stabilisation & the same, on displacement & identical \\
+		Solid time integration & BDF2 on velocity & BDF2 on displacement (pulsatile tube), Euler (cavity) & equivalent for the linear solid; none at steady state \\
+		Solid spatial operator & face stress with the solid stabilisation of Equation~\eqref{eqn:rhie_chow_s} & the same, on displacement & identical \\
 		Convergence test & Newton residual and step tolerances & coupling tolerance, strict test & iterative; kept below the discretisation differences (Section~\ref{sec:protocol}) \\
 		\bottomrule
 	\end{tabular}
@@ -89,7 +89,7 @@ At steady state the time-dependent differences between the couplings vanish, so 
 \end{figure}
 
 \paragraph{Set-up.}
-The flow is at $Re = 100$ and the plate is a St Venant--Kirchhoff solid, computed with the geometrically nonlinear velocity solid (\texttt{nonLinearGeometryTotalLagrangianVelocity}) on a conformal interface.
+The flow is at $Re = 100$ and the plate is a St Venant--Kirchhoff solid, computed with the geometrically nonlinear (total Lagrangian) velocity solid on a conformal interface.
 The steady state is reached by time stepping after an inlet ramp, with $\Delta t = 0.5\,\mathrm{s}$ on every level for the quasi-monolithic coupling and, as in the partitioned tutorial, $\Delta t = 0.5$, $0.25$, $0.125$ and $0.0625\,\mathrm{s}$ on levels 1--4 for Aitken coupling; the fluid uses the Euler scheme in this pseudo-time (the solid: BDF2 for the quasi-monolithic coupling and Euler for Aitken), which does not affect the steady state.
 Four uniformly refined levels ($\Delta x = 0.1$, $0.05$, $0.025$ and $0.0125\,\mathrm{m}$) are computed with the quasi-monolithic coupling and with partitioned Aitken coupling under the strict convergence test.
 The monitoring point A is the midpoint of the top surface of the plate, at $x = 4H$ on the fluid--solid interface (Figure~\ref{fig:cavity_geom_m}).
@@ -97,14 +97,14 @@ The monitoring point A is the midpoint of the top surface of the plate, at $x = 
 
 \paragraph{Measured.}
 The steady vertical displacement $u_y$ of point A and the vertical interface force $F_y$ on each level for both couplings, their difference, its rate of decrease with $\Delta x$, and the Richardson-extrapolated values of each coupling; Newton iterations per step, coupling iterations per step and wall time to steady state.
-A further pair of runs on levels 2 and 3 uses for the quasi-monolithic continuity flux the same face interpolation as the partitioned solver (\texttt{linear} rather than \texttt{skewCorrected linear}), which A2 identifies as the leading candidate for the remaining difference.
+A further pair of runs on levels 2 and 3 uses for the quasi-monolithic continuity flux the same face interpolation as the partitioned solver (linear rather than skewness-corrected linear), which A2 identifies as the leading candidate for the remaining difference.
 % A2 (a), run A1: interpolate(U) linear in system/fluid/fvSchemes.monolithic;
 % also checkMesh on the final states of both couplings (run A0).
 
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=0.85\textwidth]{figures/cavityFlexibleBottom-consistency}
-	\caption{Channel flow over a cavity with a flexible bottom: magnitude of the quasi-monolithic minus Aitken difference in $u_y$(A) and $F_y$ against the cell size, with the default \texttt{skewCorrected} and with \texttt{linear} interpolation of the velocity in the continuity flux; open markers: negative difference.}
+	\caption{Channel flow over a cavity with a flexible bottom: magnitude of the quasi-monolithic minus Aitken difference in $u_y$(A) and $F_y$ against the cell size, with the default skewness-corrected and with linear interpolation of the velocity in the continuity flux; open markers: negative difference.}
 	\label{fig:cavity_consistency}
 \end{figure}
 % Data: paper-data/cavity_interp_vs_aitken.csv; linear runs Mx 5406163, 5406302 (a421f063d),
@@ -142,8 +142,8 @@ A further pair of runs on levels 2 and 3 uses for the quasi-monolithic continuit
 The steady solutions of the two couplings approach each other under refinement (Table~\ref{tab:cavity_m}): the difference in $u_y$(A) falls from $0.47\%$ on level 1 to $0.055\%$ on level 4, by a factor of 2.7, 2.1 and 1.5 per halving of $\Delta x$, and that in $F_y$ from $0.59\%$ to $0.078\%$.
 Both couplings converge at second order between levels 2, 3 and 4 (ratios of successive changes of 4.0 and 4.1 in $u_y$), and their extrapolated values agree to $0.045\%$ in $u_y$ and $0.064\%$ in $F_y$, well within the uncertainty of the extrapolation itself.
 The decrease of the difference slows from a factor of 2.7 to 1.5 per halving, which suggests a lower-order term among the differences of Table~\ref{tab:discretisation_differences}.
-With the same continuity-flux interpolation as the partitioned solver (\texttt{linear}), the difference in $u_y$ falls from $0.18\%$ to $0.066\%$ on level 2, from $0.085\%$ to $0.0004\%$ on level 3 and from $0.055\%$ to $-0.0067\%$ on level 4, and that in $F_y$ to $-0.0068\%$ on level 4 (Figure~\ref{fig:cavity_consistency}): it changes sign between levels 3 and 4 and stays below $0.01\%$, so the \texttt{skewCorrected} interpolation is the source of the slowly decreasing difference, and what remains is of the size of the other second-order differences of Table~\ref{tab:discretisation_differences}.
-With \texttt{linear} interpolation the quasi-monolithic $u_y$ converges at second order like Aitken's (ratio of successive changes 4.10, against 4.05).
+With the same continuity-flux interpolation as the partitioned solver (linear), the difference in $u_y$ falls from $0.18\%$ to $0.066\%$ on level 2, from $0.085\%$ to $0.0004\%$ on level 3 and from $0.055\%$ to $-0.0067\%$ on level 4, and that in $F_y$ to $-0.0068\%$ on level 4 (Figure~\ref{fig:cavity_consistency}): it changes sign between levels 3 and 4 and stays below $0.01\%$, so the skewness-corrected interpolation is the source of the slowly decreasing difference, and what remains is of the size of the other second-order differences of Table~\ref{tab:discretisation_differences}.
+With linear interpolation the quasi-monolithic $u_y$ converges at second order like Aitken's (ratio of successive changes 4.10, against 4.05).
 The quasi-monolithic coupling needs 1.6--1.7 Newton iterations per step on every level with the same time step, whereas the Aitken runs use the tutorial's time step, halved with each level; even so, the quasi-monolithic coupling costs 1.7 to 2.8 times as much as Aitken to reach steady state, the ratio falling with refinement as Aitken's time step falls.
 
 %%--------------------------------------------------------------------------------------------------------------------%%

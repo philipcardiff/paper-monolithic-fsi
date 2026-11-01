@@ -64,10 +64,14 @@ The method has no globalisation beyond a backtracking line search, and adaptive 
 % tolerance was too loose then. Not reported (the acceptance test of check B1
 % now guards against it).
 
-In the two-dimensional cases of this paper, the solid block of the preconditioner is factorised exactly with a sparse LU factorisation after gathering it onto a single process.
-This is robust, and affordable because the solid block is small compared with the fluid block in these cases, but it is a serial step whose cost and memory grow with the size of the solid, and it limits the parallel scaling of cases with large solids (Section~\ref{sec:tube3d_scaling}).
-For the three-dimensional tube, one V-cycle of BoomerAMG replaces it (Section~\ref{sec:tube3d_scaling}); on the small solid block of the ring it needs about twice the Krylov iterations of the exact factorisation \tbd{confirm and complete from check B1: cost on the cavity and the tube, and agreement with the tightly converged solution}.
-\todo{Fill from the G1 report (B1 on ringAddedMass, cavityFlexibleBottom level 3 and 3dTube level 2, judged against the tightly converged reference: HANDOFF.md, decision of 21 October).}
+% Check B1: evidence/campaign-g1:paper-data/campaign/b1/findings.md
+% (solids4foam 257b2e564; ring factor 2 moderate, cavity L3, 3dTube L2).
+In the two-dimensional cases of this paper, the solid block of the preconditioner is factorised exactly with a sparse LU factorisation, of which every process holds a complete copy (PETSc \texttt{redundant}).
+This is robust, and affordable because the solid block is small compared with the fluid block in these cases, but its cost and memory do not fall with the process count and grow with the size of the solid.
+On level 2 of the three-dimensional tube the factorisation takes the same time on 16 processes as on 4, with its memory growing from 9 to 25\,GB, and one V-cycle of BoomerAMG is 4 and 12 times faster on 4 and 16 processes at the same Newton and Krylov iteration counts; it is therefore used for the tube (Sections~\ref{sec:tube3d_pc_study} and~\ref{sec:tube3d_scaling}).
+On the small solid blocks of the two-dimensional cases the exact factorisation remains the cheaper choice: BoomerAMG doubles the Krylov iterations on the ring and costs 1.4--1.9 times as much, and on the cavity it costs 10--14\% more.
+With either preconditioner the converged solution agrees with a run converged to a hundred times tighter Newton tolerances to within $7\times10^{-5}$ of each monitored quantity, relative to its largest magnitude and close to the output resolution of the monitors, so the choice affects cost only.
+An algebraic multigrid solid block for thin, nearly incompressible or strongly nonlinear solids has not been assessed.
 
 %%--------------------------------------------------------------------------------------------------------------------%%
 \subsection{Velocity solid on thin structures}\label{sec:lim_thin_solid}
@@ -80,7 +84,8 @@ For the three-dimensional tube, one V-cycle of BoomerAMG replaces it (Section~\r
 
 The velocity solids use the standard second-order cell-centred discretisation with linear reconstruction.
 For thin, bending-dominated structures meshed with few, elongated cells across the thickness, this discretisation is too stiff: in the companion paper, the same discretisation of the collapsible-channel wall in a static test is between $16.7\%$ and $0.22\%$ too stiff over the solid meshes used there, whereas a high-order reconstruction is within $0.25\%$ on every mesh~\citetodo{companion verification paper}.
-The high-order reconstruction is not available for the velocity solids, so the accuracy of the quasi-monolithic coupling on such cases is limited by the solid unless the solid is refined along its length; with a non-conformal interface the solid can be refined independently of the fluid (Section~\ref{sec:robustness_collapsible}) \tbd{at a cost of \ldots, from check B2}.
+The high-order reconstruction is not available for the velocity solids, so the accuracy of the quasi-monolithic coupling on such cases is limited by the solid unless the solid is refined along its length; with a non-conformal interface the solid can be refined independently of the fluid (Section~\ref{sec:robustness_collapsible}): on the collapsible channel a $640\times8$ solid coupled through AMI to fluid level 2 brings the first trough to within $0.71\%$ of the oomph-lib reference in about a third of the wall time of the conformal $320\times8$ solid on fluid level 4, whose trough lies $1.17\%$ from it.
+% B2: evidence/m-runs-b:paper-data/campaign/wp3/b2_618/ (3823 s against 11080 s, shared XenoSim node, indicative).
 The wet/dry frequency ratio of the ring problem is insensitive to this error, because the wet and dry runs share it (Section~\ref{sec:ring_m}).
 
 %%--------------------------------------------------------------------------------------------------------------------%%

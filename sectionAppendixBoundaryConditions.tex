@@ -1,0 +1,65 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Boundary conditions}\label{app:boundary_conditions}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+This appendix lists the boundary conditions of the cases in Sections~\ref{sec:verification_exact}--\ref{sec:limitations}.
+They are those of the quasi-monolithic variants of the solids4foam tutorials (\texttt{./Allrun monolithic}), whose dictionaries give the full specification; the partitioned runs use the same conditions, apart from the interface conditions of the partitioned couplings.
+
+\paragraph{Fluid.}
+The fluid boundary conditions are of the following types:
+\begin{itemize}
+	\item \emph{Velocity inlet}: a prescribed velocity, $\bb{v}_F = \bb{v}_\text{in}(\bb{x}, t)$, with a zero normal pressure gradient.
+	\item \emph{Pressure inlet or outlet}: a prescribed kinematic pressure, $p_F = p_\text{b}(t)$, with a zero normal velocity gradient, $\hat{\bb{n}}_F \cdot \nabla \bb{v}_F = \bb{0}$; at a \emph{parallel-flow} end, the tangential velocity is instead zero and only the normal velocity component has a zero normal gradient.
+	\item \emph{No-slip wall}: $\bb{v}_F = \bb{0}$, with a zero normal pressure gradient.
+	\item \emph{Slip wall}: zero normal velocity and zero normal gradient of the tangential velocity, with a zero normal pressure gradient.
+	\item \emph{Symmetry plane}: the slip condition for the velocity and a zero normal gradient of the pressure; on the wedge planes of the axisymmetric case, the corresponding rotational symmetry.
+\end{itemize}
+On the fluid--solid interface, the velocity and pressure are set by the coupling (Section~\ref{sec:fsi_interface}).
+If no boundary prescribes the pressure, its level is fixed by a reference value at one point.
+
+\paragraph{Solid.}
+The solid boundaries are clamped (zero displacement and velocity), loaded by a prescribed traction (traction-free unless stated), or symmetry planes (zero normal displacement and zero tangential traction).
+On the interface, the solid is loaded by the fluid traction (Section~\ref{sec:fsi_interface}).
+
+\paragraph{Fluid mesh motion.}
+The mesh displacement equals the solid interface displacement on the interface, is zero on all other fluid boundaries, and is tangential on symmetry planes.
+
+\paragraph{Cases.}
+Table~\ref{tab:app_bcs} lists the conditions of each case.
+
+\begin{table}[htbp]
+\centering
+\caption{Boundary conditions of the cases, apart from the fluid--solid interface. Pressures are kinematic.}
+\label{tab:app_bcs}
+\footnotesize
+\begin{tabular}{p{0.17\linewidth}p{0.45\linewidth}p{0.30\linewidth}}
+\toprule
+Case & Fluid & Solid \\
+\midrule
+Ring added mass (Sections~\ref{sec:ring_m}, \ref{sec:robustness_ring}) &
+No-slip rigid outer cylinder; symmetry planes on both axes (quadrant); pressure reference value $0$ at a point on the diagonal, where the $n = 2$ pressure vanishes. &
+Traction-free inner surface; symmetry planes. Initial velocity of the $n = 2$ mode. \\
+Pulsatile compliant tube (Sections~\ref{sec:womersley_m}, \ref{sec:womersley_consistency}) &
+Exact travelling-wave solution imposed at both ends: the pressure, and the normal gradient of the velocity; wedge planes. &
+Exact displacement imposed at both ends; traction-free outer surface; wedge planes. \\
+Cavity with a flexible bottom (Section~\ref{sec:cavity_m}) &
+Parabolic velocity inlet, mean $1$\,m/s; pressure outlet, $p_F = 0$; no-slip walls. &
+Clamped ends; traction-free lower surface. \\
+Collapsible channel (Section~\ref{sec:robustness_collapsible}) &
+Parallel-flow pressure inlet, $p_F = 6$\,m$^2$/s$^2$, and outlet, $p_F = 0$; no-slip walls. &
+Clamped ends; external pressure on the outer surface, ramped over $0.25$\,s. \\
+Hron--Turek FSI3 (Section~\ref{sec:fsi3_m}) &
+Parabolic velocity inlet, mean $2$\,m/s, applied without a ramp; pressure outlet, $p_F = 0$; no-slip channel walls and cylinder. &
+Clamped where the plate meets the cylinder. \\
+Elastic half-cylinder (Section~\ref{sec:blob_m}) &
+Parabolic velocity inlet, maximum $1.125$\,m/s, ramped in time; pressure outlet, $p_F = 0$; no-slip walls. &
+Clamped base. \\
+Three-dimensional flag (Section~\ref{sec:lim_foil}) &
+Uniform velocity inlet, $1$\,m/s; pressure outlet, $p_F = 0$; slip lateral walls; no-slip rigid block. &
+Clamped on the face attached to the block. \\
+Three-dimensional tube (Section~\ref{sec:scaling_3d}) &
+Pressure inlet with a pulse of $1.3333$\,m$^2$/s$^2$ ($1333.3$\,Pa) for $3$\,ms, then $0$; pressure outlet, $p_F = 0$; symmetry planes (quadrant). &
+Clamped ends; traction-free outer surface; symmetry planes. \\
+\bottomrule
+\end{tabular}
+\end{table}

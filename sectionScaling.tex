@@ -118,7 +118,7 @@ The variants are: an upper-triangular instead of a full Schur factorisation of t
 % evidence/m-runs-d (timing_6c_runs.csv, timing_6c_medians.csv).
 \begin{table}[htbp]
 	\centering
-	\caption{Three-dimensional tube, level 2, 16 processes, 50 steps from $t = 5\,\mathrm{ms}$: effect of one change at a time to the default solver settings. Time: median solver execution time of three repeats (spread below $0.3\%$). Every variant reproduces the wall displacement of the default run at the end of the window to six significant digits.}
+	\caption{Three-dimensional tube, level 2, 16 processes, 50 steps from $t = 5\,\mathrm{ms}$: effect of one change at a time to the default solver settings. Time: median solver execution time of three repeats (spread below $0.3\%$). Every variant reproduces the wall displacement of the default run at the end of the window to six significant digits. $^{*}$The assembled-Jacobian run stops on the step-norm test after 8 iterations at every step, at a relative residual of $1.7\times10^{-5}$ instead of the $10^{-6}$ of the residual test met by the other variants; meeting the residual test takes 12 iterations (Figure~\ref{fig:newton_convergence}).}
 	\label{tab:tube3d_pc}
 	\begin{tabular}{lrrrr}
 		\toprule
@@ -129,7 +129,7 @@ The variants are: an upper-triangular instead of a full Schur factorisation of t
 		Krylov tolerance $10^{-3}$ & 2.7 & 15.8 & 262 & 1.14 \\
 		Schur upper & 2.0 & 25.2 & 283 & 1.23 \\
 		Lag 1 & 2.0 & 18.3 & 287 & 1.25 \\
-		Assembled Jacobian as operator & 8.0 & 16.6 & 298 & 1.30 \\
+		Assembled Jacobian as operator$^{*}$ & 8.0 & 16.6 & 298 & 1.30 \\
 		Solid block LU on one process & 2.0 & 18.6 & 1892 & 8.25 \\
 		\bottomrule
 	\end{tabular}
@@ -140,9 +140,21 @@ Every variant reaches the same solution, so the choice is one of cost only.
 The largest effect is that of the solid-block preconditioner: the gathered LU factorisation leaves the iteration counts unchanged but multiplies the cost by eight, which is why one BoomerAMG V-cycle is the default on the three-dimensional meshes.
 A looser Krylov tolerance saves Krylov iterations but costs Newton iterations (2.7 instead of 2 per step), and is slower overall.
 Rebuilding the Jacobian and preconditioner at every Newton iteration (lag 1) leaves the iteration counts unchanged and costs $25\%$ more than the default lag of eight, and the upper-triangular Schur factorisation saves the second pressure solve but needs $38\%$ more Krylov iterations, for $23\%$ more time.
-With the assembled approximate Jacobian as the Newton operator, Newton converges only linearly and needs four times as many iterations, which confirms that the approximate Jacobian is suited to building the preconditioner but not to defining the Newton step; its cheaper iterations limit the extra cost to $30\%$ on this problem.
+With the assembled approximate Jacobian as the Newton operator, Newton converges only linearly (Figure~\ref{fig:newton_convergence}): on the tube the residual falls by a factor of $0.2$--$0.7$ per iteration and meets the $10^{-6}$ tolerance after 12 iterations, against 2 for the matrix-free operator, and the run in Table~\ref{tab:tube3d_pc} stops earlier, after 8, only because the step-norm test is met first.
+Its extra cost of $30\%$ is therefore a lower bound.
+On the ring, whose added mass is stronger, the rate is $0.85$ per iteration and 50 iterations reduce the residual only to $10^{-5}$, while the matrix-free operator meets $10^{-6}$ in 2 iterations.
+This confirms that the approximate Jacobian is suited to building the preconditioner but not to defining the Newton step.
+With the matrix-free operator the rate is set by the Krylov tolerance, as expected of an inexact Newton method: each iteration reduces the residual by a factor of $10^{-4}$--$5\times10^{-4}$ with the default tolerance of $10^{-4}$, and tightening it to $10^{-8}$ makes the convergence superlinear, which the default tolerance does not need at the residual tolerance used.
 
-\todo{Figure: Newton residual norm against Newton iteration for one representative time step, matrix-free operator against assembled approximate Jacobian, on 3dTube level 2 and on ringAddedMass (moderate level, factor 2, 100 steps per period), with \texttt{snes\_max\_it} high enough for the assembled-Jacobian run to converge. Reference slopes for linear and quadratic convergence.}
+% Data: paper-data/newton_histories.csv (MeluXina 5407757 3dTube L2, 16 ranks, restart
+% from t = 5 ms as timing 6c; 5407768 ring moderate m2 n100, serial, first 5 steps;
+% a421f063d; snes_rtol 1e-10, snes_stol 0). Figure: figures/scripts/newton_convergence.py.
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=\linewidth]{figures/newton-convergence.pdf}
+	\caption{Newton residual, relative to its value at the start of the step, against Newton iteration for one time step of the quasi-monolithic coupling with the matrix-free Newton operator at the default Krylov tolerance of $10^{-4}$ and at $10^{-8}$, and with the assembled approximate Jacobian as the operator: (a) three-dimensional tube, level 2, 16 processes, second step after $t = 5\,\mathrm{ms}$; (b) ring added-mass problem, moderate level, mesh factor 2, 100 steps per period, first step (the assembled-Jacobian run stops at the iteration limit of 50). The Newton iteration is run to $10^{-10}$ with the step-norm test off. Dotted: the default tolerance. solids4foam \texttt{a421f063d}.}
+	\label{fig:newton_convergence}
+\end{figure}
 
 
 \paragraph{Discussion: parallel cost of the coupled solve.}

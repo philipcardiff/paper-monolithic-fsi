@@ -93,12 +93,12 @@ Time per step and parallel efficiency, Newton iterations per step and Krylov ite
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=\textwidth]{figures/3dTube-strong-scaling}
-	\caption{Three-dimensional tube, strong scaling over a 50-step window: (a) \texttt{ExecutionTime} per step, with ideal scaling from 16 processes (dotted) and the processes of one NUMA domain shaded; (b) parallel efficiency relative to 16 processes; (c) Krylov iterations per Newton iteration of the quasi-monolithic coupling. Medians of three repeats.}
+	\caption{Three-dimensional tube, single-node strong scaling over a 50-step window: (a) \texttt{ExecutionTime} per step, with ideal scaling from 16 processes (dotted) and the processes of one NUMA domain shaded; (b) parallel efficiency relative to 16 processes; (c) Krylov iterations per Newton iteration of the quasi-monolithic coupling. Medians of three repeats.}
 	\label{fig:tube3d_scaling}
 \end{figure}
 
 Within one NUMA domain neither coupling scales well: on level 2 the time per step falls by a factor of only 3.6 (quasi-monolithic) and 5.3 (Robin--Neumann) from 1 to 16 processes, whereas going from 16 to 32 processes, which adds the memory channels of a second domain, roughly halves it for both (Figure~\ref{fig:tube3d_scaling}a).
-Both solvers are therefore limited by memory bandwidth on this node, and the efficiency is measured from 16 processes, one full domain.
+This behaviour is consistent with both solvers being limited by memory bandwidth within a domain, although this was not confirmed by profiling; the efficiency is therefore measured from 16 processes, one full domain.
 On level 3 the quasi-monolithic coupling keeps an efficiency of 1.06 and 1.04 on 32 and 64 processes and 0.78 on 128 processes, about 8000 fluid cells per process, against 1.08, 1.16 and 0.85 for Robin--Neumann; on level 2 it falls to 0.69 on 64 processes, about 2000 fluid cells per process, against 0.77.
 The Krylov iterations per Newton iteration do not change with the process count (18.0--18.6 on level 2 from 1 to 64 processes, 27.2--27.5 on level 3 from 16 to 128), and Newton converges in two iterations per step throughout, so neither the block-Jacobi ILU(0) velocity block nor the BoomerAMG solid block loses effectiveness as the domain is partitioned; the somewhat lower efficiency than Robin--Neumann lies in the cost per Krylov iteration, not in the iteration count.
 Over these windows the quasi-monolithic coupling costs 3.0 times as much as Robin--Neumann on level 3 with 16 processes and 3.3 times with 128, and 1.3 to 2.0 times on level 2 from 1 to 64 processes: with its Robin interface condition the partitioned coupling needs only about three coupling iterations per step on this case, so the tube is a case in which a well-tuned partitioned coupling is cheaper.

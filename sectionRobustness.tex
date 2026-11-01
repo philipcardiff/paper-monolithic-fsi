@@ -67,7 +67,7 @@ The channel has width $a = 1\,\mathrm{m}$; the elastic wall, $10\,\mathrm{m}$ lo
 Fluid level 2 of the companion paper (12\,800 cells) is used, with the wall computed on a $640\times8$ solid mesh coupled through AMI: by the geometrically nonlinear velocity solid with conservative traction transfer in the quasi-monolithic coupling, and by the total-displacement solid in the partitioned couplings.
 The density ratio $\rho_s/\rho_f$ takes the values 10, 1, 0.1, 0.01 and 0 (massless wall), crossed with $\Delta t = 0.025$, $0.0125$, $0.00625$ and $0.003125\,\mathrm{s}$, and each run continues to $t = 0.75\,\mathrm{s}$, past the first trough of the wall midpoint.
 The quantity of interest is that trough, compared with the converged oomph-lib solution for $\rho_s/\rho_f = 1$ and for the massless wall.
-On this mesh and at $\Delta t = 0.00625\,\mathrm{s}$ the quasi-monolithic trough lies $0.71\%$ from oomph-lib, so the map measures accuracy as well as robustness.
+On this mesh and at $\Delta t = 0.00625\,\mathrm{s}$ the quasi-monolithic trough lies $0.71\%$ from oomph-lib, against $1.17\%$ with the conformal $320\times8$ solid on the finer fluid level 4, so the map measures accuracy as well as robustness.
 % B2 (wp3/b2_618): L2 AMI 640x8 -0.71%, L4 conformal 320x8 -1.17% (linear
 % 320x8 solid; static wall -1.12% on 320x8).
 The fluid mesh moves with the solid-model motion solver of Section~\ref{sec:fluid_mesh_motion}, with a predicted first iterate of the mesh displacement in each step (Section~\ref{sec:robustness_collapsible_mesh}).
@@ -80,7 +80,7 @@ The fluid mesh moves with the solid-model motion solver of Section~\ref{sec:flui
 \end{figure}
 
 \paragraph{Outcome.}
-The quasi-monolithic coupling completes all 20 cells, including the massless wall at every time step, with 2.0--3.2 Newton iterations per step on average and at most four (Figure~\ref{fig:robustness_collapsible}); the count falls with the time step and does not depend on the density ratio.
+The quasi-monolithic coupling completes all 20 cells, including the massless wall at every time step, with 2.0--3.2 Newton iterations per step on average and at most four (Figure~\ref{fig:robustness_collapsible}); the count falls with the time step and does not depend on the density ratio, whereas the Krylov iterations per Newton iteration, 210--310, are about ten times those of the ring (18--29), which reflects the conditioning of the thin, finely resolved wall rather than the added mass.
 The partitioned couplings complete all cells at $\rho_s/\rho_f = 10$ and, apart from IQN-ILS at the smallest step, at $\rho_s/\rho_f = 1$, with 8--49 coupling iterations per step; below that they fail by reaching the iteration cap.
 Aitken fails at every time step for $\rho_s/\rho_f \le 0.1$, except at the largest step for the massless wall; IQN-ILS fails for $\rho_s/\rho_f \le 0.1$ at $\Delta t \le 0.00625\,\mathrm{s}$ and for the massless wall at $\Delta t \le 0.0125\,\mathrm{s}$; Robin--Neumann completes $\rho_s/\rho_f = 0.1$ at every step but needs 52--65 iterations per step, fails at three of the four steps for $\rho_s/\rho_f = 0.01$, and is undefined for the massless wall, since its Robin coefficient scales with the wall density.
 The failures occur within the first $0.35\,\mathrm{s}$, and the smaller the time step the earlier they occur, as expected of added-mass instability.

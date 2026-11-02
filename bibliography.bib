@@ -938,16 +938,14 @@ url     = {https://dealii.org/deal95-preprint.pdf}
   note = {For examination}
 }
 
-@Misc{PETSc,
-  author = {Satish Balay and Shrirang Abhyankar and Mark~F. Adams and Jed Brown and Peter Brune
-            and Kris Buschelman and Lisandro Dalcin and Victor Eijkhout and William~D. Gropp
-            and Dinesh Kaushik and Matthew~G. Knepley
-            and Lois Curfman McInnes and Karl Rupp and Barry~F. Smith
-            and Stefano Zampini and Hong Zhang},
-  title =  {{PETS}c {W}eb page},
-  url =    {http://www.mcs.anl.gov/petsc},
-  howpublished = {\url{http://www.mcs.anl.gov/petsc}},
-  year = {2015}
+@techreport{PETSc,
+  author      = {Balay, S. and Abhyankar, S. and Adams, M. F. and Benson, S. and Brown, J. and Brune, P. and Buschelman, K. and Constantinescu, E. M. and Dalcin, L. and Dener, A. and Eijkhout, V. and Faibussowitsch, J. and Gropp, W. D. and Hapla, V. and Isaac, T. and Jolivet, P. and Karpeev, D. and Kaushik, D. and Knepley, M. G. and Kong, F. and Kruger, S. and May, D. A. and McInnes, L. Curfman and Mills, R. Tran and Mitchell, L. and Munson, T. and Roman, J. E. and Rupp, K. and Sanan, P. and Sarich, J. and Smith, B. F. and Zampini, S. and Zhang, H. and Zhang, H. and Zhang, J.},
+  title       = {{PETSc}/{TAO} Users Manual, Revision 3.22},
+  institution = {Argonne National Laboratory},
+  number      = {ANL-21/39 - Revision 3.22},
+  year        = {2024},
+  doi         = {10.2172/2476320},
+  url         = {https://petsc.org}
 }
 
 @article{Geuzaine2009,
@@ -10364,4 +10362,29 @@ author =       {A. K. Slone and K. Pericleous and C. Bailey and
   pages   = {7027--7051},
   year    = {2008},
   doi     = {10.1016/j.jcp.2008.04.006}
+}
+
+% Companion paper (paper-fsi-verification, submitted to J. Fluids Struct.).
+% Recheck the author list, title and arXiv number at submission (same-day arXiv).
+@unpublished{CardiffFSIVerification2026,
+  author = {Cardiff, P. and Tandis, E. and Pamulaparthi Venkata, S. and Batisti{\'c}, I.},
+  title  = {Benchmark problems are not benchmark solutions: an open verification suite for continuum fluid--solid interaction with quantified numerical uncertainty},
+  note   = {Submitted to Journal of Fluids and Structures},
+  year   = {2026}
+}
+
+@misc{solids4foamIssue639,
+  author       = {{solids4foam developers}},
+  title        = {Quasi-monolithic run hangs in step 2 when decomposeParMonolithic leaves a rank with zero fluid cells},
+  howpublished = {solids4foam issue 639, \url{https://github.com/solids4foam/solids4foam/issues/639}},
+  note         = {Accessed 2 November 2026},
+  year         = {2026}
+}
+
+@misc{solids4foamIssue643,
+  author       = {{solids4foam developers}},
+  title        = {3dTube verification: axis pressure probes sit on cell faces, so $c_p$ has a $\pm\Delta z/(2c)$ per-station jitter},
+  howpublished = {solids4foam issue 643, \url{https://github.com/solids4foam/solids4foam/issues/643}},
+  note         = {Accessed 2 November 2026},
+  year         = {2026}
 }

@@ -9,14 +9,14 @@
 % paper-data/a1_monolithic_study_inventory.md).
 % Stream feeding this section: R1.
 
-Sections~\ref{sec:verification_exact} to~\ref{sec:limitations} assess the method on the cases summarised in Table~\ref{tab:case_overview}, under the common protocol of Section~\ref{sec:protocol}.
+Sections~\ref{sec:verification_exact} to~\ref{sec:limitations} assess the method on the cases of Table~\ref{tab:case_overview} under the common protocol of Section~\ref{sec:protocol}.
 This section verifies the method against two exact solutions and uses them to examine the interface treatment of Section~\ref{sec:numerical_methods}.
 
 \begin{table}[htbp]
 	\centering
 	\small
 	\setlength{\tabcolsep}{4pt}
-	\caption{Cases, the questions they address in this paper and the reference used for each. Full set-ups and the provenance of the references are given in the companion verification paper~\protect\citep{CardiffFSIVerification2026}.}
+	\caption{Cases, the questions they address and their references. Full set-ups and the provenance of the references are given in the companion verification paper~\protect\citep{CardiffFSIVerification2026}.}
 	\label{tab:case_overview}
 	\begin{tabular}{llll}
 		\toprule
@@ -41,27 +41,27 @@ This section verifies the method against two exact solutions and uses them to ex
 % Source of the protocol: campaign/HANDOFF.md (origin/campaign/handoff),
 % Section 4 "Common protocol" and Section 6 "Data formats".
 
-Every result in Sections~\ref{sec:verification_exact} to~\ref{sec:limitations} is computed with the solids4foam release \tbd{tag name} (campaign build \texttt{v2.2-1808}, commit \texttt{a421f063d}, unless a run table states otherwise), built with OpenFOAM v2512 and GCC 13.3, PETSc 3.22.0 and HYPRE 2.31.0, and both couplings are run from the same build.
+Every result in Sections~\ref{sec:verification_exact} to~\ref{sec:limitations} is computed with the solids4foam release \tbd{tag name} (campaign build \texttt{v2.2-1808}, commit \texttt{a421f063d}, unless a run table states otherwise), built with OpenFOAM v2512, GCC 13.3, PETSc 3.22.0 and HYPRE 2.31.0; both couplings use the same build.
 % Source: provenance.json of the 6b runs (Mx 5402592).
-The quasi-monolithic coupling is compared with the partitioned Dirichlet--Neumann coupling accelerated by Aitken relaxation or IQN-ILS and with Robin--Neumann coupling~\citep{Tukovic2018b}, using for each case the partitioned schemes and settings of the companion paper~\citep{CardiffFSIVerification2026}.
+The quasi-monolithic coupling is compared with the partitioned Dirichlet--Neumann coupling accelerated by Aitken relaxation or IQN-ILS and with Robin--Neumann coupling~\citep{Tukovic2018b}, with the partitioned schemes and settings of the companion paper~\citep{CardiffFSIVerification2026} for each case.
 
 \paragraph{Control of iterative error.}
 The Newton iterations of the quasi-monolithic coupling stop when either the relative nonlinear residual or the relative Newton step falls below its tolerance, both fixed for each case before the campaign (Table~\ref{tab:solver_settings} in Appendix~\ref{app:settings}).
 Their iterative error is measured by repeating selected runs with both tolerances reduced a hundredfold.
-The partitioned runs use the strict coupling convergence test of the companion paper, which requires every interface residual measure to be below the tolerance, with a coupling tolerance chosen so that their iterative error is no larger than that of the quasi-monolithic runs.
-The residual definitions of the two couplings differ, so equal tolerances do not by themselves mean equal iterative error; it is the repeated runs that bound the iterative error of each coupling below the differences reported.
+The partitioned runs use the strict coupling convergence test of the companion paper, which requires every interface residual measure to be below the tolerance, chosen so that their iterative error is no larger than that of the quasi-monolithic runs.
+Because the residual definitions differ, equal tolerances do not imply equal iterative error; the repeated runs bound the iterative error of each coupling below the differences reported.
 
 \paragraph{Accuracy.}
 Errors are measured against the references of the companion paper, with the uncertainty stated there: exact solutions (Section~\ref{sec:verification_exact}), the oomph-lib solution for the collapsible channel (Section~\ref{sec:robustness}) and the Featflow tables for FSI3 (Section~\ref{sec:accuracy_cost}).
 No new reference values are formed in this paper.
-Where no independent reference exists, the two couplings are compared with each other on the same meshes and time steps.
+Where no independent reference exists, the two couplings are compared on the same meshes and time steps.
 
 \paragraph{Cost.}
-Timings are taken on exclusive nodes of the MeluXina system (two 64-core AMD EPYC 7H12 processors per node, with eight NUMA domains of 16 cores), each run on a single node with the processes pinned to consecutive cores, as the median of three repeats.
-Unless stated otherwise, a fixed window of time steps is timed from a restart, and the cost is the elapsed (wall-clock) time of the window, excluding start-up, as the median of three repeats; the solver CPU time of the first process is recorded for reference.
+Timings are taken on exclusive nodes of the MeluXina system (two 64-core AMD EPYC 7H12 processors per node, with eight NUMA domains of 16 cores), each run on a single node with the processes pinned to consecutive cores.
+Unless stated otherwise, the cost is the median over three repeats of the elapsed (wall-clock) time of a fixed window of time steps run from a restart, excluding start-up; the solver CPU time of the first process is recorded for reference.
 On these nodes the elapsed time exceeds the CPU time by 1--4\% except in the strong-scaling study, where stalls on the shared file system make it 11--39\% larger and spread it by up to 34\% between repeats (Section~\ref{sec:tube3d_scaling}).
 The two-dimensional studies of Sections~\ref{sec:blob_m} and~\ref{sec:lim_foil} were run on a workstation, on which the elapsed and CPU times agree to within 1\%.
-Newton iterations per step and Krylov iterations per Newton iteration (quasi-monolithic), and coupling iterations per step (partitioned), are extracted from the solver logs.
+Newton and Krylov iterations (quasi-monolithic) and coupling iterations (partitioned) are extracted from the solver logs.
 Timings from different machines are never compared.
 
 \paragraph{Outcome of a run.}
@@ -69,8 +69,8 @@ Each run is recorded as completed, diverged (non-finite residual, inverted cell 
 A run that does not complete is reported as such and is not repeated with other settings.
 
 \paragraph{Provenance and data.}
-Each run records the solids4foam commit, the OpenFOAM, PETSc and HYPRE versions, the compiler and flags, the host and CPU model, the number of processes and the full set of PETSc options.
-The run tables, the extracted quantities of interest, the provenance records and the scripts that produce every figure and table are available in the \texttt{paper-data} directory of the paper repository \tbd{public URL and Zenodo DOI}.
+Each run records the solids4foam commit, the OpenFOAM, PETSc and HYPRE versions, compiler and flags, host and CPU model, process count and full PETSc options.
+The run tables, extracted quantities of interest, provenance records and the scripts for every figure and table are in the \texttt{paper-data} directory of the paper repository \tbd{public URL and Zenodo DOI}.
 
 
 % Agent B, 1 Nov 2026: collapsibleChannel, blobInTreacle and foilInWind rows
@@ -97,17 +97,17 @@ The run tables, the extracted quantities of interest, the provenance records and
 % Driver: verification/Allverify --study monolithic (time steps) and the
 % conformal arm of --study nonconformal (meshes); see A1 Section 1.1.
 
-An elastic ring vibrating freely in its $n = 2$ mode inside a rigid, fluid-filled annulus has an exact frequency that depends on the added mass of the fluid alone, which makes it a direct test of the coupling: the ratio of the wet to the dry frequency isolates the added-mass effect from the solid and temporal errors that the wet and dry runs share~\citep{CardiffFSIVerification2026}.
-The question here is whether the quasi-monolithic coupling reproduces the exact added mass at second order and adds no damping to the free vibration.
+An elastic ring vibrating freely in its $n = 2$ mode inside a rigid, fluid-filled annulus has an exact frequency that depends on the added mass of the fluid alone; the ratio of the wet to the dry frequency isolates the added-mass effect from the solid and temporal errors that the wet and dry runs share~\citep{CardiffFSIVerification2026}.
+The question is whether the quasi-monolithic coupling reproduces the exact added mass at second order and adds no damping to the free vibration.
 
 \paragraph{Set-up.}
 A ring of mean radius $a = 1\,\mathrm{m}$ and thickness $h = 0.1\,\mathrm{m}$ (plane strain, $E = 1\,\mathrm{MPa}$, $\nu = 0.3$, $\rho_s = 1000\,\mathrm{kg/m^3}$) is surrounded by fluid out to a rigid wall of radius $b = 1.5\,\mathrm{m}$; one quadrant is modelled with symmetry planes.
 The fluid density is chosen to give added-mass ratios $\mu = 0.101$, $1.008$ and $10.08$ (weak, moderate and strong), and a dry ring is run with each mesh and time step.
 The solid is the geometrically linear velocity solid with the standard second-order discretisation, and the interface is conformal.
-Meshes are refined by factors 1, 2 and 4 at 100 steps per period, and the time step is varied from 25 to 100 steps per period on the factor-2 mesh; the fluid and the solid both use the second-order backward (BDF2) scheme.
+Meshes are refined by factors 1, 2 and 4 at 100 steps per period, and 25 to 100 steps per period are used on the factor-2 mesh; the fluid and the solid both use the second-order backward (BDF2) scheme.
 
 \paragraph{Measured.}
-The wet frequency and its error against the exact value, the error of the wet/dry frequency ratio, and the amplitude loss per period, together with Newton iterations per step and Krylov iterations per Newton iteration; IQN-ILS and Robin--Neumann are run on the same meshes and steps for the iteration counts and timings.
+The wet frequency error, the wet/dry ratio error, the amplitude loss per period and iteration counts; IQN-ILS and Robin--Neumann are run on the same meshes and steps for the iteration counts and timings.
 
 \begin{figure}[htbp]
 	\centering
@@ -123,7 +123,7 @@ The wet frequency and its error against the exact value, the error of the wet/dr
 % (paper-fsi-verification ring-monolithic, ringAddedMass_monolithic_runs.csv).
 \begin{table}[htbp]
 	\centering
-	\caption{Ring added-mass problem, strong level ($\mu = 10.08$), factor-2 mesh, four periods, one process: iterations, cost and accuracy of the three couplings. Iterations: Newton iterations (quasi-monolithic) or coupling iterations (partitioned) per step. Time: median elapsed time per step of three repeats. Ratio error: error of the wet/dry frequency ratio against the exact value.}
+	\caption{Ring added-mass problem, strong level ($\mu = 10.08$), factor-2 mesh, four periods, one process. Iterations: Newton iterations (quasi-monolithic) or coupling iterations (partitioned) per step. Time: median elapsed time per step of three repeats. Ratio error: error of the wet/dry frequency ratio against the exact value.}
 	\label{tab:ring_cost}
 	\setlength{\tabcolsep}{3pt}
 	\begin{tabular}{lrrrrr}
@@ -143,14 +143,13 @@ The wet frequency and its error against the exact value, the error of the wet/dr
 	\end{tabular}
 \end{table}
 
-At the strong level every step of the quasi-monolithic coupling converges in two Newton iterations, with 20--22 Krylov iterations per Newton iteration, and a step costs about half as much as an IQN-ILS step at every time step (Table~\ref{tab:ring_cost}).
-IQN-ILS needs four to five coupling iterations per step and, at its coupling tolerance, leaves a ratio error of $0.03$--$0.13\%$ and an amplitude loss above that of the other two couplings; the quasi-monolithic and Robin--Neumann couplings agree with each other in both quantities.
-Robin--Neumann reaches the same accuracy as the quasi-monolithic coupling, but its coupling iterations grow as the time step increases, from 12 per step at 100 steps per period to 47 at 25, so that it is 3 to 13 times as expensive and, unlike the other two, becomes more expensive per period as the time step grows.
+On the factor-2 mesh every quasi-monolithic step converges in two Newton iterations at every added-mass level and time step; at the strong level it needs 20--22 Krylov iterations per Newton iteration, and a step costs about half as much as an IQN-ILS step at every time step (Table~\ref{tab:ring_cost}).
+At its coupling tolerance IQN-ILS leaves a ratio error of $0.03$--$0.13\%$ and an amplitude loss above those of the other two couplings, which agree with each other in both quantities.
+Robin--Neumann reaches the same accuracy as the quasi-monolithic coupling, but its coupling iterations grow with the time step, so that it is 3 to 13 times as expensive and, unlike the other two, becomes more expensive per period as the time step grows.
 
-Under mesh refinement at 100 steps per period, the ratio error of the quasi-monolithic coupling falls faster than second order at every added-mass level (observed orders 3.2--3.3 at the strong level, 3.3--4.1 at the moderate level and higher at the weak level), to below $4\times10^{-4}\%$ on the factor-4 mesh (Figure~\ref{fig:ring_accuracy}a): the wet and dry runs share the solid and temporal errors, which cancel in the ratio.
+Under mesh refinement at 100 steps per period, the ratio error of the quasi-monolithic coupling falls faster than second order at every added-mass level (observed orders 3.2--3.3 at the strong level, 3.3--4.1 at the moderate level and higher at the weak level), to below $4\times10^{-4}\%$ on the factor-4 mesh (Figure~\ref{fig:ring_accuracy}a), as the shared solid and temporal errors cancel in the ratio.
 The IQN-ILS ratio error converges at order 1.8--1.9 and is 25 to 600 times larger on the factor-4 mesh.
-The coupling adds no measurable damping: at the strong level the amplitude loss per period of the quasi-monolithic coupling equals that of the dry ring to within 0.004 percentage points at every time step (Figure~\ref{fig:ring_accuracy}b), so the loss is the numerical damping of BDF2 in the ring itself, which falls by a factor of 7--8 per halving of the time step; on all three meshes and levels at 100 steps per period the wet and dry losses differ by at most 0.08 percentage points, against 0.06 to 2.1 percentage points of additional loss for IQN-ILS.
-Every quasi-monolithic step converges in two Newton iterations at every added-mass level and time step on the factor-2 mesh.
+The coupling adds no measurable damping: at the strong level the quasi-monolithic amplitude loss per period equals that of the dry ring to within 0.004 percentage points at every time step (Figure~\ref{fig:ring_accuracy}b), so the loss is the BDF2 damping of the ring itself, which falls by a factor of 7--8 per halving of the time step; on all three meshes and levels at 100 steps per period the wet and dry losses differ by at most 0.08 percentage points, against 0.06 to 2.1 percentage points of additional loss for IQN-ILS.
 % Recorded before the tag (stale, for orientation only; ringAddedMass
 % verification/README.md lines 319-371): 2.00 Newton iterations per step at
 % every level and step; amplitude loss equal to the dry ring's.
@@ -170,16 +169,16 @@ Every quasi-monolithic step converges in two Newton iterations at every added-ma
 % Monolithic solid: linearGeometryVelocity, conformal direct map.
 % Driver: verification/Allverify --monolithic.
 
-A harmonic pressure wave travelling along an axisymmetric thick-walled elastic tube combines added mass, viscous attenuation and a deforming wall, and its exact linear solution~\citep{CardiffFSIVerification2026} measures the error of the viscous interface traction, which the ring problem, with an effectively inviscid fluid, does not.
+A harmonic pressure wave travelling along an axisymmetric thick-walled elastic tube combines added mass, viscous attenuation and a deforming wall; its exact linear solution~\citep{CardiffFSIVerification2026} measures the error of the viscous interface traction, which the effectively inviscid ring problem does not.
 
 \paragraph{Set-up.}
 The tube of the companion paper is used unchanged ($h/R = 0.1$, $L/R = 15$, Womersley number $5.01$, $\rho_s h/(\rho_f R) = 0.1$), with exact travelling-wave data at both ends and exact initial fields, on a wedge mesh.
 Meshes are refined by factors 1, 2 and 4 at 200 steps per period, and 50 to 400 steps per period are used on the factor-2 mesh.
 First Fourier coefficients over periods 5--6 are compared with the exact solution; the fluid and the solid both use BDF2, and the Newton tolerances are tightened to $10^{-8}$ (Krylov $10^{-6}$) so that the iterative error is negligible.
-The partitioned runs of the companion paper need a flux-consistent treatment of the tube ends (the \texttt{pimpleFluid} option \texttt{fluxConsistentPatches}) to recover second order in time; the quasi-monolithic runs, with the end conditions of the tutorial's quasi-monolithic variant and no such option, converge at second order in time (Table~\ref{tab:womersley_m}).
+The partitioned runs of the companion paper need a flux-consistent treatment of the tube ends (the \texttt{pimpleFluid} option \texttt{fluxConsistentPatches}) to recover second order in time; the quasi-monolithic runs, with the tutorial's quasi-monolithic end conditions, reach it without (Table~\ref{tab:womersley_m}).
 
 \paragraph{Measured.}
-Errors and observed orders in space and time of the velocity profile, the flow-rate amplitude and phase, the wall displacement amplitude and phase, the wave speed and the attenuation; Newton and Krylov iterations; and cost against IQN-ILS and Robin--Neumann on the factor-2 mesh at 100 steps per period.
+Errors and observed orders in space and time of the quantities in Table~\ref{tab:womersley_m}, and the Newton, Krylov and partitioned coupling iterations.
 The difference between the couplings is discussed in Section~\ref{sec:womersley_consistency}.
 
 % Data: evidence/m-runs-a-rfix:paper-data/campaign/m-runs-a-rfix/qois.csv (build 1252bd2e5, R-fix);
@@ -210,10 +209,10 @@ The difference between the couplings is discussed in Section~\ref{sec:womersley_
 	{\footnotesize $^{a}$ change between 100 and 200 steps per period below $2\times10^{-5}$, so no order is formed. $^{b}$ the error changes by less than $15\%$ between meshes and not monotonically. $^{c}$ all amplitudes reduced tenfold (build \texttt{a421f063d}; every exact amplitude scales by exactly $0.1$, while the wavenumber and the Womersley number are unchanged), error relative to the scaled exact peak; at full amplitude the error near the wall is limited by the $8\times10^{-4}$ ambiguity of the linearised reference (Section~\ref{sec:womersley_consistency}).}
 \end{table}
 
-Every quantity converges at second order in time (observed orders 1.86--2.14, Table~\ref{tab:womersley_m}), and the flow rate, the wall displacement amplitude, the wave speed and the pressure converge at second order in space (1.92--2.37; the velocity profile, at a tenfold reduced amplitude, at 1.78), with every quasi-monolithic step converging in two Newton iterations and 23--28 Krylov iterations per Newton iteration; the partitioned runs need 15--16 (IQN-ILS) and 11--18 (Robin--Neumann) coupling iterations per step at the strict test.
+Every quantity converges at second order in time (Table~\ref{tab:womersley_m}), and the flow rate, the wall displacement amplitude, the wave speed and the pressure at second order in space (the velocity profile, at a tenfold reduced amplitude, at 1.78), with every quasi-monolithic step converging in two Newton iterations and 23--28 Krylov iterations per Newton iteration; the partitioned runs need 15--16 (IQN-ILS) and 11--18 (Robin--Neumann) coupling iterations per step at the strict test.
 The wall displacement phase and the attenuation are the exceptions: their errors fall only from $2.4$ to $1.2\times10^{-3}\,\mathrm{rad}$ and from $0.23\%$ to $0.19\%$ between the factor-1 and factor-4 meshes, and about $1.2\times10^{-3}\,\mathrm{rad}$ and $0.15\%$ remain on the factor-2 mesh when the time step is extrapolated to zero.
-Robin--Neumann shows the same phase and attenuation to within $5\times10^{-5}\,\mathrm{rad}$ and $3\times10^{-4}$ (Section~\ref{sec:womersley_consistency}), so this error belongs to what the two couplings share, not to the coupling; the partitioned study of the companion paper finds the same wall-phase order (1.40) and the same attenuation error ($-2\times10^{-3}$ on every mesh and time step), the latter at the accuracy limit of the linear theory used as the reference~\citep{CardiffFSIVerification2026}.
-With all amplitudes reduced tenfold, both errors fall to less than half on the factor-4 mesh at 200 steps per period, to $4.9\times10^{-4}\,\mathrm{rad}$ and $0.10\%$, so part of them depends on the amplitude, as expected of a limit of the linear reference.
+Robin--Neumann shows the same phase and attenuation to within $5\times10^{-5}\,\mathrm{rad}$ and $3\times10^{-4}$ (Section~\ref{sec:womersley_consistency}), so this error is common to both couplings, not caused by the coupling; the partitioned study of the companion paper finds the same wall-phase order (1.40) and the same attenuation error ($-2\times10^{-3}$ on every mesh and time step), the latter at the accuracy limit of the linear reference theory~\citep{CardiffFSIVerification2026}.
+With all amplitudes reduced tenfold, both errors fall to less than half on the factor-4 mesh at 200 steps per period, to $4.9\times10^{-4}\,\mathrm{rad}$ and $0.10\%$; this amplitude dependence is expected of a limit of the linear reference.
 The timings of these runs were taken on a shared node and are not reported.
 
 %%--------------------------------------------------------------------------------------------------------------------%%
@@ -223,7 +222,7 @@ The timings of these runs were taken on a shared node and are not reported.
 % an option on the tag and informative. Routes and run sets from audit A4
 % (paper-data/a4_ablation_reproducibility.md, Sections 1 and 7).
 
-Two ingredients of the interface treatment of Section~\ref{sec:interface_conditions} can be switched by an option and are examined here on the ring problem, whose exact solution attributes any change to the ingredient removed.
+Two ingredients of the interface treatment of Section~\ref{sec:interface_conditions} can be switched by an option and are examined on the ring problem, whose exact solution attributes any change to the ingredient removed.
 
 \paragraph{Interface pressure.}
 The normal pressure gradient of Equation~\eqref{eqn:interface_pressure_gradient} is replaced by a zero normal gradient on the interface, with everything else unchanged, including the face extrapolation of the solid velocity.
@@ -241,10 +240,10 @@ The moderate and strong levels are run on mesh factors 1, 2 and 4 at 100 steps p
 	\label{fig:ring_pressure_condition}
 \end{figure}
 
-With a zero normal pressure gradient the ratio error converges at first order, with observed orders 0.74 and 0.88 at the moderate level and 0.75 and 0.89 at the strong level, and is 300 to 600 times larger on the factor-4 mesh than with the normal-momentum gradient ($0.059\%$ and $0.108\%$, against $9\times10^{-5}\%$ and $4\times10^{-4}\%$; Figure~\ref{fig:ring_pressure_condition}a).
-The zero gradient also damps the coupled vibration: the amplitude loss per period exceeds that of the dry ring by $1.3$, $0.66$ and $0.34$ percentage points at the moderate level and by $2.3$, $1.2$ and $0.65$ at the strong level on the three meshes, halving with each refinement, whereas with the normal-momentum gradient the wet and dry losses differ by at most $0.08$ percentage points (Figure~\ref{fig:ring_pressure_condition}b).
-A zero gradient is consistent only in the limit of a stationary interface; on a moving interface it omits the pressure gradient that accelerates the fluid with the wall, which is the added-mass effect itself; this is consistent with an error that grows with the added mass and falls at first order with the size of the cells adjacent to the interface.
-The interface pressure treatment therefore controls the damping of the coupled vibration as well as its frequency.
+With a zero normal pressure gradient the ratio error converges at first order, observed orders 0.74 and 0.88 at the moderate level and 0.75 and 0.89 at the strong level, and is 300 to 600 times larger on the factor-4 mesh than with the normal-momentum gradient ($0.059\%$ and $0.108\%$, against $9\times10^{-5}\%$ and $4\times10^{-4}\%$; Figure~\ref{fig:ring_pressure_condition}a).
+The zero gradient also damps the coupled vibration: the amplitude loss per period exceeds that of the dry ring by $1.3$, $0.66$ and $0.34$ percentage points at the moderate level and by $2.3$, $1.2$ and $0.65$ at the strong level on the three meshes, halving with each refinement, whereas with the normal-momentum gradient they differ by at most $0.08$ percentage points (Figure~\ref{fig:ring_pressure_condition}b).
+A zero gradient is consistent only for a stationary interface; on a moving interface it omits the pressure gradient that accelerates the fluid with the wall, the added-mass effect itself, consistent with an error that grows with the added mass and falls at first order with the size of the interface-adjacent cells.
+The interface pressure treatment thus controls the damping of the coupled vibration as well as its frequency.
 
 \paragraph{Non-conformal transfer.}
 The ring is computed with solid interface meshes coarser and finer than the fluid interface mesh, coupled through the AMI weights, once with interpolated traction and once with the conservative transfer of Equation~\eqref{eqn:conservative_transfer}.
@@ -266,10 +265,10 @@ The total interface force transferred is logged on both sides of the interface a
 \end{figure}
 
 With the conservative transfer the total force on the solid equals that of the fluid to round-off, with a relative imbalance below $3\times10^{-15}$ at every step, mesh and level (Figure~\ref{fig:ring_nonconformal}a).
-With interpolated traction the imbalance is $3$--$9\times10^{-5}$ and does not decrease with refinement, but it is not an error of the transfer: on the factor-2 and factor-4 meshes it equals that of the conformal direct map to within $10\%$ ($2$--$3\times10^{-5}$ at the strong level, $5$--$8\times10^{-5}$ at the moderate level), which arises because the linear-geometry solid integrates the traction over its undeformed face areas while the fluid integrates over the deformed faces.
-The frequency ratio is not affected by the choice of transfer at the reported precision: the interpolated and conservative results differ by at most $2.6\times10^{-5}$ relative on every mesh and level, and on the factor-4 mesh the ratio error on a non-conformal interface is $1.9\times10^{-5}$ or less, against $4\times10^{-6}$ or less on the conformal interface (Figure~\ref{fig:ring_nonconformal}b).
+With interpolated traction the imbalance is $3$--$9\times10^{-5}$ and does not decrease with refinement, but it is not an error of the transfer: on the factor-2 and factor-4 meshes it equals that of the conformal direct map to within $10\%$ ($2$--$3\times10^{-5}$ at the strong level, $5$--$8\times10^{-5}$ at the moderate level), and arises because the linear-geometry solid integrates the traction over its undeformed face areas and the fluid over the deformed faces.
+The choice of transfer does not affect the frequency ratio at the reported precision: the interpolated and conservative results differ by at most $2.6\times10^{-5}$ relative on every mesh and level, and on the factor-4 mesh the ratio error on a non-conformal interface is $1.9\times10^{-5}$ or less, against $4\times10^{-6}$ or less on the conformal interface (Figure~\ref{fig:ring_nonconformal}b).
 
-Two further ingredients were established during development and cannot be switched off in the released code, so their effect is quoted from the solids4foam commits that introduced them rather than rerun: removing a one-step lag of the interface force in the velocity solid reduced the amplitude loss per period of the ring at 100 steps per period from $2.0$, $10.6$ and $18.3\%$ to $0.17$, $0.71$ and $1.26\%$ (weak, moderate, strong), and evaluating the viscous traction as the momentum wall flux rather than from the deviatoric stress raised the observed spatial order of the blobInTreacle displacement, a stationary-wall case, from $1.4$ to $2.0$.
+Two further ingredients cannot be switched off in the released code, so their effect is quoted from the solids4foam commits that introduced them rather than rerun: removing a one-step lag of the interface force in the velocity solid reduced the amplitude loss per period of the ring at 100 steps per period from $2.0$, $10.6$ and $18.3\%$ to $0.17$, $0.71$ and $1.26\%$ (weak, moderate, strong), and evaluating the viscous traction as the momentum wall flux rather than from the deviatoric stress raised the observed spatial order of the blobInTreacle displacement, a stationary-wall case, from $1.4$ to $2.0$.
 % Sources: ringAddedMass/verification/README.md "Defects found by this
 % study" and commit messages dcbe04505 -> c008e8dd1 (force lag, both states
 % with zeroGradient interface pressure); blobInTreacle/verification/README.md

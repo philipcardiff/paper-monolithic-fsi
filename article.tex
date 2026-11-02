@@ -121,14 +121,14 @@ textheight=24cm, % llncs has 19.3cm
 
 \abstract{
 Partitioned coupling dominates finite volume fluid--solid interaction (FSI), but its outer iterations converge slowly or fail when the added mass of the fluid is large.
-This paper presents a quasi-monolithic cell-centred finite volume method in which the arbitrary Lagrangian--Eulerian fluid momentum and continuity equations and the total Lagrangian solid momentum equation, written in terms of velocity, form a single nonlinear residual with the fluid mesh motion treated outside the Newton system.
-The residual is solved by a Jacobian-free Newton--Krylov method; an approximate Jacobian assembled from compact finite volume linearisations is used only to build a fluid--solid field-split preconditioner.
-The interface treatment is assessed against exact solutions for an added-mass ring and a thick-walled Womersley tube: an interface pressure gradient taken from the normal momentum equation is needed for a second-order added-mass effect, the interface traction is taken from the discrete momentum flux, and a second-order velocity-based solid without force lag adds no measurable coupling damping to the ring.
-For non-matching interface meshes, a conservative transfer balances the total interface force to round-off.
-On matched mesh families the two formulations approach each other under refinement: on the finest meshes the displacements differ by $0.055\%$ on a flexible-bottom cavity and by up to $0.13\%$ on a three-dimensional tube, the least converged quantities (cavity force, tube wave speed) by $0.08\%$ and $0.20\%$; and on robustness maps over the density ratio and the time step it converges in two to four Newton iterations per step in every cell, including a massless wall, where, for solid-to-fluid density ratios of 0.1 and below, Dirichlet--Neumann coupling reaches its iteration cap in 11 (Aitken) and 7 (IQN-ILS) of the 12 combinations of density ratio and time step, and Robin--Neumann coupling in 3 of the 4 time steps at 0.01.
-Using the reference solutions and the strict coupling convergence test of a companion verification study, the complete solvers are compared at matched verified error: on the Hron--Turek FSI3 benchmark the method is \tbd{factor} times \tbd{faster/slower} than IQN-ILS at \tbd{error level}.
-On a three-dimensional pressure-pulse tube, where it costs 3.2--3.6 times as much as Robin--Neumann coupling, the method keeps a single-node parallel efficiency of 0.78 on 128 cores relative to 16, and a flexible flag in air, on which Newton and IQN-ILS both need a reduced time step, is reported as a limitation.
-The implementation, built on solids4foam and PETSc, and all case set-ups are released as open source.
+This paper presents a quasi-monolithic cell-centred finite volume method in which the arbitrary Lagrangian--Eulerian fluid equations and the total Lagrangian solid momentum equation, written in velocity, form one nonlinear residual, with the fluid mesh motion outside the Newton system.
+A Jacobian-free Newton--Krylov method solves the residual, preconditioned by a fluid--solid field split built from compact finite volume linearisations.
+Exact solutions for an added-mass ring and a Womersley tube show that second-order accuracy needs an interface pressure gradient from the normal momentum equation and an interface traction equal to the discrete momentum flux; a conservative transfer balances the interface force to round-off on non-matching meshes.
+On matched meshes the quasi-monolithic and partitioned solutions converge towards each other, with displacements differing by at most $0.13\%$ on the finest meshes.
+The method converges in two to four Newton iterations per step over all density ratios and time steps tested, including a massless wall; at density ratios of 0.1 and below, Dirichlet--Neumann coupling reaches its iteration cap in most cases.
+Using the references and strict convergence test of a companion verification study, the method is \tbd{factor} times \tbd{faster/slower} than IQN-ILS at \tbd{error level} on the Hron--Turek FSI3 benchmark.
+On a three-dimensional pressure-pulse tube it costs 3.2--3.6 times as much as Robin--Neumann coupling and keeps a single-node parallel efficiency of 0.78 on 128 cores; a flexible flag in air, which needs a reduced time step with either coupling, is reported as a limitation.
+The implementation, built on solids4foam and PETSc, and all case set-ups are open source.
 }
 
 \keywords{Fluid--solid interaction, Quasi-monolithic coupling, Jacobian-free Newton--Krylov, Cell-centred finite volume method, Added mass, Partitioned coupling, Code verification, solids4foam}
@@ -191,9 +191,9 @@ The quasi-monolithic variants of the test cases are distributed with the solids4
 This project has received funding from the European Research Council (ERC) under the European Union’s Horizon 2020 research and innovation programme (Grant Agreement No. 101088740).
 %Financial support is gratefully acknowledged from the Irish Research Council through the Laureate programme, grant number IRCLA/2017/45, from Bekaert through the University Technology Centre (UTC phases I and II) at UCD (www.ucd.ie/bekaert),
 Financial support is gratefully acknowledged from I-Form, funded by Science Foundation Ireland (SFI) Grant Numbers {16/RC/3872} and {21/RC/10295\_P2}, co-funded under European Regional Development Fund and by I-Form industry partners, and from NexSys, funded by SFI Grant Number 21/SPP/3756.
-Additionally, the authors wish to acknowledge the DJEI/DES/SFI/HEA Irish Centre for High-End Computing (ICHEC) for the provision of computational facilities and support (www.ichec.ie), and part of this work has been carried out using the UCD ResearchIT Sonic cluster which was funded by UCD IT Services and the UCD Research Office.
+The authors wish to acknowledge the Irish Centre for High-End Computing (ICHEC) for the provision of computational facilities and support, including access to the MeluXina supercomputer of LuxProvide (projects p201136 and p201287). Part of this work has been carried out using the UCD ResearchIT Sonic cluster, which was funded by UCD IT Services and the UCD Research Office.
 %\hl{Ivan/Zeljko: add any additional acknowledgements here}
-We acknowledge LuxProvide for the computing time on the MeluXina supercomputer (projects p201136 and p201287, \tbd{allocation programme: EuroHPC access call or national allocation}).
+% MeluXina access is through an ICHEC project (Philip, 2 Nov 2026); wording from the ICHEC website.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \bmhead{CRediT authorship contribution statement}

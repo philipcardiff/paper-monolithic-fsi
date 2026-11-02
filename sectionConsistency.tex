@@ -183,8 +183,14 @@ This difference lies in the reference, not in either solver.
 The linearised solution does not fix whether it applies at the undeformed or at the current position of a point, and near the wall the two differ by $O(\eta\,\partial u/\partial r)$. The fluid mesh is displaced by $\mathbf{D}(t)-\mathbf{D}(0)$, so the near-wall cell centres keep a static offset $-\eta(0)\approx-2.3\times10^{-4}R$ at mid-length, set by the exact initial state; this changes the exact first harmonic there by $7$--$9\times10^{-4}$ of the peak velocity.
 The pseudo-solid mesh motion of the quasi-monolithic runs carries the near-wall solution with the current cell centres, whereas the Laplacian mesh motion of the partitioned runs leaves it at the undeformed centres, at which the errors are evaluated.
 A fluid-only run with the exact wall motion prescribed reproduces the difference when only the mesh motion is changed. Stiffening the wall a thousandfold leaves the difference unchanged ($6.8$ against $7.1\times10^{-4}$), consistent with this, as the offset does not depend on the wall stiffness.
-With all amplitudes reduced tenfold the ambiguity falls to $8\times10^{-5}$, and both mesh motions give a wall-layer error of $2.5$--$2.8\times10^{-4}$ on the factor-8 mesh at either evaluation point.
-\tbd{The tenfold-reduced amplitude study of both couplings (mesh and time series) is running; its results replace this paragraph and the velocity-profile row of Table~\ref{tab:womersley_m}.}
+% Reduced-amplitude series: Mx 5411305 (a421f063d), solids4foam#650; rows in
+% paper-data/womersley_0p1x_rows.csv,
+% run dirs Mx qm-a421/runs/wom-01/runs/s01-{qm,rn}-m{f}-n{n}. RN m8 n200 diverges in its
+% first step, as at full amplitude (#646). Full-amplitude QM factor-8 profile error 7.7e-4.
+With all amplitudes reduced tenfold (every exact amplitude scales by exactly $0.1$, while the wavenumber and the Womersley number are unchanged), the ambiguity falls to $8\times10^{-5}$ and the two couplings give the same velocity profile.
+Its error, the largest over the radius relative to the scaled exact peak, differs between them by $0.2$--$2.4\%$ of its value on factors 1, 2 and 4 at 200 steps per period and on 50 to 400 steps per period on the factor-2 mesh, and by $5.5\%$ on the factor-8 mesh at 400 steps per period ($2.55$ against $2.69\times10^{-4}$).
+The quasi-monolithic error converges at observed orders $1.84$, $2.01$ and $1.77$ between successive meshes, to $3.7\times10^{-4}$ on the factor-8 mesh, where at full amplitude it stops at $7.7\times10^{-4}$; the factor-8 Robin--Neumann run at 200 steps per period diverges in its first step, as it does at full amplitude~\citep{solids4foamIssue646}.
+At this amplitude the other quantities of the two couplings agree on the factor-8 mesh to $6\times10^{-5}$ or better (phases in rad), except the wall displacement amplitude ($1.9\times10^{-4}$, the size of the partitioned spread above).
 % Diagnosis and fluid-only tests: solids4foam#650 (comment 6568579038, Mx 5410435-5411184, a421f063d).
 % Superseded explanation (fluid discretisation) removed 2 Nov 2026; stiff-wall test Mx 5407376 kept only as consistent (its ends use the soft-tube exact data).
 % Diagnosis: paper-data/womersley_profile_diag.{md,py}; stiff-wall test Mx 5407376 (a421f063d), run dirs Mx qm-a421/runs/wom-wall.

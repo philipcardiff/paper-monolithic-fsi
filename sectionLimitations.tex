@@ -71,8 +71,12 @@ The method has no globalisation beyond a backtracking line search; adaptive time
 
 % Check B1: evidence/campaign-g1:paper-data/campaign/b1/findings.md
 % (solids4foam 257b2e564; ring factor 2 moderate, cavity L3, 3dTube L2).
+% Tube 4/16-rank times, memory and same-time claim: B1 (XenoSim shared node,
+% tutorial tolerances of the time; 279 vs 1194 s at 4 ranks, 108 vs 1296 s at 16,
+% i.e. 4.3x and 12x). The 16-rank factor quoted is the controlled MeluXina
+% measurement of tab:tube3d_pc (a421f063d, current defaults, 3 repeats): 8.03x.
 In the two-dimensional cases the solid block of the preconditioner is factorised exactly by sparse LU, replicated on every process: robust, and affordable because the solid block is small relative to the fluid block, but with a cost and memory that do not fall with the process count and grow with the solid size.
-On level 2 of the three-dimensional tube the factorisation takes the same time on 16 processes as on 4, with its memory growing from 9 to 25\,GB, and one BoomerAMG V-cycle is 4 and 12 times faster on 4 and 16 processes at the same Newton and Krylov iteration counts; it is therefore used for the tube (Sections~\ref{sec:tube3d_pc_study} and~\ref{sec:tube3d_scaling}).
+On level 2 of the three-dimensional tube the factorisation takes the same time on 16 processes as on 4, with its memory growing from 9 to 25\,GB; replacing it by one BoomerAMG V-cycle, at the same Newton and Krylov iteration counts, makes the run 8 times faster on 16 processes (Table~\ref{tab:tube3d_pc}) and about 4 times faster on 4 processes in an indicative measurement on a shared node, so BoomerAMG is used for the tube (Sections~\ref{sec:tube3d_pc_study} and~\ref{sec:tube3d_scaling}).
 In the two-dimensional cases the exact factorisation remains cheaper: BoomerAMG doubles the Krylov iterations on the ring and costs 1.4--1.9 times as much, and on the cavity it costs 10--14\% more.
 With either preconditioner, each monitored quantity agrees with a run converged to a hundred times tighter Newton tolerances to within $7\times10^{-5}$ of its largest magnitude, close to the monitors' output resolution, so the choice affects cost only.
 An algebraic multigrid solid block for thin, nearly incompressible or strongly nonlinear solids has not been assessed.

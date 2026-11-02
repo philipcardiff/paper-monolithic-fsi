@@ -12,13 +12,13 @@
 % Schur factorisation, redundant+LU solid block; from #599, 873a8d0e4).
 % No monolithic driver and no recorded monolithic study (A1 Section 1.9).
 
-A pressure pulse travelling through a fluid-filled elastic tube (Figures~\ref{fig:tube3d_geom_m} and~\ref{fig:tube3d_field}) is the standard three-dimensional test of strongly coupled FSI under strong added mass, with $\rho_s/\rho_f = 1.2$~\citep{kuttler2008fixed, Degroote2009}; its set-up, the partitioned three-level study and the literature references are given in the companion paper~\citetodo{companion verification paper}.
+A pressure pulse travelling through a fluid-filled elastic tube (Figures~\ref{fig:tube3d_geom_m} and~\ref{fig:tube3d_field}) is the standard three-dimensional test of strongly coupled FSI under strong added mass, with $\rho_s/\rho_f = 1.2$~\citep{kuttler2008fixed, Degroote2009}; its set-up, the partitioned three-level study and the literature references are given in the companion paper~\citep{CardiffFSIVerification2026}.
 It is used here to check the quasi-monolithic coupling against the partitioned one in three dimensions and to measure how the cost of the method and of its preconditioner grows with problem size and process count; as in Section~\ref{sec:accuracy_cost}, the costs compared are those of the complete solvers, whose discretisations differ in the ways listed in Section~\ref{sec:consistency_partitioned}.
 
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[scale=1]{figures/3dTube-geometry}
-	\caption{Three-dimensional elastic tube: geometry and base mesh (dimensions in mm), and monitoring point A (as in the companion paper~\protect\citetodo{companion verification paper}).}
+	\caption{Three-dimensional elastic tube: geometry and base mesh (dimensions in mm), and monitoring point A (as in the companion paper~\protect\citep{CardiffFSIVerification2026}).}
 	\label{fig:tube3d_geom_m}
 \end{figure}
 
@@ -43,7 +43,7 @@ The solid is the geometrically linear velocity solid, and both couplings use BDF
 The quasi-monolithic coupling maps the interface fields directly between matching faces, which requires the fluid and solid wall points to coincide; the quasi-monolithic runs therefore use the tutorial meshes with the wall arcs placed exactly on both sides (solids4foam PR \#625), whereas the partitioned Robin--Neumann runs of the companion paper predate that change and use AMI interpolation across a mismatch of up to about $1\,\mu\mathrm{m}$ between the two walls.
 Repeating the Robin--Neumann runs on the corrected meshes changes the displacement and timing quantities by at most $0.13\%$ on every level, but the axial pressure wave speed by $+0.22\%$, $+0.39\%$ and $+0.67\%$ on levels 1--3, a shift that grows with refinement; the comparison below is therefore made against these corrected-mesh Robin--Neumann runs, with the same partitioned settings as the companion paper.
 % Data: Mx 5404489 (L1, L2), 5404701 (L3); paper-data/campaign/d/rn-exact on evidence/m-runs-d.
-The Newton iteration is converged to a relative residual of $10^{-6}$ with a Krylov tolerance of $10^{-4}$; the Robin--Neumann runs meet displacement, pressure and leakage-flux tolerances of $10^{-6}$, $10^{-5}$ and $10^{-5}$ at every step~\citetodo{companion verification paper}.
+The Newton iteration is converged to a relative residual of $10^{-6}$ with a Krylov tolerance of $10^{-4}$; the Robin--Neumann runs meet displacement, pressure and leakage-flux tolerances of $10^{-6}$, $10^{-5}$ and $10^{-5}$ at every step~\citep{CardiffFSIVerification2026}.
 % Data: QM a421f063d, Mx 5398197 (L1/L2) and 5399576 (L3);
 % paper-data/campaign/d/l3 on evidence/m-runs-d (3dtube_qm_vs_rn_L1_L3.csv).
 % RN: paper-fsi-verification:main:paper-data/3dtube_level3_mesh_study.csv.
@@ -79,7 +79,7 @@ The level-to-level changes of the quasi-monolithic solution have the same charac
 The axial pressure wave speed is the least converged quantity for both couplings: its difference changes sign between levels ($+0.08$, $-0.16$, $+0.20\%$) without decreasing, but stays below the level-to-level change of either solution ($0.60\%$ for Robin--Neumann and $0.25\%$ for the quasi-monolithic coupling between levels 2 and 3).
 Against the original companion-paper meshes the level-3 difference was $0.87\%$; the corrected meshes account for about three quarters of it, so most of it came from the mesh rather than from the coupling.
 The sensitivity of $c_p$ to a micrometre-scale wall change, and its lack of a trend, come from its extraction rather than from the flow: the axis pressure probes of the verification driver lie on axial cell faces at every level, and a probe returns the value of the cell that contains it, so round-off, the decomposition and the mesh motion decide between the cells either side of the face.
-This shifts each station's arrival time by up to $\Delta z/(2c_p)$, about $17\,\mu\mathrm{s}$ on level 3, which matches the $20\,\mu\mathrm{s}$ shift of one station between the two Robin--Neumann meshes while the other stations agree within $2\,\mu\mathrm{s}$, and gives a scatter in the fitted $c_p$ of about $0.2\%$ on level 3 and $0.7\%$ on level 1, the size of the differences in Table~\ref{tab:tube3d_consistency}~\citetodo{solids4foam issue 643}.
+This shifts each station's arrival time by up to $\Delta z/(2c_p)$, about $17\,\mu\mathrm{s}$ on level 3, which matches the $20\,\mu\mathrm{s}$ shift of one station between the two Robin--Neumann meshes while the other stations agree within $2\,\mu\mathrm{s}$, and gives a scatter in the fitted $c_p$ of about $0.2\%$ on level 3 and $0.7\%$ on level 1, the size of the differences in Table~\ref{tab:tube3d_consistency}~\citep{solids4foamIssue643}.
 The $c_p$ differences between the couplings are therefore within the extraction uncertainty.
 The Newton iteration converges in two iterations at every step on every level, as expected for this linear-elastic, small-strain problem, and the Krylov iterations per Newton iteration grow by a factor of about 1.35 per refinement.
 
@@ -89,7 +89,7 @@ The Newton iteration converges in two iterations at every step on every level, a
 
 Level 2 is run on 1, 2, 4, 8, 16, 32 and 64 processes and level 3 on 16, 32, 64 and 128 processes, over a fixed window of 50 steps restarted from $t = 5\,\mathrm{ms}$, with the quasi-monolithic coupling and with Robin--Neumann coupling.
 All runs use one exclusive node of the MeluXina system (two 64-core AMD EPYC 7H12 processors, with eight NUMA domains of 16 cores each), one run at a time, with the processes pinned to consecutive cores; the time reported is the median elapsed time of three repeats over the window after the first step; stalls on the shared file system spread the repeats by up to $34\%$ and make the elapsed time 11--39\% larger than the CPU time, but the efficiencies from the medians agree with those from the CPU time to within $0.02$.
-The fluid and solid regions are decomposed together (Section~\ref{sec:implementation_details}) into slabs along the tube axis ($1\times1\times N$ subdomains), because a Scotch graph partition of the combined graph left some processes with solid cells only on the finer partitions (for example 13 of 128 processes on level 3), and the coupled solve does not proceed when a process owns no fluid cells~\citetodo{solids4foam issue 639}.
+The fluid and solid regions are decomposed together (Section~\ref{sec:implementation_details}) into slabs along the tube axis ($1\times1\times N$ subdomains), because a Scotch graph partition of the combined graph left some processes with solid cells only on the finer partitions (for example 13 of 128 processes on level 3), and the coupled solve does not proceed when a process owns no fluid cells~\citep{solids4foamIssue639}.
 The slabs give every process fluid and solid cells, with a load imbalance of at most $6\%$ in the fluid cells and $20\%$ in the solid cells.
 % Source: applications/utilities/decomposeParMonolithic/README.md at 257b2e564.
 The solid block is preconditioned by one V-cycle of BoomerAMG, the default of the solids4foam 3dTube verification driver, which replaces the exact LU factorisation, replicated on every process, because that factorisation dominates the cost on the finer meshes: on level 2 with 16 processes it makes a run eight times as expensive at unchanged iteration counts (Table~\ref{tab:tube3d_pc}).

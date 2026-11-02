@@ -27,12 +27,12 @@ This section compares the complete quasi-monolithic and partitioned IQN-ILS solv
 % nonLinearGeometryTotalLagrangianVelocity, direct map.
 % Driver: verification/Allverify --coupling monolithic --levels 1,2,4.
 
-The FSI3 problem of~\citet{Turek2006}, an elastic flag behind a rigid cylinder oscillating at a low solid-to-fluid density ratio (Figure~\ref{fig:fsi3_geom_m}), is the most widely used test of strongly coupled FSI solvers, and its Featflow reference values carry an uncertainty of about $3$--$5\%$ in the displacement and force amplitudes and less than $0.3\%$ in the frequency and mean drag~\citetodo{companion verification paper}.
+The FSI3 problem of~\citet{Turek2006}, an elastic flag behind a rigid cylinder oscillating at a low solid-to-fluid density ratio (Figure~\ref{fig:fsi3_geom_m}), is the most widely used test of strongly coupled FSI solvers, and its Featflow reference values carry an uncertainty of about $3$--$5\%$ in the displacement and force amplitudes and less than $0.3\%$ in the frequency and mean drag~\citep{CardiffFSIVerification2026}.
 
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[scale=1]{figures/HronTurek3-geometry}
-	\caption{Hron--Turek FSI3: geometry and monitoring point A (as in the companion paper~\protect\citetodo{companion verification paper}).}
+	\caption{Hron--Turek FSI3: geometry and monitoring point A (as in the companion paper~\protect\citep{CardiffFSIVerification2026}).}
 	\label{fig:fsi3_geom_m}
 \end{figure}
 \todo{Replace the mesh in Figure~\ref{fig:fsi3_geom_m} with the conformal-interface mesh used here (carried over from the earlier draft).}
@@ -78,12 +78,12 @@ The observed order of the quasi-monolithic $u_x$ mean between factors 2 and 4 is
 % Gurugubelli (2014) temporal-accuracy case (A1 Section 1.14).
 
 \citet{Liu2014} proposed an elastic half-cylinder attached to the floor of a highly viscous channel flow (Figure~\ref{fig:blob_geom_m}) to measure the temporal order of their quasi-monolithic finite element formulation, on which the present method is based~\citep{JaimanJoshi2022}.
-Repeating their temporal study with the present cell-centred finite volume formulation is therefore the most direct comparison with the finite element method; the companion paper uses the case only for a partitioned self-convergence study~\citetodo{companion verification paper}.
+Repeating their temporal study with the present cell-centred finite volume formulation is therefore the most direct comparison with the finite element method; the companion paper uses the case only for a partitioned self-convergence study~\citep{CardiffFSIVerification2026}.
 
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[scale=1]{figures/blobInTreacle-geometry}
-	\caption{Elastic half-cylinder in a viscous channel flow: geometry (in m), boundary conditions and top point A; the mesh drawn is finer than the factor-1 mesh (as in the companion paper~\protect\citetodo{companion verification paper}).}
+	\caption{Elastic half-cylinder in a viscous channel flow: geometry (in m), boundary conditions and top point A; the mesh drawn is finer than the factor-1 mesh (as in the companion paper~\protect\citep{CardiffFSIVerification2026}).}
 	\label{fig:blob_geom_m}
 \end{figure}
 % Figure checked against the blobInTreacle README and blockMeshDict at a421f063d:

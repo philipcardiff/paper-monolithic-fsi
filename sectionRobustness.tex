@@ -6,14 +6,14 @@
 
 Partitioned Dirichlet--Neumann coupling converges more slowly, or not at all, as the added mass grows relative to the solid inertia, and Robin--Neumann coupling shifts but does not remove this limit~\citep{Causin2005, Forster2006, Tukovic2018b}.
 The quasi-monolithic coupling solves the interface conditions within the Newton iteration, so its convergence should depend on the added mass only through the conditioning of the linear systems.
-This section maps the outcome of each coupling over the density ratio and the time step on two cases with an exact or independent reference, so that a run that completes is also checked for accuracy.
+This section maps the outcome of each coupling over the density ratio and the time step on two cases with an exact or independent reference, so that completed runs are also checked for accuracy.
 
 \paragraph{Protocol.}
 Each cell of a map is one run with one of four couplings: Aitken, IQN-ILS and Robin--Neumann under the strict convergence test of Section~\ref{sec:protocol}, with at most 200 coupling iterations per step, and the quasi-monolithic coupling with at most 20 Newton iterations per step.
-A run fails if a step reaches its iteration cap, if the solution becomes non-finite or diverges, or, for the quasi-monolithic coupling, if the fluid mesh-motion solve fails; the failure criterion was fixed before the runs and is the same for all four couplings.
+A run fails if a step reaches its iteration cap, if the solution becomes non-finite or diverges, or, for the quasi-monolithic coupling, if the fluid mesh-motion solve fails; this criterion, common to all four couplings, was fixed before the runs.
 The partitioned couplings use the tolerances, predictors, initial relaxation and Robin coefficients of the companion paper~\citep{CardiffFSIVerification2026}, with IQN-ILS reusing no previous time steps; the quasi-monolithic coupling uses $\varepsilon_{\mathrm{rel}} = \varepsilon_{\mathrm{step}} = 10^{-6}$ and a Krylov tolerance of $10^{-4}$.
 Both use BDF2 in both regions and the same least-squares gradient and linear convection scheme in the fluid.
-For each run the outcome, the time reached, the mean and maximum number of Newton or coupling iterations per step and the quantity of interest are recorded; wall times were measured on shared nodes and are indicative only.
+Wall times were measured on shared nodes and are indicative only.
 
 %%--------------------------------------------------------------------------------------------------------------------%%
 \subsection{Ring added-mass problem}\label{sec:robustness_ring}
@@ -24,8 +24,7 @@ For each run the outcome, the time reached, the mean and maximum number of Newto
 % (runs.csv notes). Map: figures/robustness-ring-map.pdf from
 % scripts/wp3_plot.py (paper variant without title).
 
-The ring of Section~\ref{sec:ring_m} is run on the factor-2 mesh at the weak, moderate and strong added-mass levels ($\mu = 0.101$, $1.008$ and $10.08$) and at an extended level, $\mu = 100.8$ ($\rho_f = 14\,000\,\mathrm{kg/m^3}$), crossed with 12, 25, 50, 100 and 200 steps per period, for two periods.
-The quantity of interest is the coupled frequency.
+The ring of Section~\ref{sec:ring_m} is run on the factor-2 mesh at the weak, moderate and strong added-mass levels ($\mu = 0.101$, $1.008$ and $10.08$) and at an extended level, $\mu = 100.8$ ($\rho_f = 14\,000\,\mathrm{kg/m^3}$), crossed with 12, 25, 50, 100 and 200 steps per period, for two periods, with the coupled frequency as the quantity of interest.
 
 \begin{figure}[htbp]
 	\centering
@@ -34,12 +33,12 @@ The quantity of interest is the coupled frequency.
 	\label{fig:robustness_ring}
 \end{figure}
 
-Of the 80 runs, 79 complete (Figure~\ref{fig:robustness_ring}); the one failure is Robin--Neumann at the strong level with 12 steps per period, which reaches the 200-iteration cap in its tenth step.
-The quasi-monolithic coupling converges in two Newton iterations in every step of every cell, independently of $\mu$ and of the time step.
-The partitioned couplings, which start each step from a predicted interface state, also complete every other cell on this case, even at $\mu \approx 100$, so the map separates them by their iteration counts rather than by failure.
-IQN-ILS needs 3.0--6.1 coupling iterations per step on average and Aitken 3.2--10.2, both rising with $\mu$ and, at the strong and extended levels, with the number of steps per period; Robin--Neumann needs 3.0--42, mostly at the smaller numbers of steps per period.
-In every completed cell the four couplings give frequencies within $0.25\%$ of each other; the error against the exact frequency, from $-1.9\%$ at 12 steps per period to $+6.3\%$ at 200, is the discretisation error of the standard solid on the factor-2 mesh, common to all four couplings.
-Summed over the 20 cells, the quasi-monolithic runs take about half the wall time of the IQN-ILS runs, 0.4 times that of the Aitken runs and under a third of that of the Robin--Neumann runs, in line with the per-step costs of Section~\ref{sec:ring_m}.
+Of the 80 runs, 79 complete (Figure~\ref{fig:robustness_ring}); the one failure is Robin--Neumann at the strong level with 12 steps per period, which reaches the iteration cap in its tenth step.
+The quasi-monolithic coupling converges in two Newton iterations in every step of every cell.
+The partitioned couplings, which start each step from a predicted interface state, complete every other cell, even at $\mu \approx 100$.
+IQN-ILS needs 3.0--6.1 and Aitken 3.2--10.2 coupling iterations per step on average, both rising with $\mu$ and, at the strong and extended levels, with the number of steps per period; Robin--Neumann needs 3.0--42, mostly at fewer steps per period.
+In every completed cell the four couplings give frequencies within $0.25\%$ of each other; the error against the exact frequency, from $-1.9\%$ at 12 steps per period to $+6.3\%$ at 200, is the discretisation error of the standard solid on the factor-2 mesh.
+Summed over the 20 cells, the quasi-monolithic runs take about half the wall time of IQN-ILS, 0.4 times that of Aitken and under a third of that of Robin--Neumann, in line with the per-step costs of Section~\ref{sec:ring_m}.
 
 %%--------------------------------------------------------------------------------------------------------------------%%
 \subsection{Collapsible channel}\label{sec:robustness_collapsible}
@@ -52,8 +51,8 @@ Summed over the 20 cells, the quasi-monolithic runs take about half the wall tim
 % before a421f063d); B2 accuracy check: wp3/b2_618/. Every run: fluid and
 % solid ddt backward.
 
-A thin elastic section of a channel wall collapses under a ramped external pressure and then oscillates~\citep{CardiffFSIVerification2026} (Figure~\ref{fig:collapsible_geom}; Figure~\ref{fig:collapsible_field} shows the wall near its first trough); the problem modifies that of~\citet{Jensen2003} and \citet{Heil2004} so that it is well posed for a continuum solid, and its reference is an independently converged oomph-lib solution.
-It combines strong added mass with large deformation and fluid mesh motion, and the published problem has a massless wall, for which Dirichlet--Neumann coupling completes only at the largest time step of the map.
+A thin elastic section of a channel wall collapses under an external pressure ramped to $200\,\mathrm{Pa}$ over $0.25\,\mathrm{s}$, at a Reynolds number of 50, and then oscillates~\citep{CardiffFSIVerification2026} (Figures~\ref{fig:collapsible_geom} and~\ref{fig:collapsible_field}); the problem modifies that of~\citet{Jensen2003} and \citet{Heil2004} to be well posed for a continuum solid.
+It combines strong added mass with large deformation and fluid mesh motion, and the published problem has a massless wall.
 
 \begin{figure}[htbp]
 	\centering
@@ -70,11 +69,9 @@ It combines strong added mass with large deformation and fluid mesh motion, and 
 \end{figure}
 
 \paragraph{Set-up.}
-The channel has width $a = 1\,\mathrm{m}$; the elastic wall, $10\,\mathrm{m}$ long and $0.05\,\mathrm{m}$ thick, is clamped between rigid sections $5\,\mathrm{m}$ upstream and $10\,\mathrm{m}$ downstream, and the external pressure is ramped to $200\,\mathrm{Pa}$ over $0.25\,\mathrm{s}$ at a Reynolds number of 50.
-Fluid level 2 of the companion paper (12\,800 cells) is used, with the wall computed on a $640\times8$ solid mesh coupled through AMI: by the geometrically nonlinear velocity solid with conservative traction transfer in the quasi-monolithic coupling, and by the total-displacement solid in the partitioned couplings.
-The density ratio $\rho_s/\rho_f$ takes the values 10, 1, 0.1, 0.01 and 0 (massless wall), crossed with $\Delta t = 0.025$, $0.0125$, $0.00625$ and $0.003125\,\mathrm{s}$, and each run continues to $t = 0.75\,\mathrm{s}$, past the first trough of the wall midpoint.
-The quantity of interest is that trough, compared with the converged oomph-lib solution for $\rho_s/\rho_f = 1$ and for the massless wall.
-On this mesh and at $\Delta t = 0.00625\,\mathrm{s}$ the quasi-monolithic trough lies $0.71\%$ from oomph-lib, against $1.17\%$ with the conformal $320\times8$ solid on the finer fluid level 4, so the map measures accuracy as well as robustness.
+Fluid level 2 of the companion paper (12\,800 cells) is coupled through AMI to a $640\times8$ solid mesh, with the geometrically nonlinear velocity solid and conservative traction transfer in the quasi-monolithic coupling and the total-displacement solid in the partitioned couplings.
+The density ratio $\rho_s/\rho_f$ takes the values 10, 1, 0.1, 0.01 and 0 (massless wall), crossed with $\Delta t = 0.025$, $0.0125$, $0.00625$ and $0.003125\,\mathrm{s}$, and each run continues to $t = 0.75\,\mathrm{s}$, past the first trough of the wall midpoint, the quantity of interest, which is compared with the independently converged oomph-lib solution for $\rho_s/\rho_f = 1$ and for the massless wall.
+At $\Delta t = 0.00625\,\mathrm{s}$ the quasi-monolithic trough on this mesh lies $0.71\%$ from oomph-lib, against $1.17\%$ with the conformal $320\times8$ solid on the finer fluid level 4.
 % B2 (wp3/b2_618): L2 AMI 640x8 -0.71%, L4 conformal 320x8 -1.17% (linear
 % 320x8 solid; static wall -1.12% on 320x8).
 The fluid mesh moves with the solid-model motion solver of Section~\ref{sec:fluid_mesh_motion}, with a predicted first iterate of the mesh displacement in each step (Section~\ref{sec:robustness_collapsible_mesh}).
@@ -87,26 +84,26 @@ The fluid mesh moves with the solid-model motion solver of Section~\ref{sec:flui
 \end{figure}
 
 \paragraph{Outcome.}
-The quasi-monolithic coupling completes all 20 cells, including the massless wall at every time step, with 2.0--3.2 Newton iterations per step on average and at most four (Figure~\ref{fig:robustness_collapsible}); the count falls with the time step and does not depend on the density ratio, whereas the Krylov iterations per Newton iteration, 210--310, are about ten times those of the ring (18--29), which reflects the conditioning of the thin, finely resolved wall rather than the added mass.
-The partitioned couplings complete all cells at $\rho_s/\rho_f = 10$ and, apart from IQN-ILS at the smallest step, at $\rho_s/\rho_f = 1$, with 8--49 coupling iterations per step; below that they fail by reaching the iteration cap.
-Aitken fails at every time step for $\rho_s/\rho_f \le 0.1$, except at the largest step for the massless wall; IQN-ILS fails for $\rho_s/\rho_f \le 0.1$ at $\Delta t \le 0.00625\,\mathrm{s}$ and for the massless wall at $\Delta t \le 0.0125\,\mathrm{s}$; Robin--Neumann completes $\rho_s/\rho_f = 0.1$ at every step but needs 52--65 iterations per step, fails at three of the four steps for $\rho_s/\rho_f = 0.01$, and is undefined for the massless wall, since its Robin coefficient scales with the wall density.
-The failures occur within the first $0.35\,\mathrm{s}$, and the smaller the time step the earlier they occur, as expected of added-mass instability.
-In total the quasi-monolithic coupling completes 20 cells, Robin--Neumann 13 of the 16 to which it applies, IQN-ILS 12 and Aitken 9.
+The quasi-monolithic coupling completes all 20 cells, including the massless wall at every time step, with 2.0--3.2 Newton iterations per step on average and at most four (Figure~\ref{fig:robustness_collapsible}); the count falls with the time step and is independent of the density ratio.
+Its Krylov iterations per Newton iteration, 210--310, are about ten times those of the ring (18--29), reflecting the conditioning of the thin, finely resolved wall rather than the added mass.
+The partitioned couplings complete all cells at $\rho_s/\rho_f = 10$ and, apart from IQN-ILS at the smallest step, at $\rho_s/\rho_f = 1$, with 8--49 coupling iterations per step; every failure below that reaches the iteration cap.
+Aitken fails at every time step for $\rho_s/\rho_f \le 0.1$, except at the largest step for the massless wall; IQN-ILS fails for $\rho_s/\rho_f \le 0.1$ at $\Delta t \le 0.00625\,\mathrm{s}$ and for the massless wall at $\Delta t \le 0.0125\,\mathrm{s}$; Robin--Neumann completes $\rho_s/\rho_f = 0.1$ at every step but needs 52--65 iterations per step, fails at three of the four steps for $\rho_s/\rho_f = 0.01$ and is undefined for the massless wall, its Robin coefficient scaling with the wall density.
+The failures occur within the first $0.35\,\mathrm{s}$, earlier at smaller time steps, as expected of added-mass instability.
+In total Robin--Neumann completes 13 of the 16 cells to which it applies, IQN-ILS 12 and Aitken 9.
 
 \paragraph{Accuracy.}
 For $\rho_s/\rho_f = 1$ the quasi-monolithic trough lies $1.98$, $0.97$, $0.71$ and $0.65\%$ below the converged oomph-lib value at the four time steps, and the partitioned troughs $1.78$--$1.79$, $0.77$--$0.79$, $0.49$--$0.52$ and $0.43\%$ below it.
-At the large steps the error is temporal and the same for every coupling; at the small steps the quasi-monolithic and partitioned troughs differ by about $0.2$ percentage points, which comes from the different solid formulations (velocity and total displacement) and traction transfers rather than from the coupling.
+At the large steps the error is temporal and the same for every coupling; at the small steps the quasi-monolithic and partitioned troughs differ by about $0.2$ percentage points, owing to the different solid formulations and traction transfers rather than to the coupling.
 The quasi-monolithic troughs for $\rho_s/\rho_f = 1$ and for the massless wall agree to $0.02\%$ at every time step, and the massless trough lies $0.64\%$ from the massless oomph-lib reference at the smallest step: the coupling computes the published massless configuration directly, without the regularising wall density that the partitioned couplings need.
 
 \paragraph{Mesh motion.}\label{sec:robustness_collapsible_mesh}
-Without the predicted first iterate of the mesh displacement, the quasi-monolithic runs at $\Delta t = 0.025\,\mathrm{s}$ stop at $t = 0.275\,\mathrm{s}$ for every density ratio, in the linear solve of the fluid mesh-motion problem, while the coupled Newton iteration still converges in three iterations per step.
+Without the predicted first iterate, the quasi-monolithic runs at $\Delta t = 0.025\,\mathrm{s}$ stop at $t = 0.275\,\mathrm{s}$ for every density ratio, in the mesh-motion linear solve, while the coupled Newton iteration still converges in three iterations per step; the failure thus belongs to the mesh motion (Section~\ref{sec:lim_mesh_motion}).
 The first iterate then carries the whole wall increment of the step into the half-cells next to the wall, whose height it exceeds near the time of fastest collapse, so the frozen preconditioner of the pseudo-solid no longer matches its tangent; the converged meshes remain valid (minimum volume ratio 0.94).
 Extrapolating the mesh displacement in time removes the failure without changing the troughs at the smaller steps (by at most $2\times10^{-5}$, relative).
-This failure belongs to the mesh motion, not to the coupled Newton iteration (Section~\ref{sec:lim_mesh_motion}).
 
 \paragraph{Discussion.}
-Robustness with respect to the added mass and robustness with respect to the time step are distinct properties.
-Solving the interface conditions within the Newton iteration made the convergence insensitive to the added mass in both maps: the Newton iteration count did not change with the density ratio over the three orders of magnitude tested, and on the collapsible channel the quasi-monolithic coupling computes the massless wall at the three smaller time steps, where Aitken and IQN-ILS reach the iteration cap, consistent with the added-mass instability of Dirichlet--Neumann iterations growing as the time step decreases~\citep{Causin2005}, and where the Robin--Neumann coefficient is undefined.
+Robustness to the added mass and robustness to the time step are distinct properties.
+Solving the interface conditions within the Newton iteration made the convergence insensitive to the added mass in both maps: the Newton iteration count did not change with the density ratio over the three orders of magnitude tested, and the quasi-monolithic coupling computes the massless wall at the three smaller time steps, where Aitken and IQN-ILS reach the iteration cap, consistent with the added-mass instability of Dirichlet--Neumann iterations growing as the time step decreases~\citep{Causin2005}, and where the Robin--Neumann coefficient is undefined.
 It does not remove the dependence on the nonlinearity of the coupled problem over one step: in the flag of Section~\ref{sec:lim_foil}, Newton stagnates at $\Delta t = 0.01\,\mathrm{s}$, as IQN-ILS does, and both couplings need half that step.
 The quasi-monolithic coupling is therefore the more reliable choice where the added mass is strong and the step is limited by accuracy rather than by the nonlinearity, as in the ring and the collapsible channel, and not necessarily where large steps through strongly nonlinear transients are wanted.
-The robustness of the partitioned couplings, in turn, depends on settings such as the Robin coefficient and the IQN-ILS history, which are those of the companion paper~\citep{CardiffFSIVerification2026} for every case (Section~\ref{sec:protocol}); the maps above do not measure how far other settings would extend them.
+The robustness of the partitioned couplings depends on settings such as the Robin coefficient and the IQN-ILS history, here those of the companion paper~\citep{CardiffFSIVerification2026} (Section~\ref{sec:protocol}); the maps do not measure how far other settings would extend it.

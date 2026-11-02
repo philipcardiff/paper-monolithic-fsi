@@ -194,7 +194,7 @@ The difference between the couplings is discussed in Section~\ref{sec:womersley_
 		\toprule
 		Quantity & Space & Time 50/100/200 & Time 100/200/400 & Error, factor 4 \\
 		\midrule
-		Velocity profile (max.) & 1.81 & --$^{a}$ & 1.91 & $9.6\times10^{-4}$ \\
+		Velocity profile (max.)$^{c}$ & 1.81 & --$^{a}$ & 1.91 & $9.6\times10^{-4}$ \\
 		Flow-rate amplitude & 2.06 & 2.03 & 2.01 & $-3.4\times10^{-4}$ \\
 		Flow-rate phase & 1.92 & 1.86 & 1.93 & $8.4\times10^{-5}$ \\
 		Wall displacement amplitude & 1.98 & 1.96 & 1.99 & $-3.5\times10^{-4}$ \\
@@ -206,7 +206,7 @@ The difference between the couplings is discussed in Section~\ref{sec:womersley_
 	\end{tabular}
 
 	\smallskip
-	{\footnotesize $^{a}$ change between 100 and 200 steps per period below $2\times10^{-5}$, so no order is formed. $^{b}$ the error changes by less than $15\%$ between meshes and not monotonically.}
+	{\footnotesize $^{a}$ change between 100 and 200 steps per period below $2\times10^{-5}$, so no order is formed. $^{b}$ the error changes by less than $15\%$ between meshes and not monotonically. $^{c}$ near the wall, limited by the $8\times10^{-4}$ ambiguity of the linearised reference at this amplitude (Section~\ref{sec:womersley_consistency}).}
 \end{table}
 
 Every quantity converges at second order in time (observed orders 1.86--2.14, Table~\ref{tab:womersley_m}), and the flow rate, the wall displacement amplitude, the wave speed and the pressure converge at second order in space (1.92--2.37; the velocity profile at 1.81), with every quasi-monolithic step converging in two Newton iterations and 23--28 Krylov iterations per Newton iteration; the partitioned runs need 15--16 (IQN-ILS) and 11--18 (Robin--Neumann) coupling iterations per step at the strict test.

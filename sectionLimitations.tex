@@ -36,10 +36,12 @@ No reference solution exists; the case compares the time step and cost needed by
 \paragraph{Measured.}
 Both couplings are run to $t = 0.2\,\mathrm{s}$, through the start-up, with $\Delta t = 0.01$, $0.005$ and $0.0025\,\mathrm{s}$; IQN-ILS uses the strict convergence test with the tutorial tolerance of $10^{-5}$ and at most 50 coupling iterations, and the quasi-monolithic coupling the tutorial Newton tolerance of $10^{-4}$, a backtracking line search and at most 50 Newton iterations.
 Adaptive time stepping, which the implementation provides, is off in every run.
-The cost is compared at $\Delta t = 0.005\,\mathrm{s}$ on the same eight processes of one workstation.
+The cost is compared at $\Delta t = 0.005\,\mathrm{s}$ on eight processes, under the protocol of Section~\ref{sec:protocol} but over the whole run from $t = 0$, excluding the first step.
 % QM: evidence/m-runs-a-rfix 7a (1252bd2e5, 128 ranks, MeluXina); IQN-ILS:
-% evidence/m-runs-a 7a (85b0c1de6, 8 ranks); equal-rank pair: local Mac
-% Studio, a421f063d-equivalent build, ~/claude-runs/agent-b-foil (1 Nov 2026).
+% evidence/m-runs-a 7a (85b0c1de6, 8 ranks); equal-rank timing: MeluXina
+% timing-rerun (4 Nov 2026, a421f063d, exclusive node, taskset 0-7, 3 repeats;
+% foil-{qm,iqn}-r{1,2,3}): elapsed after step 1 QM 1252/1241/1193 s, IQN
+% 587/586/552 s; CPU 1199 vs 546 s. Earlier Mac Studio pair: 337 vs 230 s.
 
 \begin{figure}[htbp]
 	\centering
@@ -53,7 +55,7 @@ With $\Delta t = 0.01\,\mathrm{s}$ neither coupling completes the start-up (Figu
 Newton needs 4 to 5 iterations in the first three steps and 7 in the fourth; in the fifth, at $t = 0.05\,\mathrm{s}$, the residual falls to $37\%$ of its initial value within about 15 iterations and then stagnates, with the line search shortening the step, until the iteration limit.
 IQN-ILS coupling iterations grow likewise (4, 5, 5, 6, 8, 10 and 18 in the first seven steps), and at $t = 0.08\,\mathrm{s}$ the interface residual stagnates at $2.5\times10^{-5}$, above the tolerance.
 Right preconditioning, unlimited convection and other differencing parameters of the matrix-free product stall likewise, so the Newton stagnation is attributed to the nonlinearity of the coupled problem over a large step rather than to the linear solver, as the near-simultaneous failure of IQN-ILS supports.
-With $\Delta t = 0.005\,\mathrm{s}$ both couplings complete: the quasi-monolithic coupling with 3.3 Newton iterations per step (at most 4) and 36 Krylov iterations per Newton iteration, and IQN-ILS with 5.4 coupling iterations per step (at most 8); the quasi-monolithic run takes $337\,\mathrm{s}$ and the IQN-ILS run $230\,\mathrm{s}$, 1.5 times less.
+With $\Delta t = 0.005\,\mathrm{s}$ both couplings complete: the quasi-monolithic coupling with 3.3 Newton iterations per step (at most 4) and 36 Krylov iterations per Newton iteration, and IQN-ILS with 5.4 coupling iterations per step (at most 7); the quasi-monolithic run takes $1241\,\mathrm{s}$ and the IQN-ILS run $586\,\mathrm{s}$, 2.1 times less.
 With $\Delta t = 0.0025\,\mathrm{s}$ the counts fall to 2.9 Newton and 4.7 coupling iterations per step.
 Here, with a dense solid ($\rho_s/\rho_f \approx 1700$) and hence little added mass, the quasi-monolithic coupling gains no robustness and costs more per step than IQN-ILS.
 The method has no globalisation beyond a backtracking line search; adaptive time stepping on Newton failure, or a continuation method, may let it pass such start-ups automatically, but neither is assessed here.
@@ -77,8 +79,11 @@ The method has no globalisation beyond a backtracking line search; adaptive time
 % ring 56.6/24.5, cav 90.5/59.1, 108.5/64.0; cost 32/17, 137/99, 59/42;
 % cav p16 QoI 1.2e-4 vs S0tight). The 16-rank factor quoted is the controlled MeluXina
 % measurement of tab:tube3d_pc (a421f063d, current defaults, 3 repeats): 8.03x.
+% 4-rank factor: MeluXina timing-rerun (4 Nov 2026, a421f063d, exclusive node,
+% cores 0-3, restart t = 0.005 -> 0.005625, 3 repeats; tube4-{base,solid-S0}-r*):
+% 404/402/404 s vs 1059/1058/1057 s = 2.62x, 150 Newton iterations in both.
 In the two-dimensional cases the solid block of the preconditioner is factorised exactly by sparse LU, replicated on every process: robust, and affordable because the solid block is small relative to the fluid block, but with a cost and memory that do not fall with the process count and grow with the solid size.
-On level 2 of the three-dimensional tube the factorisation takes the same time on 16 processes as on 4, with its memory growing from 9 to 25\,GB; replacing it by one BoomerAMG V-cycle, at the same Newton and Krylov iteration counts, makes the run 8 times faster on 16 processes (Table~\ref{tab:tube3d_pc}) and about 4 times faster on 4 processes in an indicative measurement on a shared node, so BoomerAMG is used for the tube (Sections~\ref{sec:tube3d_pc_study} and~\ref{sec:tube3d_scaling}).
+On level 2 of the three-dimensional tube the factorisation takes the same time on 16 processes as on 4, with its memory growing from 9 to 25\,GB; replacing it by one BoomerAMG V-cycle, at the same Newton and Krylov iteration counts, makes the run 8 times faster on 16 processes (Table~\ref{tab:tube3d_pc}) and 2.6 times faster on 4 processes, so BoomerAMG is used for the tube (Sections~\ref{sec:tube3d_pc_study} and~\ref{sec:tube3d_scaling}).
 In the two-dimensional cases the exact factorisation remains cheaper: BoomerAMG doubles the Krylov iterations on the ring and costs 1.4--1.9 times as much, and on the cavity it costs 10--14\% more.
 A distributed alternative, block Jacobi with an LU factorisation of each process's part of the solid block, scales on the tube, at 1.2 times the cost of BoomerAMG, but is a weaker preconditioner in the two-dimensional cases, with 1.5--2.3 times the Krylov iterations and 1.4--1.9 times the cost of the replicated factorisation on 4 and 16 processes; on the cavity with 16 processes its monitored quantities also differ from the tight reference by $1.2\times10^{-4}$, above the output resolution.
 A parallel direct solver, such as MUMPS or SuperLU\_DIST, has not been assessed.

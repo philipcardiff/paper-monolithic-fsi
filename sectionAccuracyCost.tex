@@ -100,8 +100,12 @@ The solid is the geometrically linear velocity solid, and both regions use BDF2 
 The temporal study follows~\citet{Liu2014} and the partitioned study of the companion paper: on the tutorial mesh (480 fluid and 120 solid cells), $\Delta t = 0.25$ to $0.015625\,\mathrm{s}$, halved each time, to $t = 1\,\mathrm{s}$, monitoring the self-convergence of the top-point displacement $u_x$(A) and the interface position.
 The quasi-monolithic coupling uses Newton tolerances of $10^{-8}$ and a Krylov tolerance of $10^{-6}$, so that its iterative error lies below the smallest change; IQN-ILS uses the strict test with the tutorial tolerance of $10^{-6}$.
 The mesh study computes the steady $u_x$(A) on mesh factors 1, 2 and 4 ($\Delta t = 0.01$, $0.01$ and $0.005\,\mathrm{s}$) with the tutorial tolerances to $t = 3\,\mathrm{s}$, by which time it varies by less than $2\times10^{-4}$ of its value over the last $0.5\,\mathrm{s}$.
-Both couplings are run serially on the same workstation and build.
-% Runs: local Mac Studio, a421f063d-equivalent build, ~/claude-runs/agent-b-blob
+The temporal study of both couplings is timed serially under the protocol of Section~\ref{sec:protocol}, over each whole run excluding its first step; the mesh study is run on a workstation.
+% Timing: MeluXina timing-rerun (4 Nov 2026, a421f063d, exclusive node, serial,
+% one run at a time, 3 repeats; blob-{qm,iqn}-time-r{1,2,3}); elapsed time after
+% the first step summed over the five runs: QM 20/19/20 s, IQN 123/127/126 s;
+% CPU 21.1 vs 120.7 s; 258 Newton vs 2017 coupling iterations (1.21 cost ratio).
+% Mesh study: local Mac Studio, a421f063d-equivalent build, ~/claude-runs/agent-b-blob
 % (tutorial driver verification/Allverify); QM rows reproduce the R-fix rows
 % (evidence/m-runs-a-rfix) to 7 digits. Partitioned factor 4: WP0
 % (evidence/m-runs-wp0, 85b0c1de6, 4 ranks).
@@ -117,7 +121,7 @@ Both couplings are run serially on the same workstation and build.
 The quasi-monolithic sequence is broadly compatible with second-order convergence (Figure~\ref{fig:blob_time}), with observed orders of 2.31, 3.17 and 1.77 for $u_x$(A) and 3.68, 2.91 and 2.61 for the interface position, consistent with the second order reported by~\citet{Liu2014} for their finite element formulation.
 IQN-ILS converges at a similar rate from the largest steps (orders 2.05 and 3.67 for $u_x$(A), 2.14 and 3.31 for the interface) but stops at an iterative floor, set by its tolerance of $10^{-6}$, of about $10^{-5}\,\mathrm{m}$ in $u_x$(A) and $5\times10^{-5}\,\mathrm{m}$ in the interface position: below $\Delta t = 0.03125\,\mathrm{s}$ the successive change no longer falls.
 Tightening the tolerance does not remove the floor: the interface residual then stagnates at about $2.5\times10^{-8}$, the level set by the inner fluid and solid solver tolerances.
-The quasi-monolithic coupling needs 2.0--3.0 Newton iterations per step and IQN-ILS 14--24 coupling iterations; the five quasi-monolithic runs take $12\,\mathrm{s}$ in total against $78\,\mathrm{s}$ for IQN-ILS, seven times less, despite their tighter tolerances.
+The quasi-monolithic coupling needs 2.0--3.0 Newton iterations per step and IQN-ILS 14--24 coupling iterations; the five quasi-monolithic runs take $20\,\mathrm{s}$ in total against $126\,\mathrm{s}$ for IQN-ILS, six times less, despite their tighter tolerances.
 At the smallest step the couplings differ by $0.71\%$ in $u_x$(A), the same as in the steady state on this mesh (Table~\ref{tab:blob_mesh}), so the difference is spatial, not temporal.
 
 \begin{table}[htbp]
@@ -158,11 +162,12 @@ The quasi-monolithic coupling needs 2.0, 2.0 and 2.6 Newton iterations per step 
 A Newton iteration of the quasi-monolithic coupling solves a preconditioned linear system for all fluid and solid unknowns, whereas a partitioned coupling iteration performs one segregated fluid solve and one solid solve.
 The Newton iteration is therefore the more expensive, so the quasi-monolithic coupling is cheaper per step only when the partitioned scheme needs enough coupling iterations.
 In this paper the quasi-monolithic coupling needs two to four Newton iterations per step independently of the added-mass ratio (Sections~\ref{sec:ring_m} and~\ref{sec:robustness}), whereas the coupling iterations of the partitioned schemes grow with it.
-Measured on the same processes, a Newton iteration costs about as much as 1.2 IQN-ILS coupling iterations on the two-dimensional ring and half-cylinder and about 2.4 on the three-dimensional flag of Section~\ref{sec:lim_foil}, whose fluid block needs more Krylov iterations.
-The break-even point, the number of Newton iterations times this cost ratio, is therefore case dependent: about 2.5--5 coupling iterations per step in the two-dimensional cases and about 8 on the flag (3.3 Newton iterations per step).
-Above it the quasi-monolithic coupling is cheaper, by a factor of two on the ring at the strong added-mass level, where IQN-ILS needs 4--6, and by seven to nine on the half-cylinder, where it needs 14--26.
-Where few coupling iterations suffice, as for the flag (5.4 per step) and the steady flexible-bottom cavity (Section~\ref{sec:cavity_m}), the accelerated partitioned schemes are cheaper, by a factor of 1.5 on the flag.
+Measured on the same processes, a Newton iteration costs about as much as 1.2 IQN-ILS coupling iterations on the two-dimensional ring and half-cylinder and about 3.4 on the three-dimensional flag of Section~\ref{sec:lim_foil}, whose fluid block needs more Krylov iterations.
+The break-even point, the number of Newton iterations times this cost ratio, is therefore case dependent: about 2.5--5 coupling iterations per step in the two-dimensional cases and about 11 on the flag (3.3 Newton iterations per step).
+Above it the quasi-monolithic coupling is cheaper, by a factor of two on the ring at the strong added-mass level, where IQN-ILS needs 4--6, and by six to nine on the half-cylinder, where it needs 14--26.
+Where few coupling iterations suffice, as for the flag (5.4 per step) and the steady flexible-bottom cavity (Section~\ref{sec:cavity_m}), the accelerated partitioned schemes are cheaper, by a factor of 2.1 on the flag.
 On the Hron--Turek FSI3 benchmark, the only case of the paper with an established external reference and a work--precision comparison, the quasi-monolithic coupling costs \tbd{factor} times \tbd{more/less} than IQN-ILS at equal error (Section~\ref{sec:fsi3_m}).
 % Ratios: ring tab:ring_cost (QM step ~0.5 IQN step, 2 Newton vs 4.4-5.6 its);
-% blob time study (11 s vs 76 s; 2.0-3.0 Newton vs 14-24 its); foil 8 ranks
-% (337 s vs 230 s elapsed, ClockTime; 336.7 vs 229.4 s CPU; 3.3 Newton vs 5.4 its).
+% blob time study (MeluXina, 20 s vs 126 s; 258 Newton vs 2017 its: 1.21); foil 8 ranks
+% (MeluXina, 1241 s vs 586 s elapsed after step 1, medians of 3; 1199 vs 546 s CPU;
+% 132 Newton vs 214 its: 9.40 vs 2.74 s per iteration, 3.43).

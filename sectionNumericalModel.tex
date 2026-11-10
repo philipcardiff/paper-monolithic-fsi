@@ -338,6 +338,9 @@ where $\bb{\Gamma}_f^{n}$ and $\bb{\Gamma}_{0,f}$ are the outward face area vect
 The cell-centred stress is computed from the displacement $\bb{D}^{n}$ (via $\bb{F}^{n} = \bb{I} + (\bb{\nabla}_0\bb{D}^n)^T$) by the run-time selectable constitutive law and then linearly interpolated to the faces.
 In the linear-geometry variant, the face force is $\bb{T}_f^{n} = \bb{\Gamma}_{0,f} \cdot \bb{\sigma}_f^{n}$, with the stress computed from the small-strain tensor of $\bb{D}^n$.
 In the geometrically nonlinear variant, the stabilisation is added to the face traction before multiplication by the deformed area, which therefore replaces $|\bb{\Gamma}_{0,f}|$ in Equation~\eqref{eqn:rhie_chow_s}.
+For thin, bending-dominated structures the geometrically nonlinear variant can instead use the high-order residual of~\citet{Castrillo2024}: the displacement is reconstructed by a k-exact cubic least-squares fit over an extended stencil, and the deformation gradient, the stress and the face force are evaluated at the face quadrature points, with a stabilisation term compatible with this reconstruction.
+The residual is otherwise unchanged: the approximate Jacobian of the preconditioner keeps the compact linearisation, and the interface load remains one traction per face (Section~\ref{sec:interface_conditions}), which conserves the interface force but is second-order accurate.
+Section~\ref{sec:lim_thin_solid} compares the two reconstructions on thin solids.
 
 For faces on the fluid--solid interface, the solid face force is replaced by the force obtained from the fluid traction, as described in Section~\ref{sec:interface_conditions}, and the stabilisation contribution is set to zero, as on all traction boundaries.
 The fluid variables thus enter Equation~\eqref{eqn:solid_velocity_residual} through this traction boundary condition on $\Gamma_\mathrm{fsi}$.

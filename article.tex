@@ -124,9 +124,10 @@ Partitioned coupling dominates finite volume fluid--solid interaction (FSI), but
 This paper presents a quasi-monolithic cell-centred finite volume method in which the arbitrary Lagrangian--Eulerian fluid equations and the total Lagrangian solid momentum equation, written in velocity, form one nonlinear residual, with the fluid mesh motion outside the Newton system.
 A Jacobian-free Newton--Krylov method solves the residual, preconditioned by a fluid--solid field split built from compact finite volume linearisations.
 Exact solutions for an added-mass ring and a Womersley tube show that second-order accuracy needs an interface pressure gradient from the normal momentum equation and an interface traction equal to the discrete momentum flux; a conservative transfer balances the interface force to round-off on non-matching meshes.
-On matched meshes the quasi-monolithic and partitioned solutions converge towards each other, with displacements differing by at most $0.13\%$ on the finest meshes.
+On matched meshes the quasi-monolithic and partitioned solutions converge towards each other, with displacements differing by at most $0.13\%$ on the finest meshes of the consistency cases; on the Hron--Turek FSI3 benchmark, with a geometrically nonlinear flag, they agree within $1.2\%$.
 The method converges in two to four Newton iterations per step over all density ratios and time steps tested, including a massless wall; at density ratios of 0.1 and below, Dirichlet--Neumann coupling reaches its iteration cap in most cases.
 On the Hron--Turek FSI3 benchmark, where IQN-ILS needs only five to six coupling iterations per step, the two couplings agree within the uncertainty of the reference, and the method costs 1.2--1.4 times as much as IQN-ILS at equal error.
+% AUTHOR NOTE: FSI3 cost factor (1.2--1.4) is provisional; update from the protocol timings (see the \todo in Section 7.1).
 On a three-dimensional pressure-pulse tube it costs 3.2--3.6 times as much as Robin--Neumann coupling and keeps a single-node parallel efficiency of 0.78 on 128 cores; a flexible flag in air, which needs a reduced time step with either coupling, is reported as a limitation.
 The implementation, built on solids4foam and PETSc, and all case set-ups are open source.
 }

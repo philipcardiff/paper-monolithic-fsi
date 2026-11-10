@@ -37,6 +37,7 @@ Three further quasi-monolithic runs check the level-2 result: time steps of $10^
 The mean and amplitude of $u_x$(A), the amplitude and frequency of $u_y$(A), and the mean and amplitude of the drag and lift on the cylinder and flag are evaluated over the closing second ($t = 5$--$6\,\mathrm{s}$, about five periods) as in the companion paper, and compared with the Featflow level-4 values; the amplitudes of the last two periods agree with those of the two before to within $0.07\%$ in every run.
 The cost is the elapsed time of the coupled phase ($t = 2$--$6\,\mathrm{s}$) in core-hours per simulated second, without the first step of each job.
 The runs of each level shared one exclusive MeluXina node, side by side, so these costs are indicative and do not follow the timing protocol of Section~\ref{sec:protocol}: over single seconds of the run the ratio of the two couplings' costs ranges from $1.1$ to $1.6$.
+\todo{Author note (10 Nov 2026): the FSI3 costs, the cost factor of 1.2--1.4 and the Newton/coupling cost ratio of 2.9--4.2 are provisional, from the side-by-side production runs. Protocol timings (exclusive node, median of three repeats, one period from a restart near $t = 5\,\mathrm{s}$; MeluXina jobs 5442545--5442550, \texttt{fsi3t}) are running. When they land, update Table~\ref{tab:fsi3_m}, Figure~\ref{fig:fsi3_work_precision}, this paragraph, the Cost paragraph, the discussion at the end of this section, the abstract and the Conclusions.}
 
 \begin{table}[htbp]
 	\centering
@@ -185,6 +186,7 @@ The break-even point, the number of Newton iterations times this cost ratio, is 
 Above it the quasi-monolithic coupling is cheaper, by a factor of two on the ring at the strong added-mass level, where IQN-ILS needs 4--6, and by six to nine on the half-cylinder, where it needs 14--26.
 Where few coupling iterations suffice, as for FSI3 (4.9--6.0 per step), the flag (5.4) and the steady flexible-bottom cavity (Section~\ref{sec:cavity_m}), the accelerated partitioned schemes are cheaper, by factors of 1.2--1.4 on FSI3 and 2.1 on the flag.
 On the Hron--Turek FSI3 benchmark, the only case of the paper with an established external reference and a work--precision comparison, the quasi-monolithic coupling costs $1.2$--$1.4$ times as much as IQN-ILS at equal error (Section~\ref{sec:fsi3_m}).
+% AUTHOR NOTE: provisional FSI3 cost factor; update from the protocol timings (\todo in Section 7.1).
 % FSI3: paper-data/fsi3_runs.csv (side-by-side runs, indicative): 3.15/2.69,
 % 12.7/9.84, 13.6/9.71 s per step; x 4.91, 5.34, 6.04 its / 2 Newton = 2.9-4.2.
 % Ratios: ring tab:ring_cost (QM step ~0.5 IQN step, 2 Newton vs 4.4-5.6 its);

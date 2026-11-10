@@ -2,7 +2,10 @@
 change in u_x(A) and in the l2 norm of the interface position against the time
 step, quasi-monolithic (snes_rtol = snes_stol = 1e-8, ksp_rtol 1e-6) and IQN-ILS
 (strict test, 1e-6). Data: paper-data/blob_time_{qm,iqn}.csv, written by the
-tutorial driver (verification/Allverify --study time) at solids4foam a421f063d."""
+tutorial driver (verification/Allverify --study time) on the finite-strain
+neo-Hookean definition (solids4foam QM branch b982bf6c5 merged with
+tutorial/blob-finite-strain 6fa468d56; clock_time_s: median of three
+protocol repeats, elapsed after the first step)."""
 import csv
 from pathlib import Path
 import matplotlib

@@ -42,6 +42,7 @@ This section verifies the method against two exact solutions and uses them to ex
 % Section 4 "Common protocol" and Section 6 "Data formats".
 
 Every result in Sections~\ref{sec:verification_exact} to~\ref{sec:limitations} is computed with the solids4foam release \tbd{tag name} (campaign build \texttt{v2.2-1808}, commit \texttt{a421f063d}, unless a run table states otherwise), built with OpenFOAM v2512, GCC 13.3, PETSc 3.22.0 and HYPRE 2.31.0; both couplings use the same build.
+The half-cylinder runs of Section~\ref{sec:blob_m} use a later build of the same branch (\texttt{2935daa53}), which adds the finite-strain definition of the case and a corrected wall-velocity condition of the partitioned fluid~\citep{CardiffFSIVerification2026}; the quasi-monolithic results are unchanged by it to every printed digit.
 % Source: provenance.json of the 6b runs (Mx 5402592).
 The quasi-monolithic coupling is compared with the partitioned Dirichlet--Neumann coupling accelerated by Aitken relaxation or IQN-ILS and with Robin--Neumann coupling~\citep{Tukovic2018b}, with the partitioned schemes and settings of the companion paper~\citep{CardiffFSIVerification2026} for each case.
 

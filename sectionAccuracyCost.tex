@@ -10,55 +10,73 @@ This section compares the complete quasi-monolithic and partitioned IQN-ILS form
 
 %%--------------------------------------------------------------------------------------------------------------------%%
 \subsection{Hron--Turek FSI3}\label{sec:fsi3_m}
-% TIME-SCHEME NOTE (Philip, 22 Oct 2026), for anyone adding results here:
-% all transient results in this paper must use BDF2 (backward) for the fluid
-% ddt(U) and the solid. The solids4foam tutorial default for this case is
-% backward for the fluid ddt(U). Confirm and record the ddt schemes of every
-% run (runs.csv); rerun any result computed with Euler, and say so here.
-\todo{Time scheme: confirm that every result in this subsection uses BDF2 (backward) for the fluid and the solid (tutorial default at \texttt{a421f063d}: backward for both regions); results computed with Euler must be rerun.}
-%%--------------------------------------------------------------------------------------------------------------------%%
-% Set-up: companion paper sectionBenchmarkSuite.tex "Hron--Turek family";
-% solids4foam 257b2e564 tutorials/fluidSolidInteraction/TurekHron2006/
-% verification/README.md section "Quasi-monolithic coupling" (lines 551-592):
-% conformal meshes with a quarter of the tutorial's solid cells (5 x 30 on the
-% plate at 1x); dt 0.001 / 0.0005 / 0.00025 s at 1x / 2x / 4x (driver level
-% table, A1 Section 1.7); diffusionHyperElastic pseudo-solid stiffened near
-% the plate and cylinder. Monolithic solid:
-% nonLinearGeometryTotalLagrangianVelocity, direct map.
-% Driver: verification/Allverify --coupling monolithic --levels 1,2,4.
+% Every run of this subsection uses BDF2 (backward) for the fluid ddt(U),
+% ddt(dU), ddt(p) and for the solid (fsi3g run files, checked 10 Nov 2026).
+% Data: paper-data/fsi3_runs.csv (fsi3g runs on MeluXina, solids4foam
+% a421f063d, qm-a421 build); statistics with the TurekHron2006 verification
+% driver's periodic_statistics; scripts figures/scripts/fsi3_*.py.
 
-The FSI3 problem of~\citet{Turek2006}, an elastic flag behind a rigid cylinder oscillating at a low solid-to-fluid density ratio (Figure~\ref{fig:fsi3_geom_m}), is the most widely used test of strongly coupled FSI solvers, and its Featflow reference values carry an uncertainty of about $3$--$5\%$ in the displacement and force amplitudes and less than $0.3\%$ in the frequency and mean drag~\citep{CardiffFSIVerification2026}.
+The FSI3 problem of~\citet{Turek2006}, an elastic flag behind a rigid cylinder oscillating at a solid-to-fluid density ratio of one (Figure~\ref{fig:fsi3_geom_m}), is the most widely used test of strongly coupled FSI solvers, and its Featflow reference values carry an uncertainty of about $3$--$5\%$ in the displacement and force amplitudes and less than $0.3\%$ in the frequency and mean drag~\citep{CardiffFSIVerification2026}.
 
 \begin{figure}[htbp]
 	\centering
-	\includegraphics[scale=1]{figures/HronTurek3-geometry}
-	\caption{Hron--Turek FSI3: geometry and monitoring point A (as in the companion paper~\protect\citep{CardiffFSIVerification2026}).}
+	\includegraphics[width=\linewidth]{figures/HronTurek3-geometry}
+	\caption{Hron--Turek FSI3: (a) geometry (m), boundary conditions and the level-1 fluid mesh; (b) the cylinder, the flag (solid region) and point A, where the fluid mesh is refined towards the flag tip.}
 	\label{fig:fsi3_geom_m}
 \end{figure}
-\todo{Replace the mesh in Figure~\ref{fig:fsi3_geom_m} with the conformal-interface mesh used here (carried over from the earlier draft).}
 
 \paragraph{Set-up.}
-Both couplings are run on the conformal meshes of the quasi-monolithic set-up at refinement factors 1, 2 and 4, with $\Delta t = 0.001$, $0.0005$ and $0.00025\,\mathrm{s}$ respectively, to $t = \tbd{7}\,\mathrm{s}$; these meshes have a quarter of the solid cells of the companion paper's meshes at each factor.
-The flag is computed with the geometrically nonlinear velocity solid (quasi-monolithic) and the displacement solid with IQN-ILS under the strict convergence test (partitioned).
-The fluid mesh is moved by a pseudo-solid stiffened near the flag and the cylinder (Section~\ref{sec:fluid_mesh_motion}); with uniform stiffness the fluid mesh inverts during the start-up overshoot at $t = 2.76\,\mathrm{s}$ with either coupling.
-% Source of the mesh-inversion statement: TurekHron2006/verification/README.md
-% lines 557-562 and commit 415ee9a6d (A4 Section 8, route C). Mesh level not
-% stated; ask Philip.
-\todo{State the mesh level at which the uniform pseudo-solid inverted (A4 open question 4).}
+Both couplings are run on one family of three unstructured fluid meshes, refined towards the flag tip, with $96\,712$, $194\,183$ and $387\,219$ cells (levels 1--3, the cell size reduced by $\sqrt{2}$ per level), and a uniform flag mesh of $430\times24$, $608\times34$ and $860\times48$ cells; the interface is non-matching and is transferred by AMI.
+The time steps are $2\times10^{-4}$, $1.41\times10^{-4}$ and $10^{-4}\,\mathrm{s}$, with BDF2 in both regions.
+The flow develops for $2\,\mathrm{s}$ around a fixed flag, after which the coupled problem is run to $t = 6\,\mathrm{s}$.
+The flag is computed with the geometrically nonlinear velocity solid (quasi-monolithic) and with the geometrically nonlinear displacement solid under IQN-ILS with the strict convergence test, a tolerance of $10^{-6}$ on every residual measure (partitioned).
+For both couplings the fluid mesh is moved by the linear elastic pseudo-solid assembled on the current mesh, stiffened by the linear inverse distance to the flag and the cylinder (Sections~\ref{sec:fluid_mesh_motion} and~\ref{sec:lim_mesh_motion}).
+Three further quasi-monolithic runs check the level-2 result: time steps of $10^{-4}$ and $2\times10^{-4}\,\mathrm{s}$, and a flag mesh refined twice in each direction.
 
 \paragraph{Measured.}
-The mean and amplitude of $u_x$(A), the amplitude and frequency of $u_y$(A), the mean and amplitude of the drag and the amplitude of the lift, over the last \tbd{second}, with the lift smoothed as in the companion paper, and their errors against the Featflow level-4 values.
-The cost is timed over two oscillation periods from a periodic restart, with the same number of processes for both couplings at each level.
-On the factor-2 mesh the iterative side of the work--precision relation is measured by a tolerance sweep: \texttt{snes\_rtol} of $10^{-4}$, $10^{-6}$ and $10^{-8}$ for the quasi-monolithic coupling and strict coupling tolerances of $10^{-4}$, $10^{-5}$ and $10^{-6}$ for IQN-ILS.
+The mean and amplitude of $u_x$(A), the amplitude and frequency of $u_y$(A), and the mean and amplitude of the drag and lift on the cylinder and flag are evaluated over the closing second ($t = 5$--$6\,\mathrm{s}$, about five periods) as in the companion paper, and compared with the Featflow level-4 values; the amplitudes of the last two periods agree with those of the two before to within $0.07\%$ in every run.
+The cost is the elapsed time of the coupled phase ($t = 2$--$6\,\mathrm{s}$) in core-hours per simulated second, without the first step of each job.
+The runs of each level shared one exclusive MeluXina node, side by side, so these costs are indicative and do not follow the timing protocol of Section~\ref{sec:protocol}: over single seconds of the run the ratio of the two couplings' costs ranges from $1.1$ to $1.6$.
 
-\todo{Figure: FSI3 work--precision, one panel per quantity ($u_x$ mean, $u_y$ amplitude, drag amplitude, lift amplitude; optionally $u_y$ frequency and drag mean). Horizontal axis: core-hours per simulated second (log). Vertical axis: relative error against Featflow level 4 (log). Filled markers: quasi-monolithic; open markers: IQN-ILS; marker shape: refinement factor (1, 2, 4), joined by a line per coupling; small markers on the factor-2 point: tolerance sweep. Shaded horizontal band: reference uncertainty of the companion paper, below which errors cannot be distinguished. Data: R4 \texttt{runs.csv}, \texttt{qois.csv}.}
+\begin{table}[htbp]
+	\centering
+	\footnotesize
+	\setlength{\tabcolsep}{3pt}
+	\caption{Hron--Turek FSI3: relative errors (\%) against the Featflow level-4 values over $t = 5$--$6\,\mathrm{s}$, iterations per step (Newton iterations, quasi-monolithic; coupling iterations, IQN-ILS) and cost (core-hours per simulated second over $t = 2$--$6\,\mathrm{s}$, indicative). QM: quasi-monolithic.}
+	\label{tab:fsi3_m}
+	\begin{tabular}{llrrrrrrrrr}
+		\toprule
+		Level & Coupling & Processes & $u_x$ mean & $u_y$ ampl. & $u_y$ freq. & drag mean & drag ampl. & lift ampl. & Iter. & Cost \\
+		\midrule
+		1 & QM      & 16 & $-0.31$ & $-0.19$ & $0.28$ & $0.07$ & $1.48$ & $6.35$ & 2.0 & 70 \\
+		  & IQN-ILS & 16 & $-0.92$ & $0.27$  & $0.15$ & $0.13$ & $3.13$ & $6.41$ & 4.9 & 60 \\
+		2 & QM      & 24 & $-1.59$ & $0.52$  & $0.30$ & $0.13$ & $1.77$ & $4.26$ & 2.0 & 599 \\
+		  & IQN-ILS & 24 & $-2.60$ & $0.95$  & $0.21$ & $0.17$ & $2.53$ & $4.67$ & 5.3 & 464 \\
+		3 & QM      & 64 & $-1.54$ & $0.67$  & $0.29$ & $0.11$ & $1.49$ & $2.91$ & 2.0 & 2420 \\
+		  & IQN-ILS & 64 & $-2.74$ & $1.17$  & $0.23$ & $0.19$ & $2.65$ & $3.59$ & 6.0 & 1726 \\
+		\bottomrule
+	\end{tabular}
+\end{table}
 
-\todo{Table: FSI3 on the conformal meshes. Rows: factor 1, 2, 4 for each coupling. Columns: fluid and solid cells; $\Delta t$; processes; errors in $u_x$ mean, $u_y$ amplitude, $u_y$ frequency, drag mean, drag amplitude, lift amplitude; Newton or coupling iterations per step; Krylov iterations per Newton iteration; wall time per step; core-hours per simulated second.}
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=\linewidth]{figures/HronTurek3-work-precision}
+	\caption{Hron--Turek FSI3 work--precision: relative error against the Featflow level-4 values against the cost (Table~\ref{tab:fsi3_m}) on mesh levels 1--3. The grey band is the $3$--$5\%$ uncertainty of the reference amplitudes.}
+	\label{fig:fsi3_work_precision}
+\end{figure}
 
-Expected claims: on the same meshes the two couplings give errors that differ by \tbd{value} and approach each other under refinement; at equal error the quasi-monolithic coupling costs \tbd{factor} times \tbd{more/less} than IQN-ILS, and below an error of \tbd{value} the reference uncertainty, not the coupling, limits the comparison.
-The observed order of the quasi-monolithic $u_x$ mean between factors 2 and 4 is \tbd{order}, which shows whether the first-order sequence of the companion paper comes from the coupling or from the discretisation and set-up.
-% HANDOFF R4 "Order check for V": V cites one sentence on this. Pre-#597
-% (stale) errors were 11.5% and 5.9% (README table), about order 1.
+\paragraph{Accuracy.}
+At every level both couplings are within the acceptance tolerances of the companion paper (Table~\ref{tab:fsi3_m}): the displacement errors are below $3\%$, the frequency and mean-drag errors below $0.3\%$, and the drag-amplitude errors below $3.2\%$, all inside the uncertainty of the reference.
+The lift amplitude has the largest error, $6.4\%$ on level 1, above the uncertainty of the reference, and $2.9$--$3.6\%$ on level 3; it falls under refinement at an observed order of about $1.3$ (quasi-monolithic) and $1.4$ (IQN-ILS), and refining the flag mesh of level 2 lowers it by $1.7\%$ (drag amplitude $0.7\%$, $u_y$ amplitude $0.05\%$), so the solid mesh accounts for most of the remaining lift error.
+Halving or doubling the time step on level 2 changes every quantity by less than $0.05\%$.
+On the same mesh the two couplings differ by $0.04$--$0.65\%$ in the frequency, the mean drag and the $u_y$ and lift amplitudes, and by $0.6$--$1.6\%$ in the $u_x$ statistics and the drag amplitude.
+These differences do not shrink over the three levels (the $u_x$ mean differs by $0.6$, $1.0$ and $1.2\%$), unlike those of Section~\ref{sec:consistency_partitioned}: the flag is geometrically nonlinear, for which the velocity and displacement solids are not algebraically equivalent in time, and the quasi-monolithic fluid moves its mesh once per step rather than in every coupling iteration (Table~\ref{tab:discretisation_differences}). The differences stay well inside the reference uncertainty.
+Over the three levels the $u_x$ mean changes by $1.3\%$ and then $0.05\%$ (quasi-monolithic), and by $1.7\%$ and then $0.14\%$ (IQN-ILS): on this mesh family neither coupling shows the first-order sequence of the companion paper's meshes, so that sequence comes from the discretisation and meshes rather than from the coupling.
+
+\paragraph{Cost.}
+The quasi-monolithic coupling needs two Newton iterations per step at every level, with $46$, $54$ and $67$ Krylov iterations per Newton iteration on levels 1--3, and IQN-ILS needs $4.9$--$6.0$ coupling iterations per step.
+One Newton iteration therefore costs as much as $2.9$--$4.2$ coupling iterations, more than on the other two-dimensional cases because the Krylov iterations of the fluid block grow with the mesh, and the quasi-monolithic coupling is $1.2$, $1.3$ and $1.4$ times more expensive per simulated second on levels 1--3 (Figure~\ref{fig:fsi3_work_precision}).
+Since the two couplings reach the same error on the same mesh to within the reference uncertainty, equal error means equal mesh, and the quasi-monolithic coupling costs $1.2$--$1.4$ times as much as IQN-ILS at equal error; below errors of about $3$--$5\%$, every quantity except the lift amplitude is limited by the reference rather than by either coupling.
 
 %%--------------------------------------------------------------------------------------------------------------------%%
 \subsection{Elastic half-cylinder in a viscous channel flow}\label{sec:blob_m}
@@ -162,11 +180,13 @@ The quasi-monolithic coupling needs 2.0, 2.0 and 2.6 Newton iterations per step 
 A Newton iteration of the quasi-monolithic coupling solves a preconditioned linear system for all fluid and solid unknowns, whereas a partitioned coupling iteration performs one segregated fluid solve and one solid solve.
 The Newton iteration is therefore the more expensive, so the quasi-monolithic coupling is cheaper per step only when the partitioned scheme needs enough coupling iterations.
 In this paper the quasi-monolithic coupling needs two to four Newton iterations per step independently of the added-mass ratio (Sections~\ref{sec:ring_m} and~\ref{sec:robustness}), whereas the coupling iterations of the partitioned schemes grow with it.
-Measured on the same processes, a Newton iteration costs about as much as 1.2 IQN-ILS coupling iterations on the two-dimensional ring and half-cylinder and about 3.4 on the three-dimensional flag of Section~\ref{sec:lim_foil}, whose fluid block needs more Krylov iterations.
-The break-even point, the number of Newton iterations times this cost ratio, is therefore case dependent: about 2.5--5 coupling iterations per step in the two-dimensional cases and about 11 on the flag (3.3 Newton iterations per step).
+Measured on the same processes, a Newton iteration costs about as much as 1.2 IQN-ILS coupling iterations on the two-dimensional ring and half-cylinder, $2.9$--$4.2$ on the larger FSI3 meshes and about 3.4 on the three-dimensional flag of Section~\ref{sec:lim_foil}, where the fluid block needs more Krylov iterations.
+The break-even point, the number of Newton iterations times this cost ratio, is therefore case dependent: about 2.5--5 coupling iterations per step on the ring and half-cylinder, $6$--$8$ on FSI3 and about 11 on the flag (3.3 Newton iterations per step).
 Above it the quasi-monolithic coupling is cheaper, by a factor of two on the ring at the strong added-mass level, where IQN-ILS needs 4--6, and by six to nine on the half-cylinder, where it needs 14--26.
-Where few coupling iterations suffice, as for the flag (5.4 per step) and the steady flexible-bottom cavity (Section~\ref{sec:cavity_m}), the accelerated partitioned schemes are cheaper, by a factor of 2.1 on the flag.
-On the Hron--Turek FSI3 benchmark, the only case of the paper with an established external reference and a work--precision comparison, the quasi-monolithic coupling costs \tbd{factor} times \tbd{more/less} than IQN-ILS at equal error (Section~\ref{sec:fsi3_m}).
+Where few coupling iterations suffice, as for FSI3 (4.9--6.0 per step), the flag (5.4) and the steady flexible-bottom cavity (Section~\ref{sec:cavity_m}), the accelerated partitioned schemes are cheaper, by factors of 1.2--1.4 on FSI3 and 2.1 on the flag.
+On the Hron--Turek FSI3 benchmark, the only case of the paper with an established external reference and a work--precision comparison, the quasi-monolithic coupling costs $1.2$--$1.4$ times as much as IQN-ILS at equal error (Section~\ref{sec:fsi3_m}).
+% FSI3: paper-data/fsi3_runs.csv (side-by-side runs, indicative): 3.15/2.69,
+% 12.7/9.84, 13.6/9.71 s per step; x 4.91, 5.34, 6.04 its / 2 Newton = 2.9-4.2.
 % Ratios: ring tab:ring_cost (QM step ~0.5 IQN step, 2 Newton vs 4.4-5.6 its);
 % blob time study (MeluXina, 20 s vs 126 s; 258 Newton vs 2017 its: 1.21); foil 8 ranks
 % (MeluXina, 1241 s vs 586 s elapsed after step 1, medians of 3; 1199 vs 546 s CPU;

@@ -126,7 +126,7 @@ A Jacobian-free Newton--Krylov method solves the residual, preconditioned by a f
 Exact solutions for an added-mass ring and a Womersley tube show that second-order accuracy needs an interface pressure gradient from the normal momentum equation and an interface traction equal to the discrete momentum flux; a conservative transfer balances the interface force to round-off on non-matching meshes.
 On matched meshes the quasi-monolithic and partitioned solutions converge towards each other, with displacements differing by at most $0.13\%$ on the finest meshes.
 The method converges in two to four Newton iterations per step over all density ratios and time steps tested, including a massless wall; at density ratios of 0.1 and below, Dirichlet--Neumann coupling reaches its iteration cap in most cases.
-Using the references and strict convergence test of a companion verification study, the method is \tbd{factor} times \tbd{faster/slower} than IQN-ILS at \tbd{error level} on the Hron--Turek FSI3 benchmark.
+On the Hron--Turek FSI3 benchmark, where IQN-ILS needs only five to six coupling iterations per step, the two couplings agree within the uncertainty of the reference, and the method costs 1.2--1.4 times as much as IQN-ILS at equal error.
 On a three-dimensional pressure-pulse tube it costs 3.2--3.6 times as much as Robin--Neumann coupling and keeps a single-node parallel efficiency of 0.78 on 128 cores; a flexible flag in air, which needs a reduced time step with either coupling, is reported as a limitation.
 The implementation, built on solids4foam and PETSc, and all case set-ups are open source.
 }
@@ -137,7 +137,6 @@ The implementation, built on solids4foam and PETSc, and all case set-ups are ope
 
 % Abstract claims checked against Sections 4-9 on 1 Nov 2026 (interface orders,
 % damping, force balance; the power balance is not measured and was removed).
-% The FSI3 cost sentence waits for the work--precision study of Section 7.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

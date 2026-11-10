@@ -96,14 +96,17 @@ An algebraic multigrid solid block for thin, nearly incompressible or strongly n
 % Source: companion paper sectionBenchmarkSuite.tex, "Collapsible channel"
 % (Solid bullet) and "Ring added-mass problem" (Solid discretisation bullet);
 % collapsibleChannel/verification/README.md "Quasi-monolithic coupling".
-% The high-order (MLS) solid is not available for velocity solids and will
-% not be added for this paper (Philip's decision).
+% Since solids4foam #679 (6 Nov 2026, in the QM branch after the campaign
+% build a421f063d) the TL velocity solid has the high-order residual;
+% Philip (10 Nov 2026): demonstrate it here (collapsible channel, FSI3 flag).
 
 The velocity solids use the standard second-order cell-centred discretisation with linear reconstruction.
 For thin, bending-dominated structures meshed with few, elongated cells across the thickness, this discretisation is too stiff: in a static test of the collapsible-channel wall it is between $16.7\%$ and $0.22\%$ too stiff over the solid meshes of the companion paper, whereas a high-order reconstruction is within $0.25\%$ on every mesh~\citep{CardiffFSIVerification2026}.
-The high-order reconstruction is unavailable for velocity solids, so the accuracy of the quasi-monolithic coupling on such cases is limited by the solid unless it is refined along its length; with a non-conformal interface the solid can be refined independently of the fluid: on the collapsible channel a $640\times8$ solid through AMI on fluid level 2 brings the first trough closer to the oomph-lib reference than the conformal $320\times8$ solid on fluid level 4 ($0.71\%$ against $1.17\%$), in about a third of the wall time (Section~\ref{sec:robustness_collapsible}).
+With the standard reconstruction, the accuracy of the quasi-monolithic coupling on such cases is limited by the solid unless it is refined along its length; with a non-conformal interface the solid can be refined independently of the fluid: on the collapsible channel a $640\times8$ solid through AMI on fluid level 2 brings the first trough closer to the oomph-lib reference than the conformal $320\times8$ solid on fluid level 4 ($0.71\%$ against $1.17\%$), in about a third of the wall time (Section~\ref{sec:robustness_collapsible}).
 % B2: evidence/m-runs-b:paper-data/campaign/wp3/b2_618/ (3823 s against 11080 s, shared XenoSim node, indicative).
 The wet/dry frequency ratio of the ring problem is insensitive to this error, because the wet and dry runs share it (Section~\ref{sec:ring_m}).
+The high-order residual of the geometrically nonlinear velocity solid (Section~\ref{sec:discrete_coupled_residual}) removes this excess stiffness.
+\todo{Agent B (in progress, 10 Nov 2026): order-1 against order-3 velocity solid on (a) the collapsible channel, fluid level 2, walls $80\times2$ to $640\times16$, trough error against oomph-lib against wall time; (b) Hron--Turek FSI3, fluid level 1, flag meshes coarser than those of Section~\ref{sec:fsi3_m}, error against cost. Computed with a build that includes solids4foam \#679 (newer than the campaign build); timings under the protocol of Section~\ref{sec:protocol}. Rename this subsection once the results are in.}
 
 %%--------------------------------------------------------------------------------------------------------------------%%
 \subsection{Fluid mesh motion}\label{sec:lim_mesh_motion}
@@ -135,6 +138,6 @@ The results of this paper were obtained with OpenFOAM v2512 and PETSc 3.22 or 3.
 
 \paragraph{Scope and modularity.}
 Partitioned coupling in solids4foam combines any of its fluid and solid models, including displacement-based solids with high-order reconstruction, and runs on every supported OpenFOAM line~\citep{Tukovic2018, Cardiff2025}.
-The quasi-monolithic coupling is restricted to the coupled Newton fluid model of solids4foam (\texttt{newtonIcoFluid}) and the velocity solids (Section~\ref{sec:numerical_methods}), to the OpenFOAM.com line with PETSc (Section~\ref{sec:lim_platform}), and to the standard second-order solid reconstruction, which limits its accuracy on thin structures (Section~\ref{sec:lim_thin_solid}).
+The quasi-monolithic coupling is restricted to the coupled Newton fluid model of solids4foam (\texttt{newtonIcoFluid}) and the velocity solids (Section~\ref{sec:numerical_methods}), and to the OpenFOAM.com line with PETSc (Section~\ref{sec:lim_platform}); the high-order solid residual is available for the geometrically nonlinear velocity solid only (Section~\ref{sec:lim_thin_solid}).
 A new physical model enters the quasi-monolithic coupling only with its contribution to the residual and to the approximate Jacobian, whereas it enters partitioned coupling through its interface data alone.
 Where both couplings apply, the choice is thus between a solver whose convergence was insensitive to the added mass over the tested range, at a higher cost per iteration, and a modular solver whose cost and reliability depend on the added mass and on its acceleration settings.

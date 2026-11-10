@@ -21,6 +21,6 @@ The main conclusions are as follows.
 	% AUTHOR NOTE: provisional FSI3 cost factor; update from the protocol timings (\todo in Section 7.1).
 \end{enumerate}
 
-The main extensions suggested by the limitations of Section~\ref{sec:limitations} are a scalable solid block for the preconditioner, assessed beyond the three-dimensional tube; a high-order reconstruction for the velocity solids, to remove the excess stiffness of thin bending-dominated structures; a globalisation of the Newton iteration, such as pseudo-transient continuation or adaptive time stepping on failure~\citep{Knoll2004}, for strongly nonlinear start-ups; and larger three-dimensional cases, possibly with overset meshes~\citep{miller2014overset}, since the mesh motion is already outside the Newton system.
+The main extensions suggested by the limitations of Section~\ref{sec:limitations} are a scalable solid block for the preconditioner, assessed beyond the three-dimensional tube; a high-order interface load and a high-order residual for the linear-geometry velocity solid, completing the high-order solid of Section~\ref{sec:lim_thin_solid}; a globalisation of the Newton iteration, such as pseudo-transient continuation or adaptive time stepping on failure~\citep{Knoll2004}, for strongly nonlinear start-ups; and larger three-dimensional cases, possibly with overset meshes~\citep{miller2014overset}, since the mesh motion is already outside the Newton system.
 
 % The physics-based preconditioner hook was removed from solids4foam in 974532fbe (20 Oct 2026), so it is not named.

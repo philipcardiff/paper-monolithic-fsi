@@ -1,0 +1,16 @@
+# Hron-Turek FSI3 protocol timings (Section 4 timing protocol), MeluXina fsi3t,
+# jobs 5442545-5442550 (10-11 Nov 2026), solids4foam qm-a421 build.
+# Each run restarts from the fsi3g state at t = 5 s, alone on an exclusive 128-core
+# node with the production process count; the first NSKIP steps after the restart
+# are excluded, and the window is the next N steps = one flag period (0.1828 s).
+# wall_s_rK: elapsed time (ExecutionTime difference) over the window, repeat K.
+# core_h_per_s = median wall * ranks / 3600 / (N * dt).
+# newton_per_step: Up Newton iterations (QM); coupling_per_step: IQN-ILS coupling
+# iterations; krylov_per_newton: Krylov iterations per Up Newton iteration (QM).
+run,coupling,level,ranks,dt_s,nskip,n_steps,wall_s_r1,wall_s_r2,wall_s_r3,median_wall_s,core_h_per_s,newton_per_step,coupling_per_step,krylov_per_newton
+qm_1,QM,1,16,0.0002,50,914,2793.0,2889.0,2820.0,2820.0,68.56,2.000,nan,45.8
+iqn_1,IQN-ILS,1,16,0.0002,50,914,2307.0,2309.0,2395.0,2309.0,56.14,nan,4.908,nan
+qm_2,QM,2,24,0.0001414213562,50,1293,7258.0,8387.0,7152.0,7258.0,264.6,2.000,nan,54.0
+iqn_2,IQN-ILS,2,24,0.0001414213562,50,1293,5508.0,6670.0,5453.0,5508.0,200.8,nan,5.343,nan
+qm_3,QM,3,64,0.0001,50,1828,21601.0,20985.0,20789.0,20985.0,2041,2.000,nan,66.7
+iqn_3,IQN-ILS,3,64,0.0001,50,1828,13968.0,12731.0,12737.0,12737.0,1239,nan,6.054,nan

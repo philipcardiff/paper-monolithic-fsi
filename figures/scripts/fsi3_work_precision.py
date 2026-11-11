@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """Hron-Turek FSI3 work-precision: relative error against Featflow level 4
 over the closing second (t = 5-6 s) against the cost in core-hours per
-simulated second (average over the coupled phase, t = 2-6 s), mesh levels
+simulated second (timing protocol: median of three repeats over one period
+from a restart at t = 5 s, paper-data/fsi3_timing.csv), mesh levels
 1-3, quasi-monolithic (filled) and IQN-ILS (open). The grey band is the
 3-5 % uncertainty of the reference amplitudes (companion paper).
-Data: paper-data/fsi3_runs.csv."""
+Data: paper-data/fsi3_runs.csv (errors), paper-data/fsi3_timing.csv (cost)."""
 import csv
 from pathlib import Path
 
@@ -15,6 +16,9 @@ import matplotlib.pyplot as plt  # noqa: E402
 root = Path(__file__).resolve().parents[2]
 rows = {r["run"]: r for r in csv.DictReader(
     line for line in open(root / "paper-data/fsi3_runs.csv")
+    if not line.startswith("#"))}
+cost = {r["run"]: float(r["core_h_per_s"]) for r in csv.DictReader(
+    line for line in open(root / "paper-data/fsi3_timing.csv")
     if not line.startswith("#"))}
 plt.rcParams.update({"font.size": 8, "font.family": "serif",
                      "mathtext.fontset": "cm"})
@@ -28,7 +32,7 @@ for ax, (q, title) in zip(axes, panels):
             ("qm", "quasi-monolithic", dict(marker="o", ls="-", color="tab:blue")),
             ("iqn", "IQN-ILS", dict(marker="s", ls="--", mfc="white",
                                     color="tab:red"))):
-        x = [float(rows[f"{cpl}_{L}"]["core_h_per_s_coupled"]) for L in (1, 2, 3)]
+        x = [cost[f"{cpl}_{L}"] for L in (1, 2, 3)]
         y = [100 * abs(float(rows[f"{cpl}_{L}"][q + "_err"])) for L in (1, 2, 3)]
         ax.loglog(x, y, ms=4, lw=1, label=name, **kw)
         if cpl == "qm":

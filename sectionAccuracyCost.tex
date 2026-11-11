@@ -35,26 +35,26 @@ Three further quasi-monolithic runs check the level-2 result: time steps of $10^
 
 \paragraph{Measured.}
 The mean and amplitude of $u_x$(A), the amplitude and frequency of $u_y$(A), and the mean and amplitude of the drag and lift on the cylinder and flag are evaluated over the closing second ($t = 5$--$6\,\mathrm{s}$, about five periods) as in the companion paper, and compared with the Featflow level-4 values; the amplitudes of the last two periods agree with those of the two before to within $0.07\%$ in every run.
-The cost is the elapsed time of the coupled phase ($t = 2$--$6\,\mathrm{s}$) in core-hours per simulated second, without the first step of each job.
-The runs of each level shared one exclusive MeluXina node, side by side, so these costs are indicative and do not follow the timing protocol of Section~\ref{sec:protocol}: over single seconds of the run the ratio of the two couplings' costs ranges from $1.1$ to $1.6$.
-\todo{Author note (10 Nov 2026): the FSI3 costs, the cost factor of 1.2--1.4 and the Newton/coupling cost ratio of 2.9--4.2 are provisional, from the side-by-side production runs. Protocol timings (exclusive node, median of three repeats, one period from a restart near $t = 5\,\mathrm{s}$; MeluXina jobs 5442545--5442550, \texttt{fsi3t}) are running. When they land, update Table~\ref{tab:fsi3_m}, Figure~\ref{fig:fsi3_work_precision}, this paragraph, the Cost paragraph, the discussion at the end of this section, the abstract and the Conclusions.}
+The cost follows the timing protocol of Section~\ref{sec:protocol}: each run is restarted from its state at $t = 5\,\mathrm{s}$ alone on an exclusive MeluXina node with its production number of processes, the first 50 steps are discarded, and the elapsed time of the next flag period ($0.183\,\mathrm{s}$) gives the cost in core-hours per simulated second, the median of three repeats.
+The repeats agree within $4\%$, except for IQN-ILS on level 3 ($10\%$) and one repeat of each coupling on level 2, which ran $16$ and $21\%$ slower than the median.
+% Source: paper-data/fsi3_timing.csv (MeluXina fsi3t, jobs 5442545--5442550); iterations per step in the timed window equal those over t = 2--6 s.
 
 \begin{table}[htbp]
 	\centering
 	\footnotesize
 	\setlength{\tabcolsep}{3pt}
-	\caption{Hron--Turek FSI3: relative errors (\%) against the Featflow level-4 values over $t = 5$--$6\,\mathrm{s}$, iterations per step (Newton iterations, quasi-monolithic; coupling iterations, IQN-ILS) and cost (core-hours per simulated second over $t = 2$--$6\,\mathrm{s}$, indicative). QM: quasi-monolithic.}
+	\caption{Hron--Turek FSI3: relative errors (\%) against the Featflow level-4 values over $t = 5$--$6\,\mathrm{s}$, iterations per step (Newton iterations, quasi-monolithic; coupling iterations, IQN-ILS) and cost (core-hours per simulated second, timing protocol of Section~\ref{sec:protocol}). QM: quasi-monolithic.}
 	\label{tab:fsi3_m}
 	\begin{tabular}{llrrrrrrrrr}
 		\toprule
 		Level & Coupling & Processes & $u_x$ mean & $u_y$ ampl. & $u_y$ freq. & drag mean & drag ampl. & lift ampl. & Iter. & Cost \\
 		\midrule
-		1 & QM      & 16 & $-0.31$ & $-0.19$ & $0.28$ & $0.07$ & $1.48$ & $6.35$ & 2.0 & 70 \\
-		  & IQN-ILS & 16 & $-0.92$ & $0.27$  & $0.15$ & $0.13$ & $3.13$ & $6.41$ & 4.9 & 60 \\
-		2 & QM      & 24 & $-1.59$ & $0.52$  & $0.30$ & $0.13$ & $1.77$ & $4.26$ & 2.0 & 599 \\
-		  & IQN-ILS & 24 & $-2.60$ & $0.95$  & $0.21$ & $0.17$ & $2.53$ & $4.67$ & 5.3 & 464 \\
-		3 & QM      & 64 & $-1.54$ & $0.67$  & $0.29$ & $0.11$ & $1.49$ & $2.91$ & 2.0 & 2420 \\
-		  & IQN-ILS & 64 & $-2.74$ & $1.17$  & $0.23$ & $0.19$ & $2.65$ & $3.59$ & 6.0 & 1726 \\
+		1 & QM      & 16 & $-0.31$ & $-0.19$ & $0.28$ & $0.07$ & $1.48$ & $6.35$ & 2.0 & 69 \\
+		  & IQN-ILS & 16 & $-0.92$ & $0.27$  & $0.15$ & $0.13$ & $3.13$ & $6.41$ & 4.9 & 56 \\
+		2 & QM      & 24 & $-1.59$ & $0.52$  & $0.30$ & $0.13$ & $1.77$ & $4.26$ & 2.0 & 265 \\
+		  & IQN-ILS & 24 & $-2.60$ & $0.95$  & $0.21$ & $0.17$ & $2.53$ & $4.67$ & 5.3 & 201 \\
+		3 & QM      & 64 & $-1.54$ & $0.67$  & $0.29$ & $0.11$ & $1.49$ & $2.91$ & 2.0 & 2041 \\
+		  & IQN-ILS & 64 & $-2.74$ & $1.17$  & $0.23$ & $0.19$ & $2.65$ & $3.59$ & 6.0 & 1239 \\
 		\bottomrule
 	\end{tabular}
 \end{table}
@@ -76,8 +76,8 @@ Over the three levels the $u_x$ mean changes by $1.3\%$ and then $0.05\%$ (quasi
 
 \paragraph{Cost.}
 The quasi-monolithic coupling needs two Newton iterations per step at every level, with $46$, $54$ and $67$ Krylov iterations per Newton iteration on levels 1--3, and IQN-ILS needs $4.9$--$6.0$ coupling iterations per step.
-One Newton iteration therefore costs as much as $2.9$--$4.2$ coupling iterations, more than on the other two-dimensional cases because the Krylov iterations of the fluid block grow with the mesh, and the quasi-monolithic coupling is $1.2$, $1.3$ and $1.4$ times more expensive per simulated second on levels 1--3 (Figure~\ref{fig:fsi3_work_precision}).
-Since the two couplings reach the same error on the same mesh to within the reference uncertainty, equal error means equal mesh, and the quasi-monolithic coupling costs $1.2$--$1.4$ times as much as IQN-ILS at equal error; below errors of about $3$--$5\%$, every quantity except the lift amplitude is limited by the reference rather than by either coupling.
+One Newton iteration therefore costs as much as $3.0$, $3.5$ and $5.0$ coupling iterations on levels 1--3, more than on the other two-dimensional cases and rising with the mesh, partly because the Krylov iterations of the fluid block grow with it, and the quasi-monolithic coupling is $1.2$, $1.3$ and $1.6$ times more expensive per simulated second on levels 1--3 (Figure~\ref{fig:fsi3_work_precision}).
+Since the two couplings reach the same error on the same mesh to within the reference uncertainty, equal error means equal mesh, and the quasi-monolithic coupling costs $1.2$--$1.6$ times as much as IQN-ILS at equal error, the factor rising with refinement; below errors of about $3$--$5\%$, every quantity except the lift amplitude is limited by the reference rather than by either coupling.
 
 %%--------------------------------------------------------------------------------------------------------------------%%
 \subsection{Elastic half-cylinder in a viscous channel flow}\label{sec:blob_m}
@@ -181,14 +181,13 @@ The quasi-monolithic coupling needs 2.0, 2.1 and 2.7 Newton iterations per step 
 A Newton iteration of the quasi-monolithic coupling solves a preconditioned linear system for all fluid and solid unknowns, whereas a partitioned coupling iteration performs one segregated fluid solve and one solid solve.
 The Newton iteration is therefore the more expensive, so the quasi-monolithic coupling is cheaper per step only when the partitioned scheme needs enough coupling iterations.
 In this paper the quasi-monolithic coupling needs two to four Newton iterations per step independently of the added-mass ratio (Sections~\ref{sec:ring_m} and~\ref{sec:robustness}), whereas the coupling iterations of the partitioned schemes grow with it.
-Measured on the same processes, a Newton iteration costs about as much as 1.1--1.2 IQN-ILS coupling iterations on the two-dimensional ring and half-cylinder, $2.9$--$4.2$ on the larger FSI3 meshes and about 3.4 on the three-dimensional flag of Section~\ref{sec:lim_foil}, where the fluid block needs more Krylov iterations.
-The break-even point, the number of Newton iterations times this cost ratio, is therefore case dependent: about 2.5--5 coupling iterations per step on the ring and half-cylinder, $6$--$8$ on FSI3 and about 11 on the flag (3.3 Newton iterations per step).
+Measured on the same processes, a Newton iteration costs about as much as 1.1--1.2 IQN-ILS coupling iterations on the two-dimensional ring and half-cylinder, $3.0$--$5.0$ on the FSI3 meshes and about 3.4 on the three-dimensional flag of Section~\ref{sec:lim_foil}, where the fluid block needs more Krylov iterations.
+The break-even point, the number of Newton iterations times this cost ratio, is therefore case dependent: about 2.5--5 coupling iterations per step on the ring and half-cylinder, $6$--$10$ on FSI3 and about 11 on the flag (3.3 Newton iterations per step).
 Above it the quasi-monolithic coupling is cheaper, by a factor of two on the ring at the strong added-mass level, where IQN-ILS needs 4--6, and by two to six on the half-cylinder, where it needs 9--15.
-Where few coupling iterations suffice, as for FSI3 (4.9--6.0 per step), the flag (5.4) and the steady flexible-bottom cavity (Section~\ref{sec:cavity_m}), the accelerated partitioned schemes are cheaper, by factors of 1.2--1.4 on FSI3 and 2.1 on the flag.
-On the Hron--Turek FSI3 benchmark, the only case of the paper with an established external reference and a work--precision comparison, the quasi-monolithic coupling costs $1.2$--$1.4$ times as much as IQN-ILS at equal error (Section~\ref{sec:fsi3_m}).
-% AUTHOR NOTE: provisional FSI3 cost factor; update from the protocol timings (\todo in Section 7.1).
-% FSI3: paper-data/fsi3_runs.csv (side-by-side runs, indicative): 3.15/2.69,
-% 12.7/9.84, 13.6/9.71 s per step; x 4.91, 5.34, 6.04 its / 2 Newton = 2.9-4.2.
+Where few coupling iterations suffice, as for FSI3 (4.9--6.0 per step), the flag (5.4) and the steady flexible-bottom cavity (Section~\ref{sec:cavity_m}), the accelerated partitioned schemes are cheaper, by factors of 1.2--1.6 on FSI3 and 2.1 on the flag.
+On the Hron--Turek FSI3 benchmark, the only case of the paper with an established external reference and a work--precision comparison, the quasi-monolithic coupling costs $1.2$--$1.6$ times as much as IQN-ILS at equal error, the factor rising with refinement (Section~\ref{sec:fsi3_m}).
+% FSI3: paper-data/fsi3_timing.csv (protocol, medians of 3): 68.6/56.1, 264.6/200.8,
+% 2041/1239 core-h/s; x 4.91, 5.34, 6.05 its / 2 Newton = 3.0, 3.5, 5.0.
 % Ratios: ring tab:ring_cost (QM step ~0.5 IQN step, 2 Newton vs 4.4-5.6 its);
 % blob time study (finite strain, MeluXina, 21 s vs 118 s; 258 Newton vs 1619 its: 1.12); foil 8 ranks
 % (MeluXina, 1241 s vs 586 s elapsed after step 1, medians of 3; 1199 vs 546 s CPU;

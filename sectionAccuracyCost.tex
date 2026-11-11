@@ -37,7 +37,7 @@ Three further quasi-monolithic runs check the level-2 result: time steps of $10^
 The mean and amplitude of $u_x$(A), the amplitude and frequency of $u_y$(A), and the mean and amplitude of the drag and lift on the cylinder and flag are evaluated over the closing second ($t = 5$--$6\,\mathrm{s}$, about five periods) as in the companion paper, and compared with the Featflow level-4 values; the amplitudes of the last two periods agree with those of the two before to within $0.07\%$ in every run.
 The cost follows the timing protocol of Section~\ref{sec:protocol}: each run is restarted from its state at $t = 5\,\mathrm{s}$ alone on an exclusive MeluXina node with its production number of processes, the first 50 steps are discarded, and the elapsed time of the next flag period ($0.183\,\mathrm{s}$) gives the cost in core-hours per simulated second, the median of three repeats.
 The repeats agree within $4\%$, except for IQN-ILS on level 3 ($10\%$) and one repeat of each coupling on level 2, which ran $16$ and $21\%$ slower than the median.
-% Source: paper-data/fsi3_timing.csv (MeluXina fsi3t, jobs 5442545--5442550); iterations per step in the timed window equal those over t = 2--6 s.
+% Source: paper-data/fsi3_timing.csv (MeluXina fsi3t, jobs 5442545--5442550); iterations per step in the timed window agree with those over t = 2--6 s within 0.02.
 
 \begin{table}[htbp]
 	\centering
@@ -76,7 +76,7 @@ Over the three levels the $u_x$ mean changes by $1.3\%$ and then $0.05\%$ (quasi
 
 \paragraph{Cost.}
 The quasi-monolithic coupling needs two Newton iterations per step at every level, with $46$, $54$ and $67$ Krylov iterations per Newton iteration on levels 1--3, and IQN-ILS needs $4.9$--$6.0$ coupling iterations per step.
-One Newton iteration therefore costs as much as $3.0$, $3.5$ and $5.0$ coupling iterations on levels 1--3, more than on the other two-dimensional cases and rising with the mesh, partly because the Krylov iterations of the fluid block grow with it, and the quasi-monolithic coupling is $1.2$, $1.3$ and $1.6$ times more expensive per simulated second on levels 1--3 (Figure~\ref{fig:fsi3_work_precision}).
+One Newton iteration therefore costs as much as $3.0$, $3.5$ and $5.0$ coupling iterations on levels 1--3, more than on the other two-dimensional cases and rising with the mesh together with the Krylov iterations of the fluid block, and the quasi-monolithic coupling is $1.2$, $1.3$ and $1.6$ times more expensive per simulated second on levels 1--3 (Figure~\ref{fig:fsi3_work_precision}).
 Since the two couplings reach the same error on the same mesh to within the reference uncertainty, equal error means equal mesh, and the quasi-monolithic coupling costs $1.2$--$1.6$ times as much as IQN-ILS at equal error, the factor rising with refinement; below errors of about $3$--$5\%$, every quantity except the lift amplitude is limited by the reference rather than by either coupling.
 
 %%--------------------------------------------------------------------------------------------------------------------%%

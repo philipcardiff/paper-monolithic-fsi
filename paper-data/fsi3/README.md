@@ -10,9 +10,11 @@ tip-refined meshes t1-t3, AMI interface, BDF2 in both regions).
 - `qoi.py`: benchmark statistics with the TurekHron2006 verification
   driver's `periodic_statistics` over the closing window; writes `qoi.csv`.
 - `cost.py`: cost and iterations over a window from `steps.txt`.
-- `build_csv.py`: writes `../fsi3_runs.csv`, read by
+- `build_csv.py`: writes `../fsi3_runs.csv`, whose errors are read by
   `figures/scripts/fsi3_work_precision.py`.
 
-The costs are from the production runs, which shared one exclusive
-128-core node per level side by side; they are indicative and do not follow
-the timing protocol of Section 4.
+The costs in `fsi3_runs.csv` are from the production runs, which shared one
+exclusive 128-core node per level side by side; they are indicative and are
+no longer used in the paper. The paper's FSI3 costs (Table 6, Figure 14) are
+the protocol timings in `../fsi3_timing.csv` (restart at t = 5 s, exclusive
+node, one flag period after 50 discarded steps, median of three repeats).

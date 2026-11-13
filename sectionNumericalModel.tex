@@ -646,7 +646,13 @@ On the interface, the fluid mesh displacement $\bb{D}^{\Gamma}$ is the transferr
     \text{on } \Gamma_\mathrm{fsi},
     \label{eqn:mesh_displacement_interface}
 \end{equation}
-with the face transfer of Section~\ref{sec:interface_conditions} and the corresponding point transfer; it is zero on the other fluid boundaries and tangential on symmetry planes.
+transferred to the interface points with the point transfer corresponding to the face transfer of Section~\ref{sec:interface_conditions}; on each interface face it is the average of the face's point displacements, so that faces and points describe the same surface.
+It is zero on the other fluid boundaries and tangential on symmetry planes.
+The campaign build (Section~\ref{sec:protocol}) instead transferred the solid face values to the interface faces, which gives a displacement constant over each solid face: where the solid is much coarser than the fluid, the faces then depart from the points by up to half the solid face size times the rotation, which crushed fluid cells at the tip of the coarse flags of Section~\ref{sec:lim_thin_solid}.
+Where the solid is not much coarser than the fluid the correction is negligible: repeating the runs of Section~\ref{sec:lim_thin_solid} with and without it changes the collapsible-channel troughs by less than $10^{-5}$ relative and the order-3 FSI3 errors on the level-1 flag by less than $0.01\%$.
+% solids4foam #697, fixed by PR #699 (merged 12 Nov 2026). Checks: collapsible
+% order study (coll-ho697 vs 10 Nov runs, troughs equal to 6 digits); FSI3
+% order-3 430x24 flag, fixed vs unfixed build identical to 2 decimals in %.
 
 In the interior, $\bb{D}^{\Gamma}$, the total displacement from the initial fluid mesh, is computed by treating the fluid mesh as a pseudo-solid, with a solid model of solids4foam used as the mesh motion solver\footnote{In the implementation, the \texttt{solids4foamSolidModel} mesh motion solver.}.
 For the linear elastic law, each fluid cell $P$ satisfies

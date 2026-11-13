@@ -1,6 +1,8 @@
 # pvbatch blob_field.py <case> <out.png>: blobInTreacle at steady state (t = 3 s),
 # fluid velocity magnitude on the deformed mesh, solid coloured by |D| on the
-# displaced configuration.
+# displaced configuration. Finite-strain factor-2 run (MeluXina
+# philip-blobnh2/qm-mesh/verification/work/mesh_x2, foamToVTK -region fluid|solid
+# -time 3): max |U| 1.61 m/s, max |D| 0.136 m.
 import sys
 from paraview.simple import *
 case, out = sys.argv[1], sys.argv[2]
@@ -20,13 +22,13 @@ d1 = Show(fli, v); ColorBy(d1, ("POINTS", "U", "Magnitude"))
 lut = GetColorTransferFunction("U"); lut.ApplyPreset("Viridis", True); lut.Discretize = 1; lut.NumberOfTableValues = 14
 d3 = Show(und, v); d3.AmbientColor = d3.DiffuseColor = [0, 0, 0]; d3.LineWidth = 4; d3.ColorArrayName = ["POINTS", ""]
 d2 = Show(warp, v); d2.Representation = "Surface"; ColorBy(d2, ("POINTS", "D", "Magnitude"))
-lut2 = GetColorTransferFunction("D"); lut2.ApplyPreset("Reds", True); lut2.Discretize = 1; lut2.NumberOfTableValues = 12; lut2.InvertTransferFunction(); lut2.RescaleTransferFunction(0.0, 0.12); lut.RescaleTransferFunction(0.0, 1.68)
+lut2 = GetColorTransferFunction("D"); lut2.ApplyPreset("Reds", True); lut2.Discretize = 1; lut2.NumberOfTableValues = 12; lut2.InvertTransferFunction(); lut2.RescaleTransferFunction(0.0, 0.15); lut.RescaleTransferFunction(0.0, 1.62)
 for l, t in ((lut, "Fluid velocity magnitude (m/s)"), (lut2, "Solid displacement magnitude (m)")):
     sb = GetScalarBar(l, v); sb.Title = t; sb.ComponentTitle = ""; sb.Visibility = 1
     sb.TitleColor = sb.LabelColor = [0, 0, 0]; sb.TitleFontSize = 28; sb.LabelFontSize = 24
     sb.Orientation = "Horizontal"; sb.AddRangeLabels = 0; sb.WindowLocation = "Any Location"; sb.ScalarBarLength = 0.25
 GetScalarBar(lut, v).Position = [0.15, 0.03]; GetScalarBar(lut2, v).Position = [0.6, 0.03]
-for l, labs in ((lut, [0, 0.4, 0.8, 1.2, 1.6]), (lut2, [0, 0.03, 0.06, 0.09, 0.12])):
+for l, labs in ((lut, [0, 0.4, 0.8, 1.2, 1.6]), (lut2, [0, 0.05, 0.10, 0.15])):
     sb = GetScalarBar(l, v); sb.UseCustomLabels = 1; sb.CustomLabels = labs; sb.LabelFormat = "%-#.2g"; sb.RangeLabelFormat = "%-#.2g"
 v.CameraParallelProjection = 1
 ResetCamera(v); v.CameraPosition = [3.25, 0.0, 10]; v.CameraFocalPoint = [3.25, 0.0, 0]; v.CameraViewUp = [0, 1, 0]

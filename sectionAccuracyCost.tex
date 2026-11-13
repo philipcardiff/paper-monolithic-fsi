@@ -31,10 +31,11 @@ The time steps are $2\times10^{-4}$, $1.41\times10^{-4}$ and $10^{-4}\,\mathrm{s
 The flow develops for $2\,\mathrm{s}$ around a fixed flag, after which the coupled problem is run to $t = 6\,\mathrm{s}$.
 The flag is computed with the geometrically nonlinear velocity solid (quasi-monolithic) and with the geometrically nonlinear displacement solid under IQN-ILS with the strict convergence test, a tolerance of $10^{-6}$ on every residual measure (partitioned).
 The quasi-monolithic solid uses the stabilisation of Equation~\eqref{eqn:rhie_chow_s} with $\alpha_d = 0.5$ (Table~\ref{tab:solver_settings}).
-As expected of a term that vanishes at the design order of the discretisation, its effect is largest on coarse meshes: on the level-1 flag, the jump stabilisation of Section~\ref{sec:lim_thin_solid} with factor $0.1$ gives a lift-amplitude error of $4.0\%$ instead of $6.35\%$, and changes the errors of the other quantities of Table~\ref{tab:fsi3_m} by less than one percentage point.
+The stabilisation vanishes at the design order of the discretisation, so its effect should decrease with refinement; it is noticeable on the level-1 flag, where the jump stabilisation of Section~\ref{sec:lim_thin_solid} with factor $0.1$ gives a lift-amplitude error of $4.0\%$ instead of $6.35\%$, and changes the errors of the $u_x$ mean, the $u_y$ amplitude and frequency, and the drag mean and amplitude by $0.01$--$0.94$ percentage points.
 % fsi3ho (build-gm, diffStencilLaplacian 0.5) o1_sf1 reproduces the level-1 QM
 % row (lift amp 6.35 %); fsi3ho697 o1_sf1 (build-gm697, alpha 0.1): ux mean -0.40,
-% uy amp -0.07, drag amp 0.54, lift amp 4.04 %. The #697 fix alone changes the
+% uy amp -0.07, uy freq 0.16, drag mean 0.08, drag amp 0.54, lift amp 4.04 %
+% (Table row: -0.31, -0.19, 0.28, 0.07, 1.48, 6.35). The #697 fix alone changes the
 % order-3 results on this flag by < 0.01 % (fsi3ho vs fsi3ho697 o3_sf1).
 For both couplings the fluid mesh is moved by the linear elastic pseudo-solid assembled on the current mesh, stiffened by the linear inverse distance to the flag and the cylinder (Sections~\ref{sec:fluid_mesh_motion} and~\ref{sec:lim_mesh_motion}).
 Three further quasi-monolithic runs check the level-2 result: time steps of $10^{-4}$ and $2\times10^{-4}\,\mathrm{s}$, and a flag mesh refined twice in each direction.

@@ -6,12 +6,20 @@
 #   first trough of the wall midpoint, error vs oomph-lib converged and at the
 #   same dt; order 1: diffStencilLaplacian 0.1, order 3: alpha (jump) 0.1.
 #   Local serial runs side by side on one 16-core Mac (elapsed indicative).
-#   Runs: claude-runs/coll-ho697 (13 Nov 2026); pre-fix runs agree to 6 digits.
+#   Runs: claude-runs/coll-ho697 (13 Nov 2026). Pre-fix build (ffffeb525, 10 Nov)
+#   troughs: 80x2 -0.18933982, 160x4 -0.20796342, 320x8 -0.21370344,
+#   640x8 -0.21487763, 640x16 -0.21535260, 1280x32 -0.21576718,
+#   o3 160x4 -0.21520028, o3 320x8 -0.21590261 (fixed: see trough errors below;
+#   fixed troughs -0.18933988, -0.20796334, -0.21370299, -0.21487780,
+#   -0.21535214, -0.21576742, -0.21520021, -0.21590272).
 # FSI3: fluid level 1 (Section 7), flag meshes sf x the level-1 flag (430 x 24),
 #   errors vs Featflow level 4 over t = 5-6 s (TurekHron2006 driver);
 #   both orders alpha (jump) 0.1, except order 3 on 54 x 3: alpha 1.0
 #   (0.1 diverges). Eight 16-rank runs side by side on one MeluXina node
 #   (elapsed of t = 2-6 s, indicative). Runs: MeluXina fsi3ho697 (job 5447528).
+#   Pre-fix build (build-gm, fsi3ho), order 3, 430x24, alpha 0.1: ux mean -0.29,
+#   uy amp -0.08, drag amp -0.36, lift amp 1.79 % (identical to 2 decimals);
+#   215x12: -0.23, -0.12, -0.30, 1.87 %.
 case,order,solid_mesh,cells_across,solid_cells,err_trough_pct,err_trough_same_dt_pct,err_ux_mean_pct,err_uy_amp_pct,err_drag_amp_pct,err_lift_amp_pct,newton_per_step,elapsed_s
 collapsible,1,80x2,2,160,-12.343,-12.233,,,,,2.56,1379
 collapsible,1,160x4,4,640,-3.721,-3.601,,,,,2.76,1714

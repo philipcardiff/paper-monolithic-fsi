@@ -64,7 +64,10 @@ It combines strong added mass with large deformation and fluid mesh motion, and 
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=\textwidth]{figures/collapsibleChannel-field}
-	\caption{Collapsible channel near the first trough ($t = 0.475\,\mathrm{s}$), quasi-monolithic coupling on the tutorial meshes with $\Delta t = 0.00625\,\mathrm{s}$ and $\rho_s/\rho_f = 1$: fluid kinematic pressure and the wall, drawn in its displaced position and coloured by its displacement magnitude (no magnification); the wall is clamped at $y = 1\,\mathrm{m}$ at both ends. The region $4.8 \le x \le 15.2\,\mathrm{m}$ is shown.}
+	\caption{Collapsible channel at the first trough ($t = 0.4625\,\mathrm{s}$), quasi-monolithic coupling on fluid level 2 with a $320\times8$ wall through AMI, $\Delta t = 1/160\,\mathrm{s}$ and $\rho_s/\rho_f = 1$: (top) fluid kinematic pressure, (bottom) fluid speed with streamlines; the wall is drawn in its displaced position at true scale and coloured by its displacement magnitude, with its undeformed outline (black). Supplementary video S3 shows the collapse from $t = 0$ to $0.75\,\mathrm{s}$.}
+% Field image and video: local rerun of the order-1 320x8 case of Section 9.3
+% (claude-runs/coll-ho697 set-up, ffffeb525 + #697 fix), written every 0.0125 s;
+% figures/scripts/animations/coll_anim.py.
 	\label{fig:collapsible_field}
 \end{figure}
 

@@ -176,6 +176,17 @@ The implementation, built on solids4foam and PETSc, and all case set-ups are ope
 \backmatter
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\bmhead{Supplementary material}
+Six animations accompany this paper (files in the \texttt{supplementary} directory of the paper repository):
+S1, the Hron--Turek FSI3 flag over one period, with the vorticity (Section~\ref{sec:fsi3_m});
+S2, the flexible foil behind a block as its wake becomes unsteady and it starts to flutter, with streamlines and the deformation magnified 50 times (Section~\ref{sec:lim_foil});
+S3, the collapse of the collapsible channel, with the pressure and the speed (Section~\ref{sec:robustness_collapsible});
+S4, the pulsatile compliant tube over one period, with the axial velocity (Section~\ref{sec:womersley_m});
+S5, the ring vibrating in its $n = 2$ mode at the strong added-mass level, with the pressure and the deformation magnified 250 times (Section~\ref{sec:ring_m});
+S6, a pressure pulse travelling along the three-dimensional elastic tube, displaced ten times (Section~\ref{sec:scaling_3d}).
+All are computed with the quasi-monolithic coupling; S2--S6 are reruns with a later build than the campaign build (Section~\ref{sec:protocol}) that write fields frequently, and are visualisations rather than results of the paper.
+\todo{Upload the files as journal supplementary material at submission; website versions (WebM, GIF/WebP) are in claude-runs/animations/out.}
+
 \bmhead{Data Availability}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 The quasi-monolithic solver presented is part of the open-source solids4foam toolbox, available at \url{https://github.com/solids4foam/solids4foam}; the results of this paper were computed with commit \texttt{a421f063d} of its \texttt{feature-petsc-snes-quasi-monolithic} branch (pull request \#233 into the \texttt{development} branch), to be released as \tbd{release tag, Zenodo DOI}.

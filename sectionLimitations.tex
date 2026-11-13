@@ -33,6 +33,16 @@ No reference solution exists; the case compares the time step and cost needed by
 	\label{fig:foil_geom_m}
 \end{figure}
 
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=\textwidth]{figures/foilInWind-field}
+	\caption{Flexible foil behind a rigid block at $t = 2.45\,\mathrm{s}$, quasi-monolithic coupling: streamlines seeded upstream of the block, coloured by air speed, and the foil coloured by its displacement magnitude (up to $0.14\,\mathrm{mm}$), its deformation magnified 50 times; the block is grey. The wake is unsteady and the foil has started to flutter (supplementary video S2).}
+	\label{fig:foil_field_m}
+\end{figure}
+% Field image and video: MeluXina philip-anim/foil_qm, rerun of rf-foil-qm-dt0.0025
+% (128 ranks, build-gm697: #679 + #690 + #697 fix) to t = 2.5 s, VTK every 0.025 s;
+% figures/scripts/animations/foil_anim.py. The paper's foil runs end at t = 0.2 s.
+
 \paragraph{Measured.}
 Both couplings are run to $t = 0.2\,\mathrm{s}$, through the start-up, with $\Delta t = 0.01$, $0.005$ and $0.0025\,\mathrm{s}$; IQN-ILS uses the strict convergence test with the tutorial tolerance of $10^{-5}$ and at most 50 coupling iterations, and the quasi-monolithic coupling the tutorial Newton tolerance of $10^{-4}$, a backtracking line search and at most 50 Newton iterations.
 Adaptive time stepping, which the implementation provides, is off in every run.

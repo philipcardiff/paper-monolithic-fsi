@@ -1,0 +1,32 @@
+# Velocity solid on thin structures: order 1 (standard linear reconstruction)
+# against order 3 (k-exact cubic high-order residual, solids4foam #679).
+# Build: QM branch with #679 and the #697 interface mesh-motion fix (PR #699);
+# local ffffeb525+fix (collapsible), MeluXina build-gm697 (FSI3).
+# Collapsible channel: fluid level 2, rho_s/rho_f = 1, dt = 1/160 s, AMI wall,
+#   first trough of the wall midpoint, error vs oomph-lib converged and at the
+#   same dt; order 1: diffStencilLaplacian 0.1, order 3: alpha (jump) 0.1.
+#   Local serial runs side by side on one 16-core Mac (elapsed indicative).
+#   Runs: claude-runs/coll-ho697 (13 Nov 2026); pre-fix runs agree to 6 digits.
+# FSI3: fluid level 1 (Section 7), flag meshes sf x the level-1 flag (430 x 24),
+#   errors vs Featflow level 4 over t = 5-6 s (TurekHron2006 driver);
+#   both orders alpha (jump) 0.1, except order 3 on 54 x 3: alpha 1.0
+#   (0.1 diverges). Eight 16-rank runs side by side on one MeluXina node
+#   (elapsed of t = 2-6 s, indicative). Runs: MeluXina fsi3ho697 (job 5447528).
+case,order,solid_mesh,cells_across,solid_cells,err_trough_pct,err_trough_same_dt_pct,err_ux_mean_pct,err_uy_amp_pct,err_drag_amp_pct,err_lift_amp_pct,newton_per_step,elapsed_s
+collapsible,1,80x2,2,160,-12.343,-12.233,,,,,2.56,1379
+collapsible,1,160x4,4,640,-3.721,-3.601,,,,,2.76,1714
+collapsible,1,320x8,8,2560,-1.064,-0.940,,,,,2.71,1677
+collapsible,1,640x8,8,5120,-0.520,-0.396,,,,,2.72,1820
+collapsible,1,640x16,16,10240,-0.300,-0.176,,,,,2.77,1980
+collapsible,1,1280x32,32,40960,-0.108,0.017,,,,,2.68,2959
+collapsible,3,80x2,2,160,diverged t=0.28,,,,,,,
+collapsible,3,160x4,4,640,-0.371,-0.246,,,,,2.84,2340
+collapsible,3,320x8,8,2560,-0.046,0.079,,,,,2.79,2572
+fsi3,1,54x3,3,162,,,-7.88,-7.31,25.54,83.38,,113760
+fsi3,1,108x6,6,648,,,0.80,-1.39,12.09,32.29,,114840
+fsi3,1,215x12,12,2580,,,-0.43,-0.20,3.04,10.05,,116640
+fsi3,1,430x24,24,10320,,,-0.40,-0.07,0.54,4.04,,123480
+fsi3,3,54x3,3,162,,,-9.65,-5.59,19.68,56.44,,114840
+fsi3,3,108x6,6,648,,,-0.08,-0.22,-0.31,2.39,,116640
+fsi3,3,215x12,12,2580,,,-0.27,-0.10,-0.33,1.91,,119160
+fsi3,3,430x24,24,10320,,,-0.29,-0.08,-0.36,1.79,,129600

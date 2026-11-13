@@ -91,7 +91,7 @@ With either preconditioner, each monitored quantity agrees with a run converged 
 An algebraic multigrid solid block for thin, nearly incompressible or strongly nonlinear solids has not been assessed.
 
 %%--------------------------------------------------------------------------------------------------------------------%%
-\subsection{Velocity solid on thin structures}\label{sec:lim_thin_solid}
+\subsection{Velocity solid on thin structures: standard and high-order reconstruction}\label{sec:lim_thin_solid}
 %%--------------------------------------------------------------------------------------------------------------------%%
 % Source: companion paper sectionBenchmarkSuite.tex, "Collapsible channel"
 % (Solid bullet) and "Ring added-mass problem" (Solid discretisation bullet);
@@ -106,7 +106,61 @@ With the standard reconstruction, the accuracy of the quasi-monolithic coupling 
 % B2: evidence/m-runs-b:paper-data/campaign/wp3/b2_618/ (3823 s against 11080 s, shared XenoSim node, indicative).
 The wet/dry frequency ratio of the ring problem is insensitive to this error, because the wet and dry runs share it (Section~\ref{sec:ring_m}).
 The high-order residual of the geometrically nonlinear velocity solid (Section~\ref{sec:discrete_coupled_residual}) removes this excess stiffness.
-\todo{Agent B (in progress, 10 Nov 2026): order-1 against order-3 velocity solid on (a) the collapsible channel, fluid level 2, walls $80\times2$ to $640\times16$, trough error against oomph-lib against wall time; (b) Hron--Turek FSI3, fluid level 1, flag meshes coarser than those of Section~\ref{sec:fsi3_m}, error against cost. Computed with a build that includes solids4foam \#679 (newer than the campaign build); timings under the protocol of Section~\ref{sec:protocol}. Rename this subsection once the results are in.}
+Two studies compare it (order 3) with the standard reconstruction (order 1) on solid meshes with 2 to 32 cells across the thickness (Tables~\ref{tab:ho_collapsible} and~\ref{tab:ho_fsi3}).
+They use a later build of the quasi-monolithic branch than the rest of the paper (Section~\ref{sec:protocol}), which adds the high-order residual and the interface mesh-motion correction of Section~\ref{sec:fluid_mesh_motion}.
+Their elapsed times come from runs sharing one node and are indicative.
+% Data: paper-data/high_order_solid.csv. Builds: solids4foam ffffeb525 + #697
+% fix (collapsible, local) and build-gm697 (FSI3, MeluXina job 5447528).
+
+\begin{table}[htbp]
+	\centering
+	\footnotesize
+	\caption{Collapsible channel, fluid level 2, $\rho_S/\rho_F = 1$, $\Delta t = 1/160\,\mathrm{s}$: relative error of the first trough of the wall midpoint against oomph-lib, converged and at the same time step, Newton iterations per step and elapsed time (serial, runs sharing one workstation, indicative). Order 1: stabilisation of Equation~\eqref{eqn:rhie_chow_s} with $\alpha_d = 0.1$; order 3: jump stabilisation with factor $0.1$.}
+	\label{tab:ho_collapsible}
+	\begin{tabular}{lrrrrrr}
+		\toprule
+		Order & Wall mesh & Cells & Error (\%) & Same $\Delta t$ (\%) & Newton & Elapsed (s) \\
+		\midrule
+		1 & $80\times2$    & 160    & $-12.34$ & $-12.23$ & 2.6 & 1379 \\
+		1 & $160\times4$   & 640    & $-3.72$  & $-3.60$  & 2.8 & 1714 \\
+		1 & $320\times8$   & 2560   & $-1.06$  & $-0.94$  & 2.7 & 1677 \\
+		1 & $640\times16$  & 10240  & $-0.30$  & $-0.18$  & 2.8 & 1980 \\
+		1 & $1280\times32$ & 40960  & $-0.11$  & $0.02$   & 2.7 & 2959 \\
+		3 & $80\times2$    & 160    & \multicolumn{4}{l}{diverged at $t = 0.28\,\mathrm{s}$} \\
+		3 & $160\times4$   & 640    & $-0.37$  & $-0.25$  & 2.8 & 2340 \\
+		3 & $320\times8$   & 2560   & $-0.05$  & $0.08$   & 2.8 & 2572 \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+	\centering
+	\footnotesize
+	\caption{Hron--Turek FSI3, fluid level 1 (Section~\ref{sec:fsi3_m}), flag meshes coarser than the level-1 flag ($430\times24$): relative errors (\%) against the Featflow level-4 values over $t = 5$--$6\,\mathrm{s}$. Both orders use the jump stabilisation with factor $0.1$, except order 3 on the $54\times3$ flag (factor $1.0$; $0.1$ diverges). Eight runs of 16 processes side by side on one node took $32$--$36\,\mathrm{h}$ each for $t = 2$--$6\,\mathrm{s}$.}
+	\label{tab:ho_fsi3}
+	\begin{tabular}{lrrrrrr}
+		\toprule
+		Order & Flag mesh & Cells across & $u_x$ mean & $u_y$ ampl. & drag ampl. & lift ampl. \\
+		\midrule
+		1 & $54\times3$   & 3  & $-7.88$ & $-7.31$ & $25.54$ & $83.38$ \\
+		1 & $108\times6$  & 6  & $0.80$  & $-1.39$ & $12.09$ & $32.29$ \\
+		1 & $215\times12$ & 12 & $-0.43$ & $-0.20$ & $3.04$  & $10.05$ \\
+		1 & $430\times24$ & 24 & $-0.40$ & $-0.07$ & $0.54$  & $4.04$ \\
+		3 & $54\times3$   & 3  & $-9.65$ & $-5.59$ & $19.68$ & $56.44$ \\
+		3 & $108\times6$  & 6  & $-0.08$ & $-0.22$ & $-0.31$ & $2.39$ \\
+		3 & $215\times12$ & 12 & $-0.27$ & $-0.10$ & $-0.33$ & $1.91$ \\
+		3 & $430\times24$ & 24 & $-0.29$ & $-0.08$ & $-0.36$ & $1.79$ \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+On the collapsible channel the order-3 wall of $320\times8$ cells is within $0.08\%$ of oomph-lib at the same time step, closer than the order-1 wall of $640\times16$ cells and comparable with the order-1 wall of $1280\times32$, which has 16 times as many cells.
+On the FSI3 flag, order 3 has converged with six cells across the thickness: the lift-amplitude error falls only from $2.4\%$ to $1.8\%$ over the next two refinements, and the remaining error is dominated by the level-1 fluid mesh, whereas order 1 approaches the same value at about second order ($32.3$, $10.1$ and $4.0\%$).
+The Newton iterations per step are unchanged.
+Because the fluid dominates the cost of both cases, order 3 is more accurate per solid cell rather than per unit of elapsed time: it costs $1.4$--$1.5$ times as much as order 1 on the same collapsible wall and about as much on the same FSI3 flag, and its gain is that much coarser solid meshes, with fewer cells across the thickness, reach a given accuracy.
+Order 3 needs at least four cells across the thickness: with two or three, the cubic fit through the cell centres cannot be determined across the thickness, so the $80\times2$ wall diverges and the $54\times3$ flag needs a ten-times larger stabilisation and still has errors of $6$--$56\%$.
+% Condition numbers 5e17-1.4e19 on 54x3, 1.5e3-1.6e4 on 108x6 (solids4foam #698).
+
 
 %%--------------------------------------------------------------------------------------------------------------------%%
 \subsection{Fluid mesh motion}\label{sec:lim_mesh_motion}

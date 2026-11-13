@@ -16,7 +16,7 @@ This section compares the complete quasi-monolithic and partitioned IQN-ILS form
 % a421f063d, qm-a421 build); statistics with the TurekHron2006 verification
 % driver's periodic_statistics; scripts figures/scripts/fsi3_*.py.
 
-The FSI3 problem of~\citet{Turek2006}, an elastic flag behind a rigid cylinder oscillating at a solid-to-fluid density ratio of one (Figure~\ref{fig:fsi3_geom_m}), is the most widely used test of strongly coupled FSI solvers, and its Featflow reference values carry an uncertainty of about $3$--$5\%$ in the displacement and force amplitudes and less than $0.3\%$ in the frequency and mean drag~\citep{CardiffFSIVerification2026}.
+The FSI3 problem of~\citet{Turek2006}, an elastic flag behind a rigid cylinder oscillating at a solid-to-fluid density ratio of one (Figures~\ref{fig:fsi3_geom_m} and~\ref{fig:fsi3_field_m}), is the most widely used test of strongly coupled FSI solvers, and its Featflow reference values carry an uncertainty of about $3$--$5\%$ in the displacement and force amplitudes and less than $0.3\%$ in the frequency and mean drag~\citep{CardiffFSIVerification2026}.
 
 \begin{figure}[htbp]
 	\centering
@@ -24,6 +24,15 @@ The FSI3 problem of~\citet{Turek2006}, an elastic flag behind a rigid cylinder o
 	\caption{Hron--Turek FSI3: (a) geometry (m), boundary conditions and the level-1 fluid mesh; (b) the cylinder, the flag (solid region) and point A, where the fluid mesh is refined towards the flag tip.}
 	\label{fig:fsi3_geom_m}
 \end{figure}
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=\textwidth]{figures/HronTurek3-field}
+	\caption{Hron--Turek FSI3, quasi-monolithic coupling on level 2 at $t = 5.888\,\mathrm{s}$, near the largest upward deflection of the flag (tip $u_y = 33.3\,\mathrm{mm}$): fluid vorticity, saturated at $\pm120\,\mathrm{s^{-1}}$, and the flag coloured by displacement magnitude, with its undeformed outline (black).}
+	\label{fig:fsi3_field_m}
+\end{figure}
+% Field image: MeluXina philip-ht/fsi3g/runs/qm_2 (a421f063d), t = 5.888 s (fields
+% every 0.5 s); figures/scripts/paraview/fsi3_field.py.
 
 \paragraph{Set-up.}
 Both couplings are run on one family of three unstructured fluid meshes, refined towards the flag tip, with $96\,712$, $194\,183$ and $387\,219$ cells (levels 1--3, the cell size reduced by $\sqrt{2}$ per level), and a uniform flag mesh of $430\times24$, $608\times34$ and $860\times48$ cells; the interface is non-matching and is transferred by AMI.

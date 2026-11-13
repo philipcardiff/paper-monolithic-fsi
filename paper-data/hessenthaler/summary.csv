@@ -1,0 +1,9 @@
+# window statistics (t = 40-45 s unless noted); centreline errors vs MRI (mm); velocity d = mean voxel velocity
+# difference / 630 mm/s; its = Newton (QM) or coupling (P) iterations per step
+run,coupling,mesh,fluid_cells,t_end,tip_mean_40_45,tip_min,tip_max,tip_mean_20_25,tip_mean_5_10,line_rms,line_max,line_mean,vel_d_mean,vel_d_z10,vel_d_z30,its_window,its_all
+QM_rF0,QM,rF0,122435,45.000,15.9673,15.8598,16.0454,15.9304,15.9472,0.272,0.682,-0.174,0.0521,0.0594,0.0471,2.00,2.00
+QM_rF1,QM,rF1,312180,15.362,,,,,16.4461,,,,,,,2.00,2.00
+QM_rF2,QM,rF2,832552,8.740,,,,,,,,,,,,2.00,2.00
+P_rF0,P,rF0,122435,45.000,16.3051,16.2813,16.3161,16.2079,16.2110,0.186,0.546,-0.003,0.0506,0.0575,0.0457,4.21,4.35
+P_rF1,P,rF1,312180,45.000,16.6614,16.6355,16.6754,16.6113,16.5482,0.275,0.592,0.154,0.0492,0.0573,0.0435,4.61,4.16
+P_rF2,P,rF2,832552,42.438,,,,16.6848,16.5302,,,,,,,18.23,5.45

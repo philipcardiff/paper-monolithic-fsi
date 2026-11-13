@@ -106,6 +106,15 @@ A ring of mean radius $a = 1\,\mathrm{m}$ and thickness $h = 0.1\,\mathrm{m}$ (p
 The fluid density is chosen to give added-mass ratios $\mu = 0.101$, $1.008$ and $10.08$ (weak, moderate and strong), and a dry ring is run with each mesh and time step.
 The solid is the geometrically linear velocity solid with the standard second-order discretisation, and the interface is conformal.
 Meshes are refined by factors 1, 2 and 4 at 100 steps per period, and 25 to 100 steps per period are used on the factor-2 mesh; the fluid and the solid both use the second-order backward (BDF2) scheme.
+Figure~\ref{fig:ring_field_m} shows the pressure of the $n = 2$ mode at the strong added-mass level.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.6\textwidth]{figures/ringAddedMass-field}
+	\caption{Ring added-mass problem at the strong added-mass level ($\mu = 10.08$), quasi-monolithic coupling on the factor-2 mesh at 100 steps per period, at the end of the run ($t = 32.70\,\mathrm{s}$; the quarter model mirrored): fluid kinematic pressure of the $n = 2$ mode, and the ring coloured by displacement magnitude (true scale).}
+	\label{fig:ring_field_m}
+\end{figure}
+% Field image: mafinal4-ram-qm-strong-m2-n100, final time; figures/scripts/paraview/ring_field.py.
 
 \paragraph{Measured.}
 The wet frequency error, the wet/dry ratio error, the amplitude loss per period and iteration counts; IQN-ILS and Robin--Neumann are run on the same meshes and steps for the iteration counts and timings.
@@ -171,6 +180,16 @@ The coupling adds no measurable damping: at the strong level the quasi-monolithi
 % Driver: verification/Allverify --monolithic.
 
 A harmonic pressure wave travelling along an axisymmetric thick-walled elastic tube combines added mass, viscous attenuation and a deforming wall; its exact linear solution~\citep{CardiffFSIVerification2026} measures the error of the viscous interface traction, which the effectively inviscid ring problem does not.
+
+Figure~\ref{fig:womersley_field_m} shows the axial velocity and the wall displacement of the quasi-monolithic solution.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=\textwidth]{figures/womersleyTube-field}
+	\caption{Pulsatile compliant tube, quasi-monolithic coupling on the factor-2 mesh at 200 steps per period, at the end of the run ($t = 300\,\mathrm{s}$; the axisymmetric solution mirrored about the axis): axial fluid velocity with velocity profiles at five stations, showing the off-axis velocity maximum and the reversed flow downstream, and the wall coloured by radial displacement at true scale (negative values, down to $-0.2\,\mathrm{mm}$, shown as zero).}
+	\label{fig:womersley_field_m}
+\end{figure}
+% Field image: mafinal4-wom-qm-m2-n200, t = 300 s (only saved time); figures/scripts/paraview/wom_field.py.
 
 \paragraph{Set-up.}
 The tube of the companion paper is used unchanged ($h/R = 0.1$, $L/R = 15$, Womersley number $5.01$, $\rho_s h/(\rho_f R) = 0.1$), with exact travelling-wave data at both ends and exact initial fields, on a wedge mesh.

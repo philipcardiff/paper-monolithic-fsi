@@ -78,7 +78,7 @@ On the elastic half-cylinder, whose wall is stationary in the converged state, t
 % Driver: verification/Allverify --variants monolithic --levels 1,2,3,4
 % --end-time 300 (A1 Section 1.3).
 
-Steady laminar flow in a channel over a cavity whose floor is a flexible plate~\citep{Juretic2010, Tukovic2018} (Figure~\ref{fig:cavity_geom_m}) is the steady internal-flow case of the companion paper, which gives the full set-up and the comparison with published and independent references~\citep{CardiffFSIVerification2026}.
+Steady laminar flow in a channel over a cavity whose floor is a flexible plate~\citep{Juretic2010, Tukovic2018} (Figures~\ref{fig:cavity_geom_m} and~\ref{fig:cavity_field_m}) is the steady internal-flow case of the companion paper, which gives the full set-up and the comparison with published and independent references~\citep{CardiffFSIVerification2026}.
 At steady state the time-dependent differences between the couplings vanish, so the comparison isolates the spatial differences of Table~\ref{tab:discretisation_differences}.
 
 \begin{figure}[htbp]
@@ -87,6 +87,14 @@ At steady state the time-dependent differences between the couplings vanish, so 
 	\caption{Channel flow over a cavity with a flexible bottom: geometry, boundary conditions and monitoring point A (as in the companion paper~\protect\citep{CardiffFSIVerification2026}).}
 	\label{fig:cavity_geom_m}
 \end{figure}
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=\textwidth]{figures/cavityFlexibleBottom-field}
+	\caption{Channel flow over a cavity with a flexible bottom at steady state ($t = 300\,\mathrm{s}$), quasi-monolithic coupling on level 3: fluid speed with streamlines, showing the channel flow passing over the single cavity vortex, and the bottom coloured by displacement magnitude, not magnified, with its undeformed outline (black).}
+	\label{fig:cavity_field_m}
+\end{figure}
+% Field image: MeluXina philip-ma/runs/ma-cav-qm-L3, t = 300 s; figures/scripts/paraview/cavity_field.py.
 
 \paragraph{Set-up.}
 The flow is at $Re = 100$; the St Venant--Kirchhoff plate is computed with the geometrically nonlinear (total Lagrangian) velocity solid on a conformal interface.

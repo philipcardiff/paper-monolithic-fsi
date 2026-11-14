@@ -10,7 +10,7 @@
 % hessenthalerFsi validation driver; QM runs MeluXina philip-hvqm/runs/rF*_S2_
 % qm_b02LUST_T45 (build-bf697 = 517a44921 + #697 fix); partitioned runs UCD
 % Sonic /scratch/pcardiff/hv/P_rF*_LUST_b02 (206437983 + PR 676, 64896b0a5).
-\todo{Draft for a decision on whether to keep this case. Incomplete: the QM runs on rF1 (at $t = 18.3\,\mathrm{s}$ on 14 Nov) and rF2 (at $t = 10.2\,\mathrm{s}$) are still running, so QM and IQN-ILS are compared over the closing window on rF0 only (the partitioned runs are complete); protocol timings of both couplings on MeluXina are running; the abstract, introduction and conclusions do not mention this case yet.}
+\todo{Draft for a decision on whether to keep this case. Incomplete: the QM runs on rF1 (at $t = 18.3\,\mathrm{s}$ on 14 Nov) and rF2 (at $t = 10.2\,\mathrm{s}$) are still running, so QM and IQN-ILS are compared over the closing window on rF0 only (the partitioned runs are complete);  the abstract, introduction and conclusions do not mention this case yet.}
 
 The cases above are two-dimensional and have numerical references.
 The experiment of~\citet{Hessenthaler2017a} adds what they lack: a three-dimensional flow through a branching vessel geometry, a flap that deflects by a quarter of its length under combined buoyancy and flow, and measurements of the flap position and of the velocity field by magnetic resonance imaging (MRI) (Figure~\ref{fig:hessenthaler_3d}).
@@ -101,8 +101,14 @@ The largest differences are at the jet cores, where both couplings predict $595\
 \todo{The measured velocities exceed the prescribed inflow peak of $630\,\mathrm{mm/s}$ at the jet cores; check against the inflow definition of~\citet{Hessenthaler2017a,Hessenthaler2017b} before discussing.}
 
 \paragraph{Cost.}
-The quasi-monolithic runs took $2470$, $8070$ and $14\,600\,\mathrm{s}$ of elapsed time per simulated second on 64, 96 and 256 MeluXina processes on rF0, rF1 and rF2 ($44$, $215$ and $1040$ core-hours per simulated second); these runs did not follow the timing protocol of Section~\ref{sec:protocol}.
-% QM elapsed from ExecutionTime over t >= 5 s: rF0 98790 s for t 5-45, rF1
-% 83853 s for 5-15.39, rF2 54858 s for 5-8.75.
-The partitioned runs ran on a different cluster, and timings from different machines are not compared.
-\todo{Protocol timings of both couplings on MeluXina (same build and processes, restart from a saved state, exclusive node, 100 steps after 50 discarded, median of three) on rF0 and rF1 are running (14 Nov); insert the cost ratio at equal mesh.}
+Both couplings are timed under the protocol of Section~\ref{sec:protocol} on MeluXina, with the same build and the same number of processes, restarting from a statistically steady state and timing 100 steps after 50 discarded ones (median of three repeats, which agree within $1\%$).
+On 64 processes the quasi-monolithic coupling costs $46.5$ and $167$ core-hours per simulated second on rF0 and rF1, and IQN-ILS $22.7$ and $28.0$: the quasi-monolithic coupling is $2.0$ and $6.0$ times more expensive.
+One Newton iteration costs as much as $4.3$ coupling iterations on rF0 and $12.0$ on rF1, because the Krylov iterations per Newton iteration double from rF0 to rF1 ($38$ and $81$) while IQN-ILS needs about four coupling iterations on both meshes; with two Newton iterations per step, the quasi-monolithic coupling would break even only if IQN-ILS needed about 9 and 24 coupling iterations per step.
+On 128 processes the quasi-monolithic coupling is no faster on rF1 ($1862$ against $1875\,\mathrm{s}$ for the timed window), whereas IQN-ILS is $1.29$ times faster, so the ratio rises to $7.6$.
+This case is therefore the clearest example of the regime of Section~\ref{sec:accuracy_cost} in which the accelerated partitioned scheme is cheaper: although the fluid is denser than the solid ($\rho_F/\rho_S = 1.10$), the flap moves slowly and settles to a nearly steady state, so the interface accelerations are small and IQN-ILS, reusing the modes of the previous steps, needs few coupling iterations, whereas the fluid block of the quasi-monolithic system becomes harder to precondition as the three-dimensional mesh is refined.
+% paper-data/hessenthaler/timing.csv: MeluXina jobs 5457349-52 and 5457747-48
+% (build-bf697 = 517a44921 + #697 fix, both couplings); restarts: QM rF0 t = 45,
+% QM rF1 t = 15 (production run still going), IQN-ILS rF0/rF1 t = 45 (Sonic
+% production states, 206437983 + PR 676, re-decomposed); voxel sampling off.
+% Production QM elapsed (not protocol): rF0 2470, rF1 8070 (96 procs), rF2
+% 14600 (256 procs) s per simulated second.

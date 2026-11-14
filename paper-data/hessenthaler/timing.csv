@@ -1,0 +1,21 @@
+# Hessenthaler Phase I, rF meshes: protocol timings (paper Section 4), MeluXina, 14 Nov 2026.
+# Both couplings: build-bf697 (solids4foam 517a44921 + #697 fix), same ranks per mesh, one
+# exclusive node per job, restart from a saved steady state, first 50 steps discarded, next
+# N = 100 steps (0.2 s, dt = 0.002 s) timed from ClockTime (wall) and ExecutionTime (CPU of
+# rank 0), three repeats, median. Nothing written; voxelHistory sampling off; other
+# function objects as in production. QM restarts: rF0 t = 45 (production 64 ranks), rF1
+# t = 15 (production 96 ranks, re-decomposed to 128). Partitioned (pimpleFluid IQN-ILS)
+# restarts: t = 45 of the Sonic production runs P_rF{0,1}_LUST_b02 (24 ranks, built from
+# solids4foam 206437983 + PR 676), re-decomposed. Jobs: 5457349 (QM rF0), 5457350 (QM
+# rF1), 5457351 (P rF0), 5457352 (P rF1); run dirs /project/home/p201136/philip-timing-hv.
+# its_per_step: Newton (QM) or coupling (IQN-ILS) iterations per step in the window.
+run,coupling,mesh,ranks,dt_s,nskip,n_steps,wall_s_r1,wall_s_r2,wall_s_r3,median_wall_s,core_h_per_s,its_per_step,cpu_s_r1
+QM_rF0,QM,rF0,64,0.002,50,100,517.0,523.0,526.0,523.0,46.49,2.00,498.8
+P_rF0,IQN-ILS,rF0,64,0.002,50,100,254.0,255.0,255.0,255.0,22.67,4.20,243.7
+QM_rF1,QM,rF1,128,0.002,50,100,1802.0,1862.0,1879.0,1862.0,331.0,2.00,1709.7
+P_rF1,IQN-ILS,rF1,128,0.002,50,100,244.0,243.0,245.0,244.0,43.38,4.21,236.2
+# Equal-process rF1 rows (14 Nov 2026): both couplings re-decomposed to 64 ranks on one
+# exclusive node; QM rF1 from t = 15 (Krylov iterations per Newton 81.2), IQN-ILS rF1 from
+# t = 45; jobs 5457747 (QM), 5457748 (IQN-ILS); same build and protocol as above.
+qm_rF1_64,QM,rF1,64,0.002,50,100,1875.0,1880.0,1859.0,1875.0,166.67,2.00,1687.9
+iqn_rF1_64,IQN-ILS,rF1,64,0.002,50,100,315.0,315.0,318.0,315.0,28.00,4.05,297.2

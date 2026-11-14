@@ -10,7 +10,7 @@
 % hessenthalerFsi validation driver; QM runs MeluXina philip-hvqm/runs/rF*_S2_
 % qm_b02LUST_T45 (build-bf697 = 517a44921 + #697 fix); partitioned runs UCD
 % Sonic /scratch/pcardiff/hv/P_rF*_LUST_b02 (206437983 + PR 676, 64896b0a5).
-\todo{Draft for a decision on whether to keep this case. Incomplete: the QM runs on rF1 (at $t = 15.4\,\mathrm{s}$) and rF2 (at $t = 8.7\,\mathrm{s}$) and the partitioned run on rF2 (at $t = 42.4\,\mathrm{s}$) are still running, so only rF0 is compared over the closing window; protocol timings of both couplings on one machine are not yet taken; the abstract, introduction and conclusions do not mention this case yet.}
+\todo{Draft for a decision on whether to keep this case. Incomplete: the QM runs on rF1 (at $t = 18.3\,\mathrm{s}$ on 14 Nov) and rF2 (at $t = 10.2\,\mathrm{s}$) are still running, so QM and IQN-ILS are compared over the closing window on rF0 only (the partitioned runs are complete); protocol timings of both couplings on MeluXina are running; the abstract, introduction and conclusions do not mention this case yet.}
 
 The cases above are two-dimensional and have numerical references.
 The experiment of~\citet{Hessenthaler2017a} adds what they lack: a three-dimensional flow through a branching vessel geometry, a flap that deflects by a quarter of its length under combined buoyancy and flow, and measurements of the flap position and of the velocity field by magnetic resonance imaging (MRI) (Figure~\ref{fig:hessenthaler_3d}).
@@ -45,13 +45,12 @@ The two inlet jets stay along the wall of the outlet pipe and pass above and bel
 
 \paragraph{Measured.}
 The tip deflection $u_y$ is averaged over $t = 40$--$45\,\mathrm{s}$, in which the flow is statistically steady (Figure~\ref{fig:hessenthaler_results}a); the deformed centreline is averaged over the same window and compared with the MRI centreline, and the velocity is averaged over the window and over each MRI voxel ($1.302\times1.302\times6\,\mathrm{mm}$) and compared with the phase-contrast MRI velocities on the planes $z = 10$ and $30\,\mathrm{mm}$, with the difference vector normalised by the inlet peak velocity $630\,\mathrm{mm/s}$~\citep{Hessenthaler2017a}.
-\todo{Fix the closing window once all six runs reach $t = 45\,\mathrm{s}$; the partitioned rF2 coupling iterations rise from about four per step to a mean of 18 (up to 60) from $t \approx 38\,\mathrm{s}$, so its closing window must be checked before use.}
 
 \begin{table}[htbp]
 	\centering
 	\footnotesize
 	\setlength{\tabcolsep}{3pt}
-	\caption{Hessenthaler Phase I: tip deflection $u_y$ (mean, with the minimum and maximum, over $t = 40$--$45\,\mathrm{s}$; measured $16.41\,\mathrm{mm}$), RMS deviation of the mean centreline from the MRI centreline (MRI voxel $0.98\,\mathrm{mm}$), mean voxel velocity difference from MRI relative to $630\,\mathrm{mm/s}$, and Newton (quasi-monolithic) or coupling (IQN-ILS) iterations per step. Runs not yet at $t = 45\,\mathrm{s}$ show the window $t = 5$--$10\,\mathrm{s}$ (marked${}^{\dagger}$) or a dash.}
+	\caption{Hessenthaler Phase I: tip deflection $u_y$ (mean, with the minimum and maximum, over $t = 40$--$45\,\mathrm{s}$; measured $16.41\,\mathrm{mm}$), RMS deviation of the mean centreline from the MRI centreline (MRI voxel $0.98\,\mathrm{mm}$), mean voxel velocity difference from MRI relative to $630\,\mathrm{mm/s}$, and Newton (quasi-monolithic) or coupling (IQN-ILS) iterations per step. Runs not yet at $t = 45\,\mathrm{s}$ show the window $t = 5$--$10\,\mathrm{s}$ (marked${}^{\dagger}$) or a dash. ${}^{\ddagger}$Four per step until $t \approx 35\,\mathrm{s}$; the increase reflects the convergence test at a steady state (see text).}
 	\label{tab:hessenthaler_m}
 	\begin{tabular}{llrrrrr}
 		\toprule
@@ -62,7 +61,7 @@ The tip deflection $u_y$ is averaged over $t = 40$--$45\,\mathrm{s}$, in which t
 		rF1 & QM      & 312\,180 & $16.45^{\dagger}$          & --     & --      & 2.0 \\
 		    & IQN-ILS &          & $16.66$ ($16.64$--$16.68$) & $0.28$ & $4.9\%$ & 4.6 \\
 		rF2 & QM      & 832\,552 & --                         & --     & --      & 2.0 \\
-		    & IQN-ILS &          & --                         & --     & --      & 18.2 \\
+		    & IQN-ILS &          & $16.72$ ($16.72$--$16.72$) & $0.31$ & $5.0\%$ & $22.8^{\ddagger}$ \\
 		\bottomrule
 	\end{tabular}
 \end{table}
@@ -83,11 +82,15 @@ The tip deflection $u_y$ is averaged over $t = 40$--$45\,\mathrm{s}$, in which t
 
 \paragraph{Comparison of the couplings.}
 The quasi-monolithic coupling needs two Newton iterations per step on every mesh and throughout the run (three in 2, 1 and 22 steps of the first $5\,\mathrm{s}$ on rF0--rF2), including the first second, in which the flap swings up to a tip deflection of $19\,\mathrm{mm}$ and back (Figure~\ref{fig:hessenthaler_results}a).
-IQN-ILS needs about four coupling iterations per step on rF0 and rF1; on rF2 it needs four until $t \approx 35\,\mathrm{s}$, after which the count rises to a mean of 18 per step over $t = 40$--$42.4\,\mathrm{s}$ with steps at the limit of 60.
-% P_rF2 fsiResiduals: mean per 5 s window 4.1, 4.0, 4.0, 4.0, 4.0, 4.3, 4.5, 8.4, 18.2.
+IQN-ILS needs about four coupling iterations per step on rF0 and rF1, and on rF2 until $t \approx 35\,\mathrm{s}$.
+On rF2 the flap then becomes steady (the standard deviation of the tip deflection falls from $0.012\,\mathrm{mm}$ over $t = 20$--$25\,\mathrm{s}$ to $0.0002\,\mathrm{mm}$ over $t = 40$--$45\,\mathrm{s}$), and the coupling iterations rise to a mean of 23 per step over $t = 40$--$45\,\mathrm{s}$, with 439 of the 3\,501 steps after $t = 38\,\mathrm{s}$ stopped at the limit of 60 with an interface residual of $0.9$--$18\times10^{-5}$ (median $1.8\times10^{-4}$) against the tolerance of $10^{-4}$.
+Near a steady state the strict test, applied to relative interface residuals, thus stalls just above its tolerance while the solution no longer changes; this is a property of the convergence test rather than a loss of convergence, and a combined absolute and relative test may avoid it.
+% P_rF2 fsiResiduals: mean per 5 s window 4.1, 4.0, 4.0, 4.0, 4.0, 4.3, 4.5, 8.4, 22.8
+% (t = 0-45); residual at iteration 10 of the long late steps: median 2.1e-4.
 On rF0 the closing-window tip deflection is $15.97\,\mathrm{mm}$ with the quasi-monolithic coupling and $16.31\,\mathrm{mm}$ with IQN-ILS, $2.1\%$ apart; over $t = 5$--$10\,\mathrm{s}$, the window both couplings have reached on rF0 and rF1, the difference falls from $1.6\%$ on rF0 to $0.6\%$ on rF1 ($15.95$ against $16.21$, and $16.45$ against $16.55\,\mathrm{mm}$).
 The couplings thus approach each other under refinement, as on the two-dimensional cases, where they differ by the discretisation differences of Section~\ref{sec:consistency_partitioned}, here in particular the velocity against the displacement solid and the mesh moved once per step against once per coupling iteration.
-The partitioned tip deflection changes by $0.40\,\mathrm{mm}$ from rF0 to rF1 and by $0.07\,\mathrm{mm}$ from rF1 to rF2 (over $t = 20$--$25\,\mathrm{s}$, $16.21$, $16.61$ and $16.68\,\mathrm{mm}$): on rF0 the fluid-mesh error, about $3\%$, exceeds the difference between the couplings, whereas on rF1 the two are of similar size ($0.4$ and $0.6\%$).
+The partitioned tip deflection converges monotonically, $16.31$, $16.66$ and $16.72\,\mathrm{mm}$ on rF0--rF2 over the closing window (changes of $0.36$ and $0.06\,\mathrm{mm}$; over $t = 20$--$25\,\mathrm{s}$, $16.21$, $16.61$ and $16.68\,\mathrm{mm}$): on rF0 the fluid-mesh error, about $2.5\%$ against rF2, exceeds the difference between the couplings, whereas on rF1 the two are of similar size ($0.4$ and $0.6\%$).
+The ratio of the two changes is larger than the refinement ratio of about $1.38$ predicts for second-order convergence, so the sequence is not yet in the asymptotic range and no order or extrapolation is given.
 \todo{Complete with the QM rF1 and rF2 closing-window values and, if the sequence is monotone, the observed order and the extrapolated deflection for both couplings.}
 
 \paragraph{Comparison with the measurements.}
@@ -102,4 +105,4 @@ The quasi-monolithic runs took $2470$, $8070$ and $14\,600\,\mathrm{s}$ of elaps
 % QM elapsed from ExecutionTime over t >= 5 s: rF0 98790 s for t 5-45, rF1
 % 83853 s for 5-15.39, rF2 54858 s for 5-8.75.
 The partitioned runs ran on a different cluster, and timings from different machines are not compared.
-\todo{Protocol timings of both couplings on MeluXina (restart from a saved state, exclusive node, one window of steps, median of three) on rF0 and rF1, to give the cost ratio at equal mesh.}
+\todo{Protocol timings of both couplings on MeluXina (same build and processes, restart from a saved state, exclusive node, 100 steps after 50 discarded, median of three) on rF0 and rF1 are running (14 Nov); insert the cost ratio at equal mesh.}

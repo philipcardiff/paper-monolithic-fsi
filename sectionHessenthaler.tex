@@ -1,16 +1,12 @@
 %%--------------------------------------------------------------------------------------------------------------------%%
 \subsection{A three-dimensional experiment: the Hessenthaler flap}\label{sec:hessenthaler_m}
 %%--------------------------------------------------------------------------------------------------------------------%%
-% DRAFT (13 Nov 2026), added for Philip to judge fit; may be dropped depending
-% on the outcome of the QM and partitioned runs. Abstract, introduction and
-% conclusions deliberately not updated. To remove: delete the \input line at
-% the end of sectionAccuracyCost.tex.
 % Data: paper-data/hessenthaler/ (tip histories, window summary, centrelines,
 % voxel profiles); scripts figures/scripts/hessenthaler_results.py and the
 % hessenthalerFsi validation driver; QM runs MeluXina philip-hvqm/runs/rF*_S2_
 % qm_b02LUST_T45 (build-bf697 = 517a44921 + #697 fix); partitioned runs UCD
 % Sonic /scratch/pcardiff/hv/P_rF*_LUST_b02 (206437983 + PR 676, 64896b0a5).
-\todo{Draft for a decision on whether to keep this case. Incomplete: the QM runs on rF1 (at $t = 18.3\,\mathrm{s}$ on 14 Nov) and rF2 (at $t = 10.2\,\mathrm{s}$) are still running, so QM and IQN-ILS are compared over the closing window on rF0 only (the partitioned runs are complete);  the abstract, introduction and conclusions do not mention this case yet.}
+\todo{Insert the QM closing-window values on rF1 and rF2 when the runs reach $t = 45\,\mathrm{s}$ (rF1 expected 17 Nov, rF2 about 22 Nov).}
 
 The cases above are two-dimensional and have numerical references.
 The experiment of~\citet{Hessenthaler2017a} adds what they lack: a three-dimensional flow through a branching vessel geometry, a flap that deflects by a quarter of its length under combined buoyancy and flow, and measurements of the flap position and of the velocity field by magnetic resonance imaging (MRI) (Figure~\ref{fig:hessenthaler_3d}).
@@ -37,7 +33,6 @@ The fluid meshes are three octree meshes generated from the vessel surface with 
 Both couplings use second-order backward time integration with $\Delta t = 0.002\,\mathrm{s}$ to $t = 45\,\mathrm{s}$, the \texttt{LUST} convection scheme (three-quarters central, one quarter linear upwind), least-squares gradients and AMI transfer across the non-conformal interface.
 The quasi-monolithic coupling uses the total Lagrangian velocity solid ($\alpha_d = 0.01$) and the solid-model mesh motion with quadratic inverse-distance stiffness; the partitioned coupling uses the total Lagrangian displacement solid, a velocity Laplacian mesh motion with the same stiffness, PIMPLE with up to 20 outer correctors, and IQN-ILS with the strict test ($10^{-4}$ on both residual measures) and the modes of the two previous steps.
 The partitioned runs use a different solids4foam build from the quasi-monolithic runs, which include the interface correction of Section~\ref{sec:fluid_mesh_motion}.
-\todo{Add the Newton and Krylov tolerances of the QM runs (rF case files) as a row of Table~\ref{tab:solver_settings}.}
 
 The two inlet jets stay along the wall of the outlet pipe and pass above and below the flap, which buoyancy lifts into the slow region between them, where the fluid moves at a few centimetres per second (Figures~\ref{fig:hessenthaler_3d} and~\ref{fig:hessenthaler_midplane}); its tip almost reaches the shear layer of the upper jet, and a recirculation forms below its root.
 % Field images: figures/scripts/paraview/hessenthaler_{3d,midplane}.py, QM rF0 t = 45 s
@@ -98,12 +93,15 @@ On every mesh and with both couplings the tip deflection lies within $0.5\,\math
 The voxel-averaged velocities differ from the MRI velocities by $5\%$ of the inlet peak on average, with both couplings and on both meshes compared; the two couplings differ from each other by much less (Figure~\ref{fig:hessenthaler_results}c, d).
 The largest differences are at the jet cores, where both couplings predict $595\,\mathrm{mm/s}$ against the measured $731\,\mathrm{mm/s}$ on the plane $z = 10\,\mathrm{mm}$; since the couplings agree there to $1\%$, this difference belongs to the shared model (inflow profiles, geometry) or to the measurement, not to the coupling.
 % Jet-core voxel (z = 10, y = 25): MRI 730.5, QM rF0 594.8, IQN rF0 599.1, rF1 596.9 mm/s.
-\todo{The measured velocities exceed the prescribed inflow peak of $630\,\mathrm{mm/s}$ at the jet cores; check against the inflow definition of~\citet{Hessenthaler2017a,Hessenthaler2017b} before discussing.}
+The measured jet cores exceed the prescribed inflow peak of $630\,\mathrm{mm/s}$ by about $100\,\mathrm{mm/s}$, more than the stated MRI error of $0.05$ times the encoding velocity ($40\,\mathrm{mm/s}$ for $v_z$)~\citep{Hessenthaler2017a}, although the prescribed parabolic profiles carry the measured pump rate of $14.07\,\mathrm{l/min}$; \citet{Hessenthaler2017b} report qualitative agreement on these planes without comparing the peak velocities, so we do not attempt to resolve this difference here.
+% Parabolic peaks 630 and 615 mm/s in d = 21.9 mm: 7.12 + 6.95 = 14.07 l/min (pump
+% rate of Hessenthaler2017a, PMC5600002); VENC_z = 800 mm/s.
 
 \paragraph{Cost.}
 Both couplings are timed under the protocol of Section~\ref{sec:protocol} on MeluXina, with the same build and the same number of processes, restarting from a statistically steady state and timing 100 steps after 50 discarded ones (median of three repeats, which agree within $1\%$).
+The fluid velocity block of the quasi-monolithic preconditioner is factorised by block-Jacobi ILU(0) and the pressure Schur complement by one BoomerAMG V-cycle (Table~\ref{tab:solver_settings}).
 On 64 processes the quasi-monolithic coupling costs $46.5$ and $167$ core-hours per simulated second on rF0 and rF1, and IQN-ILS $22.7$ and $28.0$: the quasi-monolithic coupling is $2.0$ and $6.0$ times more expensive.
-One Newton iteration costs as much as $4.3$ coupling iterations on rF0 and $12.0$ on rF1, because the Krylov iterations per Newton iteration double from rF0 to rF1 ($38$ and $81$) while IQN-ILS needs about four coupling iterations on both meshes; with two Newton iterations per step, the quasi-monolithic coupling would break even only if IQN-ILS needed about 9 and 24 coupling iterations per step.
+One Newton iteration costs as much as $4.3$ coupling iterations on rF0 and $12.1$ on rF1, because the Krylov iterations per Newton iteration double from rF0 to rF1 ($38$ and $81$), which is consistent with, though not proven to be caused by, the single-level ILU(0) preconditioning of the velocity block while IQN-ILS needs about four coupling iterations on both meshes; with two Newton iterations per step, the quasi-monolithic coupling would break even only if IQN-ILS needed about 9 and 24 coupling iterations per step.
 On 128 processes the quasi-monolithic coupling is no faster on rF1 ($1862$ against $1875\,\mathrm{s}$ for the timed window), whereas IQN-ILS is $1.29$ times faster, so the ratio rises to $7.6$.
 This case is therefore the clearest example of the regime of Section~\ref{sec:accuracy_cost} in which the accelerated partitioned scheme is cheaper: although the fluid is denser than the solid ($\rho_F/\rho_S = 1.10$), the flap moves slowly and settles to a nearly steady state, so the interface accelerations are small and IQN-ILS, reusing the modes of the previous steps, needs few coupling iterations, whereas the fluid block of the quasi-monolithic system becomes harder to precondition as the three-dimensional mesh is refined.
 % paper-data/hessenthaler/timing.csv: MeluXina jobs 5457349-52 and 5457747-48

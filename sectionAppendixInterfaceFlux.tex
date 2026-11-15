@@ -1,0 +1,7 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Interface flux mismatch}\label{app:interface_flux}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+This appendix gives the measured mismatch $\varepsilon_f$ between the interface wall flux and the mesh flux (Section~\ref{sec:interface_conditions}).
+Measured after the start-up, $\sum_f|\varepsilon_f|/\sum_f|\phi^\Gamma_f|$ falls from $2.5\times10^{-2}$ to $1.4\times10^{-4}$ on the collapsible channel ($\Delta t = 0.025$ to $0.003125\,\mathrm{s}$) and from $1.4\times10^{-2}$ to $2.8\times10^{-5}$ on the ring (25 to 200 steps per period) as $\Delta t$ is halved three times, and the leakage accumulated on the channel to $t = 0.75\,\mathrm{s}$ falls from $2.5\times10^{-4}$ to $1.7\times10^{-6}$ of the swept volume.
+In the ring, which is started impulsively with the solid moving and the fluid at rest, the wall velocity drops by the added-mass factor $1+\mu$ in the first step while the explicit predictor still uses the initial solid velocity; the mesh then over-moves for two to three steps, and the volume crossing the wall relative to the mesh, $1$--$3\times10^{-4}$ of the volume swept over the run, does not grow afterwards.

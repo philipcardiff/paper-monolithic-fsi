@@ -1,0 +1,18 @@
+%%--------------------------------------------------------------------------------------------------------------------%%
+\subsection{Cost per step and number of iterations}\label{sec:accuracy_cost_discussion}
+%%--------------------------------------------------------------------------------------------------------------------%%
+A Newton iteration of the quasi-monolithic coupling solves a preconditioned linear system for all fluid and solid unknowns, whereas a partitioned coupling iteration performs one segregated fluid solve and one solid solve.
+The Newton iteration is therefore the more expensive, so the quasi-monolithic coupling is cheaper per step only when the partitioned scheme needs enough coupling iterations.
+In this paper the quasi-monolithic coupling needs two to four Newton iterations per step independently of the added-mass ratio (Sections~\ref{sec:ring_m} and~\ref{sec:robustness}), whereas the coupling iterations of the partitioned schemes grow with it.
+Measured on the same processes, a Newton iteration costs about as much as 1.1--1.2 IQN-ILS coupling iterations on the two-dimensional ring and half-cylinder, $3.0$--$5.0$ on the FSI3 meshes, about 3.4 on the three-dimensional flag of Section~\ref{sec:lim_foil} and $4.3$ and $12.1$ on the two Hessenthaler meshes, where the Krylov iterations per Newton iteration are larger.
+The break-even point, the number of Newton iterations times this cost ratio, is therefore case dependent: about 2.5--5 coupling iterations per step on the ring and half-cylinder, $6$--$10$ on FSI3, about 11 on the flag (3.3 Newton iterations per step) and 9 and 24 on the Hessenthaler meshes.
+Above it the quasi-monolithic coupling is cheaper, by a factor of two on the ring at the strong added-mass level, where IQN-ILS needs 4--6, and by two to six on the half-cylinder, where it needs 9--15.
+Where few coupling iterations suffice, as for FSI3 (4.9--6.0 per step), the flag (5.4), the Hessenthaler flap (about 4 on rF0 and rF1) and the steady flexible-bottom cavity (Section~\ref{sec:cavity_m}), the accelerated partitioned schemes are cheaper, by factors of 1.2--1.6 on FSI3, 2.1 on the flag and 2.0--6.0 on the Hessenthaler flap (on 64 processes).
+On the Turek--Hron FSI3 benchmark, the only case of the paper with an established external reference and a work--precision comparison, the quasi-monolithic coupling costs $1.2$--$1.6$ times as much as IQN-ILS at equal error, the factor rising with refinement (Section~\ref{sec:fsi3_m}).
+% FSI3: paper-data/fsi3_timing.csv (protocol, medians of 3): 68.6/56.1, 264.6/200.8,
+% 2041/1239 core-h/s; x 4.91, 5.34, 6.05 its / 2 Newton = 3.0, 3.5, 5.0.
+% Ratios: ring tab:ring_cost (QM step ~0.5 IQN step, 2 Newton vs 4.4-5.6 its);
+% blob time study (finite strain, MeluXina, 21 s vs 118 s; 258 Newton vs 1619 its: 1.12); foil 8 ranks
+% (MeluXina, 1241 s vs 586 s elapsed after step 1, medians of 3; 1199 vs 546 s CPU;
+% 132 Newton vs 214 its: 9.40 vs 2.74 s per iteration, 3.43).
+

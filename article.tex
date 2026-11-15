@@ -94,6 +94,12 @@ textheight=24cm, % llncs has 19.3cm
 \newcommand{\citetodo}[1]{\textcolor{red}{[\textbf{cite:}~#1]}}
 \newcommand{\tbd}[1]{\textcolor{red}{[\textbf{TBD:}~#1]}}
 
+% Run-in \paragraph headings: bold, with the text continuing on the same line
+% (the sn-jnl default sets them on their own line with extra space). The
+% headings carry their own full stop.
+\renewcommand\paragraph[1]{\par\addvspace{1.2ex plus .4ex minus .2ex}%
+	\noindent{\normalfont\bfseries #1}\hspace{0.5em}\ignorespaces}
+
 \begin{document}
 
 \title[Quasi-monolithic JFNK for finite volume FSI]{A quasi-monolithic Jacobian-free Newton--Krylov method for fluid--solid interaction with cell-centred finite volumes}

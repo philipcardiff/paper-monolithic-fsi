@@ -28,7 +28,7 @@ Table~\ref{tab:solver_settings} lists the settings of the quasi-monolithic runs 
 		Pulsatile tube & BDF2  & lin. & lin.  & LG & 0.5 & DM & $10^{-6}$\textsuperscript{f} & $10^{-4}$\textsuperscript{f} & upper, LU & -- \\
 		Cavity & Euler\textsuperscript{a} & LUD & skew\textsuperscript{b} & TL & 0.1 & DM & $10^{-6}$ & $10^{-4}$ & upper, LU & -- \\
 		Collapsible channel & BDF2  & lin. & lin.  & TL & 0.1 & AMI\textsuperscript{d} & $10^{-6}$ & $10^{-4}$ & upper, LU & -- \\
-		Hron--Turek FSI3 & BDF2  & LUD  & skew  & TL & 0.5 & AMI & $10^{-6}$ & $10^{-4}$ & upper, LU & -- \\
+		Turek--Hron FSI3 & BDF2  & LUD  & skew  & TL & 0.5 & AMI & $10^{-6}$ & $10^{-4}$ & upper, LU & -- \\
 		% Hessenthaler row: MeluXina philip-hvqm/runs/rF0_S2_qm_b02LUST_T45 system/fvSolution
 		% (UpU: snes_rtol/stol 1e-6, ksp_rtol 1e-4, schur_fact_type full, solid redundant LU,
 		% lag 8 persisting), system/fluid/fvSchemes (interpolation linear, div LUST),

@@ -49,8 +49,8 @@ Cell gradients are computed by a least-squares fit over the face neighbours, ext
     \bb{g}_{P,f} \otimes \left( \bb{\phi}_{N_f} - \bb{\phi}_{P} \right),
     \label{eqn:least_squares_gradient}
 \end{equation}
-where the coefficients $\bb{g}_{P,f}$ depend only on the mesh geometry.
-Diffusive face fluxes are split into a compact normal-gradient part between the two adjacent cell centres and a non-orthogonal correction from the interpolated cell gradient (Equation~\eqref{eqn:fluid_momentum_residual}); both are part of the residual, but only the compact part enters the approximate Jacobian, whose stencil therefore stays compact, as in a deferred correction.
+where the coefficients $\bb{g}_{P,f}$ depend only on the mesh geometry; the equation is written for the face-neighbour stencil, and where the point-neighbour stencil is used the sum runs over those neighbours instead.
+Diffusive face fluxes are split into a compact normal-gradient part between the two adjacent cell centres and a non-orthogonal correction from the interpolated cell gradient (Equation~\eqref{eqn:fluid_momentum_residual}); both are part of the residual, but only the compact part enters the diffusion contribution of the approximate Jacobian, which therefore stays compact, as in a deferred correction.
 These are the operators of the standard discretisation, used in both regions unless the solid uses the optional high-order residual described at the end of Section~\ref{sec:discrete_coupled_residual}.
 They are nominally second order; the realised order depends on the convection scheme, the mesh, the boundary treatment and the stabilisation, and is assessed in Sections~\ref{sec:verification_exact}--\ref{sec:accuracy_cost}.
 
@@ -188,7 +188,7 @@ With $\bb{\Gamma}_f = |\bb{\Gamma}_f|\, \hat{\bb{n}}_f$ and $\bb{d}_f = \bb{x}_{
     {2\Delta t},
     \label{eqn:fluid_momentum_residual}
 \end{eqnarray}
-where the relative flux $\phi^\mathrm{rel}_f$ of Equation~\eqref{eqn:relative_flux} is formed with the face velocity $\bb{v}_f$, interpolated linearly with a skewness correction, which is also used in the continuity flux below, and $\widetilde{\bb{v}}_f$ is the convected face velocity defined below.
+where the relative flux $\phi^\mathrm{rel}_f$ of Equation~\eqref{eqn:relative_flux} is formed with the face velocity $\bb{v}_f$, interpolated linearly, with a skewness correction in the cases marked in Table~\ref{tab:solver_settings}, which is also used in the continuity flux below, and $\widetilde{\bb{v}}_f$ is the convected face velocity defined below.
 The first face term is the compact orthogonal part of the viscous flux and the second its non-orthogonal correction, with
 \begin{equation}
     \bb{k}_f
@@ -218,7 +218,7 @@ The discrete pressure residual for cell $P$ is
     \mathcal{D}_{p,P},
     \label{eqn:fluid_pressure_residual}
 \end{equation}
-where $\bb{v}_f$ is again the skewness-corrected interpolated face velocity, so that the face flux $\bb{\Gamma}_f \cdot \bb{v}_f$ in the continuity equation is the same (absolute) face flux that convects momentum in Equation~\eqref{eqn:fluid_momentum_residual}.
+where $\bb{v}_f$ is again this interpolated face velocity, so that the face flux $\bb{\Gamma}_f \cdot \bb{v}_f$ in the continuity equation is the same (absolute) face flux that convects momentum in Equation~\eqref{eqn:fluid_momentum_residual}.
 Evaluating the divergence with a different interpolation from that of the convecting flux makes the convecting flux non-solenoidal whenever the two interpolations differ, which in early tests during the development of the solver (not shown) damped transient flows such as vortex shedding.
 $\mathcal{D}_{p,P}$ is the finite-volume pressure-stabilisation contribution \citep{Rhie1983} calculated as
 \begin{eqnarray} \label{eqn:rhie_chow}
@@ -323,7 +323,7 @@ $\bb{\mathcal{D}}_{s,P}$ is a stabilisation term -- similar to $\mathcal{D}_{p,P
 \end{eqnarray}
 where $\bar{K}$ is a stiffness-type parameter that gives the stabilisation term an appropriate scale and dimension: $\bar{K} = 2\mu_S + \lambda_S$ for a linear elastic solid, with $\mu_S$ and $\lambda_S$ the Lam\'e parameters, and the equivalent scalar tangent stiffness, evaluated at the start of the analysis, for finite strain laws.
 The user-defined parameter $\alpha_d > 0$ globally scales the amount of stabilisation.
-The cases of this paper use $\alpha_d$ between $0.01$ and $0.5$ (Table~\ref{tab:solver_settings}).
+The cases of Table~\ref{tab:solver_settings} use $\alpha_d$ between $0.01$ and $0.5$.
 The displacement gradient $\left( \bb{\nabla}_0 \bb{D} \right)^{n}_f$ is obtained by interpolating the cell-centred least-squares displacement gradients (Equation~\eqref{eqn:least_squares_gradient}, evaluated on the reference mesh) to the face.
 As the stabilisation is formed from the new-time displacement in Equation~\eqref{eqn:solid_bdf2_displacement}, it is also a function of the trial solid velocity.
 
@@ -341,7 +341,8 @@ The cell-centred stress is computed from the displacement $\bb{D}^{n}$ (via $\bb
 In the linear-geometry variant, the face force is $\bb{f}_f^{n} = \bb{\Gamma}_{0,f} \cdot \bb{\sigma}_f^{n}$, with the stress computed from the small-strain tensor of $\bb{D}^n$.
 In the geometrically nonlinear variant, the stabilisation is added to the face traction before multiplication by the deformed area, which therefore replaces $|\bb{\Gamma}_{0,f}|$ in Equation~\eqref{eqn:rhie_chow_s}.
 For thin, bending-dominated structures the geometrically nonlinear variant can instead use the high-order residual of~\citet{Batistic2026}, which builds on the high-order finite volume method of~\citet{Castrillo2024}: the displacement is reconstructed by a moving least-squares fit of a cubic polynomial over an extended stencil, and the deformation gradient, the stress and the face force are evaluated at the face quadrature points.
-The stabilisation term then takes the jump form: $\alpha_d$ times the difference between the two face values reconstructed from the cells on either side, divided by the distance between their centres, in place of the bracket of Equation~\eqref{eqn:rhie_chow_s} (with $\alpha_d = 0.1$ unless stated).
+The stabilisation term then takes the jump form: the bracket of Equation~\eqref{eqn:rhie_chow_s} is replaced by the difference between the two face values reconstructed from the cells on either side, divided by the distance between their centres.
+The jump form can also be used with the standard reconstruction, as in the order study of Section~\ref{sec:lim_thin_solid}, where both reconstructions use it with a factor of $0.1$ ($1.0$ on the thinnest flag).
 The residual is otherwise unchanged: the approximate Jacobian of the preconditioner keeps the compact (low-order) linearisation, and the interface load remains one traction per face (Section~\ref{sec:interface_conditions}), which conserves the interface force but is second-order accurate.
 Section~\ref{sec:lim_thin_solid} compares the two reconstructions on thin solids.
 
@@ -464,7 +465,7 @@ Where the weights of each fluid face sum to one, the total interface force balan
 These are identities of the transfer operator at the interface faces; they do not by themselves make the complete discretisation conserve momentum or energy, since, for example, the solid face velocity is reconstructed from cell values.
 In practice the logged total interface force balances to round-off (Section~\ref{sec:interface_comparison}).
 For the geometrically nonlinear solid, this requires the interface traction to be applied on the undeformed area (rather than the deformed area $|\bb{\Gamma}^n_s|$ of Equation~\eqref{eqn:face_force}).
-The conservative transfer is used in the non-conformal ring study of Section~\ref{sec:interface_comparison} and for the $640\times8$ solid of the collapsible channel (Section~\ref{sec:robustness_collapsible}); Turek--Hron FSI3 and the Hessenthaler flap use AMI with traction interpolation, and every other case has a conformal interface and uses the direct map.
+The conservative transfer is used in the non-conformal ring study of Section~\ref{sec:interface_comparison} and for the $640\times8$ solid of the collapsible channel (Section~\ref{sec:robustness_collapsible}); The other non-conformal interfaces, those of Turek--Hron FSI3, the Hessenthaler flap and the walls of the collapsible-channel order study of Section~\ref{sec:lim_thin_solid}, use AMI with traction interpolation, and the remaining cases have conformal interfaces and use the direct map.
 
 The displacement that moves the fluid mesh (Section~\ref{sec:fluid_mesh_motion}) is transferred with the same face weights for the face values and with the point transfer of the interface mapping for the mesh points.
 
@@ -578,7 +579,7 @@ $\tilde{\bb{J}}_{pm}$ the discrete continuity operator, and
 $\tilde{J}_{pp}$ the pressure-stabilisation operator.
 
 The entries of $\tilde{\bb{J}}$ are given in Appendix~\ref{app:jacobian}.
-In brief, $\tilde{\bb{J}}_{mm}$ contains the compact two-cell diffusion operator, the BDF2 time derivative and a first-order upwind linearisation of the convection, whatever the convection scheme of the residual, and omits the explicit non-orthogonal correction and the transpose part of the viscous stress, whose effect the matrix-free Jacobian action retains.
+In brief, $\tilde{\bb{J}}_{mm}$ contains the compact two-cell diffusion operator, the BDF2 time derivative and a first-order upwind linearisation of the convection, whatever the convection scheme of the residual, and omits the non-orthogonal correction and the transpose part of the viscous stress, whose effect the matrix-free Jacobian action retains.
 $\tilde{\bb{J}}_{mp}$ is the derivative of the least-squares pressure gradient, $\tilde{\bb{J}}_{pm}$ that of the interpolated face velocity flux, and $\tilde{J}_{pp}$ the complete linear Rhie--Chow stabilisation operator: its compact part couples first neighbours, and its interpolated-gradient part extends to the neighbours of the neighbours.
 The solid block $\tilde{\bb{J}}_{ss}$ extends the compact displacement-based approximate Jacobian of \citet{Cardiff2026} to the velocity unknown; it is not a consistent linearisation of the nonlinear constitutive response.
 The coupling blocks approximate the interface face velocity and pressure by the values in the adjacent cells and apply the transfer weights of Section~\ref{sec:interface_conditions}: $\tilde{\bb{J}}_{fs}$ is the Dirichlet contribution of the solid velocity to the fluid momentum and continuity rows, and $\tilde{\bb{J}}_{sf}$ the derivative of the pressure and viscous interface force on the solid with respect to the adjacent fluid cell values.

@@ -40,8 +40,8 @@ across face $f$ is
     \min\left(\phi^{\mathrm{rel}}_{F,f},0\right)\bb{I}.
     \label{eqn:Jmm_offdiag}
 \end{equation}
-The explicit transpose part of the viscous stress is not included in $\tilde{\bb{J}}_{mm}$; the matrix-free Jacobian action accounts for it.
-Here the convective contribution in the approximate Jacobian is always based on first-order upwinding, independently of the convection scheme used in the nonlinear residual (linear or limited second-order upwind interpolation in the cases considered).
+The transpose part of the viscous stress is not included in $\tilde{\bb{J}}_{mm}$; the matrix-free Jacobian action accounts for it.
+Here the convective contribution in the approximate Jacobian is always based on first-order upwinding, independently of the convection scheme used in the nonlinear residual (central, unlimited second-order upwind or \texttt{LUST} interpolation in the cases considered).
 
 The pressure-gradient coupling block is obtained by differentiating the cell-centred pressure-gradient term in the momentum equation with respect to the cell-centred pressure.
 If $\bb{g}_{P,Q}$ denotes the least-squares gradient coefficient multiplying the pressure in cell $Q$ when evaluating $(\bb{\nabla}p)_P$, then

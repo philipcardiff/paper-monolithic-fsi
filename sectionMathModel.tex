@@ -104,7 +104,7 @@ and introducing the first Piola--Kirchhoff stress tensor $\bb{P}_S = J \bb{\sigm
 Here $\rho_{S,0}$ is the initial density, and $\bb{t}_0 = \hat{\bb{n}}_{S,0} \cdot \bb{P}_S^T$ is the nominal traction, the force per unit reference area ($\bb{t}_0 \, \text{d}\Gamma_{S,0} = \bb{t} \, \text{d}\Gamma_S$ with the Cauchy traction $\bb{t} = \hat{\bb{n}}_S \cdot \bb{\sigma}_S$).
 Equations~\eqref{eqn:solid_displacement_velocity}--\eqref{eqn:solid_momentum_TL}, closed by a constitutive law for $\bb{\sigma}_S$, are solved for $\bb{v}_S$, with $\bb{D}_S$ and hence $\bb{F}$ and $J$ following from Equation~\eqref{eqn:solid_displacement_velocity}.
 
-The formulation and its implementation are independent of the constitutive law, which enters only through the evaluation of the stress; any of the mechanical laws of solids4foam can be used.
+The formulation and its implementation are independent of the constitutive law, which enters through the stress and through stiffness parameters of the solid stabilisation and the approximate Jacobian (Section~\ref{sec:numerical_methods}); any of the mechanical laws of solids4foam can be used.
 The finite-strain cases of this paper use two laws: the Saint Venant--Kirchhoff law, for which the second Piola--Kirchhoff stress is linear in the Green--Lagrange strain $\bb{E}$,
 \begin{equation}
     \bb{\sigma}_S

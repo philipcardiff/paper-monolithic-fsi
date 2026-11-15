@@ -9,7 +9,7 @@ A coupling is more efficient than another only if it reaches the same accuracy a
 This section compares the complete quasi-monolithic and partitioned IQN-ILS formulations on matched meshes and time steps (their discretisations differ as listed in Section~\ref{sec:consistency_partitioned}), and reports the error against the reference and the cost as a work--precision relation.
 
 %%--------------------------------------------------------------------------------------------------------------------%%
-\subsection{Hron--Turek FSI3}\label{sec:fsi3_m}
+\subsection{Turek--Hron FSI3}\label{sec:fsi3_m}
 % Every run of this subsection uses BDF2 (backward) for the fluid ddt(U),
 % ddt(dU), ddt(p) and for the solid (fsi3g run files, checked 10 Nov 2026).
 % Data: paper-data/fsi3_runs.csv (fsi3g runs on MeluXina, solids4foam
@@ -21,14 +21,14 @@ The FSI3 problem of~\citet{Turek2006}, an elastic flag behind a rigid cylinder o
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=\linewidth]{figures/HronTurek3-geometry}
-	\caption{Hron--Turek FSI3: (a) geometry (m), boundary conditions and the level-1 fluid mesh; (b) the cylinder, the flag (solid region) and point A, where the fluid mesh is refined towards the flag tip.}
+	\caption{Turek--Hron FSI3: (a) geometry (m), boundary conditions and the level-1 fluid mesh; (b) the cylinder, the flag (solid region) and point A, where the fluid mesh is refined towards the flag tip.}
 	\label{fig:fsi3_geom_m}
 \end{figure}
 
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=\textwidth]{figures/HronTurek3-field}
-	\caption{Hron--Turek FSI3, quasi-monolithic coupling on level 2 at $t = 5.888\,\mathrm{s}$, near the largest upward deflection of the flag (tip $u_y = 33.3\,\mathrm{mm}$): fluid vorticity, saturated at $\pm120\,\mathrm{s^{-1}}$, and the flag coloured by displacement magnitude, with its undeformed outline (black).}
+	\caption{Turek--Hron FSI3, quasi-monolithic coupling on level 2 at $t = 5.888\,\mathrm{s}$, near the largest upward deflection of the flag (tip $u_y = 33.3\,\mathrm{mm}$): fluid vorticity, saturated at $\pm120\,\mathrm{s^{-1}}$, and the flag coloured by displacement magnitude, with its undeformed outline (black).}
 	\label{fig:fsi3_field_m}
 \end{figure}
 % Field image: MeluXina philip-ht/fsi3g/runs/qm_2 (a421f063d), t = 5.888 s (fields
@@ -59,7 +59,7 @@ The repeats agree within $4\%$, except for IQN-ILS on level 3 ($10\%$) and one r
 	\centering
 	\footnotesize
 	\setlength{\tabcolsep}{3pt}
-	\caption{Hron--Turek FSI3: relative errors (\%) against the Featflow level-4 values over $t = 5$--$6\,\mathrm{s}$, iterations per step (Newton iterations, quasi-monolithic; coupling iterations, IQN-ILS) and cost (core-hours per simulated second, timing protocol of Section~\ref{sec:protocol}). QM: quasi-monolithic.}
+	\caption{Turek--Hron FSI3: relative errors (\%) against the Featflow level-4 values over $t = 5$--$6\,\mathrm{s}$, iterations per step (Newton iterations, quasi-monolithic; coupling iterations, IQN-ILS) and cost (core-hours per simulated second, timing protocol of Section~\ref{sec:protocol}). QM: quasi-monolithic.}
 	\label{tab:fsi3_m}
 	\begin{tabular}{llrrrrrrrrr}
 		\toprule
@@ -78,7 +78,7 @@ The repeats agree within $4\%$, except for IQN-ILS on level 3 ($10\%$) and one r
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=\linewidth]{figures/HronTurek3-work-precision}
-	\caption{Hron--Turek FSI3 work--precision: relative error against the Featflow level-4 values against the cost (Table~\ref{tab:fsi3_m}) on mesh levels 1--3. The grey band is the $3$--$5\%$ uncertainty of the reference amplitudes.}
+	\caption{Turek--Hron FSI3 work--precision: relative error against the Featflow level-4 values against the cost (Table~\ref{tab:fsi3_m}) on mesh levels 1--3. The grey band is the $3$--$5\%$ uncertainty of the reference amplitudes.}
 	\label{fig:fsi3_work_precision}
 \end{figure}
 
@@ -206,7 +206,7 @@ Measured on the same processes, a Newton iteration costs about as much as 1.1--1
 The break-even point, the number of Newton iterations times this cost ratio, is therefore case dependent: about 2.5--5 coupling iterations per step on the ring and half-cylinder, $6$--$10$ on FSI3, about 11 on the flag (3.3 Newton iterations per step) and 9 and 24 on the Hessenthaler meshes.
 Above it the quasi-monolithic coupling is cheaper, by a factor of two on the ring at the strong added-mass level, where IQN-ILS needs 4--6, and by two to six on the half-cylinder, where it needs 9--15.
 Where few coupling iterations suffice, as for FSI3 (4.9--6.0 per step), the flag (5.4), the Hessenthaler flap (about 4 on rF0 and rF1) and the steady flexible-bottom cavity (Section~\ref{sec:cavity_m}), the accelerated partitioned schemes are cheaper, by factors of 1.2--1.6 on FSI3, 2.1 on the flag and 2.0--6.0 on the Hessenthaler flap (on 64 processes).
-On the Hron--Turek FSI3 benchmark, the only case of the paper with an established external reference and a work--precision comparison, the quasi-monolithic coupling costs $1.2$--$1.6$ times as much as IQN-ILS at equal error, the factor rising with refinement (Section~\ref{sec:fsi3_m}).
+On the Turek--Hron FSI3 benchmark, the only case of the paper with an established external reference and a work--precision comparison, the quasi-monolithic coupling costs $1.2$--$1.6$ times as much as IQN-ILS at equal error, the factor rising with refinement (Section~\ref{sec:fsi3_m}).
 % FSI3: paper-data/fsi3_timing.csv (protocol, medians of 3): 68.6/56.1, 264.6/200.8,
 % 2041/1239 core-h/s; x 4.91, 5.34, 6.05 its / 2 Newton = 3.0, 3.5, 5.0.
 % Ratios: ring tab:ring_cost (QM step ~0.5 IQN step, 2 Newton vs 4.4-5.6 its);

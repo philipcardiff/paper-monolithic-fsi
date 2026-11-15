@@ -101,4 +101,90 @@ it seems strange here to explicitly mention Liu et al - i would probably remove 
 By the way, I think the companion paper may have switched to a finite strain formulation for this case (neo Hookean I think).
 
 
+comments above were pushed in 626ab41
+
+In Eqs 15 and 16, t seems to be a true (deformed configuration) traction which is confusing witht he earlier definition of t in terms of initial configuration - see point above.
+
+
+
+method
+
+"The time step follows the quasi-monolithic formulation of Liu et al. [53] and Algorithm 2 of Jaiman and Joshi [54, Chapter 6]:"
+See my notes above about the differences between our approach and the approach of Jaiman and Joshi.
+I see that we do mention "in treating the convective term fully implicitly rather than linearising it about an extrapolated velocity" but we also treat the solid nonlinearly without a linearisation-in-time as Jaiman and Joshi do. I guess a reason we/I do this is that we "might as well" when using a JFNK approach.
+
+"with Rhie–Chow-type pressure stabilisation"
+if we use the higher order solid then i guess we use alpha stabilisation in those cases.
+
+3.1 Finite-volume discretisation seems to be written entirely from a 2nd order perspective; we should check this section to ensure is consistent with any higher order solid we may use in some cases.
+
+"Cell gradients are computed by a first-neighbour least-squares fit,"
+If we are using leastSquaresS4f on tet grids then it uses point-cell neighbours in those cases.
+
+"and an explicit non-orthogonal" => explicitly is misleading here as it is treated implicitly in time; "treated in a deferred correction manner" or similar is a better description.
+
+"which keeps the implicit stencil compact." I am wary that "implicit" may be misleading here. Maybe "approximate Jaocbian" or similar would be clearer.
+
+"when the time step is adapted" do we actually use adaptive time step in this work?
+
+"on the first time step the backward scheme of OpenFOAM.com"
+since reviewers are likely not from the OpenFOAM community, I wonder if we should phrase this as
+"on the first time step the backward scheme (OpenFOAM.com variant)" or similar
+
+"reverts to the Euler coefficients" should this be "reverts to the Euler (BDF1) coefficients"?
+
+Are the n and n-1 time superscripts defined/noted somewhere?
+
+Eq 25: "where vf is the face velocity interpolated linearly with a skewness correction," should this refer to \tilde{v}_f? as opposed to v_f?
+
+"evaluated explicitly from the interpolated least-squares velocity gradient,"
+see my comments above on the use of "explicit" and "implicit"
+
+"as in the partitioned fluid solver of solids4foam." it seems strange to - out of nowhere - point out that this particular term is like the partitioned fluid solver of solids4foam; maybe remove this comment unless there is a clear reason for it.
+
+"the convected velocity" we say we use linear of 2nd order upwind, but do we also use LUST somewhere in the paper? Please double-check.
+
+"where vf is again this interpolated face velocity,"
+please double check vf vs \tilde{v}_f and whether we are using the right one in each place.
+
+"which was observed to damp transient flows"
+a reader may wonder if we are referring to literature here or something we observed ourselves (but is not shown in the paper) or that we observed and demonstrated in the paper (e.g. case of appendix). we should make this clear, even if just saying that we noticed this in early tests.
+
+Eq 31 uses uppercase T for the reference traction - see comments above.
+
+"The cases of this paper use αd = 0.5 or 0.1 (Table B2)." double check this is correct.
+
+"the geometrically nonlinear variant can instead use the high-order residual of Castrillo et al. [73]:"
+we are using the high order residual of Batistic et al.: High-order cell-centred finite-volume solid mechanics using a
+Jacobian-free Newton-Krylov method, Ivan Batistic, Pablo Castrillo, Philip Cardiﬀ.
+
+"the displacement is reconstructed by a k-exact cubic least-squares fit "
+solids4foam now has 3 higher order variants: in Batistic et al., it used the "moving least squares" variant (not k-exact approach) - double check which one we are actually using in the cases.
+
+"the approximate Jacobian of the preconditioner keeps the compact linearisation"
+should we saw "compact (low order) linearisation" here?
+
+i see that we first mention higher order here but it feels like we should have briefly mentioned this somewhere at the start of the discretisation too.
+
+"and the stress and point displacements are updated."
+do we say how we calculate point displacements from the cell centred displacements?
+
+" its sum over the steps telescopes, so the volume that crosses the wall relative to
+the mesh stays of the order of ..."
+I am not sure I understand what "telescopes" means here - maybe define what is meant or rephrase to make it clear.
+
+Bottom of p15: "Measured after the start-up ...", it seems strange to list lots of numerical errors here for the various cases before the cases have even been introduced. maybe this can all just go in an appendix and we refer to that.
+
+", as in the partitioned couplings of solids4foam."
+once again, this comment seems out of place.
+
+"and, where the weights of each fluid face sum to one, so does the total interface force; these are
+identities of the transfer operator at the interface faces, and they do not by themselves imply
+discrete conservation of momentum or energy by the complete discretisation, in which, for example,
+the solid face velocity is reconstructed from cell values; the logged total interface force balances to
+round-off (Section 4.4)"
+this sentence (and text before this) is too long and difficult to follow.
+
+
+Comments until the end of Section 3.3 are above
 

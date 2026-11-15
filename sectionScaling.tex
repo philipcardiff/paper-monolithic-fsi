@@ -1,5 +1,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Three-dimensional performance and scaling}\label{sec:scaling_3d}
+\subsection{A three-dimensional tube: consistency, performance and scaling}\label{sec:scaling_3d}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Stream feeding this section: R5 (campaign/HANDOFF.md), and pre-campaign
 % check B1 (solid-block preconditioner).
@@ -13,7 +13,7 @@
 % No monolithic driver and no recorded monolithic study (A1 Section 1.9).
 
 A pressure pulse in a fluid-filled elastic tube (Figures~\ref{fig:tube3d_geom_m} and~\ref{fig:tube3d_field}) is the standard three-dimensional test of strongly coupled FSI under strong added mass, with $\rho_s/\rho_f = 1.2$~\citep{kuttler2008fixed, Degroote2009}; its set-up, the partitioned three-level study and the literature references are given in the companion paper~\citep{CardiffFSIVerification2026}.
-Here it compares the quasi-monolithic and partitioned couplings in three dimensions and measures how the cost of the method and its preconditioner grows with problem size and process count; as in Section~\ref{sec:accuracy_cost}, complete solvers are compared, whose discretisations differ as listed in Section~\ref{sec:consistency_partitioned}.
+Here it compares the quasi-monolithic and partitioned couplings in three dimensions and measures how the cost of the method and its preconditioner grows with problem size and process count; as in the preceding subsections, complete solvers are compared, whose discretisations differ as listed in Section~\ref{sec:consistency_partitioned}.
 
 \begin{figure}[htbp]
 	\centering
@@ -30,7 +30,7 @@ Here it compares the quasi-monolithic and partitioned couplings in three dimensi
 \end{figure}
 
 %%--------------------------------------------------------------------------------------------------------------------%%
-\subsection{Consistency on three levels}\label{sec:tube3d_consistency}
+\subsubsection{Consistency on three levels}\label{sec:tube3d_consistency}
 % TIME-SCHEME NOTE (Philip, 22 Oct 2026), for anyone adding results here:
 % all transient results in this paper must use BDF2 (backward) for the fluid
 % ddt(U) and the solid. The solids4foam tutorial default for this case is
@@ -83,7 +83,7 @@ This shifts each station's arrival by up to $\Delta z/(2c_p)$, about $17\,\mu\ma
 Newton needs two iterations at every step on every level, as expected for this linear-elastic, small-strain problem, and the Krylov iterations per Newton iteration grow about 1.35-fold per refinement.
 
 %%--------------------------------------------------------------------------------------------------------------------%%
-\subsection{Strong scaling}\label{sec:tube3d_scaling}
+\subsubsection{Strong scaling}\label{sec:tube3d_scaling}
 %%--------------------------------------------------------------------------------------------------------------------%%
 
 Level 2 is run on 1, 2, 4, 8, 16, 32 and 64 processes and level 3 on 16, 32, 64 and 128 processes, over a fixed window of 50 steps restarted from $t = 5\,\mathrm{ms}$, with both couplings.
@@ -111,7 +111,7 @@ The Krylov iterations per Newton iteration do not change with the process count 
 The quasi-monolithic coupling costs 3.2 times as much as Robin--Neumann on level 3 with 16 processes and 3.6 times with 128 (3.0 and 3.3 in CPU time), and 1.2 to 2.1 times on level 2 from 1 to 64 processes: with its Robin interface condition the partitioned coupling needs only about three coupling iterations per step here, so on the tube a well-tuned partitioned coupling is cheaper.
 
 %%--------------------------------------------------------------------------------------------------------------------%%
-\subsection{Effect of the preconditioner and Jacobian settings}\label{sec:tube3d_pc_study}
+\subsubsection{Effect of the preconditioner and Jacobian settings}\label{sec:tube3d_pc_study}
 %%--------------------------------------------------------------------------------------------------------------------%%
 % All variants are PETSc options on the tag (A4 Sections 5 and 6, route A).
 

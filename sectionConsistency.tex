@@ -1,5 +1,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Consistency with partitioned coupling}\label{sec:consistency_partitioned}
+\subsection{Consistency with partitioned coupling}\label{sec:consistency_partitioned}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Stream feeding this section: R2 (campaign/HANDOFF.md), plus the
 % womersleyTube runs of R1. Source of the discretisation comparison: audit
@@ -7,11 +7,11 @@
 % a2-fluid-discretisation-differences), whose draft text is adapted below.
 
 The quasi-monolithic and partitioned couplings in solids4foam solve the same continuum problem with different fluid solvers (the coupled Newton solver \texttt{newtonIcoFluid} and the segregated pressure-correction solver \texttt{pimpleFluid}, referred to below by their role) and solid formulations (velocity and displacement), so their solutions should differ only by discretisation error and approach each other under refinement.
-This section states where the discretisations differ and tests this on a steady and a transient case.
+This subsection states where the discretisations differ and tests this on a steady and a transient case.
 It is a consistency check between two formulations that share much of their code, not an independent verification.
 
 %%--------------------------------------------------------------------------------------------------------------------%%
-\subsection{Differences between the discretisations}\label{sec:fluid_differences}
+\subsubsection{Differences between the discretisations}\label{sec:fluid_differences}
 %%--------------------------------------------------------------------------------------------------------------------%%
 % Adapted from the draft text at the end of A2. Changes: (i) the traction
 % difference (A2 item D6) is presented as an inconsistency that has been
@@ -63,7 +63,7 @@ On the elastic half-cylinder, whose wall is stationary in the converged state, t
 \end{table}
 
 %%--------------------------------------------------------------------------------------------------------------------%%
-\subsection{Channel flow over a cavity with a flexible bottom}\label{sec:cavity_m}
+\subsubsection{Channel flow over a cavity with a flexible bottom}\label{sec:cavity_m}
 % TIME-SCHEME NOTE (Philip, 22 Oct 2026), for anyone adding results here:
 % this case is steady (pseudo-time stepping), so the Euler scheme is acceptable
 % for the fluid ddt(U); record the ddt schemes of every run with the results.
@@ -155,7 +155,7 @@ With linear interpolation the quasi-monolithic $u_y$ converges at second order l
 The quasi-monolithic coupling needs 1.6--1.7 Newton iterations per step on every level with the same time step, whereas Aitken uses the tutorial's time step, halved with each level; even so, it costs 1.7 to 2.8 times as much as Aitken to reach steady state, the ratio falling as Aitken's time step falls with refinement.
 
 %%--------------------------------------------------------------------------------------------------------------------%%
-\subsection{Pulsatile compliant tube}\label{sec:womersley_consistency}
+\subsubsection{Pulsatile compliant tube}\label{sec:womersley_consistency}
 % TIME-SCHEME NOTE (Philip, 22 Oct 2026), for anyone adding results here:
 % all transient results in this paper must use BDF2 (backward) for the fluid
 % ddt(U) and the solid. The solids4foam tutorial default for this case is

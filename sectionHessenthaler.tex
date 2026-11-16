@@ -6,7 +6,7 @@
 % hessenthalerFsi validation driver; QM runs MeluXina philip-hvqm/runs/rF*_S2_
 % qm_b02LUST_T45 (build-bf697 = 517a44921 + #697 fix); partitioned runs UCD
 % Sonic /scratch/pcardiff/hv/P_rF*_LUST_b02 (206437983 + PR 676, 64896b0a5).
-\todo{Insert the QM closing-window values on rF1 and rF2 when the runs reach $t = 45\,\mathrm{s}$ (rF1 expected 17 Nov, rF2 about 22 Nov).}
+\todo{Insert the QM closing-window values on rF2 when the run reaches $t = 45\,\mathrm{s}$ (expected about 22 Nov).}
 
 The cases above are two-dimensional and have numerical references.
 The experiment of~\citet{Hessenthaler2017a} adds what they lack: a three-dimensional flow through a branching vessel geometry, a flap that deflects by a quarter of its length under combined buoyancy and flow, and measurements of the flap position and of the velocity field by magnetic resonance imaging (MRI) (Figure~\ref{fig:hessenthaler_3d}).
@@ -53,7 +53,7 @@ The tip deflection $u_y$ is averaged over $t = 40$--$45\,\mathrm{s}$, in which t
 		\midrule
 		rF0 & QM      & 122\,435 & $15.97$ ($15.86$--$16.05$) & $0.27$ & $5.2\%$ & 2.0 \\
 		    & IQN-ILS &          & $16.31$ ($16.28$--$16.32$) & $0.19$ & $5.1\%$ & 4.2 \\
-		rF1 & QM      & 312\,180 & $16.45^{\dagger}$          & --     & --      & 2.0 \\
+		rF1 & QM      & 312\,180 & $16.62$ ($16.62$--$16.62$) & $0.27$ & $5.0\%$ & 2.0 \\
 		    & IQN-ILS &          & $16.66$ ($16.64$--$16.68$) & $0.28$ & $4.9\%$ & 4.6 \\
 		rF2 & QM      & 832\,552 & --                         & --     & --      & 2.0 \\
 		    & IQN-ILS &          & $16.72$ ($16.72$--$16.72$) & $0.31$ & $5.0\%$ & $22.8^{\ddagger}$ \\
@@ -82,15 +82,17 @@ On rF2 the flap then becomes steady (the standard deviation of the tip deflectio
 Near a steady state the strict test, applied to relative interface residuals, thus stalls just above its tolerance while the solution no longer changes; this is a property of the convergence test rather than a loss of convergence, and a combined absolute and relative test may avoid it.
 % P_rF2 fsiResiduals: mean per 5 s window 4.1, 4.0, 4.0, 4.0, 4.0, 4.3, 4.5, 8.4, 22.8
 % (t = 0-45); residual at iteration 10 of the long late steps: median 2.1e-4.
-On rF0 the closing-window tip deflection is $15.97\,\mathrm{mm}$ with the quasi-monolithic coupling and $16.31\,\mathrm{mm}$ with IQN-ILS, $2.1\%$ apart; over $t = 5$--$10\,\mathrm{s}$, the window both couplings have reached on rF0 and rF1, the difference falls from $1.6\%$ on rF0 to $0.6\%$ on rF1 ($15.95$ against $16.21$, and $16.45$ against $16.55\,\mathrm{mm}$).
+Over the closing window the tip deflection is $15.97\,\mathrm{mm}$ with the quasi-monolithic coupling and $16.31\,\mathrm{mm}$ with IQN-ILS on rF0, $2.1\%$ apart, and $16.62$ against $16.66\,\mathrm{mm}$ on rF1, $0.25\%$ apart; on rF1 the quasi-monolithic flap is steady over this window, as the partitioned flap is on rF2.
+Over $t = 5$--$10\,\mathrm{s}$, a window that the quasi-monolithic run has also reached on rF2, the difference falls from $1.6\%$ on rF0 to $0.6\%$ on rF1 and $0.4\%$ on rF2 ($15.95$ against $16.21$, $16.45$ against $16.55$, and $16.46$ against $16.53\,\mathrm{mm}$).
 The couplings thus approach each other under refinement, as on the two-dimensional cases, where they differ by the discretisation differences of Section~\ref{sec:consistency_partitioned}, here in particular the velocity against the displacement solid and the mesh moved once per step against once per coupling iteration.
 The partitioned tip deflection converges monotonically, $16.31$, $16.66$ and $16.72\,\mathrm{mm}$ on rF0--rF2 over the closing window (changes of $0.36$ and $0.06\,\mathrm{mm}$; over $t = 20$--$25\,\mathrm{s}$, $16.21$, $16.61$ and $16.68\,\mathrm{mm}$): on rF0 the fluid-mesh error, about $2.5\%$ against rF2, exceeds the difference between the couplings, whereas on rF1 the two are of similar size ($0.4$ and $0.6\%$).
 The ratio of the two changes is larger than the refinement ratio of about $1.38$ predicts for second-order convergence, so the sequence is not yet in the asymptotic range and no order or extrapolation is given.
-\todo{Complete with the QM rF1 and rF2 closing-window values and, if the sequence is monotone, the observed order and the extrapolated deflection for both couplings.}
+Both deflections increase under refinement; the quasi-monolithic one, the lower on rF0, increases by $0.65\,\mathrm{mm}$ from rF0 to rF1 against $0.36\,\mathrm{mm}$ for the partitioned one, and so closes most of the gap between the couplings.
+\todo{Add the QM rF2 closing-window value and, if the sequences allow, the observed order for both couplings.}
 
 \paragraph{Comparison with the measurements.}
 On every mesh and with both couplings the tip deflection lies within $0.5\,\mathrm{mm}$ of the measured $16.41\,\mathrm{mm}$, and the mean centreline deviates from the MRI centreline by $0.2$--$0.3\,\mathrm{mm}$ RMS, less than a third of the MRI voxel size (Figure~\ref{fig:hessenthaler_results}b).
-The voxel-averaged velocities differ from the MRI velocities by $5\%$ of the inlet peak on average, with both couplings and on both meshes compared; the two couplings differ from each other by much less (Figure~\ref{fig:hessenthaler_results}c, d).
+The voxel-averaged velocities differ from the MRI velocities by $5\%$ of the inlet peak on average, with both couplings and on every mesh compared; the two couplings differ from each other by much less (Figure~\ref{fig:hessenthaler_results}c, d).
 The largest differences are at the jet cores, where both couplings predict $595\,\mathrm{mm/s}$ against the measured $731\,\mathrm{mm/s}$ on the plane $z = 10\,\mathrm{mm}$; since the couplings agree there to $1\%$, this difference belongs to the shared model (inflow profiles, geometry) or to the measurement, not to the coupling.
 % Jet-core voxel (z = 10, y = 25): MRI 730.5, QM rF0 594.8, IQN rF0 599.1, rF1 596.9 mm/s.
 The measured jet cores exceed the prescribed inflow peak of $630\,\mathrm{mm/s}$ by about $100\,\mathrm{mm/s}$, more than the stated MRI error of $0.05$ times the encoding velocity ($40\,\mathrm{mm/s}$ for $v_z$)~\citep{Hessenthaler2017a}, although the prescribed parabolic profiles carry the measured pump rate of $14.07\,\mathrm{l/min}$; \citet{Hessenthaler2017b} report qualitative agreement on these planes without comparing the peak velocities, so we do not attempt to resolve this difference here.

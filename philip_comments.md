@@ -188,3 +188,178 @@ this sentence (and text before this) is too long and difficult to follow.
 
 Comments until the end of Section 3.3 are above
 
+Comments below are on the paper at commit cf30173 from Section 3.3 onwards
+
+"using the cell-centred velocity gradient, vS,P + (xf−xP)·(∇0vS)P; using the cell-centre value directly would give a
+first-order interface velocity."
+The English seems a bit clunky as it uses "using the" twice in a row
+
+"and the interface acceleration is the BDF2 difference (with the time scheme of the fluid velocity) of the interface velocity in Equation (34)"
+I find it hard to follow the English of this clause.
+
+"The interface pressure, which gives the solid traction, is then extrapolated from the adjacent cell using this gradient."
+This sounds like the solid traction comes entirely from fluid pressure (without viscous stresses); this should be clearer.
+Also, here, the point is that Eq 35 is used to extrapolate the pressure to the fluid interface - i think this point is not sufficiently emphasised or made clear - maybe just put "(Eq 35)" after "this gradient".
+
+Several sentences start with the word "Because": we should avoid this.
+
+"this is the boundary-face form of the diffusion term in Equation (25), which has no non-orthogonal correction on boundary faces."
+Why do we neglect non-orthogonal correction here? I think this expression may still be 2nd order if grad(v) at the cell centre P is used. I am not suggesting we re-run all cases but this may warrant an investigation and potentially a comment or note here (and maybe a proposed improvement in solids4foam via an issue). Actually, the tangential gradient at the wall is already effectively calculated via Eq 37 in the q term - it seems like a similar construct could be used to correct the normal viscous term. Having said all of this, it seems that we already get 2nd order behaviour, although this may be because our near-wall mesh becomes orthogonal in the limit of mesh refinement.
+
+In Eq 18, we use "\outer" for an outer product between vectors, but in Eq 37 we do not use \outer between the two n vectors - we need to check all equations use one consistent notation for outer products between vectors (and other vector-tensor operations); i probably prefer to keep the \outer but I am happy to follow the common conventions.
+
+In Eq 37, there is a "G dot n": should this be "n dot G" per OpenFOAM convention? Check the code.
+
+"and the normal derivative of the normal velocity is taken from continuity"
+Can we be clearer here? Is there an expression we can give or refer to?
+
+"The same value enters the wall flux of the transpose term in the momentum residual,"
+I am a bit unclear here - are we saying that all internal cells/faces also use some form of Eq 37 - I dont think so but this sentence is confusing me.
+
+"Because εf is the discrete rate of the prediction error, its contributions from
+successive steps cancel except for the most recent ones, so the volume that crosses the wall relative
+to the mesh stays of the order of the current prediction error and does not accumulate"
+I dont actually understand this argument - maybe the text is fine, but if there is an easy way to help me understand, it would be good, e.g. maybe additional sentences explaining it in a different way.
+
+"Setting the relative flux in the convective term to zero on the interface omits εfvf, which is of the same
+order."
+Are we saying this as a hypothetical (i.e. are we saying "if we set ...") or is this what we actually do? This is unclear to me in the current text.
+
+"Optionally, a conservative transfer distributes the fluid face forces to the solid faces with the transpose of the velocity transfer in Equation (38),"
+Here I am a but unsure of how this is different from Eq 38 - the only difference I can see is that we interpolate force instead of traction - I am not sure where the "transpose of the velocity transfer" appears. Maybe the text is fine or maybe it can be clearer but either way I need to understand this better. This is related with the subsequent explanation about power balancing.
+
+"For the geometrically nonlinear solid, this requires the interface traction to be applied on the undeformed area"
+This sounds like a limitation but i think it is not - i suspect we are just saying this is required in the implementation; but this could be clearer.
+
+"The other non-conformal interfaces, those of Turek–Hron FSI3,
+the Hessenthaler flap and the walls of the collapsible-channel order study of Section 7.3, use AMI
+with traction interpolation"
+A reader might wonder why we use conservative interpolation is some cases and not in the others - in fact, why do we?
+I am not suggesting we re-run cases but some brief explanation is needed. Also, a reader may wonder if we compared then which we did - although I am not sure if it is shown in the paper (or an appendix - which may be more appropriate).
+
+"The displacement that moves the fluid mesh (Section 3.6) is transferred with the same face
+weights for the face values and with the point transfer of the interface mapping for the mesh points."
+I am really struggling to understand this sentence.
+
+"and a step length sk"
+Is sk really a step length? Is that standard terminology? To me, ∆Uk already contains a length (and a direction) while sk is like a damping or under-relaxation factor.
+
+"with the default differencing parameter of PETSc"
+double check we definitely use the default scaling in every case as I vaguely remember us trying different perturbations when debugging convergence.
+
+"Used as the Newton operator itself,"
+Is this self-explanatory? Do we need to explicitly say that we mean if a non-Jacobian-free approach is used?
+I am wary that the reader may not understand what we mean.
+
+"By default sS is the average over the solid cells of 1/(µS∆t), evaluated once with the initial time step and not updated
+when the time step is adapted, and sF = 1; sF = 10^8 in all the cases of this work."
+This sounds like we are saying that the default value of sF in solids4foam is 1 but this is an irrelevant (and confusing) detail, in particular if we actually use 10^8 everywhere in the current work. It would be better to just say what we use in the current work. Separately, if 10^8 is what we used for all cases then it seems like it should be the default - i suggest we make a solids4foam issue for this, which may also note that the effect of this scaling needs more examination.
+Back to the paper, a reader may wonder where the 10^8 value comes from - i suspect it is linked in some way to the ratio of stiffness between the solid and fluid approximately - but as I said this may not be optimised and may warrant more investigation for solids4foam (but maybe not in the paper if cases seem to work).
+
+"The solid factor sS takes its default value in every case."
+Once again, the reader does not care about the defaults in solids4foam - just say what we used in this work.
+
+Fig 2: the fluid pressure block says it uses "BoomerAMG" while the solid block says "direct (LU) or AMG": we should be consistent and say BoomerAMG or AMG not mix both.
+Related to this, Fig 2 is great but it introduces several PETSc-specific terms which someone unfamilar with PETSc would be confused by - our options are (a) to define these in the caption or (b) express them in a non-PETSc way, or (c) use approach (b) but also in brackets mention the PETSc-specific term names so people can track the actual option used.
+
+3.5.1 Field-split preconditioner
+
+"The tutorial settings use ..."
+The reader does not care about solids4foam tutorials or their settings => descriptions should focus on the work in the paper and options we have used. But it is fine to state the relative merits of the two solids preconditioner options - you may even point the reader to Cardiff et al. [61] which examined this in detail.
+Also, double check we actually do use the "redundant" option in all cases in Sections 4-6 as opposed to block Jacobi + LU - and also check the boomerAMG cases are correct.
+
+
+3.6 Fluid mesh motion
+
+"These constant-step coefficients are used also when the time step is adapted, so the prediction
+is then not second-order accurate;"
+I think it is a bad idea to refer to options not explored in this work. In fact, maybe we should just not mention adaptive time steps at all since we dont use them here (check earlier where we also mention them).
+
+"The campaign build (Section 4.1) instead ..."
+I dont think we should talk about campaign builds - instead, stick the methods description - if we tried two methods, then fine we can describe both and note their merits and comment on any tests we performed.
+Also, here I am confused as to which method we actually used in the paper.
+And for "and the order-3 FSI3 errors on the level-1 flag by less than 0.01%." I dont even know what "order-3" means - and am wondering if mentioning these errors here make sense - maybe it does.
+
+"with a solid model of solids4foam used as the mesh motion solver"
+I dont really like the way this is stated, since up to this point, we have not mentioned any solids4foam code/class names.
+
+Is the mesh motion method correct here? In our latest code, I dont think we store the initial fluid mesh - maybe the current description is correct but please check it.
+
+"a total Lagrangian neo-Hookean pseudo-solid for the cavity and the half-cylinder; and a total Lagrangian hyperelastic pseudo-solid weighted by δ for the collapsible channel"
+why are we saying both "a total Lagrangian neo-Hookean pseudo-solid" and "a total Lagrangian hyperelastic pseudo-solid" as neo-Hookean is hyperelastic too and this sounds like we have a different hyperelastic law (if so state it).
+Also, we introduce the linear elastic pseudo solid but just say we also use a TL form without even saying anythign about it - at least, we should note that it is like Eq 48 but TL form.
+
+"On the refined Turek–Hron meshes of Section 6.1, the partitioned couplings accept only a pseudo-solid assembled on the current mesh"
+This sounds like a limitation of our implementation or tutorial setup => describe in terms of what methods we used.
+
+"starts from a second-order Taylor extrapolation of the mesh displacement rather "
+extrapolated from where to where? this is unclear.
+
+"with q= 1 or 2 and, by default, cmin = 0.1 and cmax = 100;"
+once again, state what we used - not what solids4foam uses as a default
+
+I am not sure all of these case-specific details should appear in this section since we have yet to introduce the cases. Would it make more sense to define the options used in the cases themselves? I am not sure what would be clearest.
+
+"but the coupled solve currently requires every process to own fluid cells,"
+Is this true? If so, it is a bug of our current implementation and an issue should be filed.
+Eitherway, this need not be mentioned here - I wonder if the resulting chosen decomposition strategy explains less than ideal scaling in some of our cases.
+
+"the two-dimensional runs decompose the regions independently with the method of the tutorial"
+do not refer to solids4foam tutorials - describe what is done in this work.
+
+Algorithm 1 has "(for a possible retry)." but we do not describe or demonstrate retries in this work - i suggest we remove this. Lines 7-14 describe the same retry method but we do not describe or demonstrate it - we should remove this from the paper.
+
+4 Verification and consistency
+
+"Sections 4 to 7 assess the method on the cases of Table 1 under the common protocol of Section 4.1."
+It seems strange to introduce sections 4-7 from within section 4; as in, it feels like this introduction should be outside section 4 - having said that, I am not sure how else we would do it - we could make 4-7 as subsections of one large section 4 but i dont think that is nice either. so maybe it is fine. just my thoughts.
+
+Table 1: should we addd a citation beside oomph-lib and FeatFlow. Similarly we should cite them both when first mentioned in the text.
+"partitioned" vs "partitioned, same meshes" vs "partitioned, same levels" - are these all the same? It is not clear to me (or presumably a reader) how they differ.
+
+"campaign build v2.2-1808,"
+I am not sure where this code comes from but the "v2.2" could confusingly suggest we are using v2.2 of solids4foam as opposed to a derivative of v2.4. But ok we will fix all of this before submission.
+
+"The half-cylinder runs of Section 6.2 use a later build of the same branch (2935daa53)"
+we should double check this is actually true - as in, do we actually use a different build.
+
+Give a citation for Meluxina.
+
+"stalls on the shared file system make it 11–39% larger and spread it by up to 34% between repeats"
+Hmnn, can we re-run these cases? Surely stalls are uncommon and we can avoid such a statement with a rerun.
+
+"The mesh study of Section 6.2 was run on a workstation,"
+Why do we not give CPU details for this workstation whereas we give CPU details for Melxuina?
+
+"or timed out" what does that mean here? does it mean it ran out of slum queue time? if so, a reader will just say run it again and increase the time!
+
+4.2 Ring added-mass problem
+
+Is it confusing that we use mu for added mass? and also for shear modulus (or maybe we have a subscript there)
+
+Why did we pick "µ= 0.101, 1.008 and 10.08" as opposed to 0.1, 1.0 and 10? They seem like strange numbers.
+
+"The wet frequency error, the wet/dry ratio error, the amplitude loss per period and
+iteration counts; IQN-ILS and Robin–Neumann are run on the same meshes and steps for the
+iteration counts and timings."
+The English does not seem correct here - it seems like it is half finished notes.
+
+"within 0.004 percentage points at every time step "
+Why do we say "percentage points" here but just use "%" just before this?
+Also, this sentence is very long with many clauses - consider breaking it up and making it easier to read.
+
+Table 2: what does "one process." mean in the caption? does this mean run in serial? If so, say that and maybe "one process" in brackets or something like that.
+
+
+4.3 Pulsatile compliant tube
+
+"the pimpleFluid option fluxConsistentPatches" I am not sure we should mention this solids4foam-specific option here.
+
+Table 3: it seems strange/wrong to mention "(build 1252bd2e5)" here.
+
+"The timings of these runs were taken on a shared node and are not reported."
+Would it be expensive to generate true timings here?
+Based on the iterations, it seems like the monolithic approach will be faster.
+
+
+Comments up to just before section "4.4 Effect of the interface treatment"

@@ -9,7 +9,7 @@
 % paper-data/a1_monolithic_study_inventory.md).
 % Stream feeding this section: R1.
 
-The method is assessed in this and the following three sections on the cases of Table~\ref{tab:case_overview}, all under the common protocol of Section~\ref{sec:protocol}.
+The method is assessed in this and the following two sections on the cases of Table~\ref{tab:case_overview}, all under the common protocol of Section~\ref{sec:protocol}.
 This section verifies the method against two exact solutions, uses them to examine the interface treatment of Section~\ref{sec:numerical_methods}, and then compares the quasi-monolithic and partitioned solutions on matched meshes (Section~\ref{sec:consistency_partitioned}).
 
 \begin{table}[htbp]
@@ -29,7 +29,7 @@ This section verifies the method against two exact solutions, uses them to exami
 		Turek--Hron FSI3 & \ref{sec:fsi3_m} & work--precision & Featflow \\
 		Elastic half-cylinder & \ref{sec:blob_m} & temporal accuracy & self-convergence \\
 		Pressure-pulse tube (3-D) & \ref{sec:scaling_3d} & parallel scaling, preconditioner & partitioned (same meshes) \\
-		Flexible flag in air (3-D) & \ref{sec:lim_foil} & time-step limit & partitioned (same meshes) \\
+		Hessenthaler flap (3-D) & \ref{sec:hessenthaler_m} & accuracy against experiment, cost & experiment~\citep{Hessenthaler2017a} \\
 		\bottomrule
 	\end{tabular}
 \end{table}
@@ -41,7 +41,7 @@ This section verifies the method against two exact solutions, uses them to exami
 % Source of the protocol: campaign/HANDOFF.md (origin/campaign/handoff),
 % Section 4 "Common protocol" and Section 6 "Data formats".
 
-The results in Sections~\ref{sec:verification_exact} to~\ref{sec:limitations} were computed with development versions of solids4foam, to be released as \tbd{release tag}, built with OpenFOAM v2512, PETSc 3.22 or 3.24 and HYPRE~\citep{hypre}; in every comparison except the Hessenthaler flap (Section~\ref{sec:hessenthaler_m}) both couplings use the same version, and the version of each run is recorded with its data (see Provenance below).
+The results in this paper were computed with development versions of solids4foam, to be released as \tbd{release tag}, built with OpenFOAM v2512, PETSc 3.22 or 3.24 and HYPRE~\citep{hypre}; in every comparison except the Hessenthaler flap (Section~\ref{sec:hessenthaler_m}) both couplings use the same version, and the version of each run is recorded with its data (see Provenance below).
 The differences between these versions that affect the quasi-monolithic method are stated where they apply (the interface displacement transfer and the assembly of the mesh-motion pseudo-solid, Section~\ref{sec:fluid_mesh_motion} and Table~\ref{tab:mesh_motion_settings}).
 % Source: provenance.json of the 6b runs (Mx 5402592).
 The quasi-monolithic coupling is compared with the partitioned Dirichlet--Neumann coupling accelerated by Aitken relaxation or IQN-ILS and with Robin--Neumann coupling~\citep{Tukovic2018b}, with the partitioned schemes and settings of the companion paper~\citep{CardiffFSIVerification2026} for each case.
@@ -106,7 +106,7 @@ A ring of mean radius $a = 1\,\mathrm{m}$ and thickness $h = 0.1\,\mathrm{m}$ (p
 The fluid densities $\rho_f = 14$, $140$ and $1400\,\mathrm{kg/m^3}$ give added-mass ratios (the ratio of the added mass of the fluid to the modal mass of the ring~\citep{CardiffFSIVerification2026}) of $m^{*} = 0.101$, $1.008$ and $10.08$, the weak, moderate and strong levels; round densities were chosen rather than round ratios.
 A dry ring is run with each mesh and time step.
 The solid is the geometrically linear velocity solid with the standard second-order discretisation, and the interface is conformal.
-Meshes are refined by factors 1, 2 and 4 at 100 steps per period, and 25 to 100 steps per period are used on the factor-2 mesh; the fluid and the solid both use the second-order backward (BDF2) scheme.
+The meshes are structured block meshes generated with the OpenFOAM utility \texttt{blockMesh}~\citep{Weller1998}, refined by factors 1, 2 and 4 at 100 steps per period, and 25 to 100 steps per period are used on the factor-2 mesh; the fluid and the solid both use the second-order backward (BDF2) scheme.
 Figure~\ref{fig:ring_field_m} shows the pressure of the $n = 2$ mode at the strong added-mass level.
 
 \begin{figure}[htbp]
@@ -118,7 +118,7 @@ Figure~\ref{fig:ring_field_m} shows the pressure of the $n = 2$ mode at the stro
 % Field image: mafinal4-ram-qm-strong-m2-n100, final time; figures/scripts/paraview/ring_field.py.
 
 \paragraph{Measured.}
-The quantities measured are the error of the wet frequency, the error of the wet/dry frequency ratio, the amplitude loss per period, and the iteration counts and times.
+We measure the error of the wet frequency, the error of the wet/dry frequency ratio, the amplitude loss per period, and the iteration counts and times.
 IQN-ILS and Robin--Neumann are run on the same meshes and time steps for comparison.
 
 \begin{figure}[htbp]
@@ -197,14 +197,14 @@ Figure~\ref{fig:womersley_field_m} shows the axial velocity and the wall displac
 % Field image: mafinal4-wom-qm-m2-n200, t = 300 s (only saved time); figures/scripts/paraview/wom_field.py.
 
 \paragraph{Set-up.}
-The tube of the companion paper is used unchanged ($h/R = 0.1$, $L/R = 15$, Womersley number $5.01$, $\rho_s h/(\rho_f R) = 0.1$), with exact travelling-wave data at both ends and exact initial fields, on a wedge mesh.
+The tube of the companion paper is used unchanged ($h/R = 0.1$, $L/R = 15$, Womersley number $5.01$, $\rho_s h/(\rho_f R) = 0.1$), with exact travelling-wave data at both ends and exact initial fields, on a structured axisymmetric wedge mesh generated with \texttt{blockMesh}.
 Meshes are refined by factors 1, 2 and 4 at 200 steps per period, and 50 to 400 steps per period are used on the factor-2 mesh.
 First Fourier coefficients over periods 5--6 are compared with the exact solution; the fluid and the solid both use BDF2, and the Newton tolerances are tightened to $10^{-8}$ (Krylov $10^{-6}$) so that the iterative error is negligible.
 The partitioned runs of the companion paper need a flux-consistent treatment of the tube ends to recover second order in time; the quasi-monolithic runs reach it without one (Table~\ref{tab:womersley_m}).
 
 \paragraph{Measured.}
-Errors and observed orders in space and time of the quantities in Table~\ref{tab:womersley_m}, and the Newton, Krylov and partitioned coupling iterations.
-The difference between the couplings is discussed in Section~\ref{sec:womersley_consistency}.
+We measure the errors and observed orders in space and time of the quantities in Table~\ref{tab:womersley_m}, together with the Newton and Krylov iterations of the quasi-monolithic coupling and the coupling iterations of the partitioned couplings.
+The differences between the quasi-monolithic and partitioned solutions are discussed in Section~\ref{sec:womersley_consistency}.
 
 % Data: evidence/m-runs-a-rfix:paper-data/campaign/m-runs-a-rfix/qois.csv (build 1252bd2e5, R-fix);
 % orders from successive differences of the values. Velocity-profile row: reduced-amplitude
@@ -247,7 +247,8 @@ These runs were not timed under the protocol of Section~\ref{sec:protocol}, so t
 % an option on the tag and informative. Routes and run sets from audit A4
 % (paper-data/a4_ablation_reproducibility.md, Sections 1 and 7).
 
-Two ingredients of the interface treatment of Section~\ref{sec:interface_conditions} can be switched by an option and are examined on the ring problem, whose exact solution attributes any change to the ingredient removed.
+For two ingredients of the interface treatment of Section~\ref{sec:interface_conditions} a simpler alternative is common: the interface pressure can be given a zero normal gradient instead of the gradient from the normal momentum equation, and the load can be transferred between non-conforming interface meshes by interpolating the traction instead of by the conservative transfer.
+Each pair of approaches is compared here on the ring problem, whose exact solution attributes any change in the result to the approach compared.
 
 \paragraph{Interface pressure.}
 The normal pressure gradient of Equation~\eqref{eqn:interface_pressure_gradient} is replaced by a zero normal gradient on the interface, with everything else unchanged, including the face extrapolation of the solid velocity.
@@ -266,12 +267,12 @@ The moderate and strong levels are run on mesh factors 1, 2 and 4 at 100 steps p
 \end{figure}
 
 With a zero normal pressure gradient the ratio error converges at first order, observed orders 0.74 and 0.88 at the moderate level and 0.75 and 0.89 at the strong level, and is 300 to 600 times larger on the factor-4 mesh than with the normal-momentum gradient ($0.059\%$ and $0.108\%$, against $9\times10^{-5}\%$ and $4\times10^{-4}\%$; Figure~\ref{fig:ring_pressure_condition}a).
-The zero gradient also damps the coupled vibration: the amplitude loss per period exceeds that of the dry ring by $1.3$, $0.66$ and $0.34$ percentage points at the moderate level and by $2.3$, $1.2$ and $0.65$ at the strong level on the three meshes, halving with each refinement, whereas with the normal-momentum gradient they differ by at most $0.08$ percentage points (Figure~\ref{fig:ring_pressure_condition}b).
-A zero gradient is consistent only for a stationary interface; on a moving interface it omits the pressure gradient that accelerates the fluid with the wall, the added-mass effect itself, consistent with an error that grows with the added mass and falls at first order with the size of the interface-adjacent cells.
-The interface pressure treatment thus controls the damping of the coupled vibration as well as its frequency.
+The zero gradient also damps the coupled vibration: the amplitude loss per period exceeds that of the dry ring by $1.3$, $0.66$ and $0.34\%$ of the amplitude at the moderate level and by $2.3$, $1.2$ and $0.65\%$ at the strong level on the three meshes, halving with each refinement, whereas with the normal-momentum gradient the wet and dry losses differ by at most $0.08\%$ of the amplitude (Figure~\ref{fig:ring_pressure_condition}b).
+On a moving interface a zero gradient omits the normal pressure gradient that accelerates the fluid with the wall, which is the added-mass effect itself; the error accordingly grows with the added mass and falls at first order with the size of the cells next to the interface.
+The interface pressure condition therefore strongly influences both the frequency and the damping of the coupled vibration.
 
 \paragraph{Non-conformal transfer.}
-The ring is computed with solid interface meshes coarser and finer than the fluid interface mesh, coupled through the AMI weights, once with interpolated traction and once with the conservative transfer of Equation~\eqref{eqn:conservative_transfer}.
+The ring is computed with solid interface meshes coarser and finer than the fluid interface mesh, coupled through the AMI weights, once with the traction interpolated from the fluid to the solid faces and once with the conservative transfer of Equation~\eqref{eqn:conservative_transfer}, which transfers face forces with the transpose of the velocity interpolation.
 % A4 Section 7: Allverify --study nonconformal (factors 1/2/4 x solid
 % interface {conformal, coarser, finer} at 100 steps per period), once with
 % conservativeTractionTransfer no and once yes, with
@@ -290,14 +291,17 @@ The total interface force transferred is logged on both sides of the interface a
 \end{figure}
 
 With the conservative transfer the total force on the solid equals that of the fluid to round-off, with a relative imbalance below $3\times10^{-15}$ at every step, mesh and level (Figure~\ref{fig:ring_nonconformal}a).
-With interpolated traction the imbalance is $3$--$9\times10^{-5}$ and does not decrease with refinement, but it is not an error of the transfer: on the factor-2 and factor-4 meshes it equals that of the conformal direct map to within $10\%$ ($2$--$3\times10^{-5}$ at the strong level, $5$--$8\times10^{-5}$ at the moderate level), and arises because the linear-geometry solid integrates the traction over its undeformed face areas and the fluid over the deformed faces.
-The choice of transfer does not affect the frequency ratio at the reported precision: the interpolated and conservative results differ by at most $2.6\times10^{-5}$ relative on every mesh and level, and on the factor-4 mesh the ratio error on a non-conformal interface is $1.9\times10^{-5}$ or less, against $4\times10^{-6}$ or less on the conformal interface (Figure~\ref{fig:ring_nonconformal}b).
+With interpolated traction the imbalance is $3$--$9\times10^{-5}$ and does not decrease with refinement.
+This imbalance is geometric rather than an error of the interpolation.
+The solid is geometrically linear, so its mesh does not move and the traction is integrated over the undeformed solid faces, whereas the fluid mesh moves with the interface and the fluid force is integrated over the deformed faces.
+The same imbalance therefore appears on a conformal interface with a direct face-to-face map, to within $10\%$ on the factor-2 and factor-4 meshes ($2$--$3\times10^{-5}$ at the strong level, $5$--$8\times10^{-5}$ at the moderate level).
+The conservative transfer removes it by construction, because it transfers forces rather than tractions, so the force balance alone does not compare the accuracy of the two transfers on this case.
+The frequency ratio does, and it is unaffected by the choice of transfer at the reported precision: the interpolated and conservative results differ by at most $2.6\times10^{-5}$ relative on every mesh and level, and on the factor-4 mesh the ratio error on a non-conformal interface is $1.9\times10^{-5}$ or less, against $4\times10^{-6}$ or less on the conformal interface (Figure~\ref{fig:ring_nonconformal}b).
+On this case the benefit of the conservative transfer is thus its exact force balance, not a gain in accuracy.
 
-Two further ingredients cannot be switched off in the released code, so their effect is quoted from the solids4foam commits that introduced them rather than rerun: removing a one-step lag of the interface force in the velocity solid reduced the amplitude loss per period of the ring at 100 steps per period from $2.0$, $10.6$ and $18.3\%$ to $0.17$, $0.71$ and $1.26\%$ (weak, moderate, strong), and evaluating the viscous traction as the momentum wall flux rather than from the deviatoric stress raised the observed spatial order of the blobInTreacle displacement, a stationary-wall case, from $1.4$ to $2.0$.
-% Sources: ringAddedMass/verification/README.md "Defects found by this
-% study" and commit messages dcbe04505 -> c008e8dd1 (force lag, both states
-% with zeroGradient interface pressure); blobInTreacle/verification/README.md
-% lines 203-208, states 0698d55cd -> dbfda65ba (traction only). A4 Sections
-% 2 and 3a. Numbers recorded at those commits, not rerun from the tag.
-% Decision (Philip, 31 Oct 2026): quoting these historical pairs is approved, and the
-% stationary-wall qualification stays.
+Although not shown here, two further ingredients were found to be important during the development of the method: the interface force must enter the velocity solid at the current iterate rather than lagged by one step, which otherwise increased the amplitude loss per period of the ring more than tenfold, and the viscous traction must be evaluated consistently with the discrete viscous wall flux of the fluid momentum equation, which otherwise lowered the observed spatial order of the steady half-cylinder displacement of Section~\ref{sec:blob_m}.
+% Sources: ringAddedMass/verification/README.md "Defects found by this study" and commits
+% dcbe04505 -> c008e8dd1 (force lag: loss 2.0/10.6/18.3% -> 0.17/0.71/1.26%, zeroGradient
+% interface pressure in both states); blobInTreacle/verification/README.md lines 203-208,
+% 0698d55cd -> dbfda65ba (order 1.4 -> 2.0). Philip (17 Nov 2026): state as lessons, not as
+% quoted commits.

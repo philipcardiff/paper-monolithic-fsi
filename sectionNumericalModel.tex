@@ -91,7 +91,7 @@ The rate of change volume integral in the fluid momentum equation is approximate
     {2\Delta t}.
     \label{eqn:moving_mesh_bdf2_time_term}
 \end{equation}
-Equation~\eqref{eqn:moving_mesh_bdf2_time_term} and the other BDF2 expressions in this section are written for a constant time step; the implementation uses the variable-step BDF2 coefficients if the time step changes (Section~\ref{sec:jfnk_solution}), but every run of this paper uses a constant time step.
+Equation~\eqref{eqn:moving_mesh_bdf2_time_term} and the other BDF2 expressions in this section are written for a constant time step, which every run of this paper uses.
 
 The same approximation is applied to the rate of change term in the solid momentum equation, but can be simplified, as the integration is performed over the initial (unchanging) reference volume:
 \begin{equation}
@@ -388,7 +388,7 @@ The fluid pressure on the interface is a prescribed-gradient (Neumann) condition
     \label{eqn:interface_pressure_gradient}
 \end{equation}
 where the viscous terms, including the transpose part, are evaluated in the fluid cell $P$ adjacent to the interface face $f$, as in the momentum residual.
-The interface acceleration $(\partial\bb{v}/\partial t)_f$ is the time derivative of the interface velocity of Equation~\eqref{eqn:mapped_solid_velocity}, computed with the BDF2 scheme used for the fluid velocity.
+The interface acceleration $(\partial\bb{v}/\partial t)_f$ is the time derivative of the interface velocity of Equation~\eqref{eqn:mapped_solid_velocity}, computed with the time scheme of the fluid velocity.
 The convective term does not appear, as the fluid moves with the wall.
 The interface pressure is then extrapolated from the adjacent cell centre with the gradient of Equation~\eqref{eqn:interface_pressure_gradient}; together with the viscous stress, it gives the fluid force on the solid (Equation~\eqref{eqn:interface_fluid_traction}).
 The gradient contains the interface acceleration, so this condition carries the added-mass effect of the fluid on the solid; with it, the interface pressure and the added mass are second-order accurate in space, whereas a zero normal pressure gradient on the interface is first order.
@@ -413,8 +413,9 @@ The fluid force on interface face $f$ is
 where $p$ is the kinematic pressure and $(\bb{\nabla}\bb{v})^{\perp}_f = (\bb{v}_f - \bb{v}_P)/(\hat{\bb{n}}_f \cdot \bb{d}_f)$ is the compact face-normal gradient of the velocity, with $\bb{d}_f$ here the vector from the centre of the adjacent cell $P$ to the face centre; this is the boundary-face form of the diffusion term in Equation~\eqref{eqn:fluid_momentum_residual}.
 As usual in OpenFOAM, no non-orthogonal correction is applied on boundary faces.
 The omitted correction, $-\bb{k}_f\cdot\bb{\nabla}\bb{v}/(\hat{\bb{n}}_f\cdot\bb{d}_f)$ with $\bb{k}_f = \bb{d}_f - (\hat{\bb{n}}_f\cdot\bb{d}_f)\,\hat{\bb{n}}_f$ the tangential offset of the cell centre from the face normal, contains only tangential derivatives of the velocity.
-It vanishes where the cells next to the wall are orthogonal to it, as on the undeformed ring and pulsatile-tube meshes on which the spatial orders of Sections~\ref{sec:ring_m} and~\ref{sec:womersley_m} are measured; on non-orthogonal near-wall cells it could be evaluated with the wall surface gradient $\bb{G}_f$ introduced below, which is not done here.
-The second viscous part, $\bb{q}_f$, is the wall value of the transpose part of the viscous stress, $\nu\,\hat{\bb{n}}_f \cdot \mathrm{dev}_2[(\bb{\nabla}\bb{v})^T]_f$, which vanishes on a stationary or rigidly moving no-slip wall but not on a deforming one (Section~\ref{sec:fluid_differences}).
+It vanishes where the cells next to the wall are orthogonal to it, as on the ring and pulsatile-tube meshes on which the spatial orders of Sections~\ref{sec:ring_m} and~\ref{sec:womersley_m} are measured (orthogonal when undeformed and nearly so under their small deformations).
+On non-orthogonal near-wall cells it is of the order of the tangent of the non-orthogonality angle times the tangential velocity derivative, so on a deforming wall it does not vanish under refinement unless the near-wall non-orthogonality does; it could be evaluated with the wall surface gradient $\bb{G}_f$ introduced below, which is not done here.
+The second viscous part, $\bb{q}_f$, is the wall value of the transpose part of the viscous stress, $\nu\,\hat{\bb{n}}_f \cdot \mathrm{dev}_2[(\bb{\nabla}\bb{v})^T]_f$, which vanishes on a stationary or uniformly translating no-slip wall but not on a deforming one (Section~\ref{sec:fluid_differences}).
 Rather than from the boundary value of the cell-centred gradient, whose tangential derivatives would carry the near-wall error of the cell velocities, it is evaluated from the wall velocity itself,
 \begin{equation}
     \bb{q}_f
@@ -428,18 +429,18 @@ Rather than from the boundary value of the cell-centred gradient, whose tangenti
     \label{eqn:interface_transpose_traction}
 \end{equation}
 where $\bb{G}_f$ is the surface gradient of the wall velocity, $(\bb{G}_f)_{ij} = \partial v_j/\partial x_i$ for tangential directions $i$, from an inverse-square-distance weighted least-squares fit over the neighbouring faces of the wall.
-With this (OpenFOAM) convention, $\bb{G}_f\cdot\hat{\bb{n}}_f = \hat{\bb{n}}_f\cdot\bb{G}_f^T$ is the tangential gradient of the normal wall velocity, which is the tangential part of $\hat{\bb{n}}_f\cdot(\bb{\nabla}\bb{v})^T$.
+With this (OpenFOAM) convention, $\bb{G}_f\cdot\hat{\bb{n}}_f = \hat{\bb{n}}_f\cdot\bb{G}_f^T$, the tangential derivatives of the velocity component along the (fixed) face normal, is the tangential part of $\hat{\bb{n}}_f\cdot(\bb{\nabla}\bb{v})^T$.
 The normal part, $\hat{\bb{n}}_f\cdot(\bb{\nabla}\bb{v})^T\cdot\hat{\bb{n}}_f = \partial v_n/\partial n$, cannot be fitted from wall values; it is taken from continuity, $\bb{\nabla}\cdot\bb{v} = \mathrm{tr}(\bb{G}_f) + \partial v_n/\partial n = 0$, which gives the second term, $\partial v_n/\partial n = -\mathrm{tr}(\bb{G}_f)$ (the deviatoric operator has no effect, as the trace of $\bb{\nabla}\bb{v}$ vanishes).
 The fit is zero for a rigid translation, also on a curved wall, and exact for a linearly varying wall velocity on any face spacing.
 On the boundary faces with a prescribed velocity (the interface, walls and inlets), the same $\bb{q}_f$ is also the boundary-face flux of the transpose viscous term in the momentum residual, Equation~\eqref{eqn:fluid_momentum_residual}; on interior faces that term uses the interpolated cell-centred gradient as usual.
-The viscous part of Equation~\eqref{eqn:interface_fluid_traction} is therefore exactly the boundary flux of the viscous terms of the discrete momentum equation, and the force applied to the solid is the momentum that the fluid loses through the interface.
+The viscous part of Equation~\eqref{eqn:interface_fluid_traction} is therefore exactly the boundary flux of the viscous terms of the discrete momentum equation, so the fluid force passed to the transfer below is the momentum that the fluid loses through the interface; whether the solid receives exactly this force depends on the transfer.
 
 \paragraph{Mass flux.}
 On the interface, the relative (ALE) flux in the convective term is set to zero, consistent with the no-slip condition, while the flux in the continuity equation, Equation~\eqref{eqn:fluid_pressure_residual}, is the absolute flux of the interface velocity, $\bb{\Gamma}_f \cdot \bb{v}^{\Gamma}_f$, i.e.\ the same flux that would convect momentum.
 The mesh, however, is moved to the predicted interface position $\bb{D}_S^{n,*}$ (Section~\ref{sec:fluid_mesh_motion}), not to the position given by the converged solid velocity, so the wall flux $\bb{\Gamma}_f\cdot\bb{v}^\Gamma_f$ differs from the mesh flux $\phi^\Gamma_f$ of Equation~\eqref{eqn:gcl_swept_volume} by $\varepsilon_f = \bb{\Gamma}_f\cdot\bb{v}^\Gamma_f - \phi^\Gamma_f$, the volume per unit time that crosses the wall relative to the mesh.
 With the solid displacement updated by BDF2 from the converged velocity, $\varepsilon_f$ is the BDF2 rate of the prediction error $\bb{e}^{n} = \bb{D}_S^{n} - \bb{D}_S^{n,*} = O(\Delta t^3)$, to leading order $\varepsilon_f^n \approx \bb{\Gamma}_f\cdot(3\bb{e}^{n} - 4\bb{e}^{n-1} + \bb{e}^{n-2})/(2\Delta t)$, so $\varepsilon_f = O(\Delta t^2)$.
-The coefficients $3$, $-4$ and $1$ sum to zero, so the sum over the steps telescopes: the total volume that has crossed the wall after $n$ steps is $\Delta t\sum_{m\le n}\varepsilon_f^m \approx \bb{\Gamma}_f\cdot(3\bb{e}^{n} - \bb{e}^{n-1})/2$, i.e.\ of the order of the two most recent prediction errors, not of their sum.
-Put differently, the mesh face lags or leads the solid wall only by the current prediction error, since each step's prediction starts again from the corrected solid displacement, and this gap does not grow with time.
+The coefficients $3$, $-4$ and $1$ sum to zero, so the sum over the steps telescopes: for a slowly varying face area vector and with the Euler first step (Section~\ref{sec:fv_discretisation}), the total volume that has crossed the wall after $n$ steps is $\Delta t\sum_{m\le n}\varepsilon_f^m \approx \bb{\Gamma}_f\cdot(3\bb{e}^{n} - \bb{e}^{n-1} - \bb{e}^{1})/2$, i.e.\ of the order of the two most recent prediction errors plus a fixed start-up contribution, not of the sum of all the errors.
+Put differently, apart from the start-up, the mesh face lags or leads the solid wall only by the current prediction error, since each step's prediction starts again from the corrected solid displacement, and this gap does not grow with time (Appendix~\ref{app:interface_flux}).
 The relative flux in the convective term is nevertheless set to zero on the interface, as stated above; this neglects a convective flux $\varepsilon_f \bb{v}_f$ of the same order, $O(\Delta t^2)$.
 The measured mismatch and leakage, given in Appendix~\ref{app:interface_flux}, fall with the time step at the expected rate and do not accumulate.
 
@@ -477,7 +478,7 @@ In practice the logged total interface force balances to round-off (Section~\ref
 For the geometrically nonlinear solid, the transferred force is therefore applied as a nominal traction on the reference face areas, which the total Lagrangian solid uses directly, rather than as a Cauchy traction on the deformed areas $|\bb{\Gamma}^n_s|$ of Equation~\eqref{eqn:face_force}; this is an implementation choice that keeps the applied force equal to $\bb{f}_{S,s}$, not a restriction of the method.
 
 The conservative transfer is used in the non-conformal ring study of Section~\ref{sec:interface_comparison}, for the $640\times8$ solid of the collapsible channel (Section~\ref{sec:robustness_collapsible}) and for the walls of the collapsible-channel order study of Section~\ref{sec:lim_thin_solid}.
-The other non-conformal interfaces, those of Turek--Hron FSI3 and the Hessenthaler flap, use AMI with traction interpolation, as do the partitioned couplings with which these two cases are compared, so that the two couplings differ only in how they couple; the remaining cases have conformal interfaces and use the direct map.
+The other non-conformal interfaces, those of Turek--Hron FSI3 and the Hessenthaler flap, use AMI with traction interpolation, as do the partitioned couplings with which these two cases are compared, so that the traction transfer is not an additional difference between the couplings; the remaining cases have conformal interfaces and use the direct map.
 The two transfers are compared directly only on the ring, where they give frequency ratios that differ by at most $2.6\times10^{-5}$ relative (Section~\ref{sec:interface_comparison}).
 
 %%--------------------------------------------------------------------------------------------------------------------%%
@@ -516,10 +517,10 @@ The Jacobian is not assembled; its action on a Krylov vector $\bb{w}$ is the fin
 with the differencing parameter $\epsilon = e_r\sqrt{1+\|\bb{\mathcal{U}}_k\|}/\|\bb{w}\|$ of PETSc~\citep{PETSc}, $e_r$ being the square root of the machine precision, in every case; the residual is the scaled one (see below).
 The residual evaluation of Section~\ref{sec:discrete_coupled_residual} thus defines the Newton operator.
 The assembled approximate Jacobian $\tilde{\bb{J}}$ of Section~\ref{sec:approximate_block_preconditioner} is used only as the preconditioning matrix; it affects the convergence of the linear iterations but not the converged solution.
-If $\tilde{\bb{J}}$ replaced $\bb{J}$ in Equation~\eqref{eqn:newton_linear_system}, i.e.\ an assembled approximate Newton method instead of the Jacobian-free one, the convergence would be only linear (Section~\ref{sec:tube3d_pc_study}); in every result of this paper $\tilde{\bb{J}}$ is used only for preconditioning.
+If $\tilde{\bb{J}}$ replaced $\bb{J}$ in Equation~\eqref{eqn:newton_linear_system}, i.e.\ an assembled approximate Newton method instead of the Jacobian-free one, the convergence would be only linear, as shown for comparison in Section~\ref{sec:tube3d_pc_study}; in all other results $\tilde{\bb{J}}$ is used only for preconditioning.
 
 The Krylov solver is restarted LGMRES with left preconditioning, stopped at a relative reduction of the preconditioned linear residual; since the first Newton iteration of a step is limited by the nonlinearity, a tighter linear tolerance only adds Krylov iterations, each costing one residual evaluation.
-The Newton iteration stops when either the coupled residual norm, relative to its value at the start of the step, or the Newton step norm, relative to the current iterate, falls below its tolerance: $10^{-6}$ for both, with a Krylov tolerance of $10^{-4}$ and the full step $s_k = 1$, in every case except the flag of Section~\ref{sec:lim_foil} ($10^{-4}$ and a backtracking line search; Table~\ref{tab:solver_settings}).
+The Newton iteration stops when either the coupled residual norm, relative to its value at the start of the step, or the Newton step norm, relative to the current iterate, falls below its tolerance: $10^{-6}$ for both, with a Krylov tolerance of $10^{-4}$ and the full step $s_k = 1$, in every case except the flag of Section~\ref{sec:lim_foil} ($10^{-4}$ and a backtracking line search) and the pulsatile-tube and half-cylinder temporal studies ($10^{-8}$, Krylov $10^{-6}$; Table~\ref{tab:solver_settings}); Section~\ref{sec:tube3d_pc_study} varies these settings on the three-dimensional tube.
 
 \paragraph{System scaling.}
 The fluid residuals are written per unit fluid density (kinematic pressure), whereas the solid residual is a force, so the two blocks can differ in magnitude by many orders.
@@ -529,7 +530,7 @@ In every case, $s_F = 10^{8}$ and $s_S$ is the average over the solid cells of $
 The value of $s_F$ was set empirically, once, and not tuned for any case; its effect on the iteration counts was not studied systematically.
 
 \paragraph{Jacobian lagging.}
-$\tilde{\bb{J}}$ and the preconditioner are rebuilt at every Newton iteration, except on the three-dimensional tube and the Hessenthaler flap, where they are reused for eight Newton iterations and across time steps, which reduces the cost without changing the converged solution.
+$\tilde{\bb{J}}$ and the preconditioner are rebuilt at every Newton iteration, except on the three-dimensional tube and the Hessenthaler flap, where they are reused for eight Newton iterations and across time steps, which reduces the cost without changing the converged solution (Section~\ref{sec:tube3d_pc_study} compares the two on the tube).
 Every run uses a constant time step, and a failed nonlinear solve stops the run.
 
 
@@ -707,7 +708,7 @@ For the linear elastic law, each fluid cell $P$ satisfies
 \end{equation}
 where the superscript $n-1$ denotes the geometry of $\Omega_F^{n-1}$, $\mu^\Gamma$ and $\lambda^\Gamma$ are artificial stiffnesses and $\delta$ an optional dimensionless stiffness weight.
 Since the geometry changes from step to step, the mesh obtained for a given interface position depends weakly on how the interface reached it; this affects the solution only through the discretisation error.
-The pulsatile-tube runs of Section~\ref{sec:womersley_m} were made with an earlier implementation that assembled Equation~\eqref{eqn:mesh_motion_pseudo_solid} on a fixed copy of the initial mesh; for the small wall displacements of that linear test, the two differ by terms of second order in the displacement.
+The earliest results, those of the pulsatile tube (Sections~\ref{sec:womersley_m} and~\ref{sec:womersley_consistency}), the ring pressure-condition study (Section~\ref{sec:interface_comparison}), the robustness maps of Section~\ref{sec:robustness} and the flag of Section~\ref{sec:lim_foil}, were computed with an earlier implementation that assembled Equation~\eqref{eqn:mesh_motion_pseudo_solid} on a fixed copy of the initial mesh, which makes the mesh independent of the path of the interface; the two forms move the mesh differently but solve the same flow equations on it, so they differ only in the discretisation error.
 The second law is a compressible neo-Hookean pseudo-solid, with the stress of the solid of Section~\ref{sec:blob_m} multiplied by $\delta$ and the deformation gradient formed from the gradient of $\bb{D}^{\Gamma}$ on the same mesh, $\bb{F} = \bb{I} + (\bb{\nabla}^{n-1}\bb{D}^{\Gamma})^T$; it tolerates larger mesh deformations than the linear law.
 With this law, the Newton iteration of the pseudo-solid starts from a linear extrapolation in time of the mesh displacement, $\bb{D}^{\Gamma,n-1} + \Delta t\,(\partial\bb{D}^{\Gamma}/\partial t)^{n-1}$, with the rate from the BDF2 difference of the three previous mesh displacements, rather than from $\bb{D}^{\Gamma,n-1}$; this keeps the first iterate from folding the cells next to the interface when the interface moves by more than their height in one step (Section~\ref{sec:robustness_collapsible}).
 

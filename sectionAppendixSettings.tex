@@ -60,7 +60,7 @@ The pseudo-solid has a shear modulus $\mu^\Gamma = 1$ and a bulk modulus of $3$ 
 	Law: linear elastic (Equation~\eqref{eqn:mesh_motion_pseudo_solid}) or neo-Hookean pseudo-solid, the latter started from the extrapolated displacement.
 	Weight: none ($\delta = 1$) or the inverse-distance weight $\delta$ with exponent $q$ towards the boundaries named, computed once from the initial mesh or recomputed on the current mesh at every step.
 	Interface: transfer of the interface displacement, face values with point transfer (faces) or point transfer with face values averaged from the points (points).
-	The pseudo-solid is assembled on the mesh of the previous step in every case except the pulsatile tube (a fixed copy of the initial mesh).}
+	The pseudo-solid is assembled on the mesh of the previous step, except in the earlier runs listed in Section~\ref{sec:fluid_mesh_motion} (a fixed copy of the initial mesh).}
 	\label{tab:mesh_motion_settings}
 	\begin{tabular}{lllll}
 		\toprule

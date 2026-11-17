@@ -1,0 +1,17 @@
+generator ht_mesh_gmsh2.py
+h_body 0.0008
+grow 0.06
+h_band 0.0035
+x_band 1.5
+h_max 0.008
+bl_y1 0.0003
+bl_ratio 1.22
+bl_thick 0.004
+w_y1 0.0004
+w_ratio 1.22
+w_thick 0.008
+h_wall 0.0025
+tip_y1 0.0003
+level 2
+scale 0.707107
+# s 0.707107; collar T 0.004: 10 layers, first 0.0002121, ratio 1.13482; corner block wall ratios 1.0781/1.0861; tangential uniform: cylinder half 254, flag 608, end half 11 (+10 graded at each tip corner); tip corner 10 x 10, first 0.0003, ratio 1.06245, tip parts 7; wall strip 0.008: 12 layers, first 0.0002828, ratio 1.14593, 1414 along

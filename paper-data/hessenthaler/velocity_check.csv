@@ -1,0 +1,10 @@
+# Hessenthaler Phase I, t = 40-45 s, all 272 MRI voxels in the computed fluid: mean |v_model - v_MRI| / 630 mm/s with the
+# model velocity (i) averaged over each 1.302 x 1.302 x 6 mm voxel (4 x 4 x 12 sub-samples) and (ii) pointwise at the voxel
+# centre (mean of the 2 x 2 x 2 innermost sub-samples, within 0.16 mm in-plane and 0.25 mm axially); jet = |y| >= 15 mm;
+# flux = sum of v_z x 25 mm^2 over the 5 mm MRI grid (l/min), prescribed pump rate 14.07 l/min
+run,d_mean_voxel,d_mean_point,vz_point_minus_voxel_mean_abs,vz_point_minus_voxel_max_abs,flux_z10_model,flux_z10_mri,flux_z30_model,flux_z30_mri,jetflux_ratio_mri_model_z10,jetflux_ratio_mri_model_z30
+QM_rF0,0.0521,0.0520,0.69,10.47,14.24,15.26,14.34,15.51,1.160,1.151
+QM_rF1,0.0500,0.0499,0.42,3.71,14.17,15.26,14.30,15.51,1.159,1.135
+P_rF0,0.0506,0.0504,0.62,5.47,14.20,15.26,14.35,15.51,1.159,1.147
+P_rF1,0.0492,0.0491,0.37,5.22,14.18,15.26,14.24,15.51,1.163,1.150
+P_rF2,0.0496,0.0494,0.36,3.13,14.14,15.26,14.25,15.51,1.163,1.143

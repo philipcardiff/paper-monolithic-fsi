@@ -26,7 +26,7 @@ Table~\ref{tab:solver_settings} lists the settings of the quasi-monolithic runs 
 		\midrule
 		Ring & BDF2  & lin. & lin.  & LG & 0.5 & DM & $10^{-6}$ & $10^{-4}$ & upper, LU & -- \\
 		Pulsatile tube & BDF2  & lin. & lin.  & LG & 0.5 & DM & $10^{-6}$\textsuperscript{f} & $10^{-4}$\textsuperscript{f} & upper, LU & -- \\
-		Cavity & Euler\textsuperscript{a} & LUD & skew\textsuperscript{b} & TL & 0.1 & DM & $10^{-6}$ & $10^{-4}$ & upper, LU & -- \\
+		Cavity & Euler\textsuperscript{a} & LUD & lin.\textsuperscript{b} & TL & 0.1 & DM & $10^{-6}$ & $10^{-4}$ & upper, LU & -- \\
 		Collapsible channel & BDF2  & lin. & lin.  & TL & 0.1 & AMI\textsuperscript{d} & $10^{-6}$ & $10^{-4}$ & upper, LU & -- \\
 		Turek--Hron FSI3 & BDF2  & LUD  & skew  & TL & 0.5 & AMI & $10^{-6}$ & $10^{-4}$ & upper, LU & -- \\
 		% Hessenthaler row: MeluXina philip-hvqm/runs/rF0_S2_qm_b02LUST_T45 system/fvSolution
@@ -41,7 +41,7 @@ Table~\ref{tab:solver_settings} lists the settings of the quasi-monolithic runs 
 	\par\smallskip
 	\parbox{0.95\linewidth}{\footnotesize
 	\textsuperscript{a}~Steady target: only the steady state is compared, and no temporal order is claimed.
-	\textsuperscript{b}~Also run with linear interpolation (Section~\ref{sec:cavity_m}).
+	\textsuperscript{b}~Also run with skewness-corrected linear interpolation (Section~\ref{sec:cavity_m}).
 	\textsuperscript{d}~With conservative traction transfer: the $640\times8$ solid mesh of Section~\ref{sec:robustness_collapsible} and the walls of the order study of Appendix~\ref{app:high_order_solid}.
 	\textsuperscript{e}~The temporal study of Section~\ref{sec:blob_m} uses $10^{-8}$ and $10^{-6}$.
 	\textsuperscript{f}~The runs of Sections~\ref{sec:womersley_m} and~\ref{sec:womersley_consistency} use $10^{-8}$ and $10^{-6}$.

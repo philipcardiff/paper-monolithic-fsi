@@ -189,7 +189,7 @@ With $\bb{\Gamma}_f = |\bb{\Gamma}_f|\, \hat{\bb{n}}_f$ and $\bb{d}_f = \bb{x}_{
     \label{eqn:fluid_momentum_residual}
 \end{eqnarray}
 where the relative flux $\phi^\mathrm{rel}_f$ of Equation~\eqref{eqn:relative_flux} is formed with the face velocity $\bb{v}_f$, which is also used in the continuity flux below, and $\widetilde{\bb{v}}_f$ is the convected face velocity defined below.
-The face velocity $\bb{v}_f$ is interpolated linearly between the two cells sharing the face; in the cases marked in Table~\ref{tab:solver_settings} a skewness correction is added, $\bb{v}_f = \bb{v}_f^{\mathrm{lin}} + \bb{s}_f \cdot (\bb{\nabla}\bb{v})_f$, where the linear value $\bb{v}_f^{\mathrm{lin}}$ is that at the point where the line joining the two cell centres crosses the face, $\bb{s}_f$ is the vector from that point to the face centre and $(\bb{\nabla}\bb{v})_f$ is the linearly interpolated least-squares cell gradient, which restores second-order accuracy on skewed meshes.
+The face velocity $\bb{v}_f$ is interpolated linearly between the two cells sharing the face; in the cases marked in Table~\ref{tab:solver_settings} a skewness correction is added, $\bb{v}_f = \bb{v}_f^{\mathrm{lin}} + \bb{s}_f \cdot (\bb{\nabla}\bb{v})_f$, where the linear value $\bb{v}_f^{\mathrm{lin}}$ is that at the point where the line joining the two cell centres crosses the face, $\bb{s}_f$ is the vector from that point to the face centre and $(\bb{\nabla}\bb{v})_f$ is the linearly interpolated Gauss cell gradient; the correction removes the leading interpolation error caused by the skewness of the mesh.
 The first face term is the compact orthogonal part of the viscous flux and the second its non-orthogonal correction, with
 \begin{equation}
     \bb{k}_f

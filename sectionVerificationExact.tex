@@ -269,7 +269,7 @@ The moderate and strong levels are run on mesh factors 1, 2 and 4 at 100 steps p
 
 With a zero normal pressure gradient the ratio error converges at first order, observed orders 0.74 and 0.88 at the moderate level and 0.75 and 0.89 at the strong level, and is 300 to 600 times larger on the factor-4 mesh than with the normal-momentum gradient ($0.059\%$ and $0.108\%$, against $9\times10^{-5}\%$ and $4\times10^{-4}\%$; Figure~\ref{fig:ring_pressure_condition}a).
 The zero gradient also damps the coupled vibration: the amplitude loss per period exceeds that of the dry ring by $1.3$, $0.66$ and $0.34\%$ of the amplitude at the moderate level and by $2.3$, $1.2$ and $0.65\%$ at the strong level on the three meshes, halving with each refinement, whereas with the normal-momentum gradient the wet and dry losses differ by at most $0.08\%$ of the amplitude (Figure~\ref{fig:ring_pressure_condition}b).
-On a moving interface a zero gradient omits the normal pressure gradient that accelerates the fluid with the wall, which is the added-mass effect itself; the error accordingly grows with the added mass and falls at first order with the size of the cells next to the interface.
+On a moving interface the normal momentum equation gives a pressure gradient that accelerates the fluid with the wall; a zero gradient neglects it when the pressure is extrapolated to the interface, so the interface pressure, and with it the added-mass force on the solid, carries an error proportional to the wall acceleration and to the size of the cells next to the interface, which grows with the added mass and falls at first order under refinement.
 The interface pressure condition therefore strongly influences both the frequency and the damping of the coupled vibration.
 
 \paragraph{Non-conformal transfer.}
@@ -293,12 +293,12 @@ The total interface force transferred is logged on both sides of the interface a
 
 With the conservative transfer the total force on the solid equals that of the fluid to round-off, with a relative imbalance below $3\times10^{-15}$ at every step, mesh and level (Figure~\ref{fig:ring_nonconformal}a).
 With interpolated traction the imbalance is $3$--$9\times10^{-5}$ and does not decrease with refinement.
-This imbalance is geometric rather than an error of the interpolation.
-The solid is geometrically linear, so its mesh does not move and the traction is integrated over the undeformed solid faces, whereas the fluid mesh moves with the interface and the fluid force is integrated over the deformed faces.
+This imbalance is dominated by a geometric mismatch rather than by the interpolation.
+The solid is geometrically linear, so the interpolated traction is integrated over the undeformed solid face areas without conversion to the deformed configuration, whereas the fluid mesh moves with the interface and the fluid force is integrated over the deformed faces.
 The same imbalance therefore appears on a conformal interface with a direct face-to-face map, to within $10\%$ on the factor-2 and factor-4 meshes ($2$--$3\times10^{-5}$ at the strong level, $5$--$8\times10^{-5}$ at the moderate level).
 The conservative transfer removes it by construction, because it transfers forces rather than tractions, so the force balance alone does not compare the accuracy of the two transfers on this case.
-The frequency ratio does, and it is unaffected by the choice of transfer at the reported precision: the interpolated and conservative results differ by at most $2.6\times10^{-5}$ relative on every mesh and level, and on the factor-4 mesh the ratio error on a non-conformal interface is $1.9\times10^{-5}$ or less, against $4\times10^{-6}$ or less on the conformal interface (Figure~\ref{fig:ring_nonconformal}b).
-On this case the benefit of the conservative transfer is thus its exact force balance, not a gain in accuracy.
+The frequency ratio does, and the two transfers give nearly the same result: the interpolated and conservative ratios differ by at most $2.6\times10^{-5}$ relative on every mesh and level, neither being systematically closer to the exact value, and on the factor-4 mesh the ratio error on a non-conformal interface is $1.9\times10^{-5}$ or less, against $4\times10^{-6}$ or less on the conformal interface (Figure~\ref{fig:ring_nonconformal}b).
+On this case the benefit of the conservative transfer is thus its exact force balance; no systematic gain in accuracy is observed.
 
 Although not shown here, two further ingredients were found to be important during the development of the method: the interface force must enter the velocity solid at the current iterate rather than lagged by one step, which otherwise increased the amplitude loss per period of the ring more than tenfold, and the viscous traction must be evaluated consistently with the discrete viscous wall flux of the fluid momentum equation, which otherwise lowered the observed spatial order of the steady half-cylinder displacement of Section~\ref{sec:blob_m}.
 % Sources: ringAddedMass/verification/README.md "Defects found by this study" and commits

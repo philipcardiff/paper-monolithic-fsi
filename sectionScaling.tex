@@ -87,12 +87,11 @@ Newton needs two iterations at every step on every level, as expected for this l
 \subsubsection{Strong scaling}\label{sec:tube3d_scaling}
 %%--------------------------------------------------------------------------------------------------------------------%%
 
-Level 2 is run on 1, 2, 4, 8, 16, 32 and 64 processes and level 3 on 16, 32, 64 and 128 processes, over a fixed window of 50 steps restarted from $t = 5\,\mathrm{ms}$, with both couplings.
-All runs use one exclusive MeluXina node (two 64-core AMD EPYC 7H12 processors, eight NUMA domains of 16 cores), one run at a time, with the processes pinned to consecutive cores; the time reported is the median elapsed time of three repeats, excluding the first step.
-\todo{Replace with the rerun timings (no output during the timed window): spread of the repeats, \tbd{X}\%, and elapsed against CPU time, \tbd{Y}\%; then update the efficiencies and cost ratios below and in Figure~\ref{fig:tube3d_scaling}.}
-% Current (pre-rerun) data: file-system stalls spread the repeats by up to 34 %
-% and made the elapsed time 11-39 % larger than the CPU time; the efficiencies
-% from the medians agreed with those from the CPU time to within 0.02.
+Level 2 is run on 1, 2, 4, 8, 16, 32 and 64 processes and level 3 on 16, 32, 64 and 128 processes, over a fixed window of 50 steps restarted from $t = 5\,\mathrm{ms}$, with both couplings on the same meshes.
+All runs use one exclusive MeluXina node (two 64-core AMD EPYC 7H12 processors, eight NUMA domains of 16 cores), one run at a time, with the processes pinned to consecutive cores; the time reported is the median elapsed time of three repeats (five for the quasi-monolithic coupling on level 3), excluding the first step.
+The case files are held in node-local memory during the runs: timings that include shared file-system access can vary by tens of per cent between repeats, which should be avoided when comparing solvers.
+The repeats then agree within $7\%$ ($15\%$ for the quasi-monolithic coupling on level 3), the elapsed time exceeds the CPU time by $6$--$12\%$, and the efficiencies from the elapsed and CPU times agree within $0.03$.
+% Rerun 17 Nov 2026: paper-data/tube3d_scaling_rerun (README), 18.1 node-h, 74 runs.
 The fluid and solid regions are decomposed together (Section~\ref{sec:implementation_details}) into axial slabs ($1\times1\times N$ subdomains), which give every process fluid and solid cells, with a load imbalance of at most $6\%$ in the fluid cells and $20\%$ in the solid cells; a partition weighting the combined fluid and solid work was not tested.
 The solid block is preconditioned by one BoomerAMG V-cycle instead of the exact LU factorisation replicated on every process, which dominates the cost on the finer meshes (Section~\ref{sec:tube3d_pc_study}).
 
@@ -102,15 +101,15 @@ Time per step, parallel efficiency, Newton iterations per step and Krylov iterat
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=\textwidth]{figures/3dTube-strong-scaling}
-	\caption{Three-dimensional tube, single-node strong scaling over a 50-step window: (a) elapsed time per step, with ideal scaling from 16 processes (dotted) and the processes of one NUMA domain shaded; (b) parallel efficiency relative to 16 processes; (c) Krylov iterations per Newton iteration of the quasi-monolithic coupling. Medians of three repeats.}
+	\caption{Three-dimensional tube, single-node strong scaling over a 50-step window: (a) elapsed time per step, with ideal scaling from 16 processes (dotted) and the processes of one NUMA domain shaded; (b) parallel efficiency relative to 16 processes; (c) Krylov iterations per Newton iteration of the quasi-monolithic coupling. Medians of three repeats (five for the quasi-monolithic coupling on level 3).}
 	\label{fig:tube3d_scaling}
 \end{figure}
 
-Within one NUMA domain neither coupling scales well: on level 2 the time per step falls only 3.9-fold (quasi-monolithic) and 6.1-fold (Robin--Neumann) from 1 to 16 processes, whereas going to 32 processes, which adds a second domain's memory channels, roughly halves it for both (Figure~\ref{fig:tube3d_scaling}a).
+Within one NUMA domain neither coupling scales well: on level 2 the time per step falls only 3.6-fold (quasi-monolithic) and 5.0-fold (Robin--Neumann) from 1 to 16 processes, whereas going to 32 processes, which adds a second domain's memory channels, roughly halves it for both (Figure~\ref{fig:tube3d_scaling}a).
 This is consistent with both solvers being memory-bandwidth limited within a domain, although not confirmed by profiling; the efficiency is therefore measured from 16 processes, one full domain.
-On level 3 the quasi-monolithic coupling keeps an efficiency of 1.10 and 1.09 on 32 and 64 processes and 0.78 on 128 processes, about 8000 fluid cells per process, against 1.07, 1.15 and 0.87 for Robin--Neumann; on level 2 it falls to 0.70 on 64 processes, about 2000 fluid cells per process, against 0.80.
+On level 3 the quasi-monolithic coupling keeps an efficiency of 1.08 and 1.05 on 32 and 64 processes and 0.81 on 128 processes, about 8000 fluid cells per process, against 1.08, 1.16 and 0.88 for Robin--Neumann; on level 2 it falls to 0.71 on 64 processes, about 2000 fluid cells per process, against 0.76.
 The Krylov iterations per Newton iteration do not change with the process count (18.0--18.6 on level 2 from 1 to 64 processes, 27.2--27.5 on level 3 from 16 to 128), and Newton converges in two iterations per step throughout, so neither the block-Jacobi ILU(0) velocity block nor the BoomerAMG solid block degrades under partitioning; the somewhat lower efficiency than Robin--Neumann lies in the cost per Krylov iteration.
-The quasi-monolithic coupling costs 3.2 times as much as Robin--Neumann on level 3 with 16 processes and 3.6 times with 128 (3.0 and 3.3 in CPU time), and 1.2 to 2.1 times on level 2 from 1 to 64 processes: with its Robin interface condition the partitioned coupling needs only about three coupling iterations per step here, so on the tube a well-tuned partitioned coupling is cheaper.
+The quasi-monolithic coupling costs 3.2 times as much as Robin--Neumann on level 3 with 16 processes and 3.5 times with 128 (3.1 and 3.4 in CPU time), and 1.2 to 2.1 times on level 2 from 1 to 64 processes: with its Robin interface condition the partitioned coupling needs only 3.1 (level 3) to 4.1 (level 2) coupling iterations per step here, so on the tube a well-tuned partitioned coupling is cheaper.
 
 %%--------------------------------------------------------------------------------------------------------------------%%
 \subsubsection{Effect of the preconditioner and Jacobian settings}\label{sec:tube3d_pc_study}

@@ -12,6 +12,6 @@ pressure-correction solver's interpolation), against Aitken on levels 1-4.
   runs on L2-L4 (jobs 5406163, 5406302) to all printed digits.
 - **Cost to steady state:** the first time after which u_y(A) stays within 1e-4 (relative) of its final value,
   times the median ClockTime of the three repeats, pro rata over the steps (as for Aitken, timing_ma_summary.md):
-  QM 77.7 / 330 / 1834 / 7133 s; Aitken 27.0 / 144.9 / 1062 / 4459 s; ratio 2.9 / 2.3 / 1.7 / 1.6. Measured
+  QM 77.7 / 330 / 1834 / 7133 s; Aitken 27.0 / 144.8 / 1062 / 4459 s; ratio 2.9 / 2.3 / 1.7 / 1.6. Measured
   directly from the logs, the QM time to steady state is 101 / 423 / 2329 / 9489 s (the early steps cost more),
   so the pro-rata estimate understates the cost of both couplings.

@@ -143,23 +143,23 @@ The cost is the elapsed time until $u_y$(A) stays within $10^{-4}$ (relative) of
 		2 & $-0.231303$ & $-0.231456$ & $+0.066$ & $-5.23435$ & $-5.23915$ & $+0.092$ & 1.65 & 5.0 & 2.3 \\
 		3 & $-0.238402$ & $-0.238403$ & $+0.0004$ & $-5.25642$ & $-5.25660$ & $+0.0034$ & 1.64 & 4.6 & 1.7 \\
 		4 & $-0.240134$ & $-0.240118$ & $-0.0067$ & $-5.26044$ & $-5.26008$ & $-0.0068$ & 1.66 & 4.2 & 1.6 \\
-		Extrap. & $-0.240711$ & $-0.240690$ & $-0.0087$ & $-5.26177$ & $-5.26124$ & $-0.010$ & & & \\
+		Extrap. & $-0.240711$ & $-0.240690$ & $-0.0090$ & $-5.26177$ & $-5.26124$ & $-0.010$ & & & \\
 		\bottomrule
 	\end{tabular}
 \end{table}
 
 The two couplings approach each other under refinement (Table~\ref{tab:cavity_m}).
 The difference in $u_y$(A) falls from $0.48\%$ on level 1 to $0.066\%$ on level 2 and below $0.01\%$ on levels 3 and 4, where it changes sign, and that in $F_y$ from $0.60\%$ to $-0.0068\%$ on level 4.
-Both couplings converge at second order between levels 2, 3 and 4, with ratios of successive changes in $u_y$ of 4.10 for the quasi-monolithic coupling and 4.05 for Aitken, and their extrapolated values agree to $0.009\%$ in $u_y$ and $0.010\%$ in $F_y$.
-On the two finest levels the remaining difference is below $0.01\%$, of the size expected of the $O(h^2)$ differences of Table~\ref{tab:discretisation_differences}.
+Between levels 2, 3 and 4 both couplings converge at second order in $u_y$, with ratios of successive changes of 4.10 for the quasi-monolithic coupling and 4.05 for Aitken, and at observed orders of 2.5 and 2.3 in $F_y$; their extrapolated values agree to $0.009\%$ in $u_y$ and $0.010\%$ in $F_y$.
+On the two finest levels the remaining difference is below $0.01\%$ and changes sign, so no rate of decrease can be formed from it.
 If the quasi-monolithic coupling uses the skewness-corrected interpolation in the continuity flux instead (described after Equation~\eqref{eqn:fluid_momentum_residual}), the two couplings no longer discretise the continuity flux in the same way, and the difference in $u_y$(A) falls more slowly, from $0.47\%$ on level 1 to $0.055\%$ on level 4.
 % Skewness-corrected QM values: timing-ma tm-cav-qm-L{1..4} (a421f063d): u_y -0.203601/-0.231044/-0.238200/-0.239986.
 
 The quasi-monolithic coupling needs 1.6--1.7 Newton iterations per step at $\Delta t = 0.5\,\mathrm{s}$ on every level, and Aitken 4.2--5.0 coupling iterations per step at its smaller steps.
 Both reach the steady state at about the same pseudo-time: $u_y$(A) is within $10^{-4}$ of its final value after $167\,\mathrm{s}$ with the quasi-monolithic coupling and after $155$--$174\,\mathrm{s}$ with Aitken, so the different solid time integration and time steps change the time to steady state little.
-Even so, the quasi-monolithic coupling costs 1.6 to 2.9 times as much as Aitken to reach the steady state, the ratio falling with refinement as Aitken's time step falls: a quasi-monolithic step, whose Newton iterations each need 25--90 Krylov iterations, costs 2.7 to 13 times as much as an Aitken step.
+Even so, the quasi-monolithic coupling costs 1.6 to 2.9 times as much as Aitken to reach the steady state, the ratio falling with refinement as Aitken's time step falls: a quasi-monolithic step, whose Newton iterations need 25--89 Krylov iterations on average, costs 2.7 to 13 times as much as an Aitken step.
 Aitken is used here because it is the partitioned coupling of the companion paper for this case.
-IQN-ILS or Robin--Neumann coupling would probably need fewer coupling iterations per step and so cost less, but would converge to the same partitioned solution, since the iterative errors of both couplings are below the differences reported.
+IQN-ILS or Robin--Neumann coupling would probably need fewer coupling iterations per step and so cost less, but would converge to the same partitioned solution, to within the coupling tolerance.
 
 %%--------------------------------------------------------------------------------------------------------------------%%
 \subsubsection{Pulsatile compliant tube}\label{sec:womersley_consistency}

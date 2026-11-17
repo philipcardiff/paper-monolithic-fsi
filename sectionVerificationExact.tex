@@ -60,8 +60,9 @@ Where no independent reference exists, the two couplings are compared on the sam
 \paragraph{Cost.}
 Timings are taken on exclusive nodes of the MeluXina supercomputer~\citep{MeluXina} (two 64-core AMD EPYC 7H12 processors per node, with eight NUMA domains of 16 cores), each run on a single node with the processes pinned to consecutive cores.
 Unless stated otherwise, the cost is the median over three repeats of the elapsed (wall-clock) time of a fixed window of time steps run from a restart, excluding start-up; the solver CPU time of the first process is recorded for reference.
-On these nodes the elapsed time exceeds the CPU time by 1--4\% except in the strong-scaling study, where stalls on the shared file system make it 11--39\% larger and spread it by up to 34\% between repeats (Section~\ref{sec:tube3d_scaling}).
-Times from runs on shared nodes, such as those of the robustness study of Section~\ref{sec:robustness}, the half-cylinder mesh study of Section~\ref{sec:blob_m} and the order studies of Section~\ref{sec:lim_thin_solid}, are indicative only and are identified as such with the results.
+On these nodes the elapsed time exceeds the CPU time by 1--4\%.
+% TODO: the 3-D tube strong-scaling timings are being rerun without file-system stalls; add a statement here if needed.
+Times from runs on shared nodes, such as those of the robustness study of Section~\ref{sec:robustness}, the half-cylinder mesh study of Section~\ref{sec:blob_m} and the order studies of Appendix~\ref{app:high_order_solid}, are indicative only and are identified as such with the results.
 Newton and Krylov iterations (quasi-monolithic) and coupling iterations (partitioned) are extracted from the solver logs.
 Timings from different machines are never compared.
 

@@ -24,7 +24,7 @@ It is a consistency check between two formulations that share much of their impl
 % partitioned mesh motion velocityLaplacian, quadratic inverseDistance; QM solids4foamSolidModel.
 
 The two couplings share the solid discretisation, including the face interpolation of the stresses and the solid stabilisation, and the form of the interface traction, including the transpose part of the viscous stress (Section~\ref{sec:interface_conditions}).
-For the linear solid they also share the time integration: the BDF2 velocity formulation with BDF2 kinematics is algebraically identical to the BDF2 second time derivative of the displacement solid.
+They also share the time integration when both use BDF2: the BDF2 velocity formulation with BDF2 kinematics is algebraically identical to the BDF2 second time derivative of the displacement solid, for the linear and the nonlinear solid alike.
 They differ in the fluid and at the interface (Table~\ref{tab:discretisation_differences}).
 In the fluid, the Newton solver adds the Rhie--Chow stabilisation to the continuity residual and builds the continuity flux from the interpolated velocity that also convects momentum, whereas the pressure-correction solver imposes continuity on the flux corrected by the pressure equation.
 At the interface they differ in the pressure condition, the source of the wall velocity and the fluid mesh motion.
@@ -60,7 +60,7 @@ Every difference in Table~\ref{tab:discretisation_differences} is a consistent d
 		\addlinespace
 		Mesh motion & pseudo-solid on the total displacement; mesh moved once per step, to the predicted interface displacement & Laplacian on the velocity, incremental; mesh moved in every coupling iteration & different interior meshes, $O(h^2)$; $O(\Delta t^2)$ in time; none at steady state \\
 		\addlinespace
-		Solid time integration & BDF2 on velocity & BDF2 on displacement (pulsatile tube); Euler (cavity) & none for the linear solid; none at steady state \\
+		Solid time integration & BDF2 on velocity & BDF2 on displacement (pulsatile tube); Euler (cavity) & none with BDF2 in both (tube); none at steady state (cavity) \\
 		\addlinespace
 		Convergence test & Newton residual and step tolerances & coupling tolerance, strict test (Section~\ref{sec:protocol}) & iterative; kept below the discretisation differences \\
 		\bottomrule

@@ -363,3 +363,266 @@ Based on the iterations, it seems like the monolithic approach will be faster.
 
 
 Comments up to just before section "4.4 Effect of the interface treatment"
+
+
+4.4 Effect of the interface treatment
+
+"Two ingredients of the interface treatment of Section 3.3 can be switched by an option"
+This seems like a very software/implementation centric way of saying it - since we are submitting to a numerics journal, i think it is better to present things from a numerical methods perspective, i.e. two approaches for XXX were described and here we compared them, or something like that.
+
+"The interface pressure treatment thus controls the damping ..."
+Is "controls" the right word here? it seems like "strongly influences" or similar would be more appropriate
+
+"and arises because the linear-geometry solid integrates the traction over its undeformed face areas and
+the fluid over the deformed faces"
+I think this might should be made clearer -> when we assume linear geometry, we do not move the solid mesh but we do move the fluid mesh hence their is a geometric discrepancy. I wonder then if comparing the conservative and non-conservative approaches here is fair sinec the conservative is fully correct even for the non-moving linear geometry solid. It may be fine the way it is but this is worth another look.
+
+"Two further ingredients cannot be switched off in the released code,"
+I would remove this entire paragraph since it refers to old versions of our code. If we were to say anything like this, it should be from the numerics perspective and to shareo our learnings, e.g. Although not shown here, during the preliminary development phase, two additional ingredients were found to be important ...
+
+"The quasi-monolithic and partitioned couplings in solids4foam solve the same continuum problem with different fluid solvers"
+Rephrase this from a numerical methods perspective, not a solids4foam one, i.e. in the proposed monolithic approach, the fluid solver is essentially a coupled solve while in the partitioned FSI cases the fluid solve is based on PIMPLE - it is fine to mention the specific solids4foam classes/models as an aside (e.g. in brackets) but not as the primary point.
+Check the entire text for similar constructs.
+
+"One difference did not."
+This paragraph should be remove since this problem has now been fixed in the monolithic solver, right?
+Also, it is clearly inappropriate to refer to a solids4foam PR in a numerics paper.
+
+Table 4
+- the says we are using a gradient limiter in some cases, and, generally different schemes from partitioned for some cases - double check this? Is there a reason for this? Ideally we would use the same schemes insofar as possible.
+- "O(h2 ) on smooth meshes, lower near the cavity plate corners" is this a difference? I am unclear if this is a comment on both or one of the approaches - it does not seem like a difference as the column title suggests; similarly many other entries in this column do not clearly seem to be differences and it is unclear to me if the comments are referring to the monolithic or partitioned schemes.
+- "Interface pressure" a reader will ask why we are not also using "fixed gradient from the momentum equation" for our partitioned solver - I am also wondering that
+- mesh motion - a reader will ask why not use the same mesh motion for monolithic and partitioned? which is fair - our answer is likely because our monolithic was initially limited/hard-coded to one scheme but now both our monolithic and partitioned allow general choices. I am not suggesting we re-run cases but the text should be clear about any apparent arbitrary differences in schemes. 
+- the spacing between rows seems too small making it difficult to see where a new row starts
+
+
+4.5.2 Channel flow over a cavity with a flexible bottom
+
+"The flow is at Re= 100"
+When stating Re we need to say with respect to what length scale, e.g. inlet channel height or something else.
+
+"as in the partitioned tutorial,"
+Do not refer to solids4foam tutorials => this is a numerical methods paper and we should only refer to test cases as described. Check and fix all occurances in the paper
+
+"Aitken under the strict convergence test."
+I do not see where "strict convergence test" was defined
+
+In the "Measured." subsection (in this test case and others), the English seems broken: the sentences seem like incomplete notes. Fix these and check the same for all "measured" subsections.
+
+"Further runs on levels 2, 3 and 4 use the partitioned solver’s face interpolation (linear rather than skewness-corrected linear) for the quasi-monolithic continuity flux, the leading candidate among these differences for the remaining difference."
+Generally, we do not need to state the journey we went on to reach the results shown, i.e. if earlier parameter choices has issues and later replaced with better ones, then we can just state the final "good" ones that we used -> we dont need to give a running story of everything we tried.
+If, here, we are aiming to show the difference between these two options (linear and skew corrected) then ok make it clear that that is what we are doing; also, I dont think we properly (or at all) described skew corrected in the methods and this should be briefly explained.
+
+it is fine that we used Aitkens here but a reader may wonder why not use IQN-ILS or Robin - we can probably add a note that both could be used here (and are probably faster), but will give the same partitioned solution assuming iteration errors are small.
+
+Table 5: it is unclear what "cost" refers to here - it seems to be the ratio of iterations but that is not the same as "time to solution" cost - whatever it is, it should be clarified in the caption and text.
+Also proponents of IQN-ILS may argue that it will allow less iterations on a case like this.
+
+"so the skewness-corrected interpolation causes the slowly decreasing difference,"
+a reader may ask why we are not using this same scheme for both, i.e. if partitioned uses skewness corrected then monolithic should too then there is no need to discuss this effect (it is hardly suprising there is a difference is a different interpolation is used). If we are trying to show skew corrected is more accurate on this case, then that is a different point. We need to sort this out in this tet case and decide what we are trying to show.
+
+"even so, it costs 1.7 to 2.8 times as much as Aitken to reach steady state,"
+We need to make the stopping criteria clear - is it a fixed total time or something else. also, did we introduce physical damping for the solid here?
+also, if Aitken uses Euler for the solid while QM uses BDF2 then this could explain why Aitken reaches steady state faster.
+Once again, we should be clear what we are actually comparing.
+
+"In the womersleyTube problem"
+Do not use solids4foam camelCase tutorial names => give the actual case name in our paper.
+
+4.5.3 Pulsatile compliant tube
+
+"so the uncorrected traction would leave a difference that does not vanish under refinement."
+What "uncorrected traction"? this is unclear. Be explicit what you are referring to.
+
+"Before the correction the wall-displacement phase ..."
+What correction? If this - once again - refers to some prior initial development then do we need to mention it at all?
+If we want to show an effect of a method choice then fine make that clear.
+
+
+5 Robustness
+
+"Both use BDF2 in both regions"
+using "both" twice in quick succession seems clunky
+
+Fig 12: before this, we have claimed/stated thata partitioned schemes struggle with large added mass, but these results suggest that statement is somewhat of an exaggeration. I mean, yes, we can see the number of iterations increase for the partitioned schemes as added mass increases (e.g. they might double) but generally they still seem to work well, e.g. IQN-ILS works for all and only needs 6 iterations. We dont need to change anything per se, but a reader may question the strength of some of our repeated claims about weaknesses of partitioned schemes when they see these results. Ah wait, the "Collapsible channel" case shows large differences between partitioned and QM and really does show partitioned schemes struggling as we claimed => maybe we need to add a comment to the end of the 5.1 section to preempt any reader comments like my one above (where I had yet to view the "Collapsible channel" results) - I guess the ring problem is a bit easy even if it has high added mass.
+
+"at a Reynolds number of 50"
+with respect to what is Re calculated? also, be consistent => Re or Reynolds number
+
+"to be well posed for a continuum solid."
+We should state clearly what changes we made to make it well posed and hence why it was not well posed before, rather than assuming the reader already knows.
+
+"oomph-lib" add citation for oomph-lib
+
+"At ∆t = 0.00625 s the quasi-monolithic trough
+on this mesh lies 0.71% from oomph-lib, against 1.17% with the conformal 320 ×8 solid on the
+finer fluid level 4."
+this sounds like the difference increases with mesh motion, but checking back i see that this is a coarser solid mesh => we should make this easier for the reader to follow
+
+Fig 14 is not great: the limits of the pressure and velocity scales are poorly chosen as both fields are almost entirely blue. also the velocity streamlines look strange as they do not fill the downstream channel - it may be better to remove the streamlines entirely or consider a different visualisation.
+
+"percentage points"
+once again, why are we sometimes saying "percentage points" and sometimes %? Surely using % is cleaner and more consistent and more common.
+
+"Mesh motion."
+this subsection refers to a prior failure that we subsequently resolved. At most, we should just make a note about it, e.g. helping readers developing their own codes.
+
+"in the flag of Section 7.1,"
+I still need to review 7.1 but I suspect we will cut it, so we may need to make the point about smaller time steps being needed for some cases in a more general way or by referring to a different case.
+
+"The robustness of the partitioned couplings depends on settings such as the Robin coefficient and
+the IQN-ILS history, here those of the companion paper"
+The English seems wrong here - the sentence seems incomplete.
+
+" the maps do not measure
+how far other settings would extend it"
+What does this mean? I guess you are trying to say that maybe IQN-ILS, for example, would do better here if its free parameters were optimised, and similarly for the Robin scheme. This should be made clearer.
+
+6 Accuracy, cost and parallel performance
+
+"Both couplings are run on one family of three unstructured fluid meshes,"
+If we used Gmsh here, we should mention it and cite it.
+
+"where the jump stabilisation of Section 7.3 "
+it seems trange to be referring to a future section here, without a clear reason that i can see.
+
+For the Turek Hron case, do we need to make it clear that we used the same post-processing extraction process on the FeatFlow results as opposed to using the actual reference values defined in the Turek Hron paper, e.g. I think they quote the values from the last cycle of a t = 20 s run as the references. We should make it clear what we are comparing.
+
+"the flag is geometrically nonlinear, for which the velocity and displacement solids are not algebraically
+equivalent in time,"
+this makes it sound like there is an inconsistency between them but i guess we are just saying the differences comes from the time schemes and these should reduce with reducing time step, right? We should make this clearer.
+
+"on this mesh family neither coupling shows the first-order sequence of
+the companion paper’s meshes, so that sequence comes from the discretisation and meshes rather
+than from the coupling."
+What? What 1st order sequence are you referring to? a reader will be very confused as they will likely not have read the companion paper. Also, if the campanion paper has a 1st order issue then it should fix it, e.g. use our meshes or fixes.
+
+"One Newton iteration therefore costs as ..."
+This sentence seems to long which makes it hard to follow
+
+Cost: it is clear that the monolithic coupling convergence is good in the sense that it takes only 2 Newton iterations - but it is slower than the partitioned. It seems that this slowness primarily comes from the coupled fluid solver it uses in contrast to the more efficient PIMPLE fluid solver of the partitioned scheme, e.g. if the partitioned FSI scheme was forced to use newtonIcoFluid, I guess we may see it slow down in the same way. I think it would be insightful to add some comments on this, and possibly run a coarse mesh test (partitioned with newtonIcoFluid to support the discussion). I imagine a take-away from the paper might be that targetting the fluid solver speedup would be a good strategy to accelerate the monolithic solver. Literature suggests using a PIMPLE preconditioner for the fluid solver although my initial tests with this did not show useful speedups but it will be worth revisiting after this paper is submitted - we could even note this in future work.
+
+
+6.2 Elastic half-cylinder in a viscous channel flow
+
+"Reynolds number" with respect to what?
+
+"on the tutorial mesh" do no refer to tutorials
+
+"Both couplings use the same development version, later than that of most other results"
+how important is this to note in the paper - as opposed to note in the shared code/cases? i feel like it does not need to be mentioned here.
+
+Once again, for IQN-ILS, we may need to caveat the cost with the fact that we did not use coupling interface information in IQN-ILS which generally reduces the number of iterations and cost.
+
+"Mesh convergence." some content in this subsection seems to repeat content from the prior subsection e.g. in terms of accuracy and time.
+we should not repeat things (unless we are making some new point where the repetition facilitates reading)
+
+Fig 21 is a nice image - i wonder if adding small velocity vectors in the fluid would enhance it (showing local flow direction) - it is worth a try.
+
+6.3 A three-dimensional experiment: the Hessenthaler flap
+
+"Re= 1283" with respect to what reference length?
+
+Mesh: we should state that we used cfMesh here and cite it. Similarly, check all other cases and say how we generated the meshes and add citations if external tools like cfMesh and Gmsh are used.
+
+"and all three pass the strict mesh checks."
+I suggest we remove this or clarify mesh quality metrics as it is unclear what this means.
+
+"Both couplings use second-order backward time integration"
+previously we have said BDF2 => be consistent throughout the paper
+
+"rF0–rF2"
+Do not use our internal naming conventions here => be consistent with other cases in the paper, e.g. level 1, 2, 3.
+
+"The partitioned runs use a different solids4foam build from the quasi-monolithic runs, which
+include the interface correction of Section 3.6."
+I dont think we should refer to different builds like that here (it is ok for shared code/cases); instead, we just need to note the methods used or ensure they are clear.
+
+
+Fig. 23: the bottom images (velocity profiles c and d) show a lagged profile for the models presumably because we are averaging over the MRI voxel sizes - we should double check we using using the correct voxel size and averaging approach here.
+in fact, in hessenthaler they state that numerical experiments showed that the velocities and their corresponding volume averages were sufficiently similar that comparisons between pointwise numerical results and volume-averaged MRI data were expected to be valid. Also they used an MIR with an in-plane voxel size of 1.302 mm and a slice thickness (presumably axial direction) of 6 mm. So we should check we are averaging our results over the correct voxel size (it should be 1.302 mm) but also i think it would be valuable to plot our actual pointwise velocity in a figure like this especially since hessenthaler shows it should be defensible. Our piecewise averaged model velocity profile looks very coarse and presumably very different than our pointwise values which makes me suspicious of our averaging. I think this may explain why our results apparently underpredict the experiment velocities.
+Also, we need to replace rF0/etc with consistent mesh level names, e.g. level 1, etc, as noted above.
+
+"three in 2, 1 and 22 steps of the first 5 s on rF0–rF2)"
+I do not understand the English here
+
+"this is a property of the convergence"
+future work (and a solids4foam issue) should fix this => i think we already have an issue for this.
+
+"The voxel-averaged velocities differ from the MRI velocities by 5% of the inlet peak on average,"
+What is the "The voxel-averaged velocities"? Averaged across where? inlet/outlet/somewhere else? make this clear.
+
+"which is consistent with, though not proven
+to be caused by, the single-level ILU(0) preconditioning of the velocity block while IQN-ILS needs
+about four coupling iterations on both meshes;"
+the way this is phrased will make a reader/reviewer ask "well, did you try changing ILU(0)?"
+If we really believe this to be true then we should really check it; however, these cases are costly so another option is we rephrase this in a way to say that we did not optimise the monolithic linear solver settings for this 3D case and the ILU(0) may be the reason for the poorer scaling and this is something we will look at in future work. If we go this way, I suggest we add an issue to solids4foam aimed at optimising the monolithic solvers settings for 3D cases like this.
+
+We should be careful with our conclusions from this case - currently they seem a bit strong in the way they are saying partitioned is faster without appropriate caveats on the monolithic linear solver settings. That is, it is credible that the monolithic solver could be competitive in this case with better linear solver (presumably preconditioning) settings and the actual monolithic scheme itself is good (e.g. Newton converges in very few iterations).
+
+6.4 A three-dimensional tube: consistency, performance and scaling
+
+Fig 26 caption: do not refer to "tutorials" as noted above.
+
+"so the quasi-monolithic runs use tutorial meshes with the wall arcs placed exactly
+on both sides (solids4foam PR #625)"
+do not refer to solids4foam PRs as noted above
+
+"the companion paper’s Robin–Neumann runs predate that
+change and use AMI interpolation across a wall mismatch of up to about 1 µm"
+do not refer to old builds etc - just describe the methods. If the Robin models use different meshes then we state this or consider rerunning with the same meshes => actually we did this so we should remove all references to the old Robin meshes since they add no value and only add confusion.
+
+"Against the original companion-paper meshes the level-3 difference was"
+The companion paper should probably also just use the corrected meshes and not refer to the old meshes.
+Of course, we can still note the importance of setting up the mesh in the correct way and maybe even say our initial study found larger errors were introduced by note correctly setting up the meshes in this way.
+
+"the verification driver’s axis pressure probes lie on ..."
+rephrase this as a helpful note on result extraction where we need to be careful about where the extraction happens - rather than phrasing it in terms of a "verification dirver"
+
+"File-system stalls ..."
+Do we really need to present results with system stalls? Cant we rerun any affected cases so we can avoid this? where at most we just add a note about being careful to look out for and avoid such stalls when comparing times.
+
+"and the coupled solve does not proceed when a process owns no fluid cells "
+as noted above, do not refer to this simple implementation limitation => anyway i think this may be fixed or there is an issue to fix it.
+
+6.4.3 Effect of the preconditioner and Jacobian settings
+
+"Discussion: parallel cost of the coupled solve."
+this subsection is very small and i am not so clear on what it is adding. Check this again and see if it needs rephrasing or moving to the subsection above or removing.
+
+6.5 Cost per step and number of iterations
+
+this section reads well but I think we should add caveats at the bottom that are conclusions here are based on the chosen partitioned parameters (e.g. coupleReuse in IQN-ILS) and monolithic linear solver/preconditioner settings.
+
+7 Limitations - I am not sure this section adds value - see my comments below - I am thinking we remove it, and any limitations could instead just briefly be noted near the end of the conclusions section, naturally linked with future work.
+
+7.1 Time-step limit in a three-dimensional flag
+
+Newton methods are well known to fail with large time step when nonlinearity is strong and continuation is not used. This is a sentence at most. In addition, we should not introduce a new test case in a limitation section.
+This is a cool test case but is not needed or useful for this paper so we can remove it.
+
+7.2 Solid block of the preconditioner
+
+We have already well discussed this redundant LU solid => anyway this is just a user choice and we used AMG in some cases and if we liked we could have used bjacobi LU => i do not see any value in this section. Once again, this is a sentence at most.
+
+7.3 Velocity solid on thin structures
+
+Are you sure we did not already use the high order solid in this paper?
+Once again, it seems strange to introduce new results in a limitations section.
+it seems more appropriate - if at all - to note these results in the cases in question, possibly referring to an appendix.
+Ideally, at least one test case in the paper would use the higher order solid for both partitioned and monolithic approaches as a demonstration just to show it works (but the scheme is still second order) => maybe using some results here as a follow on subsection in one or both cases, using appendices as needed.
+
+7.4 Fluid mesh motion
+
+This has already been discussed as far as I can see => I dont see the added value.
+
+7.5 Software - why does this section appear under "limitations"? this does not seem right. also i am not sure this section adds much value - anything of value here could be mentioned elsewhere, e.g. in the methods when we say implemented everything in solidsfoam.
+
+
+8 Conclusions
+
+"main extensions" - a higher order fluid is on our roadmap so we can note this -> we are aiming to create truly higher order FSI solvers - both monolithic and partitioned - so higher order solid, fluid and interface transfer.
+
+"possibly with overset meshes" - we should also mention immersed boundary methods here - I would cite the immersed boundary Turek Hron tutorial in solids4foam if possible so readers can see we already have the basic method established.
+
+All appendices need to be double checked for correctness and clarity.

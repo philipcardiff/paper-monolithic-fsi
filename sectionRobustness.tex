@@ -24,7 +24,7 @@ Wall times were measured on shared nodes and are indicative only.
 % (runs.csv notes). Map: figures/robustness-ring-map.pdf from
 % scripts/wp3_plot.py (paper variant without title).
 
-The ring of Section~\ref{sec:ring_m} is run on the factor-2 mesh at the weak, moderate and strong added-mass levels ($\mu = 0.101$, $1.008$ and $10.08$) and at an extended level, $\mu = 100.8$ ($\rho_f = 14\,000\,\mathrm{kg/m^3}$), crossed with 12, 25, 50, 100 and 200 steps per period, for two periods, with the coupled frequency as the quantity of interest.
+The ring of Section~\ref{sec:ring_m} is run on the factor-2 mesh at the weak, moderate and strong added-mass levels ($m^{*} = 0.101$, $1.008$ and $10.08$) and at an extended level, $m^{*} = 100.8$ ($\rho_f = 14\,000\,\mathrm{kg/m^3}$), crossed with 12, 25, 50, 100 and 200 steps per period, for two periods, with the coupled frequency as the quantity of interest.
 
 \begin{figure}[htbp]
 	\centering
@@ -35,8 +35,8 @@ The ring of Section~\ref{sec:ring_m} is run on the factor-2 mesh at the weak, mo
 
 Of the 80 runs, 79 complete (Figure~\ref{fig:robustness_ring}); the one failure is Robin--Neumann at the strong level with 12 steps per period, which reaches the iteration cap in its tenth step.
 The quasi-monolithic coupling converges in two Newton iterations in every step of every cell.
-The partitioned couplings, which start each step from a predicted interface state, complete every other cell, even at $\mu \approx 100$.
-IQN-ILS needs 3.0--6.1 and Aitken 3.2--10.2 coupling iterations per step on average, both rising with $\mu$ and, at the strong and extended levels, with the number of steps per period; Robin--Neumann needs 3.0--42, mostly at fewer steps per period.
+The partitioned couplings, which start each step from a predicted interface state, complete every other cell, even at $m^{*} \approx 100$.
+IQN-ILS needs 3.0--6.1 and Aitken 3.2--10.2 coupling iterations per step on average, both rising with $m^{*}$ and, at the strong and extended levels, with the number of steps per period; Robin--Neumann needs 3.0--42, mostly at fewer steps per period.
 In every completed cell the four couplings give frequencies within $0.25\%$ of each other; the error against the exact frequency, from $-1.9\%$ at 12 steps per period to $+6.3\%$ at 200, is the discretisation error of the standard solid on the factor-2 mesh.
 Summed over the 20 cells, the quasi-monolithic runs take about half the wall time of IQN-ILS, 0.4 times that of Aitken and under a third of that of Robin--Neumann, in line with the per-step costs of Section~\ref{sec:ring_m}.
 

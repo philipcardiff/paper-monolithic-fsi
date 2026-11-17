@@ -45,7 +45,6 @@ No reference solution exists; the case compares the time step and cost needed by
 
 \paragraph{Measured.}
 Both couplings are run to $t = 0.2\,\mathrm{s}$, through the start-up, with $\Delta t = 0.01$, $0.005$ and $0.0025\,\mathrm{s}$; IQN-ILS uses the strict convergence test with the tutorial tolerance of $10^{-5}$ and at most 50 coupling iterations, and the quasi-monolithic coupling the tutorial Newton tolerance of $10^{-4}$, a backtracking line search and at most 50 Newton iterations.
-Adaptive time stepping, which the implementation provides, is off in every run.
 The cost is compared at $\Delta t = 0.005\,\mathrm{s}$ on eight processes, under the protocol of Section~\ref{sec:protocol} but over the whole run from $t = 0$, excluding the first step.
 % QM: evidence/m-runs-a-rfix 7a (1252bd2e5, 128 ranks, MeluXina); IQN-ILS:
 % evidence/m-runs-a 7a (85b0c1de6, 8 ranks); equal-rank timing: MeluXina
@@ -68,7 +67,7 @@ Right preconditioning, unlimited convection and other differencing parameters of
 With $\Delta t = 0.005\,\mathrm{s}$ both couplings complete: the quasi-monolithic coupling with 3.3 Newton iterations per step (at most 4) and 36 Krylov iterations per Newton iteration, and IQN-ILS with 5.4 coupling iterations per step (at most 7); the quasi-monolithic run takes $1241\,\mathrm{s}$ and the IQN-ILS run $586\,\mathrm{s}$, 2.1 times less.
 With $\Delta t = 0.0025\,\mathrm{s}$ the counts fall to 2.9 Newton and 4.7 coupling iterations per step.
 Here, with a dense solid ($\rho_s/\rho_f \approx 1700$) and hence little added mass, the quasi-monolithic coupling gains no robustness and costs more per step than IQN-ILS.
-The method has no globalisation beyond a backtracking line search; adaptive time stepping on Newton failure, or a continuation method, may let it pass such start-ups automatically, but neither is assessed here.
+The method has no globalisation beyond a backtracking line search; a continuation method, or a smaller time step through the start-up, may let it pass such start-ups, but neither is assessed here.
 
 %%--------------------------------------------------------------------------------------------------------------------%%
 \subsection{Solid block of the preconditioner}\label{sec:lim_solid_pc}
@@ -170,7 +169,7 @@ Their elapsed times come from runs sharing one node and are indicative.
 On the collapsible channel the order-3 wall of $320\times8$ cells is within $0.08\%$ of oomph-lib at the same time step, closer than the order-1 wall of $640\times16$ cells and comparable with the order-1 wall of $1280\times32$, which has 16 times as many cells.
 On the FSI3 flag, order 3 with six cells across the thickness is within $2.4\%$ in every quantity, and its lift-amplitude error changes only to $1.9$ and $1.8\%$ over the next two refinements, whereas order 1 approaches these values at about second order ($32.3$, $10.1$ and $4.0\%$); on the finest flag the two orders differ by $2.3$ percentage points in the lift amplitude and by less than $1$ in the other quantities.
 On the collapsible channel the Newton iterations per step are nearly unchanged ($2.7$--$2.8$ with both orders).
-Because the fluid dominates the cost of both cases, the order and the solid mesh change the elapsed time little: order 3 costs $1.4$--$1.5$ times as much as order 1 on the same collapsible wall and about as much on the same FSI3 flag.
+The fluid dominates the cost of both cases, so the order and the solid mesh change the elapsed time little: order 3 costs $1.4$--$1.5$ times as much as order 1 on the same collapsible wall and about as much on the same FSI3 flag.
 Its gain is that much coarser solid meshes reach a given accuracy: order 3 on the $108\times6$ flag is more accurate than order 1 on the $430\times24$ flag in the $u_x$ mean and the drag and lift amplitudes, in slightly less time, and order 3 on the $320\times8$ wall is about as accurate as order 1 on the $1280\times32$ wall in $0.87$ of its time.
 With two or three cells across the thickness, the cubic fit through the cell centres cannot be determined across the thickness: the order-3 $80\times2$ wall stops at $t = 0.28\,\mathrm{s}$ when its Newton iterations rise from three to the iteration limit, and the $54\times3$ flag completes only with a ten-times larger stabilisation and still has errors of $6$--$56\%$.
 In these tests order 3 therefore needs at least four cells across the thickness.
@@ -182,10 +181,10 @@ In these tests order 3 therefore needs at least four cells across the thickness.
 %%--------------------------------------------------------------------------------------------------------------------%%
 
 The fluid mesh is moved once per step to a displacement extrapolated from the solid (Section~\ref{sec:fluid_mesh_motion}), outside the Newton system.
-Two mesh-motion failures occurred in the campaign; both were removed by changing the mesh-motion set-up, not the coupling.
+Two mesh-motion failures occurred in this work; both were removed by changing the mesh-motion set-up, not the coupling.
 On the collapsible channel at the largest time step, the first iterate of the nonlinear pseudo-solid carried the whole wall increment of a step into the half-cells next to the wall and stopped the mesh-motion solve, while Newton still converged in three iterations per step; extrapolating the first iterate in time removed the failure (Section~\ref{sec:robustness_collapsible}).
 On the refined Turek--Hron meshes, whose first cells at the flag tip are $0.3\,\mathrm{mm}$ thick, an incremental Laplacian mesh motion on the moving mesh inverted cells near the tip within the first second of a replayed flag motion on levels 2 to 4, whereas solving each step from the initial mesh, with a linear inverse-distance stiffness, kept every cell valid; the incremental error accumulates with the motion.
-A linear elastic pseudo-solid with the same stiffness (Section~\ref{sec:fluid_mesh_motion}) keeps every cell valid: assembled on the initial mesh, it moves levels 2 to 4 through $5.2\,\mathrm{s}$ of replayed flag motion, about 28 periods, with a largest non-orthogonality of $39$--$45^\circ$, close to that of the initial meshes; assembled on the current mesh (the form used in the coupled runs of Section~\ref{sec:fsi3_m}, as the only one the partitioned couplings accept), it moves levels 2 and 3 past the Laplacian failure times with no invalid cell.
+A linear elastic pseudo-solid with the same stiffness (Section~\ref{sec:fluid_mesh_motion}) keeps every cell valid: assembled on the initial mesh, it moves levels 2 to 4 through $5.2\,\mathrm{s}$ of replayed flag motion, about 28 periods, with a largest non-orthogonality of $39$--$45^\circ$, close to that of the initial meshes; assembled on the mesh of the previous step (the form used in the coupled runs of Section~\ref{sec:fsi3_m} and in all the other quasi-monolithic runs except the pulsatile tube; Section~\ref{sec:fluid_mesh_motion}), it moves levels 2 and 3 past the Laplacian failure times with no invalid cell.
 A quasi-monolithic method that moves the mesh outside its Newton system thus inherits the limits of its mesh-motion solver, which must be chosen for the largest interface increment per step and the smallest cells next to the interface.
 % FSI3 motion gate: ~/claude-runs/agent-b-gmsh/work/tlg_{2,3,4}, board 6549050077
 % and 6551325237 (1 Nov 2026); meshes t1-t4 from ht_mesh_gmsh2.py --tip-y1 3e-4.

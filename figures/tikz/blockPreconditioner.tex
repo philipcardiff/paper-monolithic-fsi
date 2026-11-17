@@ -87,41 +87,44 @@
 % ------------------------------------------------- (b) preconditioner hierarchy
 \begin{scope}[yshift=-6.0cm]
     \node[panel, anchor=north west] at (-1.6,0.45) {(b)};
-    \node[pcbox, text width=7.4cm] (newton) at (3.2,0)
-        {Newton step (LGMRES):
+    \node[pcbox, text width=8.2cm] (newton) at (3.5,0)
+        {Newton step, solved by restarted LGMRES:
         \mbox{$\bb{J}\,\Delta\bb{\mathcal{U}}_k=-\bb{R}(\bb{\mathcal{U}}_k)$}\\
-        $\bb{J}$ applied matrix-free (\texttt{-snes\_mf\_operator}):\\[1pt]
+        $\bb{J}$ applied without assembly (PETSc: \texttt{snes\_mf\_operator}):\\[1pt]
         \mbox{$\bb{J}\bb{w}\approx[\bb{R}(\bb{\mathcal{U}}_k+\epsilon\bb{w})
         -\bb{R}(\bb{\mathcal{U}}_k)]/\epsilon$}};
-    \node[pcbox, text width=4.5cm, anchor=west] (jtilde) at (8.0,0)
+    \node[pcbox, text width=4.3cm, anchor=west] (jtilde) at (8.0,0)
         {approximate Jacobian $\tilde{\bb{J}}$ of (a),\\
         row-scaled by $s_F$ and $s_S$;\\
         assembled only to build\\ the preconditioner};
-    \node[pcbox, text width=6.8cm] (outer) at (3.2,-1.65)
-        {fluid--solid field split, multiplicative:\\
-        fluid block first, then solid block with\\
+    \node[pcbox, text width=8.2cm] (outer) at (3.5,-2.0)
+        {fluid--solid block Gauss--Seidel (PETSc: multiplicative
+        \texttt{fieldsplit}): fluid block first, then solid block with
         right-hand side updated by $\tilde{\bb{J}}_{sf}$};
     \draw[->] (outer.north) -- node[right, small]
         {preconditions} (newton.south);
     \draw[->] (jtilde.south) |- node[pos=0.25, right, small]
         {builds} (outer.east);
     % second level
-    \node[pcbox, text width=4.4cm] (fluid) at (2.4,-3.2)
-        {fluid $\tilde{\bb{J}}_{ff}$: velocity--pressure\\
-        Schur field split (upper or full)};
-    \node[pcleaf, text width=3.4cm] (solid) at (8.4,-3.2)
-        {solid $\tilde{\bb{J}}_{ss}$:\\ direct (LU) or AMG};
+    \node[pcbox, text width=5.0cm] (fluid) at (2.0,-3.85)
+        {fluid $\tilde{\bb{J}}_{ff}$: velocity--pressure Schur-complement
+        factorisation, upper triangular or full\\
+        (PETSc: \texttt{fieldsplit}, Schur type)};
+    \node[pcleaf, text width=4.6cm] (solid) at (8.6,-3.85)
+        {solid $\tilde{\bb{J}}_{ss}$: exact LU, replicated on every
+        process (PETSc: \texttt{redundant}),\\ or one BoomerAMG V-cycle};
     % third level
-    \node[pcleaf, text width=3.0cm] (vel) at (0.6,-4.75)
-        {velocity $\tilde{\bb{J}}_{mm}$:\\ block Jacobi + ILU(0)};
-    \node[pcleaf, text width=3.6cm] (pres) at (4.6,-4.75)
-        {pressure Schur complement\\
-        $\hat{S}_p$ (\texttt{selfp}): BoomerAMG};
-    \draw[tree] (outer.south) -- ++(0,-0.3) coordinate (o1);
+    \node[pcleaf, text width=3.4cm] (vel) at (0.2,-5.75)
+        {velocity $\tilde{\bb{J}}_{mm}$: ILU(0) on each process
+        (PETSc: \texttt{bjacobi})};
+    \node[pcleaf, text width=4.4cm] (pres) at (4.5,-5.75)
+        {pressure Schur complement, approximated by $\hat{S}_p$
+        (PETSc: \texttt{selfp}): one BoomerAMG V-cycle};
+    \draw[tree] (outer.south) -- ++(0,-0.35) coordinate (o1);
     \draw[tree] (fluid.north) |- (o1) -| (solid.north);
-    \draw[tree] (fluid.south) -- ++(0,-0.3) coordinate (f1);
+    \draw[tree] (fluid.south) -- ++(0,-0.35) coordinate (f1);
     \draw[tree] (vel.north) |- (f1) -| (pres.north);
-    \node[note, anchor=north west, text width=4.6cm] at (8.0,-4.15) {%
+    \node[note, anchor=north west, text width=4.6cm] at (7.4,-5.05) {%
         $\hat{S}_p=\tilde{J}_{pp}-\tilde{\bb{J}}_{pm}\,
         \mathrm{diag}(\tilde{\bb{J}}_{mm})^{-1}\tilde{\bb{J}}_{mp}$\\[3pt]
         Each block solver (grey) is applied once, without inner Krylov

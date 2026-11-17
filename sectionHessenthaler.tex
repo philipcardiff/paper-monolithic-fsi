@@ -66,7 +66,7 @@ The tip deflection $u_y$ is averaged over $t = 40$--$45\,\mathrm{s}$, in which t
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=\textwidth]{figures/hessenthaler-results}
-	\caption{Hessenthaler Phase I, quasi-monolithic (blue, solid) and IQN-ILS (red, dashed) on the meshes rF0--rF2 (light to dark): (a) tip deflection, with the averaging window shaded and the measured steady value dotted; (b) mean deformed centreline over $t = 40$--$45\,\mathrm{s}$ against MRI; (c, d) mean axial velocity on the line $x = 0$ of the MRI planes $z = 10$ and $30\,\mathrm{mm}$, averaged over each MRI voxel, against phase-contrast MRI.}
+		\caption{Hessenthaler Phase I, quasi-monolithic (blue, solid) and IQN-ILS (red, dashed) on mesh levels 1--3 (light to dark): (a) tip deflection, with the averaging window shaded and the measured steady value dotted; (b) mean deformed centreline over $t = 40$--$45\,\mathrm{s}$ against MRI; (c, d) axial velocity on the line $x = 0$ of the MRI planes $z = 10$ and $30\,\mathrm{mm}$: pointwise model profiles at $t = 45\,\mathrm{s}$ (lines), voxel averages over $t = 40$--$45\,\mathrm{s}$ on the finest mesh of each coupling (filled markers) and phase-contrast MRI on its $5\,\mathrm{mm}$ grid (open circles).}
 	\label{fig:hessenthaler_results}
 \end{figure}
 
@@ -94,10 +94,12 @@ Both deflections increase under refinement; the quasi-monolithic one, the lower 
 
 \paragraph{Comparison with the measurements.}
 On every mesh and with both couplings the tip deflection lies within $0.5\,\mathrm{mm}$ of the measured $16.41\,\mathrm{mm}$, and the mean centreline deviates from the MRI centreline by $0.2$--$0.3\,\mathrm{mm}$ RMS, less than a third of the MRI voxel size (Figure~\ref{fig:hessenthaler_results}b).
-On the two MRI planes, $z = 10$ and $30\,\mathrm{mm}$, the computed velocity averaged over each MRI voxel differs from the measured velocity by $5\%$ of the inlet peak velocity, as the mean magnitude of the difference vector over all voxels in the fluid, with both couplings and on every mesh compared; the two couplings differ from each other by much less (Figure~\ref{fig:hessenthaler_results}c, d).
-The largest differences are at the jet cores, where both couplings predict $595\,\mathrm{mm/s}$ against the measured $731\,\mathrm{mm/s}$ on the plane $z = 10\,\mathrm{mm}$; since the couplings agree there to $1\%$, this difference belongs to the shared model (inflow profiles, geometry) or to the measurement, not to the coupling.
-% Jet-core voxel (z = 10, y = 25): MRI 730.5, QM rF0 594.8, IQN rF0 599.1, rF1 596.9 mm/s.
-The measured jet cores exceed the prescribed inflow peak of $630\,\mathrm{mm/s}$ by about $100\,\mathrm{mm/s}$, more than the stated MRI error of $0.05$ times the encoding velocity ($40\,\mathrm{mm/s}$ for $v_z$)~\citep{Hessenthaler2017a}, although the prescribed parabolic profiles carry the measured pump rate of $14.07\,\mathrm{l/min}$; \citet{Hessenthaler2017b} report qualitative agreement on these planes without comparing the peak velocities, so we do not attempt to resolve this difference here.
+On the two MRI planes, $z = 10$ and $30\,\mathrm{mm}$, the computed velocity is compared with the measured velocity both pointwise and averaged over each MRI voxel; the two differ by less than $1\,\mathrm{mm/s}$ on average, so, as \citet{Hessenthaler2017a} found, either can be compared with the measurement.
+The computed velocity differs from the measured velocity by $5\%$ of the inlet peak velocity, as the mean magnitude of the difference vector over all voxels in the fluid, with both couplings and on every mesh compared; the two couplings differ from each other by much less (Figure~\ref{fig:hessenthaler_results}c, d).
+The largest differences are at the jet cores: both couplings predict jet peaks of $570$--$625\,\mathrm{mm/s}$, at most the prescribed inflow peak of $630\,\mathrm{mm/s}$, with the jet centroids within $1\,\mathrm{mm}$ of the measured ones, whereas the measured peaks are $717$--$731\,\mathrm{mm/s}$ in both jets.
+Integrated over each plane, the measured velocities carry $15.3$--$15.5\,\mathrm{l/min}$, $8$--$10\%$ more than the measured pump rate of $14.07\,\mathrm{l/min}$ that the prescribed inflow carries (the computed planes carry $14.1$--$14.4\,\mathrm{l/min}$), and the excess lies in the jets.
+The jet-core difference is therefore a difference in flow rate between the velocity measurement and the pump measurement, larger than the stated MRI error of $0.05$ times the encoding velocity ($40\,\mathrm{mm/s}$ for $v_z$)~\citep{Hessenthaler2017a}, and not one of the discretisation or the coupling.
+% Pointwise vs voxel check: paper-data/hessenthaler/velocity_check.csv (PR #97).
 % Parabolic peaks 630 and 615 mm/s in d = 21.9 mm: 7.12 + 6.95 = 14.07 l/min (pump
 % rate of Hessenthaler2017a, PMC5600002); VENC_z = 800 mm/s.
 

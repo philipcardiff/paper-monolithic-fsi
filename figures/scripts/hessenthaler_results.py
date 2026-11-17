@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """Hessenthaler Phase I on the rF meshes: (a) tip deflection history,
 (b) mean deformed centreline (t = 40-45 s) against MRI, (c, d) v_z on the line
-x = 0 of the MRI planes z = 10 and 30 mm. Quasi-monolithic: blue, solid;
-partitioned IQN-ILS: red, dashed; mesh rF0-rF2 from light to dark.
+x = 0 of the MRI planes z = 10 and 30 mm: pointwise model profiles (lines) and
+the voxel averages at the MRI points on the finest mesh of each coupling (filled
+markers). Quasi-monolithic: blue, solid; partitioned IQN-ILS: red, dashed; mesh
+levels 1-3 (rF0-rF2) from light to dark.
 Data: paper-data/hessenthaler/*.csv; MRI data: solids4foam tutorial
 hessenthalerFsi/validation/reference (Hessenthaler et al. 2017, CC0)."""
 import csv
@@ -25,7 +27,7 @@ def rows(path):
 plt.rcParams.update({"font.size": 8, "font.family": "serif", "mathtext.fontset": "cm"})
 STY = {"QM": dict(color=("#6baed6", "#2171b5", "#08306b"), ls="-", name="quasi-monolithic"),
        "P": dict(color=("#fb6a4a", "#cb181d", "#67000d"), ls="--", name="IQN-ILS")}
-fig = plt.figure(figsize=(6.3, 4.4), constrained_layout=True)
+fig = plt.figure(figsize=(6.3, 4.8), constrained_layout=True)
 gs = fig.add_gridspec(2, 6)
 ax_a = fig.add_subplot(gs[0, :4]); ax_b = fig.add_subplot(gs[0, 4:])
 ax_c = fig.add_subplot(gs[1, :3]); ax_d = fig.add_subplot(gs[1, 3:], sharey=None)
@@ -37,7 +39,7 @@ for c in ("QM", "P"):
         run = f"{c}_rF{L}"
         pts = [(ti, float(r[run])) for ti, r in zip(t, hist) if r[run]]
         if pts:
-            ax_a.plot(*zip(*pts), lw=0.8, ls=STY[c]["ls"], color=STY[c]["color"][L], label=f"{STY[c]['name']}, rF{L}")
+            ax_a.plot(*zip(*pts), lw=0.8, ls=STY[c]["ls"], color=STY[c]["color"][L], label=f"{STY[c]['name']}, level {L + 1}")
 ax_a.axhline(16.41, color="0.35", lw=0.8, ls=":", label="measured (MRI)")
 ax_a.axvspan(40, 45, color="0.92", lw=0, zorder=0)
 ax_a.set_xlim(0, 45); ax_a.set_ylim(14.5, 19.5)
@@ -51,22 +53,39 @@ ax_b.plot([float(m["z_mm"]) for m in meas], [float(m["y_mm"]) for m in meas], "o
 for run, c, L in (("QM_rF0", "QM", 0), ("P_rF0", "P", 0), ("P_rF1", "P", 1)):
     pts = [(float(r["z_mm"]), float(r["y_mm"])) for r in line if r["run"] == run]
     if pts:
-        ax_b.plot(*zip(*pts), lw=0.9, ls=STY[c]["ls"], color=STY[c]["color"][L], label=f"{'QM' if c == 'QM' else 'IQN-ILS'} rF{L}")
+        ax_b.plot(*zip(*pts), lw=0.9, ls=STY[c]["ls"], color=STY[c]["color"][L], label=f"{'QM' if c == 'QM' else 'IQN-ILS'}, level {L + 1}")
 ax_b.set_xlabel("$z$ (mm)"); ax_b.set_ylabel("$y$ (mm)"); ax_b.legend(frameon=False, fontsize=6, loc="upper left")
 ax_b.set_title("(b)", fontsize=8, loc="left")
 # (c, d)
-prof = rows(D / "profiles.csv")
-runs = [k for k in prof[0] if k.startswith(("QM_", "P_"))]
+prof = rows(D / "profiles.csv")          # MRI and voxel averages at the MRI points
+line = rows(D / "profiles_pointwise.csv")  # pointwise model, every 0.25 mm
+runs = [k for k in line[0] if k.startswith(("QM_", "P_"))]
+VOX = {"QM_rF1": "s", "P_rF2": "^"}
 for ax, z, lab in ((ax_c, "10", "(c) $z = 10$ mm"), (ax_d, "30", "(d) $z = 30$ mm")):
     p = sorted((r for r in prof if r["z_mm"] == z), key=lambda r: float(r["y_mm"]))
     y = [float(r["y_mm"]) for r in p]
-    ax.plot(y, [float(r["vz_mri"]) for r in p], "o", ms=2.5, mfc="white", mec="0.35", mew=0.7, label="MRI")
+    ax.plot(y, [float(r["vz_mri"]) for r in p], "o", ms=3, mfc="white", mec="0.25", mew=0.8, zorder=5, label="MRI")
     for run in runs:
         c, m = run.split("_"); L = int(m[-1])
+        q = [(float(r["y_mm"]), float(r[run])) for r in line if r["z_mm"] == z and r[run]]
+        segs, cur = [], []
+        for yy, v in q:   # break the line where it leaves the fluid
+            if cur and yy - cur[-1][0] > 0.3:
+                segs.append(cur); cur = []
+            cur.append((yy, v))
+        segs.append(cur)
+        for k, sgm in enumerate(segs):
+            ax.plot(*zip(*sgm), lw=0.9, ls=STY[c]["ls"], color=STY[c]["color"][L],
+                    label=f"{'QM' if c == 'QM' else 'IQN-ILS'}, level {L + 1}" if k == 0 else None)
+    for run, mk in VOX.items():
+        c, m = run.split("_"); L = int(m[-1])
         q = [(yy, float(r[run])) for yy, r in zip(y, p) if r[run]]
-        ax.plot(*zip(*q), lw=0.9, ls=STY[c]["ls"], color=STY[c]["color"][L], label=f"{'QM' if c == 'QM' else 'IQN-ILS'} rF{L}")
+        ax.plot(*zip(*q), mk, ms=2.6, mew=0, color=STY[c]["color"][L], zorder=4,
+                label=f"{'QM' if c == 'QM' else 'IQN-ILS'}, level {L + 1}, voxel average")
+    ax.set_xlim(-38, 38)
     ax.set_xlabel("$y$ (mm)"); ax.set_ylabel("$v_z$ (mm/s)"); ax.set_title(lab, fontsize=8, loc="left")
-ax_c.legend(frameon=False, fontsize=6, loc="upper center", bbox_to_anchor=(0.5, 0.92))
+h, l = ax_c.get_legend_handles_labels()
+fig.legend(h, l, frameon=False, fontsize=6, ncol=4, loc="outside lower center")
 for ax in (ax_a, ax_b, ax_c, ax_d):
     ax.grid(True, color="0.9", lw=0.5)
 fig.savefig(root / "figures/hessenthaler-results.pdf")

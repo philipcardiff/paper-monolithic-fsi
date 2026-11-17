@@ -138,7 +138,7 @@ The temporal study follows~\citet{Liu2014} and the partitioned study of the comp
 The quasi-monolithic coupling uses Newton tolerances of $10^{-8}$ and a Krylov tolerance of $10^{-6}$, so that its iterative error lies below the smallest change; IQN-ILS uses the strict test with the tutorial tolerance of $10^{-6}$, without reusing the modes of earlier steps.
 The mesh study computes the steady $u_x$(A) on mesh factors 1, 2 and 4 ($\Delta t = 0.01$, $0.01$ and $0.005\,\mathrm{s}$) with the tutorial tolerances to $t = 3\,\mathrm{s}$, by which time it varies by less than $2\times10^{-4}$ of its value over the last $0.5\,\mathrm{s}$.
 The temporal study of both couplings is timed serially under the protocol of Section~\ref{sec:protocol}, over each whole run excluding its first step; the mesh-study runs share one node, so their times are indicative.
-Both couplings use one build, later than the campaign build (Section~\ref{sec:protocol}).
+Both couplings use the same development version, later than that of most other results (Section~\ref{sec:protocol}).
 % Finite-strain rerun (10 Nov 2026), MeluXina job 5443010, build-blob = QM branch
 % b982bf6c5 merged with tutorial/blob-finite-strain 6fa468d56 (#671, neo-Hookean
 % TL solid, couplingReuse 0). Time study: three serial repeats on an exclusive

@@ -9,7 +9,7 @@ Table~\ref{tab:solver_settings} lists the settings of the quasi-monolithic runs 
 	\footnotesize
 	\setlength{\tabcolsep}{2pt}
 	\caption{Discretisation and solver settings of the quasi-monolithic runs.
-	All cases use a Newton line search with the matrix-free operator, the approximate Jacobian of Appendix~\ref{app:jacobian} (with first-order upwind convection) as preconditioning matrix, restarted LGMRES (restart 200) with a multiplicative fluid--solid field split and, in the fluid block, the Schur complement split of Section~\ref{sec:fieldsplit}.
+	All cases use Newton's method with the matrix-free operator (full steps, except a backtracking line search on the 3-D flag), the approximate Jacobian of Appendix~\ref{app:jacobian} (with first-order upwind convection) as preconditioning matrix, restarted LGMRES (restart 200) with a multiplicative fluid--solid field split and, in the fluid block, the Schur complement split of Section~\ref{sec:fieldsplit}.
 	$\Delta$: time scheme of the fluid.
 	Conv.: convection scheme, central (lin.), second-order upwind (LUD) or LUST (three-quarters central, one quarter LUD).
 	Flux: velocity interpolation in the continuity flux, linear (lin.) or skewness-corrected linear (skew).
@@ -17,7 +17,7 @@ Table~\ref{tab:solver_settings} lists the settings of the quasi-monolithic runs 
 	Transf.: direct map (DM) or AMI.
 	Tol.: relative Newton residual and step tolerances; KSP: relative Krylov tolerance.
 	Schur: Schur factorisation (upper triangular or full); solid PC: replicated LU or one BoomerAMG V-cycle (AMG); lag: Jacobian and preconditioner reuse in Newton iterations, persisting across steps (--: rebuilt every iteration).
-	Source: the quasi-monolithic tutorial variants at solids4foam \texttt{a421f063d} and the campaign run files, which differ from the tutorials only where marked${}^{\ast}$.
+	Source: the run files of each case.
 	Implementation names: Jacobian convection \texttt{jacobian-div(phi,U) Gauss upwind}; Schur approximation \texttt{selfp}; LG/TL \texttt{linearGeometryVelocity}/\texttt{nonLinearGeometryTotalLagrangianVelocity}; stabilisation \texttt{diffStencilLaplacian}; tolerances \texttt{snes\_rtol}, \texttt{snes\_stol}, \texttt{ksp\_rtol}; replicated LU \texttt{redundant}.}
 	\label{tab:solver_settings}
 	\begin{tabular}{lllllllllll}
@@ -33,9 +33,9 @@ Table~\ref{tab:solver_settings} lists the settings of the quasi-monolithic runs 
 		% (UpU: snes_rtol/stol 1e-6, ksp_rtol 1e-4, schur_fact_type full, solid redundant LU,
 		% lag 8 persisting), system/fluid/fvSchemes (interpolation linear, div LUST),
 		% constant/solid/solidProperties (diffStencilLaplacian 0.01).
-		Hessenthaler flap\textsuperscript{g} & BDF2  & LUST & lin.  & TL & 0.01 & AMI & $10^{-6}$ & $10^{-4}$ & full, LU & 8 \\
-		Half-cylinder & BDF2  & LUD  & skew  & TL & 0.1\textsuperscript{c} & DM & $10^{-6}$\textsuperscript{e} & $10^{-4}$\textsuperscript{e} & upper, LU & -- \\
-		3-D tube & BDF2  & LUD  & lin.  & LG & 0.1 & DM & $10^{-6}$\textsuperscript{$\ast$} & $10^{-4}$\textsuperscript{$\ast$} & full, AMG\textsuperscript{$\ast$} & 8 \\
+		Hessenthaler flap & BDF2  & LUST & lin.  & TL & 0.01 & AMI & $10^{-6}$ & $10^{-4}$ & full, LU & 8 \\
+		Half-cylinder & BDF2  & LUD  & skew  & TL & 0.1 & DM & $10^{-6}$\textsuperscript{e} & $10^{-4}$\textsuperscript{e} & upper, LU & -- \\
+		3-D tube & BDF2  & LUD  & lin.  & LG & 0.1 & DM & $10^{-6}$ & $10^{-4}$ & full, AMG & 8 \\
 		3-D flag & BDF2  & LUD  & skew  & TL & 0.5 & DM & $10^{-4}$ & $10^{-4}$ & upper, LU & -- \\
 		\bottomrule
 	\end{tabular}
@@ -43,10 +43,41 @@ Table~\ref{tab:solver_settings} lists the settings of the quasi-monolithic runs 
 	\parbox{0.95\linewidth}{\footnotesize
 	\textsuperscript{a}~Steady target: only the steady state is compared, and no temporal order is claimed.
 	\textsuperscript{b}~Also run with linear interpolation (Section~\ref{sec:cavity_m}).
-	\textsuperscript{c}~The default solid stabilisation of solids4foam; the tutorial does not set it.
-	\textsuperscript{d}~The tutorial uses a conformal solid mesh and DM; the runs of Section~\ref{sec:robustness_collapsible} use a $640\times8$ solid mesh through AMI with conservative traction transfer.
+	\textsuperscript{d}~With conservative traction transfer: the $640\times8$ solid mesh of Section~\ref{sec:robustness_collapsible} and the walls of the order study of Section~\ref{sec:lim_thin_solid}.
 	\textsuperscript{e}~The temporal study of Section~\ref{sec:blob_m} uses $10^{-8}$ and $10^{-6}$.
 	\textsuperscript{f}~The runs of Sections~\ref{sec:womersley_m} and~\ref{sec:womersley_consistency} use $10^{-8}$ and $10^{-6}$.
-	\textsuperscript{g}~Build \texttt{517a44921} with the interface correction of Section~\ref{sec:fluid_mesh_motion}; velocity block of the fluid by block-Jacobi ILU(0), pressure Schur complement by one BoomerAMG V-cycle (Section~\ref{sec:hessenthaler_m}).
-	\textsuperscript{$\ast$}~The tutorial uses $10^{-4}$, $10^{-3}$ and redundant LU; the paper runs use the values shown.}
+}
+\end{table}
+
+Table~\ref{tab:mesh_motion_settings} lists the fluid mesh motion of each case (Section~\ref{sec:fluid_mesh_motion}).
+The pseudo-solid has a shear modulus $\mu^\Gamma = 1$ and a bulk modulus of $3$ (so $\lambda^\Gamma = 7/3$), in consistent units, in every case; only their ratio matters, as every boundary condition of the pseudo-solid prescribes a displacement.
+
+\begin{table}[htbp]
+	\centering
+	\footnotesize
+	\setlength{\tabcolsep}{4pt}
+	\caption{Fluid mesh motion of the quasi-monolithic runs (Section~\ref{sec:fluid_mesh_motion}).
+	Law: linear elastic (Equation~\eqref{eqn:mesh_motion_pseudo_solid}) or neo-Hookean pseudo-solid, the latter started from the extrapolated displacement.
+	Weight: none ($\delta = 1$) or the inverse-distance weight $\delta$ with exponent $q$ towards the boundaries named, computed once from the initial mesh or recomputed on the current mesh at every step.
+	Interface: transfer of the interface displacement, face values with point transfer (faces) or point transfer with face values averaged from the points (points).
+	The pseudo-solid is assembled on the mesh of the previous step, except in the earlier runs listed in Section~\ref{sec:fluid_mesh_motion} (a fixed copy of the initial mesh).}
+	\label{tab:mesh_motion_settings}
+	\begin{tabular}{lllll}
+		\toprule
+		Case & Law & Weight $\delta$ & Updated & Interface \\
+		\midrule
+		Ring & linear & -- & -- & faces \\
+		Pulsatile tube & linear & -- & -- & faces \\
+		Cavity & neo-Hookean & -- & -- & faces \\
+		Collapsible channel & neo-Hookean & $q = 2$, wall & once & faces; points\textsuperscript{a} \\
+		Turek--Hron FSI3 & linear & $q = 1$, flag and cylinder & every step & faces; points\textsuperscript{a} \\
+		Hessenthaler flap & linear & $q = 2$, flap & every step & points \\
+		Half-cylinder & neo-Hookean & -- & -- & faces \\
+		3-D tube & linear & -- & -- & faces \\
+		3-D flag & linear & -- & -- & faces \\
+		\bottomrule
+	\end{tabular}
+	\par\smallskip
+	\parbox{0.8\linewidth}{\footnotesize
+	\textsuperscript{a}~Points in the order studies of Section~\ref{sec:lim_thin_solid}.}
 \end{table}

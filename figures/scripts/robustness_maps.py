@@ -63,8 +63,8 @@ def main():
     if a.map == "3a":
         xs = [12, 25, 50, 100, 200]
         ys = ["weak", "moderate", "strong", "extended"]
-        ylab = {"weak": "weak\n$\\mu = 0.1$", "moderate": "moderate\n$\\mu = 1$",
-                "strong": "strong\n$\\mu = 10$", "extended": "extended\n$\\mu = 100$"}
+        ylab = {"weak": "weak\n$m^{*} = 0.1$", "moderate": "moderate\n$m^{*} = 1$",
+                "strong": "strong\n$m^{*} = 10$", "extended": "extended\n$m^{*} = 100$"}
         xlabel, ylabel = "Time steps per period", "Added-mass level"
         xtick = [str(x) for x in xs]
         title = "ringAddedMass, mesh 2, two periods"

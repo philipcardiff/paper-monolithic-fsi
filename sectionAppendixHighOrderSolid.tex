@@ -16,7 +16,7 @@ These runs transfer the interface displacement to the fluid mesh through the poi
 	\centering
 	\footnotesize
 	\setlength{\tabcolsep}{3pt}
-	\caption{Collapsible channel, fluid level 2, $\rho_S/\rho_F = 1$, $\Delta t = 1/160\,\mathrm{s}$, quasi-monolithic coupling: relative error of the first trough of the wall midpoint against oomph-lib, converged and at the same time step, Newton iterations per step and elapsed time (serial, runs sharing one Apple M1 Ultra workstation, indicative). Order 1: stabilisation of Equation~\eqref{eqn:rhie_chow_s} with $\alpha_d = 0.1$; order 3: jump stabilisation with factor $0.1$. On the $640\times8$ wall these runs give $-0.52\%$, against $-0.71\%$ in Section~\ref{sec:robustness_collapsible}; the difference comes from the interface displacement transfer and the assembly of the mesh-motion pseudo-solid (Section~\ref{sec:fluid_mesh_motion}).}
+	\caption{Collapsible channel, fluid level 2, $\rho_S/\rho_F = 1$, $\Delta t = 1/160\,\mathrm{s}$, quasi-monolithic coupling: relative error of the first trough of the wall midpoint against oomph-lib, converged and at the same time step, Newton iterations per step and elapsed time (serial, runs sharing one Apple M1 Ultra workstation, indicative). Order 1: stabilisation of Equation~\eqref{eqn:rhie_chow_s} with $\alpha_d = 0.1$; order 3: jump stabilisation with factor $0.1$. On the $640\times8$ wall these runs give $-0.52\%$, as in Section~\ref{sec:robustness_collapsible}.}
 	\label{tab:ho_collapsible}
 	\begin{tabular}{lrrrrrr}
 		\toprule
@@ -64,4 +64,10 @@ The fluid has many more cells than the solid in both cases, and the order and th
 Its gain is that much coarser solid meshes reach a given accuracy: order 3 on the $108\times6$ flag is more accurate than order 1 on the $430\times24$ flag in the $u_x$ mean and the drag and lift amplitudes, in slightly less time, and order 3 on the $320\times8$ wall is about as accurate as order 1 on the $1280\times32$ wall in $0.87$ of its time.
 With two or three cells across the thickness, the cubic fit through the cell centres cannot be determined across the thickness: the order-3 $80\times2$ wall stops at $t = 0.28\,\mathrm{s}$ when its Newton iterations rise from three to the iteration limit, and the $54\times3$ flag completes only with a ten-times larger stabilisation and still has errors of $6$--$56\%$.
 In these tests order 3 therefore needs at least four cells across the thickness.
-\todo{If Philip approves the demonstration runs: add the partitioned (Robin--Neumann or IQN-ILS) collapsible-channel results with the same order-3 walls, so that the high-order solid is shown with both couplings.}
+The high-order residual is also available to the total-displacement solid of the partitioned couplings.
+With Robin--Neumann coupling on the same fluid mesh, time step and walls (and the corresponding stabilisation of the displacement solid), the order-3 walls of $160\times4$ and $320\times8$ cells give trough errors of $-0.38$ and $-0.05\%$ ($-0.25$ and $+0.07\%$ at the same time step), within $0.01\%$ of the quasi-monolithic values in Table~\ref{tab:ho_collapsible}, and the order-1 $320\times8$ wall gives $-1.17\%$, against $-1.06\%$; on the order-1 $160\times4$ wall the two couplings differ more ($+1.79$ against $-3.72\%$), as their order-1 solid discretisations differ on so coarse a wall.
+Robin--Neumann needs 29--31 coupling iterations per step with either order, so the order of the solid does not change the coupling either.
+IQN-ILS, with the same set-up, completes only the order-1 $320\times8$ wall ($-1.17\%$): it reaches its iteration cap on both $160\times4$ walls and the solid Newton iteration diverges on the order-3 $320\times8$ wall at $t = 0.61\,\mathrm{s}$, consistent with its failure at this density ratio and time step in the robustness map (Section~\ref{sec:robustness_collapsible}).
+% Partitioned high-order runs: claude-runs/prerun671 ho-coll-{rn,iqn}-{160x4,320x8}-{o1,o3}
+% (9e6d1bfb2, Mac, wp3_setup.py coll --dt 0.00625 --rho-ratio 1 --solid NX NY; order 3 = tutorial
+% solidProperties.highOrder, cubic residual with assembled high-order Jacobian, alpha 0.1).

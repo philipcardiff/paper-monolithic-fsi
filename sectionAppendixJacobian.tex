@@ -98,7 +98,7 @@ from the Rhie--Chow stabilisation in Equation~\eqref{eqn:rhie_chow}. Here
 $a_{P,f}$ denotes the face-interpolated compact momentum diagonal coefficient.
 In addition to this compact part, the contribution of the interpolated-gradient term in Equation~\eqref{eqn:rhie_chow}, whose stencil extends to the neighbours of the neighbours, is also inserted into $\tilde{J}_{pp}$, so that the pressure block contains the complete linear stabilisation operator.
 
-The block $\tilde{J}_{pp}$ is therefore a compact pressure--pressure coupling
+The block $\tilde{J}_{pp}$ is therefore a pressure--pressure coupling
 introduced by the finite-volume pressure stabilisation, rather than by a
 physical pressure diffusion term.
 Algebraically, it approximates the pressure coupling that would arise through the velocity block when the velocity is
@@ -230,5 +230,5 @@ normal-gradient contribution,
     \label{eqn:viscous_coupling_approximation}
 \end{equation}
 which is a $d\times d$ block.
-The normal--normal term $\hat{\bb{n}}_{F,f} \otimes \hat{\bb{n}}_{F,f}$ is retained from the linearisation of the full viscous stress, although the residual uses the normal-gradient form of Equation~\eqref{eqn:interface_fluid_traction}; this is one of the approximations of $\tilde{\bb{J}}$.
+The normal--normal term $\hat{\bb{n}}_{F,f} \otimes \hat{\bb{n}}_{F,f}$ comes from the linearisation of the full viscous stress in terms of the adjacent cell velocity; in the residual, the transpose part of the traction is instead evaluated from the least-squares fit of the wall velocity (Equations~\eqref{eqn:interface_fluid_traction} and~\eqref{eqn:interface_transpose_traction}), whose derivative this compact block only approximates, which is one of the approximations of $\tilde{\bb{J}}$.
 The pressure and viscous coupling blocks are multiplied by $\rho_F$ because the fluid equations use the kinematic pressure while the solid traction is a force per unit area.

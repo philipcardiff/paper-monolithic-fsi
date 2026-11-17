@@ -23,7 +23,7 @@ Its verification by self-convergence of the partitioned solution is the subject 
 
 \paragraph{Set-up.}
 A silicone flap of $11\times2\times65\,\mathrm{mm}$ is clamped where two inlet pipes of diameter $21.9\,\mathrm{mm}$ join an outlet pipe of diameter $76.2\,\mathrm{mm}$; the flow domain is the published vessel surface with the outlet extended by $250\,\mathrm{mm}$~\citep{Hessenthaler2017a}.
-An aqueous glycerol solution ($\rho_F = 1163.3\,\mathrm{kg/m^3}$, $\mu_F = 12.50\,\mathrm{mPa\,s}$) enters both inlets with parabolic profiles of peak velocity $630$ and $615\,\mathrm{mm/s}$, ramped in over $0.5\,\mathrm{s}$, so that $Re = \rho_F v_\mathrm{peak} d_\mathrm{in}/\mu_F = 1283$, based on the larger inlet peak velocity $v_\mathrm{peak}$ and the inlet diameter $d_\mathrm{in}$.
+An aqueous glycerol solution ($\rho_F = 1163.3\,\mathrm{kg/m^3}$, $\mu_F = 12.50\,\mathrm{mPa\,s}$) enters both inlets with parabolic profiles of peak velocity $630$ and $615\,\mathrm{mm/s}$, ramped in over $0.5\,\mathrm{s}$, so that $Re = \rho_F v_\mathrm{peak} d_\mathrm{in}/\mu_F = 1284$, based on the larger inlet peak velocity $v_\mathrm{peak}$ and the inlet diameter $d_\mathrm{in}$.
 The flap ($\rho_S = 1058.3\,\mathrm{kg/m^3}$) is lighter than the fluid: as in~\citet{Hessenthaler2017b}, the fluid is solved without gravity and the buoyancy is applied to the solid as the net body force $(\rho_S - \rho_F)\,\bb{g}/\rho_S$, ramped with the inflow.
 Buoyancy alone would lift the tip by $29.5\,\mathrm{mm}$; the measured steady deflection under flow is $16.41\,\mathrm{mm}$.
 The outlet has a fixed pressure with the backflow-stabilised traction of the benchmark definition ($\beta = 0.2$~\citep{Hessenthaler2017b}).
@@ -102,7 +102,7 @@ The measured jet cores exceed the prescribed inflow peak of $630\,\mathrm{mm/s}$
 % rate of Hessenthaler2017a, PMC5600002); VENC_z = 800 mm/s.
 
 \paragraph{Cost.}
-Both couplings are timed under the protocol of Section~\ref{sec:protocol} on MeluXina, on the same number of processes, restarting from a statistically steady state and timing 100 steps after 50 discarded ones (median of three repeats, which agree within $1\%$).
+Both couplings are timed under the protocol of Section~\ref{sec:protocol} on MeluXina, on the same number of processes, restarting from a statistically steady state and timing 100 steps after 50 discarded ones (median of three repeats, which agree within $2\%$, and within $4\%$ for the quasi-monolithic coupling on 128 processes).
 The fluid velocity block of the quasi-monolithic preconditioner is factorised by block-Jacobi ILU(0) and the pressure Schur complement by one BoomerAMG V-cycle (Table~\ref{tab:solver_settings}).
 On 64 processes the quasi-monolithic coupling costs $46.5$ and $167$ core-hours per simulated second on levels 1 and 2, and IQN-ILS $22.7$ and $28.0$: the quasi-monolithic coupling is $2.0$ and $6.0$ times more expensive.
 One Newton iteration costs as much as $4.3$ coupling iterations on level 1 and $12.1$ on level 2, whereas IQN-ILS needs about four coupling iterations per step on both meshes.

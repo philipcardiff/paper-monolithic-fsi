@@ -1,8 +1,9 @@
-"""3dTube strong scaling (timing row 6b): elapsed time per step (median of
-three repeats over steps 2-50, median_elapsed_win_s from the ClockTime of the
-logs, ~/claude-runs/shared/elapsed-2026-11-01), parallel
+"""3dTube strong scaling: elapsed time per step (median of three repeats over
+steps 2-50, median_elapsed_win_s from the ClockTime of the logs), parallel
 efficiency from one NUMA domain (16 processes) and Krylov iterations per
-Newton iteration. Data: paper-data/tube3d_strong_scaling.csv."""
+Newton iteration. Rerun of 17 Nov 2026 on the exact-arc meshes for both
+couplings, entirely in node-local memory (no file-system stalls); see
+paper-data/tube3d_scaling_rerun/README.md. Data: paper-data/tube3d_strong_scaling.csv."""
 import csv
 from pathlib import Path
 import matplotlib

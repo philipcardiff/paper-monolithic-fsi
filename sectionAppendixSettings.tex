@@ -9,7 +9,7 @@ Table~\ref{tab:solver_settings} lists the settings of the quasi-monolithic runs 
 	\footnotesize
 	\setlength{\tabcolsep}{2pt}
 	\caption{Discretisation and solver settings of the quasi-monolithic runs.
-	All cases use Newton's method with the matrix-free operator (full steps, except a backtracking line search on the 3-D flag), the approximate Jacobian of Appendix~\ref{app:jacobian} (with first-order upwind convection) as preconditioning matrix, restarted LGMRES (restart 200) with a multiplicative fluid--solid field split and, in the fluid block, the Schur complement split of Section~\ref{sec:fieldsplit}.
+	All cases use Newton's method with the matrix-free operator and full steps, the approximate Jacobian of Appendix~\ref{app:jacobian} (with first-order upwind convection) as preconditioning matrix, restarted LGMRES (restart 200) with a multiplicative fluid--solid field split and, in the fluid block, the Schur complement split of Section~\ref{sec:fieldsplit}.
 	$\Delta$: time scheme of the fluid.
 	Conv.: convection scheme, central (lin.), second-order upwind (LUD) or LUST (three-quarters central, one quarter LUD).
 	Flux: velocity interpolation in the continuity flux, linear (lin.) or skewness-corrected linear (skew).
@@ -36,14 +36,13 @@ Table~\ref{tab:solver_settings} lists the settings of the quasi-monolithic runs 
 		Hessenthaler flap & BDF2  & LUST & lin.  & TL & 0.01 & AMI & $10^{-6}$ & $10^{-4}$ & full, LU & 8 \\
 		Half-cylinder & BDF2  & LUD  & skew  & TL & 0.1 & DM & $10^{-6}$\textsuperscript{e} & $10^{-4}$\textsuperscript{e} & upper, LU & -- \\
 		3-D tube & BDF2  & LUD  & lin.  & LG & 0.1 & DM & $10^{-6}$ & $10^{-4}$ & full, AMG & 8 \\
-		3-D flag & BDF2  & LUD  & skew  & TL & 0.5 & DM & $10^{-4}$ & $10^{-4}$ & upper, LU & -- \\
 		\bottomrule
 	\end{tabular}
 	\par\smallskip
 	\parbox{0.95\linewidth}{\footnotesize
 	\textsuperscript{a}~Steady target: only the steady state is compared, and no temporal order is claimed.
 	\textsuperscript{b}~Also run with linear interpolation (Section~\ref{sec:cavity_m}).
-	\textsuperscript{d}~With conservative traction transfer: the $640\times8$ solid mesh of Section~\ref{sec:robustness_collapsible} and the walls of the order study of Section~\ref{sec:lim_thin_solid}.
+	\textsuperscript{d}~With conservative traction transfer: the $640\times8$ solid mesh of Section~\ref{sec:robustness_collapsible} and the walls of the order study of Appendix~\ref{app:high_order_solid}.
 	\textsuperscript{e}~The temporal study of Section~\ref{sec:blob_m} uses $10^{-8}$ and $10^{-6}$.
 	\textsuperscript{f}~The runs of Sections~\ref{sec:womersley_m} and~\ref{sec:womersley_consistency} use $10^{-8}$ and $10^{-6}$.
 }
@@ -74,10 +73,9 @@ The pseudo-solid has a shear modulus $\mu^\Gamma = 1$ and a bulk modulus of $3$ 
 		Hessenthaler flap & linear & $q = 2$, flap & every step & points \\
 		Half-cylinder & neo-Hookean & -- & -- & faces \\
 		3-D tube & linear & -- & -- & faces \\
-		3-D flag & linear & -- & -- & faces \\
 		\bottomrule
 	\end{tabular}
 	\par\smallskip
 	\parbox{0.8\linewidth}{\footnotesize
-	\textsuperscript{a}~Points in the order studies of Section~\ref{sec:lim_thin_solid}.}
+	\textsuperscript{a}~Points in the order studies of Appendix~\ref{app:high_order_solid}.}
 \end{table}

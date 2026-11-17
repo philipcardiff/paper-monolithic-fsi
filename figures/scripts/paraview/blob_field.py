@@ -2,7 +2,8 @@
 # fluid velocity magnitude on the deformed mesh, solid coloured by |D| on the
 # displaced configuration. Finite-strain factor-2 run (MeluXina
 # philip-blobnh2/qm-mesh/verification/work/mesh_x2, foamToVTK -region fluid|solid
-# -time 3): max |U| 1.61 m/s, max |D| 0.136 m.
+# -time 3): max |U| 1.61 m/s, max |D| 0.136 m. Small arrows of equal length
+# show the local flow direction on a uniform grid of sample points.
 import sys
 from paraview.simple import *
 case, out = sys.argv[1], sys.argv[2]
@@ -16,12 +17,23 @@ warp = WarpByVector(Input=sop); warp.Vectors = ["POINTS", "D"]; warp.ScaleFactor
 sl = Slice(Input=soi); sl.SliceType = "Plane"; sl.SliceType.Origin = [0, 0, 0]; sl.SliceType.Normal = [0, 0, 1]
 und0 = FeatureEdges(Input=sl); und0.FeatureEdges = 0; und0.NonManifoldEdges = 0; und0.ManifoldEdges = 0
 und = Transform(Input=und0); und.Transform.Translate = [0, 0, 0.6]
+# Flow-direction arrows: sample U on a uniform grid, keep points inside the
+# fluid, and draw equal-length arrows (direction only)
+rs = ResampleToImage(Input=MergeBlocks(Input=fli0)); rs.UseInputBounds = 0
+rs.SamplingBounds = [0.07, 6.43, -0.43, 0.93, 0.05, 0.05]; rs.SamplingDimensions = [44, 10, 1]
+th = Threshold(Input=rs); th.Scalars = ["POINTS", "vtkValidPointMask"]; th.LowerThreshold = 0.5; th.UpperThreshold = 1.5
+gl = Glyph(Input=th, GlyphType="Arrow"); gl.OrientationArray = ["POINTS", "U"]; gl.ScaleArray = ["POINTS", "No scale array"]
+gl.ScaleFactor = 0.09; gl.GlyphMode = "All Points"; gl.GlyphTransform.Translate = [-0.5, 0, 0]
+glt = Transform(Input=gl); glt.Transform.Translate = [0, 0, 0.53]
+gl.GlyphType.TipLength = 0.35; gl.GlyphType.TipRadius = 0.18; gl.GlyphType.ShaftRadius = 0.06
 v = CreateView("RenderView"); v.ViewSize = [2400, 760]; v.OrientationAxesVisibility = 0; v.Background = [1, 1, 1]
 v.UseColorPaletteForBackground = 0
 d1 = Show(fli, v); ColorBy(d1, ("POINTS", "U", "Magnitude"))
 lut = GetColorTransferFunction("U"); lut.ApplyPreset("Viridis", True); lut.Discretize = 1; lut.NumberOfTableValues = 14
+d4 = Show(glt, v); d4.AmbientColor = d4.DiffuseColor = [1, 1, 1]; d4.ColorArrayName = ["POINTS", ""]; d4.Opacity = 0.85
 d3 = Show(und, v); d3.AmbientColor = d3.DiffuseColor = [0, 0, 0]; d3.LineWidth = 4; d3.ColorArrayName = ["POINTS", ""]
-d2 = Show(warp, v); d2.Representation = "Surface"; ColorBy(d2, ("POINTS", "D", "Magnitude"))
+warpT = Transform(Input=warp); warpT.Transform.Translate = [0, 0, 0.08]
+d2 = Show(warpT, v); d2.Representation = "Surface"; ColorBy(d2, ("POINTS", "D", "Magnitude"))
 lut2 = GetColorTransferFunction("D"); lut2.ApplyPreset("Reds", True); lut2.Discretize = 1; lut2.NumberOfTableValues = 12; lut2.InvertTransferFunction(); lut2.RescaleTransferFunction(0.0, 0.15); lut.RescaleTransferFunction(0.0, 1.62)
 for l, t in ((lut, "Fluid velocity magnitude (m/s)"), (lut2, "Solid displacement magnitude (m)")):
     sb = GetScalarBar(l, v); sb.Title = t; sb.ComponentTitle = ""; sb.Visibility = 1

@@ -147,7 +147,7 @@ where $\text{sym}[ \bb{A} ] = \frac{1}{2} (\bb{A} + \bb{A}^T)$ denotes the symme
 Both formulations share the velocity form of Equations~\eqref{eqn:solid_displacement_velocity} and \eqref{eqn:solid_momentum_TL}.
 Planar two-dimensional cases assume plane strain, and axisymmetric cases (the compliant tube of Section~\ref{sec:womersley_m}) are solved on a wedge mesh one cell thick in the circumferential direction.
 % Checked against constant/solid/{solid,mechanical}Properties(.monolithic) at a421f063d.
-The Saint Venant--Kirchhoff law is used with the total Lagrangian velocity solid for the flexible-bottom cavity, the collapsible channel, Turek--Hron FSI3 and the flag of Section~\ref{sec:lim_foil}, the neo-Hookean law for the elastic half-cylinder and the Hessenthaler flap, and Hooke's law with the small-strain velocity solid for the ring, the pulsatile tube and the three-dimensional tube.
+The Saint Venant--Kirchhoff law is used with the total Lagrangian velocity solid for the flexible-bottom cavity, the collapsible channel and Turek--Hron FSI3, the neo-Hookean law for the elastic half-cylinder and the Hessenthaler flap, and Hooke's law with the small-strain velocity solid for the ring, the pulsatile tube and the three-dimensional tube.
 
 The solid boundary conditions considered are prescribed velocity (zero on clamped boundaries), prescribed traction (including traction-free boundaries) and symmetry conditions; interface conditions coupling the solid to the fluid are described in Section~\ref{sec:fsi_interface}.
 

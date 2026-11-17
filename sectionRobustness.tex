@@ -119,7 +119,7 @@ The quasi-monolithic troughs for $\rho_s/\rho_f = 1$ and for the massless wall a
 
 \paragraph{Note on the mesh motion.}\label{sec:robustness_collapsible_mesh}
 A practical point for implementations in which the mesh motion is solved outside the Newton iteration: if each step starts the pseudo-solid solve from the previous mesh, its first iterate carries the whole wall increment of the step into the cells next to the wall.
-At $\Delta t = 0.025\,\mathrm{s}$, near the time of fastest collapse, this increment exceeds the height of those cells, and the linear solve of the pseudo-solid, whose preconditioner is frozen at the start of the step, then fails at $t = 0.3\,\mathrm{s}$ for every density ratio, although the coupled Newton iteration had converged in three iterations per step up to that time.
+At $\Delta t = 0.025\,\mathrm{s}$, near the time of fastest collapse, this increment exceeds the height of those cells, and the linear solve of the pseudo-solid, whose preconditioner is frozen at the start of the step, then fails at $t = 0.3\,\mathrm{s}$ for every density ratio, although the coupled Newton iteration had converged in about three iterations per step up to that time.
 Starting the solve from a mesh displacement extrapolated in time from the previous steps avoids this, and changes the troughs at the smaller steps by at most $2\times10^{-6}$ (relative).
 
 \paragraph{Discussion.}

@@ -1,5 +1,5 @@
-"""womersleyTube: quasi-monolithic minus Robin-Neumann before (open) and after
-(filled) the traction correction, against mesh factor (200 steps per period)
+"""Pulsatile tube: quasi-monolithic minus Robin-Neumann with the QM traction without (open)
+and with (filled) the transpose part of the viscous stress, against mesh factor (200 steps per period)
 and steps per period (factor-2 mesh); grey band: |IQN-ILS minus Robin-Neumann|.
 Data: paper-data/womersley_consistency.csv (from the qois.csv of
 evidence/m-runs-a, m-runs-a-rfix and m-runs-wp0)."""
@@ -37,6 +37,6 @@ from matplotlib.lines import Line2D
 h, lab = ax[1].get_legend_handles_labels()
 h += [Line2D([], [], color="0.3", marker="o", mfc="white", ls="--", lw=0.8, ms=4),
       Line2D([], [], color="0.3", marker="o", ls="-", lw=1, ms=4)]
-lab += ["before the correction", "after the correction"]
+lab += ["QM traction without the transpose term", "QM traction with the transpose term"]
 fig.legend(h, lab, fontsize=6, frameon=False, loc="outside lower center", ncol=4)
 fig.savefig(root / "figures/womersleyTube-consistency.pdf")

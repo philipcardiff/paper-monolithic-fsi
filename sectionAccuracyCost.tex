@@ -1,5 +1,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Accuracy, cost and parallel performance}\label{sec:accuracy_cost}
+% Alias for the removed Limitations section: the results now end with this
+% section. Delete once no cross-reference uses it.
+\label{sec:limitations}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Streams feeding this section: R4 (Hron-Turek FSI3) and R6 (blobInTreacle).
 % The 2D block with a flexible tail (Jaiman and Joshi 2022) has no case in
@@ -16,7 +19,7 @@ This section compares the complete quasi-monolithic and partitioned IQN-ILS form
 % a421f063d, qm-a421 build); statistics with the TurekHron2006 verification
 % driver's periodic_statistics; scripts figures/scripts/fsi3_*.py.
 
-The FSI3 problem of~\citet{Turek2006}, an elastic flag behind a rigid cylinder oscillating at a solid-to-fluid density ratio of one (Figures~\ref{fig:fsi3_geom_m} and~\ref{fig:fsi3_field_m}), is the most widely used test of strongly coupled FSI solvers, and its Featflow reference values carry an uncertainty of about $3$--$5\%$ in the displacement and force amplitudes and less than $0.3\%$ in the frequency and mean drag~\citep{CardiffFSIVerification2026}.
+The FSI3 problem of~\citet{Turek2006}, an elastic flag behind a rigid cylinder oscillating at a solid-to-fluid density ratio of one and $Re = \bar{U}D/\nu_F = 200$, with the mean inflow velocity $\bar{U} = 2\,\mathrm{m/s}$ and the cylinder diameter $D = 0.1\,\mathrm{m}$ (Figures~\ref{fig:fsi3_geom_m} and~\ref{fig:fsi3_field_m}), is the most widely used test of strongly coupled FSI solvers, and its Featflow reference values carry an uncertainty of about $3$--$5\%$ in the displacement and force amplitudes and less than $0.3\%$ in the frequency and mean drag~\citep{CardiffFSIVerification2026}.
 
 \begin{figure}[htbp]
 	\centering
@@ -35,22 +38,25 @@ The FSI3 problem of~\citet{Turek2006}, an elastic flag behind a rigid cylinder o
 % every 0.5 s); figures/scripts/paraview/fsi3_field.py.
 
 \paragraph{Set-up.}
-Both couplings are run on one family of three unstructured fluid meshes, refined towards the flag tip, with $96\,712$, $194\,183$ and $387\,219$ cells (levels 1--3, the cell size reduced by $\sqrt{2}$ per level), and a uniform flag mesh of $430\times24$, $608\times34$ and $860\times48$ cells; the interface is non-matching and is transferred by AMI.
+Both couplings are run on one family of three unstructured, predominantly quadrilateral fluid meshes, generated with Gmsh~\citep{Geuzaine2009} and extruded by one cell, with structured layers of cells along the walls, the cylinder and the flag, and refined towards the flag tip; they have $96\,712$, $194\,183$ and $387\,219$ cells (levels 1--3, the nominal cell size reduced by $\sqrt{2}$ per level, with the first-cell size at the flag tip kept at about $0.3\,\mathrm{mm}$).
+The flag meshes are uniform block-structured meshes of $430\times24$, $608\times34$ and $860\times48$ cells; the interface is non-matching and is transferred by AMI.
 The time steps are $2\times10^{-4}$, $1.41\times10^{-4}$ and $10^{-4}\,\mathrm{s}$, with BDF2 in both regions.
 The flow develops for $2\,\mathrm{s}$ around a fixed flag, after which the coupled problem is run to $t = 6\,\mathrm{s}$.
-The flag is computed with the geometrically nonlinear velocity solid (quasi-monolithic) and with the geometrically nonlinear displacement solid under IQN-ILS with the strict convergence test, a tolerance of $10^{-6}$ on every residual measure (partitioned).
+The flag is computed with the geometrically nonlinear velocity solid (quasi-monolithic) and with the geometrically nonlinear displacement solid under IQN-ILS with the strict convergence test of Section~\ref{sec:protocol}, a tolerance of $10^{-6}$ on every residual measure (partitioned).
 The quasi-monolithic solid uses the stabilisation of Equation~\eqref{eqn:rhie_chow_s} with $\alpha_d = 0.5$ (Table~\ref{tab:solver_settings}).
-The stabilisation vanishes at the design order of the discretisation, so its effect should decrease with refinement; it is noticeable on the level-1 flag, where the jump stabilisation of Section~\ref{sec:lim_thin_solid} with factor $0.1$ gives a lift-amplitude error of $4.0\%$ instead of $6.35\%$, and changes the errors of the $u_x$ mean, the $u_y$ amplitude and frequency, and the drag mean and amplitude by $0.01$--$0.94$ percentage points.
+The stabilisation vanishes at the design order of the discretisation, so its effect decreases with refinement, but it is noticeable on the level-1 flag: with the jump form of the stabilisation (Section~\ref{sec:discrete_coupled_residual}) and a factor of $0.1$, the lift-amplitude error is $4.0\%$ instead of $6.35\%$, and the errors of the other quantities in Table~\ref{tab:fsi3_m} change by $0.01$--$0.94\%$ of the reference values.
 % fsi3ho (build-gm, diffStencilLaplacian 0.5) o1_sf1 reproduces the level-1 QM
 % row (lift amp 6.35 %); fsi3ho697 o1_sf1 (build-gm697, alpha 0.1): ux mean -0.40,
 % uy amp -0.07, uy freq 0.16, drag mean 0.08, drag amp 0.54, lift amp 4.04 %
 % (Table row: -0.31, -0.19, 0.28, 0.07, 1.48, 6.35). The #697 fix alone changes the
 % order-3 results on this flag by < 0.01 % (fsi3ho vs fsi3ho697 o3_sf1).
-For both couplings the fluid mesh is moved by the linear elastic pseudo-solid assembled on the current mesh, stiffened by the linear inverse distance to the flag and the cylinder (Sections~\ref{sec:fluid_mesh_motion} and~\ref{sec:lim_mesh_motion}).
+For both couplings the fluid mesh is moved by the linear elastic pseudo-solid assembled on the current mesh, stiffened by the linear inverse distance to the flag and the cylinder (Section~\ref{sec:fluid_mesh_motion}), which keeps the cells next to the flag tip valid throughout the oscillation.
 Three further quasi-monolithic runs check the level-2 result: time steps of $10^{-4}$ and $2\times10^{-4}\,\mathrm{s}$, and a flag mesh refined twice in each direction.
 
 \paragraph{Measured.}
-The mean and amplitude of $u_x$(A), the amplitude and frequency of $u_y$(A), and the mean and amplitude of the drag and lift on the cylinder and flag are evaluated over the closing second ($t = 5$--$6\,\mathrm{s}$, about five periods) as in the companion paper, and compared with the Featflow level-4 values; the amplitudes of the last two periods agree with those of the two before to within $0.07\%$ in every run.
+The mean and amplitude of $u_x$(A), the amplitude and frequency of $u_y$(A), and the mean and amplitude of the drag and lift on the cylinder and flag are evaluated as in the benchmark and the companion paper~\citep{Turek2006, CardiffFSIVerification2026}: the mean and amplitude are half the sum and half the difference of the maximum and minimum over the last full period of the flag motion, and the frequency is averaged over the full periods of the closing second ($t = 5$--$6\,\mathrm{s}$, about five periods); the amplitudes of the last two periods agree with those of the two before to within $0.07\%$ in every run.
+The reference values, as in the companion paper, are not the summary values of~\citet{Turek2006}, which differ from them noticeably (for example a drag amplitude of $22.66$ against $27.74\,\mathrm{N/m}$), but the Featflow values tabulated by the benchmark authors for level 4 with $\Delta t = 2.5\times10^{-4}\,\mathrm{s}$, the discretisation of their published reference time history.
+Applying the extraction above to that history reproduces the tabulated displacement statistics, mean drag and lift amplitude to within $0.7\%$, the frequencies to within $0.3\%$ and the drag amplitude to within $1.1\%$, which validates the extraction for the quantities compared.
 The cost follows the timing protocol of Section~\ref{sec:protocol}: each run is restarted from its state at $t = 5\,\mathrm{s}$ alone on an exclusive MeluXina node with its production number of processes, the first 50 steps are discarded, and the elapsed time of the next flag period ($0.183\,\mathrm{s}$) gives the cost in core-hours per simulated second, the median of three repeats.
 The repeats agree within $4\%$, except for IQN-ILS on level 3 ($10\%$) and one repeat of each coupling on level 2, which ran $16$ and $21\%$ slower than the median.
 % Source: paper-data/fsi3_timing.csv (MeluXina fsi3t, jobs 5442545--5442550); iterations per step in the timed window agree with those over t = 2--6 s within 0.02.
@@ -84,16 +90,30 @@ The repeats agree within $4\%$, except for IQN-ILS on level 3 ($10\%$) and one r
 
 \paragraph{Accuracy.}
 At every level both couplings are within the acceptance tolerances of the companion paper (Table~\ref{tab:fsi3_m}): the displacement errors are below $3\%$, the frequency and mean-drag errors below $0.3\%$, and the drag-amplitude errors below $3.2\%$, all inside the uncertainty of the reference.
-The lift amplitude has the largest error, $6.4\%$ on level 1, above the uncertainty of the reference, and $2.9$--$3.6\%$ on level 3; it falls under refinement at an observed order of about $1.3$ (quasi-monolithic) and $1.4$ (IQN-ILS), and refining the flag mesh of level 2 lowers it by $1.7\%$ (drag amplitude $0.7\%$, $u_y$ amplitude $0.05\%$), so the solid mesh accounts for most of the remaining lift error.
-Halving or doubling the time step on level 2 changes every quantity by less than $0.05\%$.
+The lift amplitude has the largest error, $6.4\%$ on level 1, above the uncertainty of the reference, and $2.9$--$3.6\%$ on level 3; it falls under refinement at an observed order of about $1.3$ (quasi-monolithic) and $1.4$ (IQN-ILS), and refining the flag mesh of level 2 twice in each direction lowers it from $4.3$ to $2.5\%$ (the drag-amplitude error from $1.8$ to $1.1\%$, with the $u_y$ amplitude unchanged to $0.05\%$), so the solid mesh accounts for most of the remaining lift error; a high-order reconstruction of the flag lowers the level-1 lift-amplitude error to $1.8\%$ on the same flag mesh, and to $2.4\%$ on a flag mesh with a sixteenth of its cells (Appendix~\ref{app:high_order_solid}).
+Reducing or increasing the time step on level 2 by a factor of $\sqrt{2}$ changes every quantity by less than $0.05\%$.
 On the same mesh the two couplings differ by $0.04$--$0.65\%$ in the frequency, the mean drag and the $u_y$ and lift amplitudes, and by $0.6$--$1.6\%$ in the $u_x$ statistics and the drag amplitude.
-These differences do not shrink over the three levels (the $u_x$ mean differs by $0.6$, $1.0$ and $1.2\%$), unlike those of Section~\ref{sec:consistency_partitioned}: the flag is geometrically nonlinear, for which the velocity and displacement solids are not algebraically equivalent in time, and the quasi-monolithic fluid moves its mesh once per step rather than in every coupling iteration (Table~\ref{tab:discretisation_differences}). The differences stay well inside the reference uncertainty.
-Over the three levels the $u_x$ mean changes by $1.3\%$ and then $0.05\%$ (quasi-monolithic), and by $1.7\%$ and then $0.14\%$ (IQN-ILS): on this mesh family neither coupling shows the first-order sequence of the companion paper's meshes, so that sequence comes from the discretisation and meshes rather than from the coupling.
+Unlike those of Section~\ref{sec:consistency_partitioned}, these differences do not yet shrink over the three levels (the $u_x$ mean differs by $0.6$, $1.0$ and $1.2\%$), but they stay well inside the reference uncertainty.
+They are not caused by the solid time integration: the BDF2 velocity form of the quasi-monolithic solid with BDF2 kinematics is algebraically identical to the BDF2 displacement form of the partitioned solid, for the geometrically nonlinear solid as for the linear one, since both evaluate the stress at the same new-time displacement.
+The temporal differences between the couplings are in the fluid and at the interface: the quasi-monolithic fluid moves its mesh once per step rather than in every coupling iteration, and takes its wall velocity from the solid rather than from the mesh motion (Table~\ref{tab:discretisation_differences}).
+These are consistent differences of order $\Delta t^2$, which vanish as the time step is reduced, and the quasi-monolithic time-step checks above suggest that they are small here (the temporal error of the partitioned solution was not measured separately).
+The remaining differences are therefore attributed mainly to the spatial differences of Table~\ref{tab:discretisation_differences}, such as the interface pressure condition, which have not yet started to decrease over three levels refined by only $\sqrt{2}$ each.
+Over the three levels the $u_x$ mean changes by $1.3\%$ and then $0.05\%$ (quasi-monolithic), and by $1.7\%$ and then $0.14\%$ (IQN-ILS), so the two couplings converge at a similar rate.
 
 \paragraph{Cost.}
 The quasi-monolithic coupling needs two Newton iterations per step at every level, with $46$, $54$ and $67$ Krylov iterations per Newton iteration on levels 1--3, and IQN-ILS needs $4.9$--$6.0$ coupling iterations per step.
-One Newton iteration therefore costs as much as $3.0$, $3.5$ and $5.0$ coupling iterations on levels 1--3, more than on the other two-dimensional cases and rising with the mesh together with the Krylov iterations of the fluid block, and the quasi-monolithic coupling is $1.2$, $1.3$ and $1.6$ times more expensive per simulated second on levels 1--3 (Figure~\ref{fig:fsi3_work_precision}).
-Since the two couplings reach the same error on the same mesh to within the reference uncertainty, equal error means equal mesh, and the quasi-monolithic coupling costs $1.2$--$1.6$ times as much as IQN-ILS at equal error, the factor rising with refinement; below errors of about $3$--$5\%$, every quantity except the lift amplitude is limited by the reference rather than by either coupling.
+On the same processes, one Newton iteration costs as much as $3.0$, $3.5$ and $5.0$ coupling iterations on levels 1--3.
+This ratio is larger than on the other two-dimensional cases, and it rises with the mesh, as do the Krylov iterations per Newton iteration.
+Per simulated second, the quasi-monolithic coupling is therefore $1.2$, $1.3$ and $1.6$ times more expensive than IQN-ILS on levels 1--3 (Figure~\ref{fig:fsi3_work_precision}).
+On the same mesh the two couplings reach errors that are indistinguishable within the reference uncertainty, so the quasi-monolithic coupling costs $1.2$--$1.6$ times as much as IQN-ILS for an accuracy indistinguishable from it against this reference, the factor rising with refinement; below errors of about $3$--$5\%$, every quantity except the lift amplitude is limited by the reference rather than by either coupling.
+
+The quasi-monolithic coupling is not more expensive because of its nonlinear convergence: two Newton iterations per step is close to the minimum for a Newton method.
+Its cost lies in each Newton iteration, which solves one preconditioned linear system for all fluid and solid unknowns, whereas a partitioned coupling iteration performs one segregated (PIMPLE) fluid solve and one solid solve.
+The fluid mesh has about ten times as many cells as the flag mesh, so the fluid block is expected to dominate this linear system and the growth of its Krylov iterations with the mesh to set the growth of the cost ratio, although the cost was not profiled by block.
+Most of the extra cost is thus expected to come from the coupled Newton solution of the fluid equations rather than from the fluid--solid coupling itself.
+\todo{Add the result of the partitioned IQN-ILS run with the Newton fluid solver on level 1 (cost per coupling iteration against the PIMPLE fluid solver), which tests this expectation.}
+% TODO(agent B): partitioned IQN-ILS with newtonIcoFluid, FSI3 level 1: fill in when the run is done.
+Faster solution of the coupled fluid block is therefore the most promising route to a cheaper quasi-monolithic coupling; preconditioners based on segregated pressure-correction (SIMPLE-type) algorithms have been proposed for this purpose~\citep{Pernice2001, Knoll2004, Klaij2013}, but such a preconditioner did not reduce the cost in initial tests, and it is left for future work.
 
 %%--------------------------------------------------------------------------------------------------------------------%%
 \subsection{Elastic half-cylinder in a viscous channel flow}\label{sec:blob_m}
@@ -125,7 +145,7 @@ Repeating their temporal study with the present cell-centred finite volume formu
 % radius 0.5 m centred at (1.5, -0.5) m in the channel [0, 6.5] x [-0.5, 1] m.
 
 \paragraph{Set-up.}
-An elastic half-cylinder of radius $0.5\,\mathrm{m}$ ($\lambda_s = 500\,\mathrm{Pa}$, $\mu_s = 50\,\mathrm{Pa}$, $\rho_s = 1\,\mathrm{kg/m^3}$) is immersed in a fluid of the same density and kinematic viscosity $1\,\mathrm{m^2/s}$, so that the Reynolds number is of order one and the added mass is strong.
+An elastic half-cylinder of radius $0.5\,\mathrm{m}$ ($\lambda_s = 500\,\mathrm{Pa}$, $\mu_s = 50\,\mathrm{Pa}$, $\rho_s = 1\,\mathrm{kg/m^3}$) is immersed in a fluid of the same density and kinematic viscosity $1\,\mathrm{m^2/s}$, so that $Re = U_\mathrm{max} D/\nu_F \approx 1$, with the peak inlet velocity $U_\mathrm{max} = 1.125\,\mathrm{m/s}$ and the half-cylinder diameter $D = 1\,\mathrm{m}$, and the added mass is strong.
 A parabolic inlet velocity is ramped up over $2\,\mathrm{s}$, after which the flow becomes steady.
 \citet{Liu2014} use a small-strain linear elastic solid, but the top of the half-cylinder moves by more than a quarter of its radius, and a small-strain solid integrates the fluid traction over its undeformed surface, so that it receives about $12\%$ less force than the fluid exerts~\citep{CardiffFSIVerification2026}.
 As in the companion paper, the solid is therefore finite strain, with the compressible neo-Hookean strain energy $\Psi = \tfrac{\mu_s}{2}(\bar{I}_1 - 3) + \tfrac{K_s}{4}(J^2 - 1 - 2\ln J)$, $K_s = \lambda_s + \tfrac{2}{3}\mu_s$, which reduces to Liu et al.'s model for small strains: the geometrically nonlinear velocity solid (quasi-monolithic) and the total Lagrangian displacement solid (partitioned).
@@ -134,11 +154,11 @@ Both regions use BDF2 in time.
 % solids4foam 6dc42799b (Euler for the fluid before, e.g. at 257b2e564).
 
 \paragraph{Measured.}
-The temporal study follows~\citet{Liu2014} and the partitioned study of the companion paper: on the tutorial mesh (480 fluid and 120 solid cells), $\Delta t = 0.25$ to $0.015625\,\mathrm{s}$, halved each time, to $t = 1\,\mathrm{s}$, monitoring the self-convergence of the top-point displacement $u_x$(A) and the interface position.
-The quasi-monolithic coupling uses Newton tolerances of $10^{-8}$ and a Krylov tolerance of $10^{-6}$, so that its iterative error lies below the smallest change; IQN-ILS uses the strict test with the tutorial tolerance of $10^{-6}$, without reusing the modes of earlier steps.
-The mesh study computes the steady $u_x$(A) on mesh factors 1, 2 and 4 ($\Delta t = 0.01$, $0.01$ and $0.005\,\mathrm{s}$) with the tutorial tolerances to $t = 3\,\mathrm{s}$, by which time it varies by less than $2\times10^{-4}$ of its value over the last $0.5\,\mathrm{s}$.
+The fluid and solid meshes are block structured, with matching interface faces.
+The temporal study follows~\citet{Liu2014} and the partitioned study of the companion paper: on the coarsest mesh (factor 1; 480 fluid and 120 solid cells), $\Delta t = 0.25$ to $0.015625\,\mathrm{s}$, halved each time, to $t = 1\,\mathrm{s}$, monitoring the self-convergence of the top-point displacement $u_x$(A) and the interface position.
+The quasi-monolithic coupling uses Newton tolerances of $10^{-8}$ and a Krylov tolerance of $10^{-6}$, so that its iterative error lies below the smallest change; IQN-ILS uses the strict test of Section~\ref{sec:protocol} with a tolerance of $10^{-6}$, without reusing the modes of earlier time steps.
+The mesh study computes the steady $u_x$(A) on mesh factors 1, 2 and 4 ($\Delta t = 0.01$, $0.01$ and $0.005\,\mathrm{s}$) with the default tolerances of Table~\ref{tab:solver_settings} (quasi-monolithic) and a coupling tolerance of $10^{-6}$ (IQN-ILS) to $t = 3\,\mathrm{s}$, by which time it varies by less than $2\times10^{-4}$ of its value over the last $0.5\,\mathrm{s}$.
 The temporal study of both couplings is timed serially under the protocol of Section~\ref{sec:protocol}, over each whole run excluding its first step; the mesh-study runs share one node, so their times are indicative.
-Both couplings use the same development version, later than that of most other results (Section~\ref{sec:protocol}).
 % Finite-strain rerun (10 Nov 2026), MeluXina job 5443010, build-blob = QM branch
 % b982bf6c5 merged with tutorial/blob-finite-strain 6fa468d56 (#671, neo-Hookean
 % TL solid, couplingReuse 0). Time study: three serial repeats on an exclusive
@@ -150,7 +170,7 @@ Both couplings use the same development version, later than that of most other r
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=0.9\textwidth]{figures/blobInTreacle-time}
-	\caption{Elastic half-cylinder, tutorial mesh, $t = 1\,\mathrm{s}$: successive change in (a) the top-point displacement $u_x$(A) and (b) the interface position ($\ell_2$ norm over the interface vertices) against the finer of the two time steps, quasi-monolithic (Newton tolerance $10^{-8}$) and IQN-ILS (strict test, $10^{-6}$), with a slope of 2.}
+	\caption{Elastic half-cylinder, factor-1 mesh, $t = 1\,\mathrm{s}$: successive change in (a) the top-point displacement $u_x$(A) and (b) the interface position ($\ell_2$ norm over the interface vertices) against the finer of the two time steps, quasi-monolithic (Newton tolerance $10^{-8}$) and IQN-ILS (strict test, $10^{-6}$), with a slope of 2.}
 	\label{fig:blob_time}
 \end{figure}
 
@@ -158,7 +178,7 @@ Both couplings use the same development version, later than that of most other r
 The quasi-monolithic sequence is broadly compatible with second-order convergence (Figure~\ref{fig:blob_time}), with observed orders of 2.07 and 3.22 for $u_x$(A) and 3.66, 2.62 and 2.65 for the interface position, consistent with the second order reported by~\citet{Liu2014} for their finite element formulation; the last change in $u_x$(A), $7\times10^{-6}\,\mathrm{m}$, approaches the level of the Newton tolerance (order 1.20).
 IQN-ILS converges at a similar rate (orders 2.13 and 2.21 for $u_x$(A), 2.12, 2.00 and 2.63 for the interface), but its last change in $u_x$(A), $8\times10^{-7}\,\mathrm{m}$, is smaller than second order predicts and depends on the coupling tolerance (with $10^{-7}$ the last order is 1.44), so at the smallest steps its iterative error is comparable to the temporal change.
 The quasi-monolithic coupling needs 2.0--3.0 Newton iterations per step and IQN-ILS 11.0--14.5 coupling iterations (at most 22); the five quasi-monolithic runs take $21\,\mathrm{s}$ in total against $118\,\mathrm{s}$ for IQN-ILS, 5.6 times less, despite their tighter tolerances.
-At the smallest step the couplings differ by $0.09\%$ in $u_x$(A), close to their $0.12\%$ difference in the steady state on this mesh (Table~\ref{tab:blob_mesh}), so the difference is spatial, not temporal.
+At the smallest step the couplings differ by $0.09\%$ in $u_x$(A), close to their steady-state difference on this mesh, which is therefore spatial rather than temporal.
 
 \begin{table}[htbp]
 	\centering
@@ -183,15 +203,16 @@ At the smallest step the couplings differ by $0.09\%$ in $u_x$(A), close to thei
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=\textwidth]{figures/blobInTreacle-field}
-	\caption{Elastic half-cylinder at steady state ($t = 3\,\mathrm{s}$), quasi-monolithic coupling, factor-2 mesh: fluid velocity magnitude and the displaced half-cylinder coloured by displacement magnitude (no magnification), with its undeformed outline (black).}
+	\caption{Elastic half-cylinder at steady state ($t = 3\,\mathrm{s}$), quasi-monolithic coupling, factor-2 mesh: fluid velocity magnitude, with arrows of equal length showing the local flow direction, and the displaced half-cylinder coloured by displacement magnitude (no magnification), with its undeformed outline (black).}
 	\label{fig:blob_field}
 \end{figure}
 % Field image: finite-strain factor-2 run (philip-blobnh2/qm-mesh mesh_x2, t = 3 s),
-% figures/scripts/paraview/blob_field.py (13 Nov 2026).
+% figures/scripts/paraview/blob_field.py (13 Nov 2026; direction arrows added 17 Nov 2026).
 
 \paragraph{Mesh convergence.}
 At steady state (Figure~\ref{fig:blob_field}) the flow accelerates over the half-cylinder, which leans downstream by about $0.14\,\mathrm{m}$ at its top.
-Both couplings converge at close to second order in space (Table~\ref{tab:blob_mesh}), and their difference changes sign between factors 1 and 2, falls to $0.05\%$ on factor 4 and to $0.02\%$ after extrapolation, so they converge to the same solution; this difference is discussed with the other discretisation differences in Section~\ref{sec:consistency_partitioned}.
-The quasi-monolithic coupling needs 2.0, 2.1 and 2.7 Newton iterations per step on the three meshes, with 24, 38 and 65 Krylov iterations per Newton iteration, whereas IQN-ILS needs 9.1, 10.3 and 12.2 coupling iterations per step (at most 14, 16 and 18); the quasi-monolithic runs are two to four times faster.
+Both couplings converge at close to second order in space (Table~\ref{tab:blob_mesh}); their difference changes sign between factors 1 and 2 and falls to $0.05\%$ on factor 4 and to $0.02\%$ after extrapolation, so they converge to the same solution.
+The quasi-monolithic coupling needs 2.0, 2.1 and 2.7 Newton iterations per step on the three meshes, with 24, 38 and 65 Krylov iterations per Newton iteration, whereas IQN-ILS needs 9.1, 10.3 and 12.2 coupling iterations per step (at most 14, 16 and 18), so that the quasi-monolithic runs are two to four times faster.
+In both studies IQN-ILS uses the settings of the companion paper, which do not reuse the modes of earlier time steps; reusing them generally reduces the number of coupling iterations, so the cost ratios hold for these settings.
 
 \input{sectionHessenthaler}

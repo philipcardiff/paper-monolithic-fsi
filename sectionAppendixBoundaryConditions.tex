@@ -3,7 +3,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 This appendix lists the boundary conditions of the cases in Sections~\ref{sec:verification_exact}--\ref{sec:limitations}.
-They are those of the quasi-monolithic variants of the solids4foam tutorials (\texttt{./Allrun monolithic}), whose dictionaries give the full specification; the partitioned runs use the same conditions, apart from the interface conditions of the partitioned couplings.
+The case files (Data Availability) give the full specification; the partitioned runs use the same conditions, apart from the interface conditions of the partitioned couplings.
 
 \paragraph{Fluid.}
 The fluid boundary conditions are of the following types:
@@ -54,9 +54,9 @@ Clamped where the plate meets the cylinder. \\
 Elastic half-cylinder (Section~\ref{sec:blob_m}) &
 Parabolic velocity inlet, maximum $1.125$\,m/s, ramped in time; pressure outlet, $p_F = 0$; no-slip walls. &
 Clamped base. \\
-Three-dimensional flag (Section~\ref{sec:lim_foil}) &
-Uniform velocity inlet, $1$\,m/s; pressure outlet, $p_F = 0$; slip lateral walls; no-slip rigid block. &
-Clamped on the face attached to the block. \\
+Hessenthaler flap (Section~\ref{sec:hessenthaler_m}) &
+Parabolic velocity inlets, peak $0.630$ and $0.615$\,m/s, ramped smoothly over $0.5$\,s; outlet with $p_F = 0$ and the backflow-stabilised traction of the benchmark definition ($\beta = 0.2$); no-slip vessel walls. &
+Clamped at the base; buoyancy as a body force (Section~\ref{sec:hessenthaler_m}). \\
 Three-dimensional tube (Section~\ref{sec:scaling_3d}) &
 Pressure inlet with a pulse of $1.3333$\,m$^2$/s$^2$ ($1333.3$\,Pa) for $3$\,ms, then $0$; pressure outlet, $p_F = 0$; symmetry planes (quadrant). &
 Clamped ends; traction-free outer surface; symmetry planes. \\

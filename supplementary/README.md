@@ -3,6 +3,11 @@
      claude-runs/animations. -->
 # FSI animations and field images (13 Nov 2026)
 
+The paper's supplementary videos are S1 HronTurek3-flag, S2 collapsibleChannel-collapse,
+S3 womersleyTube-pulse, S4 ringAddedMass and S5 tube3d-pressure-pulse. The
+foilInWind-flag animation is kept for the website and slides only: the three-dimensional
+flag was removed from the paper on 17 Nov 2026.
+
 For the solver paper's supplementary material, the solids4foam website and slides.
 Every animation has: `NAME.mp4` (H.264, yuv420p, 30 fps, crf 18; slides and
 supplementary material), `NAME.webm` (VP9; website), `NAME.gif` (looping, <= 5 MB;

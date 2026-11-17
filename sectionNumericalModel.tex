@@ -342,9 +342,9 @@ In the linear-geometry variant, the face force is $\bb{f}_f^{n} = \bb{\Gamma}_{0
 In the geometrically nonlinear variant, the stabilisation is added to the face traction before multiplication by the deformed area, which therefore replaces $|\bb{\Gamma}_{0,f}|$ in Equation~\eqref{eqn:rhie_chow_s}.
 For thin, bending-dominated structures the geometrically nonlinear variant can instead use the high-order residual of~\citet{Batistic2026}, which builds on the high-order finite volume method of~\citet{Castrillo2024}: the displacement is reconstructed by a moving least-squares fit of a cubic polynomial over an extended stencil, and the deformation gradient, the stress and the face force are evaluated at the face quadrature points.
 The stabilisation term then takes the jump form: the bracket of Equation~\eqref{eqn:rhie_chow_s} is replaced by the difference between the two face values reconstructed from the cells on either side, divided by the distance between their centres.
-The jump form can also be used with the standard reconstruction, as in the order study of Section~\ref{sec:lim_thin_solid}, where both reconstructions use it with a factor of $0.1$ ($1.0$ on the thinnest flag).
+The jump form can also be used with the standard reconstruction, as in the FSI3 order study of Appendix~\ref{app:high_order_solid}, where both reconstructions use it with a factor of $0.1$ ($1.0$ for the high-order reconstruction on the thinnest flag); in the collapsible-channel study only the high-order walls use it.
 The residual is otherwise unchanged: the approximate Jacobian of the preconditioner keeps the compact (low-order) linearisation, and the interface load remains one traction per face (Section~\ref{sec:interface_conditions}), which conserves the interface force but is second-order accurate.
-Section~\ref{sec:lim_thin_solid} compares the two reconstructions on thin solids.
+Appendix~\ref{app:high_order_solid} compares the two reconstructions on thin solids.
 
 For faces on the fluid--solid interface, the solid face force is replaced by the force obtained from the fluid traction, as described in Section~\ref{sec:interface_conditions}, and the stabilisation contribution is set to zero, as on all traction boundaries.
 The fluid variables thus enter Equation~\eqref{eqn:solid_velocity_residual} through this traction boundary condition on $\Gamma_\mathrm{fsi}$.
@@ -477,7 +477,7 @@ These are identities of the transfer operator at the interface faces; they do no
 In practice the logged total interface force balances to round-off (Section~\ref{sec:interface_comparison}).
 For the geometrically nonlinear solid, the transferred force is therefore applied as a nominal traction on the reference face areas, which the total Lagrangian solid uses directly, rather than as a Cauchy traction on the deformed areas $|\bb{\Gamma}^n_s|$ of Equation~\eqref{eqn:face_force}; this is an implementation choice that keeps the applied force equal to $\bb{f}_{S,s}$, not a restriction of the method.
 
-The conservative transfer is used in the non-conformal ring study of Section~\ref{sec:interface_comparison}, for the $640\times8$ solid of the collapsible channel (Section~\ref{sec:robustness_collapsible}) and for the walls of the collapsible-channel order study of Section~\ref{sec:lim_thin_solid}.
+The conservative transfer is used in the non-conformal ring study of Section~\ref{sec:interface_comparison}, for the $640\times8$ solid of the collapsible channel (Section~\ref{sec:robustness_collapsible}) and for the walls of the collapsible-channel order study of Appendix~\ref{app:high_order_solid}.
 The other non-conformal interfaces, those of Turek--Hron FSI3 and the Hessenthaler flap, use AMI with traction interpolation, as do the partitioned couplings with which these two cases are compared, so that the traction transfer is not an additional difference between the couplings; the remaining cases have conformal interfaces and use the direct map.
 The two transfers are compared directly only on the ring, where they give frequency ratios that differ by at most $2.6\times10^{-5}$ relative (Section~\ref{sec:interface_comparison}).
 
@@ -520,7 +520,7 @@ The assembled approximate Jacobian $\tilde{\bb{J}}$ of Section~\ref{sec:approxim
 If $\tilde{\bb{J}}$ replaced $\bb{J}$ in Equation~\eqref{eqn:newton_linear_system}, i.e.\ an assembled approximate Newton method instead of the Jacobian-free one, the convergence would be only linear, as shown for comparison in Section~\ref{sec:tube3d_pc_study}; in all other results $\tilde{\bb{J}}$ is used only for preconditioning.
 
 The Krylov solver is restarted LGMRES with left preconditioning, stopped at a relative reduction of the preconditioned linear residual; since the first Newton iteration of a step is limited by the nonlinearity, a tighter linear tolerance only adds Krylov iterations, each costing one residual evaluation.
-The Newton iteration stops when either the coupled residual norm, relative to its value at the start of the step, or the Newton step norm, relative to the current iterate, falls below its tolerance: $10^{-6}$ for both, with a Krylov tolerance of $10^{-4}$ and the full step $s_k = 1$, in every case except the flag of Section~\ref{sec:lim_foil} ($10^{-4}$ and a backtracking line search) and the pulsatile-tube and half-cylinder temporal studies ($10^{-8}$, Krylov $10^{-6}$; Table~\ref{tab:solver_settings}); Section~\ref{sec:tube3d_pc_study} varies these settings on the three-dimensional tube.
+The Newton iteration stops when either the coupled residual norm, relative to its value at the start of the step, or the Newton step norm, relative to the current iterate, falls below its tolerance: $10^{-6}$ for both, with a Krylov tolerance of $10^{-4}$ and the full step $s_k = 1$, in every case except the pulsatile-tube and half-cylinder temporal studies ($10^{-8}$, Krylov $10^{-6}$; Table~\ref{tab:solver_settings}); Section~\ref{sec:tube3d_pc_study} varies these settings on the three-dimensional tube.
 
 \paragraph{System scaling.}
 The fluid residuals are written per unit fluid density (kinematic pressure), whereas the solid residual is a force, so the two blocks can differ in magnitude by many orders.
@@ -632,13 +632,16 @@ Each inner block is applied once (no inner Krylov iterations), so the preconditi
 The solid block $\tilde{\bb{J}}_{ss}$, which is much smaller than the fluid block in the cases considered, is preconditioned either by an exact sparse LU factorisation of the whole solid block, replicated on every process (each process gathers the whole block and factorises it serially; PETSc \texttt{redundant}), or by one V-cycle of BoomerAMG.
 The replicated factorisation is robust and, for small solid blocks, cheap, but its cost and memory do not fall with the number of processes; algebraic multigrid scales, but is a weaker preconditioner for the solid.
 The relative merits of direct and multigrid solvers for the solid block of such approximate Jacobians are examined in detail by \citet{Cardiff2026}.
-Here the LU factorisation is used in every case except the three-dimensional tube of Section~\ref{sec:scaling_3d}, whose finer solid meshes make the replicated factorisation dominate the cost, and which uses BoomerAMG (Table~\ref{tab:solver_settings}; Section~\ref{sec:lim_solid_pc}).
+Here the LU factorisation is used in every case except the three-dimensional tube of Section~\ref{sec:scaling_3d}, whose finer solid meshes make the replicated factorisation dominate the cost, and which uses BoomerAMG (Table~\ref{tab:solver_settings}; Section~\ref{sec:tube3d_pc_study}).
 The choice affects the cost only, not the converged solution.
 
 
 %%--------------------------------------------------------------------------------------------------------------------%%
 \subsection{Fluid mesh motion}
 \label{sec:fluid_mesh_motion}
+% Alias for the removed Section 7.4 (Limitations: fluid mesh motion); delete once
+% no cross-reference uses it.
+\label{sec:lim_mesh_motion}
 
 The fluid mesh motion extends the interface displacement into the fluid domain while keeping the mesh valid; it is a numerical device, not a conservation law.
 The mesh is moved once per time step, before the coupled solve, and is not changed during the Newton iterations.
@@ -670,10 +673,10 @@ and it is zero on the other fluid boundaries and tangential on symmetry planes.
 The mesh moves with its points, while the pseudo-solid below takes its boundary condition on the interface faces, so the transferred displacement is needed at both.
 Two variants were used.
 In the first, the solid face displacements are transferred to the fluid interface faces with the face weights of Equation~\eqref{eqn:solid_to_fluid_transfer}, and the solid point displacements to the fluid interface points with the corresponding point transfer.
-The face displacement is then constant over each solid face, whereas the points follow the rotation of the solid faces; where the solid interface faces are much coarser than the fluid faces, a fluid face can depart from its own points by up to half the solid face size times the face rotation, which crushed fluid cells at the tip of the coarse flags of Section~\ref{sec:lim_thin_solid}.
+The face displacement is then constant over each solid face, whereas the points follow the rotation of the solid faces; where the solid interface faces are much coarser than the fluid faces, a fluid face can depart from its own points by up to half the solid face size times the face rotation, which crushed fluid cells at the tip of the coarse flags of Appendix~\ref{app:high_order_solid}.
 In the second, only the point displacements are transferred, and the displacement of each fluid interface face is the average of its point displacements, so that faces and points describe the same surface.
-The second variant is used for the Hessenthaler flap (Section~\ref{sec:hessenthaler_m}) and the order studies of Section~\ref{sec:lim_thin_solid}, and the first for the other results (Table~\ref{tab:mesh_motion_settings}).
-Where the solid is not much coarser than the fluid the two agree closely: repeating the runs of Section~\ref{sec:lim_thin_solid} with both changes the collapsible-channel troughs by less than $10^{-5}$ relative, and the errors of the cubic (third-order) solid reconstruction on the level-1 Turek--Hron flag by less than $0.01\%$.
+The second variant is used for the Hessenthaler flap (Section~\ref{sec:hessenthaler_m}) and the order studies of Appendix~\ref{app:high_order_solid}, and the first for the other results (Table~\ref{tab:mesh_motion_settings}).
+Where the solid is not much coarser than the fluid the two agree closely: repeating the runs of Appendix~\ref{app:high_order_solid} with both changes the collapsible-channel troughs by less than $10^{-5}$ relative, and the errors of the cubic (third-order) solid reconstruction on the level-1 Turek--Hron flag by less than $0.01\%$.
 % solids4foam #697, fixed by PR #699 (merged 12 Nov 2026). Checks: collapsible
 % order study (coll-ho697 vs 10 Nov runs, troughs equal to 6 digits); FSI3
 % order-3 430x24 flag, fixed vs unfixed build identical to 2 decimals in %.
@@ -708,7 +711,7 @@ For the linear elastic law, each fluid cell $P$ satisfies
 \end{equation}
 where the superscript $n-1$ denotes the geometry of $\Omega_F^{n-1}$, $\mu^\Gamma$ and $\lambda^\Gamma$ are artificial stiffnesses and $\delta$ an optional dimensionless stiffness weight.
 Since the geometry changes from step to step, the mesh obtained for a given interface position depends weakly on how the interface reached it; this affects the solution only through the discretisation error.
-The earliest results, those of the pulsatile tube (Sections~\ref{sec:womersley_m} and~\ref{sec:womersley_consistency}), the ring pressure-condition study (Section~\ref{sec:interface_comparison}), the robustness maps of Section~\ref{sec:robustness} and the flag of Section~\ref{sec:lim_foil}, were computed with an earlier implementation that assembled Equation~\eqref{eqn:mesh_motion_pseudo_solid} on a fixed copy of the initial mesh, which makes the mesh independent of the path of the interface; the two forms move the mesh differently but solve the same flow equations on it, so they differ only in the discretisation error.
+The results of the pulsatile tube (Sections~\ref{sec:womersley_m} and~\ref{sec:womersley_consistency}), the ring pressure-condition study (Section~\ref{sec:interface_comparison}) and the robustness maps of Section~\ref{sec:robustness} instead assemble Equation~\eqref{eqn:mesh_motion_pseudo_solid} on a fixed copy of the initial mesh, which makes the mesh independent of the path of the interface; the two forms move the mesh differently but solve the same flow equations on it, so they differ only in the discretisation error.
 The second law is a compressible neo-Hookean pseudo-solid, with the stress of the solid of Section~\ref{sec:blob_m} multiplied by $\delta$ and the deformation gradient formed from the gradient of $\bb{D}^{\Gamma}$ on the same mesh, $\bb{F} = \bb{I} + (\bb{\nabla}^{n-1}\bb{D}^{\Gamma})^T$; it tolerates larger mesh deformations than the linear law.
 With this law, the Newton iteration of the pseudo-solid starts from a linear extrapolation in time of the mesh displacement, $\bb{D}^{\Gamma,n-1} + \Delta t\,(\partial\bb{D}^{\Gamma}/\partial t)^{n-1}$, with the rate from the BDF2 difference of the three previous mesh displacements, rather than from $\bb{D}^{\Gamma,n-1}$; this keeps the first iterate from folding the cells next to the interface when the interface moves by more than their height in one step (Section~\ref{sec:robustness_collapsible}).
 
@@ -741,6 +744,8 @@ A fluid--solid coupling interface calls the fluid and solid region models to eva
 The Newton vector holds the fluid block, with the velocity components and pressure of each cell stored contiguously, followed by the solid velocity block; index sets of the two blocks define the outer field split, and the block size of the fluid unknowns the inner one.
 The residual is evaluated through callbacks of the scalable nonlinear equation solvers (SNES) component of PETSc, which copy each trial vector into the OpenFOAM fields, update the boundary conditions and interface transfers, and evaluate the three residuals; PETSc applies the Newton operator matrix-free and receives $\tilde{\bb{J}}$, converted from a nested to a single distributed sparse matrix, as the preconditioning matrix.
 The interface transfers gather the interface face values of each region to all processes; the implementation supports a single, conformal or non-conformal, interface.
+The coupling is implemented in solids4foam~\citep{Cardiff2025} for the OpenFOAM.com line of OpenFOAM with PETSc.
+Unlike a partitioned coupling, which exchanges only interface data and so combines any fluid and solid models, the quasi-monolithic coupling needs the contribution of each model to the residual and to the approximate Jacobian; it is therefore available for the Newton fluid model of this section and the velocity solids, and a new physical model enters it only with these contributions.
 
 In parallel, the two regions are decomposed either independently, each process owning cells of both regions, or together, by partitioning one graph formed by the cells of both regions with extra edges across the interface pairs, which keeps the cells on either side of the interface on the same process.
 The three-dimensional tube of Section~\ref{sec:scaling_3d} is decomposed jointly into axial slabs (Section~\ref{sec:tube3d_scaling}); the other parallel runs decompose the two regions independently, with the Scotch graph partitioner~\citep{Pellegrini2012} or, for the Turek--Hron benchmark, a simple geometric split.

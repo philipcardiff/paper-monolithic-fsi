@@ -5,8 +5,8 @@
 
 The paper's supplementary videos are S1 HronTurek3-flag, S2 collapsibleChannel-collapse,
 S3 womersleyTube-pulse, S4 ringAddedMass and S5 tube3d-pressure-pulse. The
-foilInWind-flag animation is kept for the website and slides only: the three-dimensional
-flag was removed from the paper on 17 Nov 2026.
+foilInWind-flag animation (website and slides only) moved to removed-cases/foilInWind
+with the other material of the three-dimensional flag, removed from the paper on 17 Nov 2026.
 
 For the solver paper's supplementary material, the solids4foam website and slides.
 Every animation has: `NAME.mp4` (H.264, yuv420p, 30 fps, crf 18; slides and
@@ -62,15 +62,3 @@ outline.
   35 steps (0.00495 s); 2.48 node-hours (job 5455829).
 - Seamless loop: frames 0-36 (one period, 37 frames; the 38th frame matches the first to
   0.6% of the tip amplitude); MP4 four periods.
-
-## foilInWind-flag
-Three-dimensional flexible flag behind a block in a uniform air flow (quasi-monolithic
-coupling, t = 0-2.5 s): streamlines seeded upstream of the block coloured by air speed,
-and the flag coloured by its displacement magnitude with its deformation magnified 50
-times. The wake becomes unsteady and the flag starts to flutter and twist from
-t ~ 1 s; its displacement reaches about 0.14 mm by t = 2.5 s.
-- Run: MeluXina /project/home/p201136/philip-anim/foil_qm, rerun of rf-foil-qm-dt0.0025
-  (128 ranks, dt = 0.0025 s) to t = 2.5 s with merged VTK every 10 steps (0.025 s);
-  build build-gm697 (#679 + #690 + #697 fix); 2.56 node-hours (job 5455835).
-- Website version is an animated WebP (the GIF exceeded 5 MB).
-- Paper field image: `foilInWind-field.png` (2400 px), t = 2.45 s.

@@ -109,10 +109,14 @@ On the same mesh the two couplings reach errors that are indistinguishable withi
 
 The quasi-monolithic coupling is not more expensive because of its nonlinear convergence: two Newton iterations per step is close to the minimum for a Newton method.
 Its cost lies in each Newton iteration, which solves one preconditioned linear system for all fluid and solid unknowns, whereas a partitioned coupling iteration performs one segregated (PIMPLE) fluid solve and one solid solve.
-The fluid mesh has about ten times as many cells as the flag mesh, so the fluid block is expected to dominate this linear system and the growth of its Krylov iterations with the mesh to set the growth of the cost ratio, although the cost was not profiled by block.
-Most of the extra cost is thus expected to come from the coupled Newton solution of the fluid equations rather than from the fluid--solid coupling itself.
-\todo{Add the result of the partitioned IQN-ILS run with the Newton fluid solver on level 1 (cost per coupling iteration against the PIMPLE fluid solver), which tests this expectation.}
-% TODO(agent B): partitioned IQN-ILS with newtonIcoFluid, FSI3 level 1: fill in when the run is done.
+The fluid mesh has about ten times as many cells as the flag mesh, so the fluid block is expected to dominate this linear system and the growth of its Krylov iterations with the mesh to set the growth of the cost ratio, although the quasi-monolithic cost was not profiled by block.
+To separate the effect of the fluid solver from that of the coupling, the level-1 case was also run with IQN-ILS using the coupled Newton fluid solver of the quasi-monolithic method in place of the PIMPLE solver, with the same fluid discretisation, preconditioner and tolerances, restarted from the developed state at $t = 5\,\mathrm{s}$ on 16 processes of a workstation (Apple M1 Ultra).
+Its tip displacement $u_y$ matches that of IQN-ILS with the PIMPLE solver to $0.03\%$ of the amplitude, and the drag and lift to $0.1$--$0.4\%$.
+One Newton step of the fluid costs about six times as much as one PIMPLE fluid solve ($0.65$ against $0.11\,\mathrm{s}$), and about as much as one Newton iteration of the quasi-monolithic coupling, which includes the solid ($0.61\,\mathrm{s}$).
+With this fluid solver IQN-ILS needs $6.9$ coupling iterations per step when the fluid is solved with one Newton step per coupling iteration, and $5.6$ coupling iterations of $2.2$ Newton steps each when it is converged; per step it performs about $440$ and $810$ Krylov iterations against $91$ for the quasi-monolithic coupling, and costs four to seven times as much.
+The timings come from short windows on a shared machine, using only steps during which no other job ran, and are therefore approximate; the Krylov iteration counts are not affected by the machine load.
+In this test, therefore, the extra cost of the quasi-monolithic coupling relative to IQN-ILS with the PIMPLE solver comes mainly from the coupled Newton solution of the fluid equations rather than from the fluid--solid coupling: with the same fluid solver the quasi-monolithic coupling is the cheaper of the two.
+% Data: claude-runs/newton-partitioned/RESULTS.md (build a421f063d, Mac Studio, 17 Nov 2026).
 Faster solution of the coupled fluid block is therefore the most promising route to a cheaper quasi-monolithic coupling; preconditioners based on segregated pressure-correction (SIMPLE-type) algorithms have been proposed for this purpose~\citep{Pernice2001, Knoll2004, Klaij2013}, but such a preconditioner did not reduce the cost in initial tests, and it is left for future work.
 
 %%--------------------------------------------------------------------------------------------------------------------%%

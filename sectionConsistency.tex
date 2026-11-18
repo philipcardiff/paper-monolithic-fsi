@@ -20,7 +20,8 @@ It is a consistency check between two formulations that share much of their impl
 % (timing-ma tm-cav-{qm,aitken}-L1-r1, a421f063d; Mx p201287/philip/qm-a421/runs/timing-ma.tar) and the
 % pulsatile-tube tutorial variants on feature-petsc-snes-quasi-monolithic: convection unlimited
 % linearUpwind grad(U) (cavity) and Gauss linear (tube) in both couplings; interface p zeroGradient
-% (Aitken, IQN-ILS), elasticWallPressure (Robin-Neumann), fixedGradient set by the coupling (QM);
+% (Aitken, cavity), movingWallPressure (IQN-ILS, tube; reruns on 9e6d1bfb2, 17 Nov 2026), elasticWallPressure
+% (Robin-Neumann), fixedGradient set by the coupling (QM);
 % partitioned mesh motion velocityLaplacian, quadratic inverseDistance; QM solids4foamSolidModel.
 
 The two couplings share the solid discretisation, including the face interpolation of the stresses and the solid stabilisation, and the form of the interface traction, including the transpose part of the viscous stress (Section~\ref{sec:interface_conditions}).
@@ -31,8 +32,9 @@ At the interface they differ in the pressure condition, the source of the wall v
 
 Each coupling is run with the settings for which it was developed and tested: the partitioned couplings use those of the companion paper~\citep{CardiffFSIVerification2026}, so that their results are those reported there, and the quasi-monolithic coupling those of Section~\ref{sec:numerical_methods}.
 Where a choice is not tied to the coupling, the same choice is made in both: the convection scheme, the gradient scheme and, in this section, the linear interpolation of the velocity in the continuity flux.
-Two choices that are not tied to the coupling still differ.
-The partitioned couplings keep the zero-gradient (or Robin) interface pressure condition of the companion paper; a gradient from the normal momentum equation could equally be used in the pressure-correction solver.
+Two choices still differ.
+The interface pressure gradient comes from the normal momentum equation in both couplings, as a cell-centred interface condition that is not specific to the coupling, but in different forms: the quasi-monolithic coupling uses the full gradient of Equation~\eqref{eqn:interface_pressure_gradient}, and the partitioned Dirichlet--Neumann couplings (Aitken, IQN-ILS) its acceleration term only, $\hat{\bb{n}}_f\cdot(\bb{\nabla}p)_f = -\hat{\bb{n}}_f\cdot(\partial\bb{v}/\partial t)_f$, without the viscous terms, which the pressure-correction solver used here does not provide~\citep{solids4foamIssue721}; Robin--Neumann coupling uses its Robin condition.
+On the steady cavity the wall acceleration vanishes at convergence, so the acceleration term is zero and the Aitken runs use a zero normal gradient, which gives the same steady solution.
 The quasi-monolithic method was developed with the pseudo-solid mesh motion of Section~\ref{sec:fluid_mesh_motion} and the partitioned couplings with a Laplacian mesh motion, although either coupling can use either mesh motion.
 Every difference in Table~\ref{tab:discretisation_differences} is a consistent discretisation difference, expected to vanish under mesh and time-step refinement, and the two cases below test whether it does.
 
@@ -54,7 +56,7 @@ Every difference in Table~\ref{tab:discretisation_differences} is a consistent d
 		\addlinespace
 		Pressure--velocity coupling & Rhie--Chow stabilisation term in the residual & PISO flux correction & $O(h^2)$ \\
 		\addlinespace
-		Interface pressure & normal gradient from the momentum equation & zero normal gradient (Aitken, IQN-ILS) or Robin condition (Robin--Neumann) & $O(h)$ in the wall pressure \\
+		Interface pressure & normal gradient from the momentum equation, acceleration and viscous terms & acceleration term of the normal gradient (IQN-ILS on the tube; zero for Aitken on the steady cavity) or Robin condition (Robin--Neumann) & $O(h)$ in the wall pressure \\
 		\addlinespace
 		Interface velocity and wall flux & solid velocity extrapolated to the face; absolute flux in continuity & BDF2 velocity of the face centres; normal part from the mesh flux & $O(\Delta t^2)$; none at steady state \\
 		\addlinespace
@@ -171,7 +173,10 @@ IQN-ILS or Robin--Neumann coupling would probably need fewer coupling iterations
 % Confirmed 31 Oct 2026: ddt(U) backward in every run used here (runs.csv of evidence/m-runs-a, m-runs-a-rfix, m-runs-wp0).
 %%--------------------------------------------------------------------------------------------------------------------%%
 % Data: QM before the correction = ma-wom-qm-vstno (evidence/m-runs-a) and wp0-wom-qm-vstno-m2n50; after = rf-wom-qm (evidence/m-runs-a-rfix, 1252bd2e5);
-% RN and IQN-ILS = ma-wom-{rn,iqn} (strict test) and wp0-wom-{rn,iqn}-m2n50. paper-data/womersley_consistency.csv.
+% RN and IQN-ILS: rerun 17 Nov 2026 on solids4foam 9e6d1bfb2 (Mac; strict test, IQN-ILS couplingReuse 0 and
+% movingWallPressure): claude-runs/prerun671/runs/wom (scripts/wom_rerun.py); differences rebuilt with
+% scripts/wom_consistency.py (QM samples copied from MeluXina philip-ma runs-rfix and runs). m2-n50
+% without the transpose term: the earlier difference shifted by the change of the RN value. paper-data/womersley_consistency.csv.
 % A2 (b): before the correction, the monolithic wall radial amplitude differed
 % from Robin-Neumann by -3.2e-4 to -3.5e-4 (relative) on mesh factors 2 and 4
 % at every step, the fluid quantities by 7e-5 or less (production CSVs
@@ -196,22 +201,24 @@ We measure the differences of the quasi-monolithic solution from the Robin--Neum
 	\label{fig:womersley_consistency}
 \end{figure}
 
-Without the transpose term the wall-displacement phase of the quasi-monolithic solution differs from Robin--Neumann by $-4.8\times10^{-4}\,\mathrm{rad}$ on every mesh and time step ($-5.2\times10^{-4}$ on factor 1), and the wall amplitude by $-3.2$ to $-3.6\times10^{-4}$ on factors 2 and 4, while the flow rate, wave speed and pressure agree to $8\times10^{-5}$ or better (Figure~\ref{fig:womersley_consistency}): an offset that refinement does not remove, as expected from a traction missing a physical component on a deforming wall.
-With the transpose term the phase difference falls tenfold, to $(2.6$--$4.6)\times10^{-5}\,\mathrm{rad}$, and the attenuation difference to $1.4\times10^{-5}$ or less on factors 2 and 4.
-The wall-amplitude difference halves, to $-1.4$ to $-1.7\times10^{-4}$, but does not decrease with refinement; it is of the size of the partitioned spread (IQN-ILS minus Robin--Neumann: $+1.7$ to $+3.8\times10^{-4}$ on factors 1 and 2 at every step but $-0.7\times10^{-4}$ on factor 4).
-The velocity profile at mid-length is the one quantity in which the couplings differ by more than the partitioned spread: by $6$--$8\times10^{-4}$ of the peak velocity in the second cell from the wall on every mesh and step, against $4$--$5\times10^{-5}$ on the axis, while the flow rate agrees to $4\times10^{-5}$.
+Without the transpose term the wall-displacement phase of the quasi-monolithic solution differs from Robin--Neumann by $-3.7$ to $-3.9\times10^{-4}\,\mathrm{rad}$ on factors 2 and 4 at every time step ($-5.1\times10^{-4}$ on factor 1), and the wall amplitude by $-2.3$ to $-2.9\times10^{-4}$ on factors 2 and 4, while the flow rate, wave speed and pressure agree to $8\times10^{-5}$ or better (Figure~\ref{fig:womersley_consistency}): an offset that refinement does not remove, as expected from a traction missing a physical component on a deforming wall.
+With the transpose term the phase difference falls five- to sevenfold, to $(5.7$--$7.2)\times10^{-5}\,\mathrm{rad}$ on factors 2 and 4, and the attenuation difference to $4\times10^{-5}$ on factor 2 and $9\times10^{-5}$ on factor 4.
+The wall-amplitude difference falls to $-0.5$ to $-0.7\times10^{-4}$ on factor 2 and $-1.1\times10^{-4}$ on factor 4, but does not decrease with refinement; it is of the size of the partitioned spread (IQN-ILS minus Robin--Neumann: $-1.8$ to $+1.0\times10^{-4}$ on factors 1 and 2 and $-4.5\times10^{-4}$ on factor 4).
+The velocity profile at mid-length is the one quantity in which the couplings differ by much more than the partitioned spread on every mesh and step: by $6$--$8\times10^{-4}$ of the peak velocity in the second cell from the wall on every mesh and step, against $4$--$8\times10^{-5}$ on the axis, while the flow rate agrees to $4\times10^{-5}$.
 We attribute this difference to where the linearised reference is sampled rather than to either solver.
 The linearised solution does not fix whether it applies at the undeformed or at the current position of a point, and near the wall the two differ by $O(\eta\,\partial u/\partial r)$. The fluid mesh is displaced by $\mathbf{D}(t)-\mathbf{D}(0)$, so the near-wall cell centres keep a static offset $-\eta(0)\approx-2.3\times10^{-4}R$ at mid-length, set by the exact initial state; this changes the exact first harmonic there by $7$--$9\times10^{-4}$ of the peak velocity.
 The pseudo-solid mesh motion of the quasi-monolithic runs carries the near-wall solution with the current cell centres, whereas the Laplacian mesh motion of the partitioned runs leaves it at the undeformed centres, at which the errors are evaluated.
-A fluid-only run with the exact wall motion prescribed reproduces the difference when only the mesh motion is changed. Stiffening the wall a thousandfold leaves the difference unchanged ($6.8$ against $7.1\times10^{-4}$), consistent with an offset that does not depend on the wall stiffness.
-% Reduced-amplitude series: Mx 5411305 (a421f063d), solids4foam#650; rows in
+A fluid-only run with the exact wall motion prescribed reproduces the difference when only the mesh motion is changed. Stiffening the wall a thousandfold leaves the difference unchanged ($6.8$ against $7.0\times10^{-4}$), consistent with an offset that does not depend on the wall stiffness.
+% Reduced-amplitude series: QM Mx 5411305 (a421f063d), RN rerun 17 Nov 2026 on 9e6d1bfb2 (prerun671 runs/wom01,
+% runs/womm8 for the full-amplitude factor-8 check), solids4foam#650; rows in
 % paper-data/womersley_0p1x_rows.csv,
 % run dirs Mx qm-a421/runs/wom-01/runs/s01-{qm,rn}-m{f}-n{n}. RN m8 n200 diverges in its
 % first step, as at full amplitude (#646). Full-amplitude QM factor-8 profile error 7.7e-4.
 With all amplitudes reduced tenfold (every exact amplitude scales by exactly $0.1$, while the wavenumber and the Womersley number are unchanged), the ambiguity falls to $8\times10^{-5}$ and the two couplings give the same velocity profile.
-Its error, the largest over the radius relative to the scaled exact peak, differs between them by $0.2$--$2.4\%$ of its value on factors 1, 2 and 4 at 200 steps per period and on 50 to 400 steps per period on the factor-2 mesh, and by $5.5\%$ on the factor-8 mesh at 400 steps per period ($2.55$ against $2.69\times10^{-4}$).
+Its error, the largest over the radius relative to the scaled exact peak, differs between them by $0.1$--$2.2\%$ of its value on factors 1, 2 and 4 at 200 steps per period and on 50 to 400 steps per period on the factor-2 mesh, and by $4.3\%$ on the factor-8 mesh at 400 steps per period ($2.55$ against $2.66\times10^{-4}$).
 The quasi-monolithic error converges at observed orders $1.84$, $2.01$ and $1.77$ between successive meshes, to $3.7\times10^{-4}$ on the factor-8 mesh, where at full amplitude it stops at $7.7\times10^{-4}$; the factor-8 Robin--Neumann run at 200 steps per period diverges in its first step, as it does at full amplitude.
-At this amplitude the couplings agree in the other quantities on the factor-8 mesh to $6\times10^{-5}$ or better (phases in rad), except the wall displacement amplitude ($1.9\times10^{-4}$, the size of the partitioned spread above).
+At this amplitude the couplings agree in the other quantities on the factor-8 mesh to $1\times10^{-4}$ or better (phases in rad), except the wall displacement amplitude ($1.3\times10^{-4}$, the size of the partitioned spread above).
 % Diagnosis and fluid-only tests: solids4foam#650 (comment 6568579038, Mx 5410435-5411184, a421f063d).
 % Superseded explanation (fluid discretisation) removed 2 Nov 2026; stiff-wall test Mx 5407376 kept only as consistent (its ends use the soft-tube exact data).
-% Diagnosis: paper-data/womersley_profile_diag.{md,py}; stiff-wall test Mx 5407376 (a421f063d), run dirs Mx qm-a421/runs/wom-wall.
+% Diagnosis: paper-data/womersley_profile_diag.{md,py}; stiff-wall test: QM Mx 5407376 (run dirs Mx qm-a421/runs/wom-wall),
+% RN rerun 17 Nov 2026 on 9e6d1bfb2 (claude-runs/prerun671 runs/womwall-e1{,000}; scripts/wom_wall_compare.py).

@@ -120,7 +120,9 @@ Figure~\ref{fig:ring_field_m} shows the pressure of the $n = 2$ mode at the stro
 
 \paragraph{Measured.}
 We measure the error of the wet frequency, the error of the wet/dry frequency ratio, the amplitude loss per period, and the iteration counts and times.
-IQN-ILS and Robin--Neumann are run on the same meshes and time steps for comparison.
+IQN-ILS and Robin--Neumann are run on the same meshes and time steps for comparison, with the strict convergence test and without reuse of earlier time steps in IQN-ILS.
+The ring encloses its fluid, and on an enclosed fluid domain the partitioned (pressure-correction) solver cannot use the acceleration term of the normal momentum equation as the interface pressure gradient: the prescribed gradient enters the pressure equation as a wall flux, which an enclosed domain cannot discharge~\citep{solids4foamIssue721}.
+On the ring, IQN-ILS therefore keeps a zero normal pressure gradient on the interface, and Robin--Neumann its Robin condition.
 
 \begin{figure}[htbp]
 	\centering
@@ -130,35 +132,37 @@ IQN-ILS and Robin--Neumann are run on the same meshes and time steps for compari
 \end{figure}
 % Data: paper-data/ring_monolithic_{mesh,runs}.csv (paper-fsi-verification ring-monolithic, ff150e4); script figures/scripts/ring_accuracy.py.
 
-% Data: Mx 5400191 (a421f063d), paper-data/campaign/d/timing-ma on
-% evidence/m-runs-d (timing_ma_summary.md); ratio errors from the timing
-% runs with the dry frequencies of the same mesh and steps
+% Data: rerun 17 Nov 2026 on solids4foam 9e6d1bfb2 (Mac Studio, serial, 3 repeats, strict test,
+% IQN-ILS couplingReuse 0, zero-gradient interface pressure for IQN-ILS): claude-runs/prerun671/
+% ring_accuracy_runs.csv (scripts/ring_accuracy.py). Ratio errors and losses identical to the earlier
+% MeluXina runs (Mx 5400191, a421f063d) to the printed digits.
+% Time: median ExecutionTime/step of the three repeats.
 % (paper-fsi-verification ring-monolithic, ringAddedMass_monolithic_runs.csv).
 \begin{table}[htbp]
 	\centering
-	\caption{Ring added-mass problem, strong level ($m^{*} = 10.08$), factor-2 mesh, four periods, serial runs (one process). Iterations: Newton iterations (quasi-monolithic) or coupling iterations (partitioned) per step. Time: median elapsed time per step of three repeats. Ratio error: error of the wet/dry frequency ratio against the exact value.}
+	\caption{Ring added-mass problem, strong level ($m^{*} = 10.08$), factor-2 mesh, four periods, serial runs (one process). Iterations: Newton iterations (quasi-monolithic) or coupling iterations (partitioned) per step. Time: median solver time per step of three repeats, on one core of a workstation (Apple M1 Ultra). Ratio error: error of the wet/dry frequency ratio against the exact value.}
 	\label{tab:ring_cost}
 	\setlength{\tabcolsep}{3pt}
 	\begin{tabular}{lrrrrr}
 		\toprule
 		Coupling & Steps/period & Iterations/step & Time/step (s) & Ratio error (\%) & Loss/period (\%) \\
 		\midrule
-		Quasi-monolithic & 25 & 2.0 & 0.31 & $-0.0070$ & 2.57 \\
-		 & 50 & 2.0 & 0.31 & $-0.0052$ & 0.36 \\
-		 & 100 & 2.0 & 0.29 & $-0.0035$ & 0.048 \\
-		IQN-ILS & 25 & 4.2 & 0.55 & $+0.126$ & 3.77 \\
-		 & 50 & 5.1 & 0.62 & $+0.101$ & 1.50 \\
-		 & 100 & 5.2 & 0.57 & $+0.033$ & 1.15 \\
-		Robin--Neumann & 25 & 46.5 & 4.12 & $-0.0058$ & 2.59 \\
-		 & 50 & 37.3 & 2.55 & $-0.0085$ & 0.38 \\
-		 & 100 & 11.7 & 0.80 & $-0.0085$ & 0.062 \\
+		Quasi-monolithic & 25 & 2.0 & 0.22 & $-0.0070$ & 2.57 \\
+		 & 50 & 2.0 & 0.20 & $-0.0052$ & 0.36 \\
+		 & 100 & 2.0 & 0.19 & $-0.0035$ & 0.048 \\
+		IQN-ILS & 25 & 4.2 & 0.30 & $+0.126$ & 3.77 \\
+		 & 50 & 5.1 & 0.33 & $+0.101$ & 1.50 \\
+		 & 100 & 5.2 & 0.31 & $+0.033$ & 1.15 \\
+		Robin--Neumann & 25 & 46.5 & 2.31 & $-0.0058$ & 2.59 \\
+		 & 50 & 38.2 & 1.51 & $-0.0085$ & 0.38 \\
+		 & 100 & 11.7 & 0.47 & $-0.0085$ & 0.063 \\
 		\bottomrule
 	\end{tabular}
 \end{table}
 
-On the factor-2 mesh every quasi-monolithic step converges in two Newton iterations at every added-mass level and time step; at the strong level it needs 20--22 Krylov iterations per Newton iteration, and a step costs about half as much as an IQN-ILS step at every time step (Table~\ref{tab:ring_cost}).
+On the factor-2 mesh every quasi-monolithic step converges in two Newton iterations at every added-mass level and time step; at the strong level it needs 20--22 Krylov iterations per Newton iteration, and a step costs 0.6--0.7 times as much as an IQN-ILS step at every time step (Table~\ref{tab:ring_cost}).
 At its coupling tolerance IQN-ILS leaves a ratio error of $0.03$--$0.13\%$ and an amplitude loss above those of the other two couplings, which agree with each other in both quantities.
-Robin--Neumann reaches the same accuracy as the quasi-monolithic coupling, but its coupling iterations grow with the time step, so that it is 3 to 13 times as expensive and, unlike the other two, becomes more expensive per period as the time step grows.
+Robin--Neumann reaches the same accuracy as the quasi-monolithic coupling, but its coupling iterations grow with the time step, so that it is 2.5 to 10 times as expensive and, unlike the other two, becomes more expensive per period as the time step grows.
 
 Under mesh refinement at 100 steps per period, the ratio error of the quasi-monolithic coupling falls faster than second order at every added-mass level (observed orders 3.2--3.3 at the strong level, 3.3--4.1 at the moderate level and higher at the weak level), to below $4\times10^{-4}\%$ on the factor-4 mesh (Figure~\ref{fig:ring_accuracy}a), as the shared solid and temporal errors cancel in the ratio.
 The IQN-ILS ratio error converges at order 1.8--1.9 and is 25 to 600 times larger on the factor-4 mesh.

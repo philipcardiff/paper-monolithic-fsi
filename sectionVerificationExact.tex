@@ -49,7 +49,7 @@ The quasi-monolithic coupling is compared with the partitioned Dirichlet--Neuman
 \paragraph{Control of iterative error.}
 The Newton iterations of the quasi-monolithic coupling stop when either the relative nonlinear residual or the relative Newton step falls below its tolerance, both fixed for each case before the runs (Table~\ref{tab:solver_settings} in Appendix~\ref{app:settings}).
 Their iterative error is measured by repeating selected runs with both tolerances reduced a hundredfold.
-The partitioned runs use the strict coupling convergence test of the companion paper, which requires every interface residual measure to be below the tolerance, chosen so that their iterative error is no larger than that of the quasi-monolithic runs.
+The partitioned runs use the strict coupling convergence test of the companion paper, which requires every interface residual measure to be below the tolerance, chosen so that their iterative error is no larger than that of the quasi-monolithic runs; the exception is IQN-ILS on the elastic half-cylinder (Section~\ref{sec:blob_m}), which uses the solver's default test on the smaller of the two measures.
 The residual definitions differ, so equal tolerances do not imply equal iterative error; the repeated runs bound the iterative error of each coupling below the differences reported.
 
 \paragraph{Accuracy.}

@@ -157,27 +157,36 @@ Both regions use BDF2 in time.
 \paragraph{Measured.}
 The fluid and solid meshes are block structured, with matching interface faces.
 The temporal study follows~\citet{Liu2014} and the partitioned study of the companion paper: on the coarsest mesh (factor 1; 480 fluid and 120 solid cells), $\Delta t = 0.25$ to $0.015625\,\mathrm{s}$, halved each time, to $t = 1\,\mathrm{s}$, monitoring the self-convergence of the top-point displacement $u_x$(A) and the interface position.
-The quasi-monolithic coupling uses Newton tolerances of $10^{-8}$ and a Krylov tolerance of $10^{-6}$, so that its iterative error lies below the smallest change; IQN-ILS uses the strict test of Section~\ref{sec:protocol} with a tolerance of $10^{-6}$, without reusing the modes of earlier time steps.
-The mesh study computes the steady $u_x$(A) on mesh factors 1, 2 and 4 ($\Delta t = 0.01$, $0.01$ and $0.005\,\mathrm{s}$) with the default tolerances of Table~\ref{tab:solver_settings} (quasi-monolithic) and a coupling tolerance of $10^{-6}$ (IQN-ILS) to $t = 3\,\mathrm{s}$, by which time it varies by less than $2\times10^{-4}$ of its value over the last $0.5\,\mathrm{s}$.
+The quasi-monolithic coupling uses Newton tolerances of $10^{-8}$ and a Krylov tolerance of $10^{-6}$, so that its iterative error lies below the smallest change; IQN-ILS uses a tolerance of $10^{-6}$ on the smaller of its two interface residual measures, the default test of the solver rather than the strict test of Section~\ref{sec:protocol}, without reusing the modes of earlier time steps, and a zero normal gradient of the interface pressure.
+The mesh study computes the steady $u_x$(A) on mesh factors 1, 2 and 4 ($\Delta t = 0.01$, $0.01$ and $0.005\,\mathrm{s}$) with the default tolerances of Table~\ref{tab:solver_settings} (quasi-monolithic) and the same coupling test as the temporal study (IQN-ILS) to $t = 3\,\mathrm{s}$, by which time it varies by less than $2\times10^{-4}$ of its value over the last $0.5\,\mathrm{s}$.
 The temporal study of both couplings is timed serially under the protocol of Section~\ref{sec:protocol}, over each whole run excluding its first step; the mesh-study runs share one node, so their times are indicative.
 % Finite-strain rerun (10 Nov 2026), MeluXina job 5443010, build-blob = QM branch
 % b982bf6c5 merged with tutorial/blob-finite-strain 6fa468d56 (#671, neo-Hookean
 % TL solid, couplingReuse 0). Time study: three serial repeats on an exclusive
 % node, elapsed after the first step summed over the five runs: QM 20/21/21 s,
 % IQN 117/119/118 s; 258 Newton vs 1619 coupling iterations (cost ratio 1.12).
+% IQN-ILS: outerCorrTolerance 1e-6 with the default (minimum) residual test, no requireAllResidualMeasures
+% (checked 18 Nov 2026; 55 steps of the finest time-study run pass on one measure only).
+% Acceleration-term check (18 Nov 2026, 9e6d1bfb2, MeluXina p201136 jobs 5472137, 5472349;
+% /project/home/p201287/philip/blob-mwp): time study u_x(A) changes 4.63e-4, 1.13e-4, 8.88e-6, 1.86e-5
+% (orders 2.04, 3.67, -1.07); strict test 1.25e-5 last (0.27); 1e-8 reaches the cap at dt 0.0625;
+% mesh study 0.135508, 0.139129, 0.139992 (order 2.07, extrapolated 0.140262).
 % Mesh study: QM and IQN side by side on the same node. Data:
 % paper-data/blob_time_{qm,iqn}.csv; driver logs in philip-blobnh2.
 
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=0.9\textwidth]{figures/blobInTreacle-time}
-	\caption{Elastic half-cylinder, factor-1 mesh, $t = 1\,\mathrm{s}$: successive change in (a) the top-point displacement $u_x$(A) and (b) the interface position ($\ell_2$ norm over the interface vertices) against the finer of the two time steps, quasi-monolithic (Newton tolerance $10^{-8}$) and IQN-ILS (strict test, $10^{-6}$), with a slope of 2.}
+	\caption{Elastic half-cylinder, factor-1 mesh, $t = 1\,\mathrm{s}$: successive change in (a) the top-point displacement $u_x$(A) and (b) the interface position ($\ell_2$ norm over the interface vertices) against the finer of the two time steps, quasi-monolithic (Newton tolerance $10^{-8}$) and IQN-ILS ($10^{-6}$ on the smaller residual measure, zero normal gradient of the interface pressure), with a slope of 2.}
 	\label{fig:blob_time}
 \end{figure}
 
 \paragraph{Temporal convergence.}
 The quasi-monolithic sequence is broadly compatible with second-order convergence (Figure~\ref{fig:blob_time}), with observed orders of 2.07 and 3.22 for $u_x$(A) and 3.66, 2.62 and 2.65 for the interface position, consistent with the second order reported by~\citet{Liu2014} for their finite element formulation; the last change in $u_x$(A), $7\times10^{-6}\,\mathrm{m}$, approaches the level of the Newton tolerance (order 1.20).
 IQN-ILS converges at a similar rate (orders 2.13 and 2.21 for $u_x$(A), 2.12, 2.00 and 2.63 for the interface), but its last change in $u_x$(A), $8\times10^{-7}\,\mathrm{m}$, is smaller than second order predicts and depends on the coupling tolerance (with $10^{-7}$ the last order is 1.44), so at the smallest steps its iterative error is comparable to the temporal change.
+With the acceleration term of the normal momentum equation as the interface pressure gradient instead of a zero gradient (Section~\ref{sec:consistency_partitioned}), the IQN-ILS sequence stalls: the changes in $u_x$(A) at the two smallest steps are $8.9\times10^{-6}$ and $1.9\times10^{-5}\,\mathrm{m}$, also with the strict test, and a tolerance of $10^{-8}$ is not reached at $\Delta t = 0.0625\,\mathrm{s}$.
+The acceleration term divides the wall velocity by the time step, so a coupling error in the wall velocity enters the pressure gradient amplified by $1/\Delta t$, consistent with a stall at the smallest steps.
+At $t = 1\,\mathrm{s}$, during the inlet ramp at $Re \approx 1$, the wall acceleration is small, and it vanishes at steady state, so the zero gradient is kept for IQN-ILS on this case.
 The quasi-monolithic coupling needs 2.0--3.0 Newton iterations per step and IQN-ILS 11.0--14.5 coupling iterations (at most 22); the five quasi-monolithic runs take $21\,\mathrm{s}$ in total against $118\,\mathrm{s}$ for IQN-ILS, 5.6 times less, despite their tighter tolerances.
 At the smallest step the couplings differ by $0.09\%$ in $u_x$(A), close to their steady-state difference on this mesh, which is therefore spatial rather than temporal.
 
@@ -213,6 +222,7 @@ At the smallest step the couplings differ by $0.09\%$ in $u_x$(A), close to thei
 \paragraph{Mesh convergence.}
 At steady state (Figure~\ref{fig:blob_field}) the flow accelerates over the half-cylinder, which leans downstream by about $0.14\,\mathrm{m}$ at its top.
 Both couplings converge at close to second order in space (Table~\ref{tab:blob_mesh}); their difference changes sign between factors 1 and 2 and falls to $0.05\%$ on factor 4 and to $0.02\%$ after extrapolation, so they converge to the same solution.
+With the acceleration-term pressure gradient the steady IQN-ILS values change by less than $0.06\%$ (factor 1) and $0.002\%$ (factors 2 and 4).
 The quasi-monolithic coupling needs 2.0, 2.1 and 2.7 Newton iterations per step on the three meshes, with 24, 38 and 65 Krylov iterations per Newton iteration, whereas IQN-ILS needs 9.1, 10.3 and 12.2 coupling iterations per step (at most 14, 16 and 18), so that the quasi-monolithic runs are two to four times faster.
 In both studies IQN-ILS uses the settings of the companion paper, which do not reuse the modes of earlier time steps; reusing them generally reduces the number of coupling iterations, so the cost ratios hold for these settings.
 

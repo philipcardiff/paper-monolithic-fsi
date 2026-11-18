@@ -13,7 +13,7 @@ In every case the Newton iteration count stays at two to four per step; where th
 On FSI3 level 1 this was tested directly: with the same Newton fluid solver, IQN-ILS costs four to seven times as much per step as the quasi-monolithic coupling (Section~\ref{sec:fsi3_m}).
 
 These conclusions hold for the settings used.
-The partitioned schemes use the parameters of the companion paper, chosen for robustness under the strict convergence test, without tuning for cost: for example, IQN-ILS reuses the modes of the previous five time steps on FSI3, of the previous two on the Hessenthaler flap and none on the half-cylinder, and other choices of the reuse, of the number of retained modes or of the Robin coefficient could reduce the coupling iterations.
+The partitioned schemes use the parameters of the companion paper, chosen for robustness under the strict convergence test (on the half-cylinder, the solver's default test), without tuning for cost: for example, IQN-ILS reuses the modes of the previous five time steps on FSI3, of the previous two on the Hessenthaler flap and none on the half-cylinder, and other choices of the reuse, of the number of retained modes or of the Robin coefficient could reduce the coupling iterations.
 The quasi-monolithic linear solver and its preconditioner were not optimised case by case either: the field-split preconditioner of Section~\ref{sec:fieldsplit} with single-level ILU(0) for the fluid velocity block was used throughout, and a better fluid-block preconditioner would lower the cost of every Newton iteration, most on the large three-dimensional meshes.
 % FSI3: paper-data/fsi3_timing.csv (protocol, medians of 3): 68.6/56.1, 264.6/200.8,
 % 2041/1239 core-h/s; x 4.91, 5.34, 6.05 its / 2 Newton = 3.0, 3.5, 5.0.

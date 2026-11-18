@@ -51,7 +51,7 @@ What is developed here is their combination in a cell-centred discretisation: th
 Comparisons of monolithic and partitioned coupling~\citep{Heil2008, Degroote2009} are rarely made at matched verified accuracy.
 Such comparisons are only meaningful if both solutions are converged to the same tolerance and agree to within their discretisation error.
 The companion paper~\citep{CardiffFSIVerification2026} assesses partitioned solids4foam solutions of a suite of FSI benchmarks against analytical and independent numerical references, characterises their uncertainty, and introduces a strict coupling convergence test that does not accept unconverged steps in slowly varying phases.
-The present paper uses those references as targets and that convergence test for every partitioned comparison, so that the costs of the complete monolithic and partitioned solvers are compared at matched verified error, not the effect of the coupling algorithm alone, since the two solvers also differ in their fluid discretisation and interface conditions (Section~\ref{sec:consistency_partitioned}); it does not re-examine the references themselves.
+The present paper uses those references as targets and that convergence test for the partitioned comparisons (with one exception, stated in Section~\ref{sec:blob_m}), so that the costs of the complete monolithic and partitioned solvers are compared at matched verified error, not the effect of the coupling algorithm alone, since the two solvers also differ in their fluid discretisation and interface conditions (Section~\ref{sec:consistency_partitioned}); it does not re-examine the references themselves.
 
 The specific contributions are:
 \begin{enumerate}

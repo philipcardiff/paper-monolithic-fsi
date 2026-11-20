@@ -1,7 +1,7 @@
 # Hessenthaler Phase I analysis scripts
 
 These scripts turn the raw run output of the Hessenthaler Phase I cases into the files in
-`paper-data/hessenthaler/`. The paper uses them for Section 6.3, Table 6 and Figure 23. The
+`paper-data/hessenthaler/`. The paper uses them for the Hessenthaler section, its table and its results figure. The
 verification paper can use them on its own runs.
 
 ## Files
@@ -74,5 +74,5 @@ pvbatch ../../../figures/scripts/paraview/hessenthaler_profiles.py <fluid intern
 
 Then join the `vz_point` column of `out.csv` into `profiles_pointwise.csv` under the run name.
 
-`hv_export.py` labels the timing and iteration columns as quasi-monolithic (`QM_*`) or
-partitioned (`P_*`) from the run name.
+Run names must start with `QM_` (quasi-monolithic: Newton counts from the logs) or `P_`
+(partitioned: coupling counts from `fsiResiduals.dat`).

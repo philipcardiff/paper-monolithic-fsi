@@ -38,7 +38,7 @@ The verification paper (paper-fsi-verification) keeps the matching register, `so
 | 10 | Wall arcs on curved two-region meshes (pfv 11) | meshing | ~1 µm AMI wall mismatch | Tutorial only (#625) |
 | 11 | Fluid/solid row scaling | solver settings | default 1 never used; s_S fixed at construction | Issue filed (#717) |
 | 12 | PETSc options of the coupled solve | solver settings | 2–3× cost; LU dominates in 3-D | Tutorial only |
-| 13 | Velocity-block preconditioner in large 3-D cases | solver settings | Krylov counts double per level (Hessenthaler) | Open (issue drafted) |
+| 13 | Velocity-block preconditioner in large 3-D cases | solver settings | Krylov counts grow with the mesh (3-D tube) | Open (issue drafted) |
 | 14 | Rhie–Chow stencil assembly | solver cost | insertion about 1/4 of the run time | Robust (a15366784) |
 | 15 | Flux-switching outlets in a Newton solve | boundary conditions | first step fails or cycles (Hessenthaler) | Issue filed (#664, #675) |
 | 16 | Ranks without fluid cells | parallel | hang in step 2 | Issue filed (#639, #653) |
@@ -50,8 +50,9 @@ The verification paper (paper-fsi-verification) keeps the matching register, `so
 | 22 | Initial Poiseuille flow in copied cases (pfv 15) | tutorials | runs started from rest | Tutorial only (8ae03edaf) |
 | 23 | Timings on a shared file system | HPC | elapsed 11–39% above CPU, 34% spread | Practice |
 | 24 | Checkpoints and restarts at job time limits | HPC | lost steps; stale saves fill the file quota | Practice |
-| 25 | QM restart does not reproduce the continuous run | restart | 2 Newton iterations per step instead of 1 after restart | Open |
+| 25 | Restart without its time state continues as a new run | restart | 2 Newton iterations per step instead of 1 after restart | Issue filed (#740); fix in PR #741 |
 | 26 | Timing protocols restarted from different flow states | HPC | QM Newton counts 2 vs 1 bias cost ratios | Practice |
+| 27 | Region-by-region `decomposePar` drops `<time>/uniform` | restart | time index restarts from zero on a re-decomposed restart | Issue filed (#740); check in PR #741 |
 
 ## Interface conditions
 
@@ -173,9 +174,10 @@ See **pfv 11**. The solver paper's 3-D tube uses the corrected meshes for both c
 
 ### 13. Velocity-block preconditioner in large 3-D cases
 
-- **Found:** November 2026, Hessenthaler Phase I (paper Section 6.3).
-- **What goes wrong:** Newton converges in 2 iterations per step on every mesh, but the Krylov iterations per Newton iteration double from level 1 to level 2 (38 → 81) with the block-Jacobi ILU(0) velocity block. QM then costs 2.0× and 6.0× IQN-ILS on 64 processes and 7.6× on 128. The settings were not optimised for this case.
-- **Evidence:** paper Sections 6.3 and 6.5; `paper-data/hessenthaler/timing.csv`. The FSI3 test with the Newton fluid inside IQN-ILS (paper Section 6.1, #100) shows the cost gap against PIMPLE comes from the coupled fluid solve, not the coupling.
+- **Found:** November 2026, Hessenthaler Phase I (paper Section 6.3) and the 3-D tube (Section 6.4).
+- **What goes wrong:** with the block-Jacobi ILU(0) velocity block, the Krylov iterations per Newton iteration grow with the mesh on the 3-D tube (18 on level 2, 27 on level 3, same state), and each Newton iteration costs 3–5 coupling iterations on FSI3 and about 4 on the Hessenthaler flap. The settings were not optimised for these cases.
+- **Correction (20 Nov 2026):** this entry first cited a doubling between Hessenthaler levels 1 and 2 (38 → 81) and QM costs of 2.0–7.6× IQN-ILS. Those level-2 timings were restarted at t = 15 s, while the flap still moved, and re-decomposed without the time state (entry 27). Timed at the same steady state, QM level 2 needs one Newton iteration with 18 Krylov iterations and costs 0.92–1.08× IQN-ILS; level 1, whose flap keeps oscillating, needs two with 38 and costs 1.9×.
+- **Evidence:** paper Sections 6.3, 6.4 and 6.5; `paper-data/hessenthaler/timing.csv`; `paper-data/tube3d_scaling_rerun/`. The FSI3 test with the Newton fluid inside IQN-ILS (paper Section 6.1, #100) shows the cost gap against PIMPLE comes from the coupled fluid solve, not the coupling.
 - **State:** Open. An issue ("Quasi-monolithic coupling: optimise the linear solver and preconditioner for large 3-D cases") is drafted but not filed.
 - **Robust fix to consider:** compare BoomerAMG/GAMG, ASM or ILU(k) for the velocity block and SIMPLE-type, PCD or LSC Schur approximations, under a fixed timing protocol; make the winner the 3-D template (entry 12).
 
@@ -277,19 +279,45 @@ See **pfv 6** (default test accepts unconverged steps, #552) and **pfv 7** (stri
 
 ## Restarts
 
-### 25. QM restart does not reproduce the continuous run
+### 25. Restart without its time state continues as a new run
 
-- **Found:** 20 Nov 2026, Hessenthaler level-2 QM timing runs, reported by the verification coordinator.
-- **What goes wrong:** restarting the QM run from its saved t = 45 state did not reproduce the continuous run. Each of the first 130 steps after the restart needed two Newton iterations, against one in the continuous run, and the initial residual levelled off at 0.11 against 0.07. The restart state is therefore missing something the continuous run carries.
-- **Evidence:** MeluXina jobs 5476389 and 5476390 (p201136).
-- **Hypotheses (not investigated):** old-old time fields needed by BDF2 not written or not read; the pseudo-solid mesh-motion state; the interface-predictor history (Adams–Bashforth uses the solid velocities of the two previous steps); cached wall fits (`setWallViscousStressTranspose`).
-- **State:** Open (no issue yet).
-- **Robust fix to consider:** write and read everything a BDF2 QM step depends on, and add a restart-consistency regression test: run N steps, restart at N/2, and compare the fields and Newton counts.
+- **Found:** 20 Nov 2026, Hessenthaler level-2 QM timing runs, reported by the verification coordinator; diagnosed the same day (solids4foam #740).
+- **What goes wrong:** restarting the QM run from its saved t = 45 state did not reproduce the continuous run: each of the first 130 steps after the restart needed two Newton iterations, against one in the continuous run, after a first-step residual of 41.7 against 0.050, decaying to a plateau of 0.11.
+- **Cause:** not the QM restart itself. The timing case was re-decomposed region by region, which drops `<time>/uniform/time` (entry 27), so the run started with time index 0. Several solids4foam paths decide "restart or not" from `startTimeIndex() > 0` and took the branch of a new run:
+  - Euler weights in the velocity solid's first step (`backwardDeltaT0`);
+  - the mesh-motion solid's restart fields not read (`readRestartField`);
+  - the mesh-motion stiffness scale factor recomputed on the deformed mesh;
+  - the constitutive state not read.
+- **Evidence:**
+  - Same-decomposition restarts are seamless: the production rF1 restart at t = 20, and TurekHron2006 monolithic at `writePrecision 16`, where the norms match to 1e-9.
+  - The 64- and 128-rank re-decomposed restarts give identical norms (31.0407 at t = 15.002), so the effect does not depend on the decomposition.
+  - Copying `<time>/uniform` into the processor directories restores the continuous behaviour.
+  - Details in #740; MeluXina jobs 5476389/90.
+- **State:** Issue filed (#740). PR #741 (to the QM branch) makes `solids4Foam` stop with an error when the start time holds old-time fields but no `uniform/time`, and adds `TurekHron2006/restartTest.sh` to its regression test.
+- **Robust fix to consider:** beyond the check, stop deciding "restart or not" from the time index in the models.
 
 ### 26. Timing protocols restarted from different flow states
 
 - **Found:** 20 Nov 2026, Hessenthaler timing runs.
-- **What goes wrong:** QM Newton counts fall from two to one per step as the flow approaches a steady state (and entry 25 changes them again after a restart), so timing windows started from different flow states, or from a restart against a continuous run, bias the QM/partitioned cost ratio.
+- **What goes wrong:** QM Newton counts fall from two to one per step as the flow approaches a steady state (and entry 25 changes them again after a restart), so timing windows started from different flow states, or from a restart against a continuous run, bias the QM/partitioned cost ratio. On the Hessenthaler level 2, QM timed from t = 15 s (and without its time state) against IQN-ILS at the steady state gave a ratio of 6.0; both at the steady state with the time state restored give 0.92 (64 processes).
 - **Right choice:** restart both couplings from the same flow state and time window, record the Newton or coupling iterations per step in the timed window, and compare them with the production runs.
 - **State:** Practice.
 
+### 27. Region-by-region `decomposePar` drops `<time>/uniform`
+
+- **Found:** 20 Nov 2026, audit of the paper's timing restarts after entry 25.
+- **What goes wrong:**
+  - `decomposePar` copies or links the top-level `<time>/uniform` (`uniform/time`: time index, `deltaT0`) only when several regions are decomposed in one call (OpenFOAM v2512 `decomposePar.C`, `regionNames.size() > 1`). It links rather than copies unless `-copyUniform` is given, so deleting the reconstructed `<time>` afterwards also loses it.
+  - `decomposePar -region fluid` and `-region solid`, run one after the other, therefore leave the processor directories without `uniform/time`. `decomposeParMonolithic` does not copy it either.
+  - The restarted run continues as a new run (entry 25).
+  - `-allRegions` fails on solids4foam cases, which have no `regionProperties`; `-regions '(fluid solid)' -copyUniform -time <time>` works.
+- **Evidence (audit, 20 Nov 2026):**
+  - **Affected:** every Hessenthaler timing that changed the process count (QM rF1, all IQN-ILS), now re-timed with `uniform/time` restored.
+  - **Affected, effect within the repeat spread:** the 3-D tube strong-scaling rerun with more than one process, both couplings (`paper-data/tube3d_scaling_rerun/README.md`).
+    - QM: Newton unchanged; Krylov iterations 5–13% higher for the first 10 steps.
+    - Robin–Neumann: +3 coupling iterations at step 1 (excluded) and +1–2 at step 2.
+    - Estimated effect on the times: at most about 2%.
+  - **Not affected:** the FSI3 timings (production processor directories symlinked), the newton-partitioned test, and the ring and half-cylinder timings (whole runs from t = 0).
+- **Right choice:** decompose all regions in one call with `-copyUniform`, or copy `<time>/uniform` into each `processor*/<time>/`, and check that `processor*/<time>/uniform/time` exists before a restart.
+- **State:** Issue filed (#740); PR #741 makes `solids4Foam` stop with an error in this situation.
+- **Robust fix to consider:** a solids4foam decomposition helper that always decomposes all regions together and copies `uniform`; `decomposeParMonolithic` copying `uniform`.

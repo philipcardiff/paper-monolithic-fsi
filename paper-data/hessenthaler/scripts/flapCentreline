@@ -1,0 +1,474 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| solids4foam: solid mechanics and fluid-solid interaction simulations        |
+| Version:     v2.4                                                           |
+| Web:         https://solids4foam.github.io                                  |
+| Disclaimer:  This offering is not approved or endorsed by OpenCFD Limited,  |
+|              producer and distributor of the OpenFOAM software via          |
+|              www.openfoam.com, and owner of the OPENFOAM® and OpenCFD®      |
+|              trade marks.                                                   |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      flapCentreline;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Solid points on the flap centreline at mesh nodes, written by the verification driver
+flapCentrelineN00
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.001);
+}
+
+flapCentrelineN01
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.002);
+}
+
+flapCentrelineN02
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.003);
+}
+
+flapCentrelineN03
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.004);
+}
+
+flapCentrelineN04
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.005);
+}
+
+flapCentrelineN05
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.006);
+}
+
+flapCentrelineN06
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.007);
+}
+
+flapCentrelineN07
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.008);
+}
+
+flapCentrelineN08
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.009);
+}
+
+flapCentrelineN09
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.01);
+}
+
+flapCentrelineN10
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.011);
+}
+
+flapCentrelineN11
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.012);
+}
+
+flapCentrelineN12
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.013);
+}
+
+flapCentrelineN13
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.014);
+}
+
+flapCentrelineN14
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.015);
+}
+
+flapCentrelineN15
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.016);
+}
+
+flapCentrelineN16
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.017);
+}
+
+flapCentrelineN17
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.018);
+}
+
+flapCentrelineN18
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.019);
+}
+
+flapCentrelineN19
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.02);
+}
+
+flapCentrelineN20
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.021);
+}
+
+flapCentrelineN21
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.022);
+}
+
+flapCentrelineN22
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.023);
+}
+
+flapCentrelineN23
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.024);
+}
+
+flapCentrelineN24
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.025);
+}
+
+flapCentrelineN25
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.026);
+}
+
+flapCentrelineN26
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.027);
+}
+
+flapCentrelineN27
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.028);
+}
+
+flapCentrelineN28
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.029);
+}
+
+flapCentrelineN29
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.03);
+}
+
+flapCentrelineN30
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.031);
+}
+
+flapCentrelineN31
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.032);
+}
+
+flapCentrelineN32
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.033);
+}
+
+flapCentrelineN33
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.034);
+}
+
+flapCentrelineN34
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.035);
+}
+
+flapCentrelineN35
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.036);
+}
+
+flapCentrelineN36
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.037);
+}
+
+flapCentrelineN37
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.038);
+}
+
+flapCentrelineN38
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.039);
+}
+
+flapCentrelineN39
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.04);
+}
+
+flapCentrelineN40
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.041);
+}
+
+flapCentrelineN41
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.042);
+}
+
+flapCentrelineN42
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.043);
+}
+
+flapCentrelineN43
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.044);
+}
+
+flapCentrelineN44
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.045);
+}
+
+flapCentrelineN45
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.046);
+}
+
+flapCentrelineN46
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.047);
+}
+
+flapCentrelineN47
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.048);
+}
+
+flapCentrelineN48
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.049);
+}
+
+flapCentrelineN49
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.05);
+}
+
+flapCentrelineN50
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.051);
+}
+
+flapCentrelineN51
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.052);
+}
+
+flapCentrelineN52
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.053);
+}
+
+flapCentrelineN53
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.054);
+}
+
+flapCentrelineN54
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.055);
+}
+
+flapCentrelineN55
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.056);
+}
+
+flapCentrelineN56
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.057);
+}
+
+flapCentrelineN57
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.058);
+}
+
+flapCentrelineN58
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.059);
+}
+
+flapCentrelineN59
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.06);
+}
+
+flapCentrelineN60
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.061);
+}
+
+flapCentrelineN61
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.062);
+}
+
+flapCentrelineN62
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.063);
+}
+
+flapCentrelineN63
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.064);
+}
+
+flapCentrelineN64
+{
+    type            solidPointDisplacement;
+    region          solid;
+    point           (0 0 0.065);
+}

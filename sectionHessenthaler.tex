@@ -6,7 +6,8 @@
 % hessenthalerFsi validation driver; QM runs MeluXina philip-hvqm/runs/rF*_S2_
 % qm_b02LUST_T45 (build-bf697 = 517a44921 + #697 fix); partitioned runs UCD
 % Sonic /scratch/pcardiff/hv/P_rF*_LUST_b02 (206437983 + PR 676, 64896b0a5).
-\todo{Insert the QM closing-window values on level 3 when the run reaches $t = 45\,\mathrm{s}$ (expected about 22 Nov).}
+% Analysis: paper-data/hessenthaler/scripts (README); QM rF2 reached t = 45 on 20 Nov 2026
+% (restart segments 0, 10, 19.93, 29.702, 44.702; histories stitched in time order).
 % Mesh levels 1-3 are the rF0-rF2 meshes of the run directories.
 
 The cases above are two-dimensional and have numerical references.
@@ -47,7 +48,7 @@ The tip deflection $u_y$ is averaged over $t = 40$--$45\,\mathrm{s}$, in which t
 	\centering
 	\footnotesize
 	\setlength{\tabcolsep}{3pt}
-	\caption{Hessenthaler Phase I: tip deflection $u_y$ (mean, with the minimum and maximum, over $t = 40$--$45\,\mathrm{s}$; measured $16.41\,\mathrm{mm}$), RMS deviation of the mean centreline from the MRI centreline (MRI voxel $0.98\,\mathrm{mm}$), mean voxel velocity difference from MRI relative to $630\,\mathrm{mm/s}$, and Newton (quasi-monolithic) or coupling (IQN-ILS) iterations per step. Runs not yet at $t = 45\,\mathrm{s}$ show the window $t = 5$--$10\,\mathrm{s}$ (marked${}^{\dagger}$) or a dash. ${}^{\ddagger}$Four per step until $t \approx 35\,\mathrm{s}$; the increase reflects the convergence test at a steady state (see text).}
+	\caption{Hessenthaler Phase I: tip deflection $u_y$ (mean, with the minimum and maximum, over $t = 40$--$45\,\mathrm{s}$; measured $16.41\,\mathrm{mm}$), RMS deviation of the mean centreline from the MRI centreline (MRI voxel $0.98\,\mathrm{mm}$), mean voxel velocity difference from MRI relative to $630\,\mathrm{mm/s}$, and Newton (quasi-monolithic) or coupling (IQN-ILS) iterations per step over the same window. ${}^{\dagger}$Two per step until the flap becomes steady, at $t \approx 28\,\mathrm{s}$ (level 2) and $31\,\mathrm{s}$ (level 3). ${}^{\ddagger}$Four per step until $t \approx 35\,\mathrm{s}$; the increase reflects the convergence test at a steady state (see text).}
 	\label{tab:hessenthaler_m}
 	\begin{tabular}{llrrrrr}
 		\toprule
@@ -55,9 +56,9 @@ The tip deflection $u_y$ is averaged over $t = 40$--$45\,\mathrm{s}$, in which t
 		\midrule
 		1 & QM      & 122\,435 & $15.97$ ($15.86$--$16.05$) & $0.27$ & $5.2\%$ & 2.0 \\
 		    & IQN-ILS &          & $16.31$ ($16.28$--$16.32$) & $0.19$ & $5.1\%$ & 4.2 \\
-		2 & QM      & 312\,180 & $16.62$ ($16.62$--$16.62$) & $0.27$ & $5.0\%$ & 2.0 \\
+		2 & QM      & 312\,180 & $16.62$ ($16.62$--$16.62$) & $0.27$ & $5.0\%$ & $1.0^{\dagger}$ \\
 		    & IQN-ILS &          & $16.66$ ($16.64$--$16.68$) & $0.28$ & $4.9\%$ & 4.6 \\
-		3 & QM      & 832\,552 & --                         & --     & --      & 2.0 \\
+		3 & QM      & 832\,552 & $16.64$ ($16.64$--$16.64$) & $0.28$ & $4.9\%$ & $1.0^{\dagger}$ \\
 		    & IQN-ILS &          & $16.72$ ($16.72$--$16.72$) & $0.31$ & $5.0\%$ & $22.8^{\ddagger}$ \\
 		\bottomrule
 	\end{tabular}
@@ -66,7 +67,7 @@ The tip deflection $u_y$ is averaged over $t = 40$--$45\,\mathrm{s}$, in which t
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=\textwidth]{figures/hessenthaler-results}
-		\caption{Hessenthaler Phase I, quasi-monolithic (blue, solid) and IQN-ILS (red, dashed) on mesh levels 1--3 (light to dark): (a) tip deflection, with the averaging window shaded and the measured steady value dotted; (b) mean deformed centreline over $t = 40$--$45\,\mathrm{s}$ against MRI; (c, d) axial velocity on the line $x = 0$ of the MRI planes $z = 10$ and $30\,\mathrm{mm}$: pointwise model profiles at $t = 45\,\mathrm{s}$ (lines), voxel averages over $t = 40$--$45\,\mathrm{s}$ on the finest mesh of each coupling (filled markers) and phase-contrast MRI on its $5\,\mathrm{mm}$ grid (open circles).}
+		\caption{Hessenthaler Phase I, quasi-monolithic (blue, solid) and IQN-ILS (red, dashed) on mesh levels 1--3 (light to dark): (a) tip deflection, with the averaging window shaded and the measured steady value dotted; (b) mean deformed centreline over $t = 40$--$45\,\mathrm{s}$ against MRI; (c, d) axial velocity on the line $x = 0$ of the MRI planes $z = 10$ and $30\,\mathrm{mm}$: pointwise model profiles at $t = 45\,\mathrm{s}$ (lines; quasi-monolithic level 3 at $t = 44.70\,\mathrm{s}$, its last saved field), voxel averages over $t = 40$--$45\,\mathrm{s}$ on the finest mesh of each coupling (filled markers) and phase-contrast MRI on its $5\,\mathrm{mm}$ grid (open circles).}
 	\label{fig:hessenthaler_results}
 \end{figure}
 
@@ -78,21 +79,26 @@ The tip deflection $u_y$ is averaged over $t = 40$--$45\,\mathrm{s}$, in which t
 \end{figure}
 
 \paragraph{Comparison of the couplings.}
-The quasi-monolithic coupling needs two Newton iterations per step on every mesh and throughout the run, including the first second, in which the flap swings up to a tip deflection of $19\,\mathrm{mm}$ and back (Figure~\ref{fig:hessenthaler_results}a); of the 2\,500 steps of the first $5\,\mathrm{s}$, only 2, 1 and 22 need a third iteration on levels 1, 2 and 3.
+The quasi-monolithic coupling needs two Newton iterations per step on every mesh while the flap moves, including the first second, in which the flap swings up to a tip deflection of $19\,\mathrm{mm}$ and back (Figure~\ref{fig:hessenthaler_results}a); of the 2\,500 steps of the first $5\,\mathrm{s}$, only 2, 1 and 22 need a third iteration on levels 1, 2 and 3.
+Once the flap is steady, from $t \approx 28\,\mathrm{s}$ on level 2 and $31\,\mathrm{s}$ on level 3, one Newton iteration per step meets the tolerance; on level 1, where the flap keeps a small oscillation (tip deflection $15.86$--$16.05\,\mathrm{mm}$ over $t = 40$--$45\,\mathrm{s}$), it needs two throughout.
+% Newton counts: paper-data/hessenthaler/scripts/hv_analysis.py from the QM logs; first single-iteration
+% step t = 27.99 (rF1), 30.756 (rF2); none on rF0.
 IQN-ILS needs about four coupling iterations per step on levels 1 and 2, and on level 3 until $t \approx 35\,\mathrm{s}$.
-On level 3 the flap then becomes steady (the standard deviation of the tip deflection falls from $0.012\,\mathrm{mm}$ over $t = 20$--$25\,\mathrm{s}$ to $0.0002\,\mathrm{mm}$ over $t = 40$--$45\,\mathrm{s}$), and the coupling iterations rise to a mean of 23 per step over $t = 40$--$45\,\mathrm{s}$, with 439 of the 3\,501 steps after $t = 38\,\mathrm{s}$ stopped at the limit of 60 with an interface residual of $0.9$--$18\times10^{-5}$ (median $1.8\times10^{-4}$) against the tolerance of $10^{-4}$.
-Near a steady state the strict test, applied to relative interface residuals, thus stalls just above its tolerance while the solution no longer changes; this is a property of the convergence test rather than a loss of convergence, and a convergence test combining absolute and relative residuals, which would avoid it, is left for future work.
+On level 3 the flap then becomes steady (the standard deviation of the tip deflection falls from $0.012\,\mathrm{mm}$ over $t = 20$--$25\,\mathrm{s}$ to $0.0002\,\mathrm{mm}$ over $t = 40$--$45\,\mathrm{s}$), and the coupling iterations rise to a mean of 23 per step over $t = 40$--$45\,\mathrm{s}$, with 439 of the 3\,501 steps after $t = 38\,\mathrm{s}$ stopped at the limit of 60 with an interface residual of $0.9$--$18\times10^{-4}$ (median $1.8\times10^{-4}$) against the tolerance of $10^{-4}$.
+Near a steady state the strict test, applied to relative interface residuals, thus stalls just above its tolerance while the solution no longer changes; this is a property of the convergence test rather than a loss of convergence, and a convergence test combining absolute and relative residuals, which may avoid it, is left for future work.
 % P_rF2 fsiResiduals: mean per 5 s window 4.1, 4.0, 4.0, 4.0, 4.0, 4.3, 4.5, 8.4, 22.8
 % (t = 0-45); residual at iteration 10 of the long late steps: median 2.1e-4.
-Over the closing window the tip deflection is $15.97\,\mathrm{mm}$ with the quasi-monolithic coupling and $16.31\,\mathrm{mm}$ with IQN-ILS on level 1, $2.1\%$ apart, and $16.62$ against $16.66\,\mathrm{mm}$ on level 2, $0.25\%$ apart; on level 2 the quasi-monolithic flap is steady over this window, as the partitioned flap is on level 3.
+Over the closing window the tip deflection is $15.97\,\mathrm{mm}$ with the quasi-monolithic coupling and $16.31\,\mathrm{mm}$ with IQN-ILS on level 1, $2.1\%$ apart, $16.62$ against $16.66\,\mathrm{mm}$ on level 2, $0.25\%$ apart, and $16.64$ against $16.72\,\mathrm{mm}$ on level 3, $0.5\%$ apart; on levels 2 and 3 the quasi-monolithic flap is steady over this window, as the partitioned flap is on level 3.
 With the acceleration term of the normal momentum equation as the interface pressure gradient instead (Section~\ref{sec:consistency_partitioned}), the level-1 IQN-ILS deflection becomes $16.25\,\mathrm{mm}$, $0.3\%$ lower and $1.8\%$ from the quasi-monolithic value, with about $4.7$ instead of $4.2$ coupling iterations per step; the other results use the zero gradient.
 % Sonic P_rF0_LUST_b02_mwp (job 1160943, movingWallPressure): 16.252 mm vs 16.305 mm (t = 40-45); iterations from fsiResiduals.dat.
-Over $t = 5$--$10\,\mathrm{s}$, a window that the quasi-monolithic run has also reached on level 3, the difference falls from $1.6\%$ on level 1 to $0.6\%$ on level 2 and $0.4\%$ on level 3 ($15.95$ against $16.21$, $16.45$ against $16.55$, and $16.46$ against $16.53\,\mathrm{mm}$).
-The couplings thus approach each other under refinement, as on the two-dimensional cases, where they differ by the discretisation differences of Section~\ref{sec:consistency_partitioned}, here in particular the velocity against the displacement solid and the mesh moved once per step against once per coupling iteration.
-The partitioned tip deflection converges monotonically, $16.31$, $16.66$ and $16.72\,\mathrm{mm}$ on levels 1--3 over the closing window (changes of $0.36$ and $0.06\,\mathrm{mm}$; over $t = 20$--$25\,\mathrm{s}$, $16.21$, $16.61$ and $16.68\,\mathrm{mm}$): on level 1 the fluid-mesh error, about $2.5\%$ against level 3, exceeds the difference between the couplings, whereas on level 2 the two are of similar size ($0.4$ and $0.6\%$).
-The ratio of the two changes is larger than the refinement ratio of about $1.38$ predicts for second-order convergence, so the sequence is not yet in the asymptotic range and no order or extrapolation is given.
-Both deflections increase under refinement; the quasi-monolithic one, the lower on level 1, increases by $0.65\,\mathrm{mm}$ from level 1 to level 2 against $0.36\,\mathrm{mm}$ for the partitioned one, and so closes most of the gap between the couplings.
-\todo{Add the QM level 3 closing-window value and, if the sequences allow, the observed order for both couplings.}
+Over $t = 5$--$10\,\mathrm{s}$, while the flap still moves, the difference is $1.6\%$ on level 1, $0.6\%$ on level 2 and $0.4\%$ on level 3 ($15.95$ against $16.21$, $16.45$ against $16.55$, and $16.46$ against $16.53\,\mathrm{mm}$).
+The couplings thus approach each other from level 1 to level 2, as on the two-dimensional cases, where they differ by the discretisation differences of Section~\ref{sec:consistency_partitioned}, here in particular the velocity against the displacement solid and the mesh moved once per step against once per coupling iteration; from level 2 to level 3 the remaining difference, $0.02$--$0.1\,\mathrm{mm}$, does not decrease consistently: it grows over the closing window and over $t = 20$--$25\,\mathrm{s}$ and shrinks over $t = 5$--$10\,\mathrm{s}$.
+Both tip deflections increase under refinement, and much less from level 2 to level 3 than from level 1 to level 2: by $0.65$ and then $0.02\,\mathrm{mm}$ with the quasi-monolithic coupling and by $0.36$ and then $0.06\,\mathrm{mm}$ with IQN-ILS over the closing window (over $t = 20$--$25\,\mathrm{s}$, by $0.66$ and $0.05$, and $0.40$ and $0.07\,\mathrm{mm}$).
+The ratios of successive changes, about 30 and 6, are far larger than the ratio of about 1.9 that second-order convergence predicts for the refinement ratio of about $1.38$, so neither sequence is in the asymptotic range and no observed order or extrapolation is given.
+On level 1 the fluid-mesh error, $4\%$ (quasi-monolithic) and $2.5\%$ (IQN-ILS) against level 3, exceeds the difference between the couplings; on levels 2 and 3 the two couplings agree within $0.5\%$ and lie within $0.35\,\mathrm{mm}$ of the measured deflection.
+% Closing-window tip u_y (mm), levels 1-3: QM 15.967, 16.619, 16.641; IQN 16.305, 16.661, 16.724.
+% t = 20-25: QM 15.930, 16.592, 16.642; IQN 16.208, 16.611, 16.685. Cells 122435/312180/832552,
+% linear ratios 1.366 and 1.387.
 
 \paragraph{Comparison with the measurements.}
 On every mesh and with both couplings the tip deflection lies within $0.5\,\mathrm{mm}$ of the measured $16.41\,\mathrm{mm}$, and the mean centreline deviates from the MRI centreline by $0.2$--$0.3\,\mathrm{mm}$ RMS, less than a third of the MRI voxel size (Figure~\ref{fig:hessenthaler_results}b).
@@ -100,22 +106,30 @@ On the two MRI planes, $z = 10$ and $30\,\mathrm{mm}$, the computed velocity is 
 The computed velocity differs from the measured velocity by $5\%$ of the inlet peak velocity, as the mean magnitude of the difference vector over all voxels in the fluid, with both couplings and on every mesh compared; the two couplings differ from each other by much less (Figure~\ref{fig:hessenthaler_results}c, d).
 The largest differences are at the jet cores: both couplings predict jet peaks of $570$--$625\,\mathrm{mm/s}$, at most the prescribed inflow peak of $630\,\mathrm{mm/s}$, with the jet centroids within $1\,\mathrm{mm}$ of the measured ones, whereas the measured peaks are $717$--$731\,\mathrm{mm/s}$ in both jets.
 Integrated over each plane, the measured velocities carry $15.3$--$15.5\,\mathrm{l/min}$, $8$--$10\%$ more than the measured pump rate of $14.07\,\mathrm{l/min}$ that the prescribed inflow carries (the computed planes carry $14.1$--$14.4\,\mathrm{l/min}$), and the excess lies in the jets.
-The jet-core difference is therefore a difference in flow rate between the velocity measurement and the pump measurement, larger than the stated MRI error of $0.05$ times the encoding velocity ($40\,\mathrm{mm/s}$ for $v_z$)~\citep{Hessenthaler2017a}, and not one of the discretisation or the coupling.
-% Pointwise vs voxel check: paper-data/hessenthaler/velocity_check.csv (PR #97).
+The jet-core difference is therefore a difference in flow rate between the velocity measurement and the pump measurement, larger than the stated MRI error of $0.05$ times the encoding velocity ($40\,\mathrm{mm/s}$ for $v_z$)~\citep{Hessenthaler2017a}; the discretisation and the coupling change the computed plane flow rates by at most $0.2\,\mathrm{l/min}$ and cannot account for it.
+% Pointwise vs voxel check: paper-data/hessenthaler/velocity_check.csv (PR #97); QM level 3 added 20 Nov 2026
+% (pointwise at t = 44.702 s; its voxel averages at t = 44.702 differ from the t = 40-45 averages by 1.3 mm/s mean, 3.2 max).
 % Parabolic peaks 630 and 615 mm/s in d = 21.9 mm: 7.12 + 6.95 = 14.07 l/min (pump
 % rate of Hessenthaler2017a, PMC5600002); VENC_z = 800 mm/s.
 
 \paragraph{Cost.}
-Both couplings are timed under the protocol of Section~\ref{sec:protocol} on MeluXina, on the same number of processes, restarting from a statistically steady state and timing 100 steps after 50 discarded ones (median of three repeats, which agree within $2\%$, and within $4\%$ for the quasi-monolithic coupling on 128 processes).
+Both couplings are timed under the protocol of Section~\ref{sec:protocol} on MeluXina, on the same number of processes, restarting from a saved state and timing 100 steps after 50 discarded ones (median of three repeats, which agree within $2\%$, and within $4\%$ for the quasi-monolithic coupling on 128 processes).
+The restarts are at $t = 45\,\mathrm{s}$, except for the quasi-monolithic coupling on level 2, which is restarted at $t = 15\,\mathrm{s}$, while the flap still moves, so that its timing covers steps with two Newton iterations, whereas the IQN-ILS timings cover the steady flap.
 The fluid velocity block of the quasi-monolithic preconditioner is factorised by block-Jacobi ILU(0) and the pressure Schur complement by one BoomerAMG V-cycle (Table~\ref{tab:solver_settings}).
-On 64 processes the quasi-monolithic coupling costs $46.5$ and $167$ core-hours per simulated second on levels 1 and 2, and IQN-ILS $22.7$ and $28.0$: the quasi-monolithic coupling is $2.0$ and $6.0$ times more expensive.
+On 64 processes the quasi-monolithic coupling costs $46.5$ and $167$ core-hours per simulated second on levels 1 and 2, and IQN-ILS $22.7$ and $28.0$: the quasi-monolithic coupling is $2.1$ and $6.0$ times more expensive.
 One Newton iteration costs as much as $4.3$ coupling iterations on level 1 and $12.1$ on level 2, whereas IQN-ILS needs about four coupling iterations per step on both meshes.
-The difference comes from the linear solver, not from the Newton iteration, which still converges in two iterations per step: the Krylov iterations per Newton iteration double from level 1 to level 2 ($38$ and $81$).
+The difference comes from the linear solver, not from the Newton iteration, which converges in two iterations per step in the timed windows: the Krylov iterations per Newton iteration double from level 1 to level 2 ($38$ and $81$).
+Once the flap is steady the quasi-monolithic coupling needs one Newton iteration per step, and its production run on level 2 then takes $3.6\,\mathrm{s}$ per step instead of $16.5\,\mathrm{s}$ at $t = 14$--$15\,\mathrm{s}$ (96 processes, outside the timing protocol), so at the steady state the level-2 cost ratio is likely to be much smaller than the timed $6.0$.
+It was not timed under the protocol: a restart from the steady state begins with steps of two Newton iterations, whose initial residual decays only over more than the 50 discarded steps.
+\todo{Decide whether to re-time the quasi-monolithic coupling on level 2 at the steady state (protocol with a longer discarded start, about 10 node-hours) and revise the cost ratios here, in Section~\ref{sec:accuracy_cost_discussion}, the Conclusions and the abstract.}
+% Production QM logs (wall s/step): rF1 (96 procs) t = 14-15: 16.55, 24-25: 14.93, 34-35: 3.62, 40-41: 3.65;
+% rF2 (256 procs) 14-15: 32.8, 24-25: 32.9, 34-35: 8.3, 40-41: 7.5. Timing restart from t = 45 (job 5476389,
+% 64 procs): two Newton iterations on all of the first 60 steps, ~22 s/step, initial residual 42 then ~7/n.
 The linear solver settings of the quasi-monolithic coupling were not optimised for this three-dimensional case, and the single-level block-Jacobi ILU(0) factorisation of the fluid velocity block is a likely cause of this growth; a multilevel preconditioner for the velocity block, as already used for the pressure Schur complement, did not reduce the cost on the smaller and simpler flow of the three-dimensional tube (Section~\ref{sec:tube3d_pc_study}), and its assessment on this case is left for future work.
 With two Newton iterations per step, the quasi-monolithic coupling would break even with the present linear solver only if IQN-ILS needed about 9 and 24 coupling iterations per step.
 On 128 processes the quasi-monolithic coupling is no faster on level 2 ($1862$ against $1875\,\mathrm{s}$ for the timed window), whereas IQN-ILS is $1.29$ times faster, so the ratio rises to $7.6$.
 With these settings, this case is the clearest example in this paper of the regime in which the accelerated partitioned scheme is cheaper: although the fluid is denser than the solid ($\rho_F/\rho_S = 1.10$), the flap moves slowly and settles to a nearly steady state, so the interface accelerations are small and IQN-ILS, reusing the modes of the previous steps, needs few coupling iterations.
-The quasi-monolithic coupling itself behaves well, with two Newton iterations per step on every mesh; its cost here is that of its linear solver, which a better preconditioner for the fluid block may reduce enough to make it competitive.
+The quasi-monolithic coupling itself behaves well, with two Newton iterations per step on every mesh while the flap moves and one once it is steady; its cost here is that of its linear solver, which a better preconditioner for the fluid block may reduce enough to make it competitive.
 % paper-data/hessenthaler/timing.csv: MeluXina jobs 5457349-52 and 5457747-48
 % (build-bf697 = 517a44921 + #697 fix, both couplings); restarts: QM rF0 t = 45,
 % QM rF1 t = 15 (production run still going), IQN-ILS rF0/rF1 t = 45 (Sonic

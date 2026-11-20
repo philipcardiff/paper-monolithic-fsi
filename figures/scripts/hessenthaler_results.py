@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Hessenthaler Phase I on the rF meshes: (a) tip deflection history,
 (b) mean deformed centreline (t = 40-45 s) against MRI, (c, d) v_z on the line
-x = 0 of the MRI planes z = 10 and 30 mm: pointwise model profiles (lines) and
+x = 0 of the MRI planes z = 10 and 30 mm: pointwise model profiles (lines; QM level 3 at
+t = 44.702 s, its last saved field, the others at t = 45 s) and
 the voxel averages at the MRI points on the finest mesh of each coupling (filled
 markers). Quasi-monolithic: blue, solid; partitioned IQN-ILS: red, dashed; mesh
 levels 1-3 (rF0-rF2) from light to dark.
@@ -50,17 +51,17 @@ ax_a.set_title("(a)", fontsize=8, loc="left")
 line = rows(D / "centreline.csv")
 meas = rows(REF / "phaseI_centreline.csv")
 ax_b.plot([float(m["z_mm"]) for m in meas], [float(m["y_mm"]) for m in meas], "o", ms=2.5, mfc="white", mec="0.35", mew=0.7, label="MRI")
-for run, c, L in (("QM_rF0", "QM", 0), ("P_rF0", "P", 0), ("P_rF1", "P", 1)):
+for run, c, L in (("QM_rF0", "QM", 0), ("QM_rF2", "QM", 2), ("P_rF0", "P", 0), ("P_rF2", "P", 2)):   # coarsest and finest of each
     pts = [(float(r["z_mm"]), float(r["y_mm"])) for r in line if r["run"] == run]
     if pts:
         ax_b.plot(*zip(*pts), lw=0.9, ls=STY[c]["ls"], color=STY[c]["color"][L], label=f"{'QM' if c == 'QM' else 'IQN-ILS'}, level {L + 1}")
-ax_b.set_xlabel("$z$ (mm)"); ax_b.set_ylabel("$y$ (mm)"); ax_b.legend(frameon=False, fontsize=6, loc="upper left")
+ax_b.set_xlabel("$z$ (mm)"); ax_b.set_ylabel("$y$ (mm)"); ax_b.legend(frameon=False, fontsize=6, loc="upper left", handlelength=1.5, borderaxespad=0.2)
 ax_b.set_title("(b)", fontsize=8, loc="left")
 # (c, d)
 prof = rows(D / "profiles.csv")          # MRI and voxel averages at the MRI points
 line = rows(D / "profiles_pointwise.csv")  # pointwise model, every 0.25 mm
 runs = [k for k in line[0] if k.startswith(("QM_", "P_"))]
-VOX = {"QM_rF1": "s", "P_rF2": "^"}
+VOX = {"QM_rF2": "s", "P_rF2": "^"}
 for ax, z, lab in ((ax_c, "10", "(c) $z = 10$ mm"), (ax_d, "30", "(d) $z = 30$ mm")):
     p = sorted((r for r in prof if r["z_mm"] == z), key=lambda r: float(r["y_mm"]))
     y = [float(r["y_mm"]) for r in p]

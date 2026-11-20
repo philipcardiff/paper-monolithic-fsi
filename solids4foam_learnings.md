@@ -50,9 +50,9 @@ The verification paper (paper-fsi-verification) keeps the matching register, `so
 | 22 | Initial Poiseuille flow in copied cases (pfv 15) | tutorials | runs started from rest | Tutorial only (8ae03edaf) |
 | 23 | Timings on a shared file system | HPC | elapsed 11–39% above CPU, 34% spread | Practice |
 | 24 | Checkpoints and restarts at job time limits | HPC | lost steps; stale saves fill the file quota | Practice |
-| 25 | Restart without its time state continues as a new run | restart | 2 Newton iterations per step instead of 1 after restart | Issue filed (#740); fix in PR #741 |
+| 25 | Restart without its time state continues as a new run | restart | 2 Newton iterations per step instead of 1 after restart | Robust (#741, QM branch) |
 | 26 | Timing protocols restarted from different flow states | HPC | QM Newton counts 2 vs 1 bias cost ratios | Practice |
-| 27 | Region-by-region `decomposePar` drops `<time>/uniform` | restart | time index restarts from zero on a re-decomposed restart | Issue filed (#740); check in PR #741 |
+| 27 | Region-by-region `decomposePar` drops `<time>/uniform` | restart | time index restarts from zero on a re-decomposed restart | Robust (#741, QM branch) |
 
 ## Interface conditions
 
@@ -293,7 +293,7 @@ See **pfv 6** (default test accepts unconverged steps, #552) and **pfv 7** (stri
   - The 64- and 128-rank re-decomposed restarts give identical norms (31.0407 at t = 15.002), so the effect does not depend on the decomposition.
   - Copying `<time>/uniform` into the processor directories restores the continuous behaviour.
   - Details in #740; MeluXina jobs 5476389/90.
-- **State:** Issue filed (#740). PR #741 (to the QM branch) makes `solids4Foam` stop with an error when the start time holds old-time fields but no `uniform/time`, and adds `TurekHron2006/restartTest.sh` to its regression test.
+- **State:** Robust on the QM branch. #741 was merged into `feature-petsc-snes-quasi-monolithic` on 20 Nov 2026 (3bc38e401) and #740 closed. `solids4Foam` now stops with an error when the start time holds old-time fields but no `uniform/time`, and `TurekHron2006/restartTest.sh` runs in its regression test. It reaches development with PR #233.
 - **Robust fix to consider:** beyond the check, stop deciding "restart or not" from the time index in the models.
 
 ### 26. Timing protocols restarted from different flow states
@@ -319,5 +319,5 @@ See **pfv 6** (default test accepts unconverged steps, #552) and **pfv 7** (stri
     - Estimated effect on the times: at most about 2%.
   - **Not affected:** the FSI3 timings (production processor directories symlinked), the newton-partitioned test, and the ring and half-cylinder timings (whole runs from t = 0).
 - **Right choice:** decompose all regions in one call with `-copyUniform`, or copy `<time>/uniform` into each `processor*/<time>/`, and check that `processor*/<time>/uniform/time` exists before a restart.
-- **State:** Issue filed (#740); PR #741 makes `solids4Foam` stop with an error in this situation.
+- **State:** Robust on the QM branch: #741 (merged 20 Nov 2026, 3bc38e401) makes `solids4Foam` stop with an error in this situation. Reaches development with PR #233.
 - **Robust fix to consider:** a solids4foam decomposition helper that always decomposes all regions together and copies `uniform`; `decomposeParMonolithic` copying `uniform`.

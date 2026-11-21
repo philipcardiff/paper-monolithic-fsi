@@ -53,7 +53,7 @@ The verification paper (paper-fsi-verification) keeps the matching register, `so
 | 25 | Restart without its time state continues as a new run | restart | 2 Newton iterations per step instead of 1 after restart | Robust (#741, QM branch) |
 | 26 | Timing protocols restarted from different flow states | HPC | QM Newton counts 2 vs 1 bias cost ratios | Practice |
 | 27 | Region-by-region `decomposePar` drops `<time>/uniform` | restart | time index restarts from zero on a re-decomposed restart | Robust (#741, QM branch) |
-| 28 | QM solvers ignore fvOptions | sources | body forces (gravity, MMS sources) silently dropped; inconsistent wall pressure | Issue filed (#746) |
+| 28 | QM solvers ignore fvOptions | sources | body forces (gravity, MMS sources) silently dropped; inconsistent wall pressure | Robust (#751, QM branch) |
 | 29 | QM interface pressure without the k·∇p non-orthogonal term | interface | first-order interface pressure and traction on tilting interfaces | Issue filed (#747) |
 | 30 | Correction vectors from `patch().delta()` are zero on OpenFOAM.com | boundary conditions | non-orthogonal correction silently off (`newMovingWallVelocity`, `elasticWallVelocity`, others) | Issue filed (#748) |
 | 31 | Δt-dependent error plateau in `newtonIcoFluid` | discretisation | temporal orders of p and traction stall below Δt ≈ 0.005 | Issue filed (#749) |
@@ -344,7 +344,7 @@ The entries below come from the manufactured-solution (MMS) FSI case built on 20
   - **Consequence:** any body force is silently dropped in QM runs, and fixing only the residual would leave the wall and interface pressure inconsistent with it.
 - **Evidence:** solids4foam#746 (specific case of #508, #221); MMS README §4.
 - **Right choice:** apply `fvOptions(U) & U` in the residual and in the normal balance, and `fvOptions(rho, U) & U` in the velocity solid. This is prototyped and gives second order in the orthogonal-mesh MMS variant.
-- **State:** Issue filed (#746); PR to follow.
+- **State:** Robust on the QM branch. #751 merged 21 Nov 2026 (db3039b76), #746 closed. The regression tutorial `quasiMonolithicBodyForce` checks the hydrostatic pressure. A non-zero `constant/fluid/g` is still ignored by `newtonIcoFluid` (#508). Reaches development with PR #233.
 - **Robust fix to consider:** a regression check that a uniform body force gives the hydrostatic pressure in a QM case. More generally, the #508 rule: a configured option that no equation applies should be reported.
 
 ### 29. QM interface pressure without the k·∇p non-orthogonal term

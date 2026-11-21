@@ -56,8 +56,9 @@ The verification paper (paper-fsi-verification) keeps the matching register, `so
 | 28 | QM solvers ignore fvOptions | sources | body forces (gravity, MMS sources) silently dropped; inconsistent wall pressure | Robust (#751, QM branch) |
 | 29 | QM interface pressure without the k·∇p non-orthogonal term | interface | first-order interface pressure and traction on tilting interfaces | Issue filed (#747) |
 | 30 | Correction vectors from `patch().delta()` are zero on OpenFOAM.com | boundary conditions | non-orthogonal correction silently off (`newMovingWallVelocity`, `elasticWallVelocity`, others) | Issue filed (#748) |
-| 31 | Δt-dependent error plateau in `newtonIcoFluid` | discretisation | temporal orders of p and traction stall below Δt ≈ 0.005 | Issue filed (#749) |
-| 32 | `pimpleFluid` pressure order and outlet–wall corner in MMS | discretisation | first-order fluid pressure; L∞ dominated by the outlet corner | Issue filed (#750) |
+| 31 | Δt-dependent error plateau in `newtonIcoFluid` | discretisation | temporal orders of p and traction stall below Δt ≈ 0.005 | Issue filed (#749); opt-in fix in PR #752 (entry 33) |
+| 32 | `pimpleFluid` pressure order and outlet–wall corner in MMS | discretisation | first-order fluid pressure; L∞ dominated by the outlet corner | Issue filed (#750); `ddtCorr` implicated (entry 33) |
+| 33 | Δt-consistent Rhie–Chow as the `newtonIcoFluid` default (pfv 16, 18) | discretisation | discrete problem depends on Δt: MMS plateau; coarse FSI3 drag −2.2% when Δt halves | Open (opt-in PR #752) |
 
 ## Interface conditions
 
@@ -396,8 +397,8 @@ The entries below come from the manufactured-solution (MMS) FSI case built on 20
 - **Right choice in the paper:**
   - Run spatial studies at a fixed small Δt and temporal studies on a fixed mesh. Refining h and Δt together mixes partly cancelling errors.
   - Check whether the paper's temporal orders for the pressure and traction come from Δt below the plateau.
-- **State:** Issue filed (#749).
-- **Robust fix to consider:** a pressure stabilisation independent of Δt, or a Rhie–Chow coefficient without the 1/Δt dependence, verified on the MMS case.
+- **State:** Issue filed (#749). Cause found (the Rhie–Chow coefficient ∝ Δt) and fixed as an option in PR #752; see entry 33.
+- **Robust fix to consider:** a pressure stabilisation independent of Δt, or a Rhie–Chow coefficient without the 1/Δt dependence, verified on the MMS case. Entry 33 records the chosen fix.
 
 ### 32. `pimpleFluid` pressure order and outlet–wall corner in MMS
 
@@ -410,6 +411,66 @@ The entries below come from the manufactured-solution (MMS) FSI case built on 20
   - QM on the same meshes has a pressure order of 1.7–2.1 and no corner outlier.
 - **Evidence:** solids4foam#750; MMS README §5.4.
 - **Right choice in the paper:** when the pressure-type accuracy of the two couplings is compared, separate coupling effects from this `pimpleFluid` effect.
-- **State:** Issue filed (#750); not yet isolated (the boundary condition set-up, #748, or the Dirichlet-p/Neumann-U outlet next to a `fixedFluxPressure` wall).
+- **State:** Issue filed (#750). `pimpleFluid`'s `ddtCorr` term accounts for much of it (entry 33): with `ddtCorr no`, the n64 pressure error falls by 2.4× and its order rises to 1.5–1.7. This is not yet separated into spatial and temporal parts. Other candidates remain: the boundary condition set-up (#748), and the Dirichlet-p/Neumann-U outlet next to a `fixedFluxPressure` wall.
 - **Robust fix to consider:** depends on the cause.
 
+
+### 33. Δt-consistent Rhie–Chow as the `newtonIcoFluid` default (pfv 16, 18)
+
+- **Found:** 21 Nov 2026. Follow-up to entry 31 on the MMS case, checked on the ring, FSI3 and blobInTreacle.
+- **What goes wrong:**
+  - **Coefficient ∝ Δt.** The default Rhie–Chow coefficient of `newtonIcoFluid` is `−interpolate(1/A)`, where A includes the transient diagonal c/Δt. For small Δt it is ∝ Δt, so the discrete problem that time integration converges to depends on Δt. This causes the plateau of entry 31.
+  - **FSI3.** On the coarse tutorial mesh, halving Δt from 1e-3 to 5e-4 moves the drag from 7.674 to 7.502 (−2.2%) and the uy amplitude from 20.89 to 20.34 mm.
+  - **Steady coefficient breaks the ring.** Dropping the ddt term from the coefficient removes the plateau but breaks the ring (amplitude loss 21% per period, wet/dry ratio −0.42%, Newton 3.9 per step) and TurekHron (forces 12%). The reason is that 1/a_spatial is unbounded for a nearly inviscid, slow flow.
+- **Evidence:**
+  - solids4foam#749 (diagnosis and comments) and PR #752 (implementation, all tables); `claude-runs/mms-fsi` PROGRESS.md and `case/runs/rc/`.
+  - **MMS temporal study, n32, Δt 0.04 → 0.00125.** Final-pair orders, default → time history:
+
+    | quantity | tilting interface | flat interface |
+    |---|---|---|
+    | fluid p | 0.05 → 1.64 | −0.10 → 1.83 |
+    | interface traction | −0.28 → 1.92 | −0.54 → 1.98 |
+    | solid D | 1.60 → 2.00 | 0.36 → 1.99 |
+
+  - **Ring, all levels, history on.** All 9 checks pass; strong level: ratio −0.009% (default −0.004%), loss 0.070% (0.049%) per period, Newton 2.00.
+  - **blobInTreacle.** Changes ≤ 3.4e-5.
+  - **FSI3, history on.** Drag 8.520 and 8.521, uy amplitude 25.55 and 25.54 mm at Δt 1e-3 and 5e-4: independent of Δt to about 4 digits.
+  - **Restart.** Serial matches to 10 digits; parallel to 6e-8.
+- **Right choice:** the Choi (1999) / Cubero and Fueyo (2007) time-history correction.
+  - **Flux.** φ = interpolate(U)·Sf − γ|Sf|B + γ|Sf|(c0 wⁿ − c00 wⁿ⁻¹)/Δt, with w the accepted face-normal correction of each step.
+  - **Coefficient.** γ = 1/(interpolate(a_P) + c/Δt): interpolate the spatial diagonal first, then invert. Then a converged steady state, w = −B/a_f, is exactly independent of Δt.
+  - **No limiter.** OpenFOAM's `ddtCouplingCoeff`-style limiter on the history brings the plateau back: tilting-interface traction order 1.92 → 0.80, p 1.64 → 0.56, U 0.92 → 0.05; flat traction 1.98 → 1.25.
+- **Relation to `ddtCorr` in `pimpleFluid` (pfv 16, 18).**
+  - **What is shared.** `pimpleFluid` adds `interpolate(rAU)*fvc::ddtCorr(U, phi, Uf)`, on by default. It is the same history quantity, with the same backward weights and the same Euler first step.
+  - **Coefficient.** `interpolate(rAU)` interpolates a reciprocal, so a `pimpleFluid` steady state is only approximately Δt-independent. This is the residual Δt dependence of pfv 16.
+  - **Limiter.** The default limiter is `1 − min(|δφ|/|φ|, 1)`.
+  - **ALE form.** On a moving mesh it is the Uf form, the vector history projected on the current Sf.
+  - **Restart.** OpenFOAM writes `phi_0` only.
+  - **In the partitioned MMS runs** (Aitken, combined refinement n16–n64), `ddtCorr` accounts for much of pfv 18 / entry 32:
+
+    | setting | p L2 at n64 (orders) |
+    |---|---|
+    | default | 1.82e-2 (0.88, 0.94) |
+    | `backward 1`, no limiter | 2.33e-2 (1.13, 1.40) |
+    | `ddtCorr no` | 7.50e-3 (1.73, 1.49) |
+
+    Over the same runs, the velocity L∞ falls from 8.07e-2 to 2.39e-2 with `ddtCorr no`.
+  - **What this means for the partitioned side.** The limiter is not the cause there. `ddtCorr no` is not a recommendation until fixed-Δt and fixed-mesh studies separate the parts.
+- **BDF-q caveat.**
+  - **What #752 supports.** The correction must use exactly the weights the ddt scheme applies to U. #752 supports `backward`, `Euler` and `BDF 1`, and stops with an error for `BDF 2` to `6` (298ec4852). Mapping `BDF 2` to `backward` would differ on restart (Astra review).
+  - **What BDF-q would need:**
+    - q history levels, written for restart;
+    - the scheme's effective weights and start-up ramp, which are private in `bdfDdtScheme`;
+    - on moving meshes, #674.
+  - **OpenFOAM's `ddtCorr`.** `bdfDdtScheme` (#629) implements `ddtCorr` for vector U up to q = 6, with the same limiter. #674 leaves it unchanged on moving meshes. The interaction is flagged on #674.
+- **Right choice in the paper:**
+  - The QM results use the default coefficient. The ring and the half-cylinder are insensitive to the switch (above).
+  - The paper's FSI3 QM runs (fine meshes, Δt 1–2e-4) were already insensitive to Δt: qm_2 drag 461.113 against 461.119. They have not been rerun with the history.
+  - Temporal orders of p and traction measured with the default coefficient should be checked against the plateau (entry 31).
+- **State:** Open. PR #752 (`RhieChowTimeHistory yes`, opt-in, off by default) is open and not merged. Philip's view (21 Nov 2026) is that it should become the default, probably not disableable. Two checks come first:
+  - a Mac-sized mesh-refinement comparison: FSI3 at two levels and two Δt, and the collapsible channel;
+  - a CI arm with the option on: the TurekHron `restartTest.sh`, blobInTreacle, and possibly a short MMS temporal check.
+- **Robust fix:**
+  - Make the time-history correction the `newtonIcoFluid` default and remove the keyword. Alternatively, keep only a regression switch, named for its purpose (for example `legacyRhieChowCoefficient`), that prints a warning. Update the regression references once.
+  - Keep the FatalError for ddt schemes without matching weights, until a BDF-q version exists.
+  - For `pimpleFluid`, a separate decision once its `ddtCorr` effect is isolated: the Δt-consistent coefficient and no limiter there too, or a documented default.

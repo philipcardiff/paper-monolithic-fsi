@@ -53,6 +53,11 @@ The verification paper (paper-fsi-verification) keeps the matching register, `so
 | 25 | Restart without its time state continues as a new run | restart | 2 Newton iterations per step instead of 1 after restart | Robust (#741, QM branch) |
 | 26 | Timing protocols restarted from different flow states | HPC | QM Newton counts 2 vs 1 bias cost ratios | Practice |
 | 27 | Region-by-region `decomposePar` drops `<time>/uniform` | restart | time index restarts from zero on a re-decomposed restart | Robust (#741, QM branch) |
+| 28 | QM solvers ignore fvOptions | sources | body forces (gravity, MMS sources) silently dropped; inconsistent wall pressure | Issue filed (#746) |
+| 29 | QM interface pressure without the k·∇p non-orthogonal term | interface | first-order interface pressure and traction on tilting interfaces | Issue filed (#747) |
+| 30 | Correction vectors from `patch().delta()` are zero on OpenFOAM.com | boundary conditions | non-orthogonal correction silently off (`newMovingWallVelocity`, `elasticWallVelocity`, others) | Issue filed (#748) |
+| 31 | Δt-dependent error plateau in `newtonIcoFluid` | discretisation | temporal orders of p and traction stall below Δt ≈ 0.005 | Issue filed (#749) |
+| 32 | `pimpleFluid` pressure order and outlet–wall corner in MMS | discretisation | first-order fluid pressure; L∞ dominated by the outlet corner | Issue filed (#750) |
 
 ## Interface conditions
 
@@ -134,7 +139,7 @@ This is the "BDF2 velocity-solid added-mass damping" item.
 
 - **Found:** 17 Nov 2026, Philip's review of Section 3.3.
 - **What goes wrong:** on fixed-value velocity patches the viscous boundary flux and `patchViscousForce` use (U_f − U_P)/(n·d) without the k = d − (n·d)n correction. The missing term, about tan θ times the tangential derivative, does not vanish under refinement on a deforming wall with persistently skewed wall cells. It is close to zero on the near-orthogonal ring and tube meshes used for the order studies.
-- **Evidence:** solids4foam#716; paper Section 3.3.
+- **Evidence:** solids4foam#716; paper Section 3.3. The pressure counterpart is entry 29 (#747).
 - **State:** Issue filed (#716).
 - **Robust fix to consider:** the #716 proposal (subtract (k·G_s)/(n·d) with the existing wall fit G_s), optional first, tested on a skewed near-wall Womersley mesh.
 
@@ -321,3 +326,90 @@ See **pfv 6** (default test accepts unconverged steps, #552) and **pfv 7** (stri
 - **Right choice:** decompose all regions in one call with `-copyUniform`, or copy `<time>/uniform` into each `processor*/<time>/`, and check that `processor*/<time>/uniform/time` exists before a restart.
 - **State:** Robust on the QM branch: #741 (merged 20 Nov 2026, 3bc38e401) makes `solids4Foam` stop with an error in this situation. Reaches development with PR #233.
 - **Robust fix to consider:** a solids4foam decomposition helper that always decomposes all regions together and copies `uniform`; `decomposeParMonolithic` copying `uniform`.
+
+## Manufactured-solution FSI case
+
+The entries below come from the manufactured-solution (MMS) FSI case built on 20–21 Nov 2026 (`claude-runs/mms-fsi`, README there).
+
+- **Case.** A 2-D channel with a compliant neo-Hookean wall, an exact ALE solution and an exact interface traction, with no interface source term.
+- **Variants.** "Full": the interface tilts by up to 13° against the mesh. "Flat": the interface stays flat, so the ALE mesh stays orthogonal.
+
+### 28. QM solvers ignore fvOptions
+
+- **Found:** 20 Nov 2026, while setting up the MMS case.
+- **What goes wrong:**
+  - **`newtonIcoFluid`:** `fluidModel` builds and reports `fvOptions`, but `newtonIcoFluid` never applies them. They are missing from the momentum residual.
+  - **Wall-normal balance:** the balance that sets the `fixedGradient` wall and interface pressure gradient has no body-force term.
+  - **Velocity solid:** its fvOptions line is commented out and would not compile (`ds_` is not a member).
+  - **Consequence:** any body force is silently dropped in QM runs, and fixing only the residual would leave the wall and interface pressure inconsistent with it.
+- **Evidence:** solids4foam#746 (specific case of #508, #221); MMS README §4.
+- **Right choice:** apply `fvOptions(U) & U` in the residual and in the normal balance, and `fvOptions(rho, U) & U` in the velocity solid. This is prototyped and gives second order in the orthogonal-mesh MMS variant.
+- **State:** Issue filed (#746); PR to follow.
+- **Robust fix to consider:** a regression check that a uniform body force gives the hydrostatic pressure in a QM case. More generally, the #508 rule: a configured option that no equation applies should be reported.
+
+### 29. QM interface pressure without the k·∇p non-orthogonal term
+
+- **Found:** 21 Nov 2026, MMS case, full variant.
+- **What goes wrong:**
+  - The `fixedGradient` interface pressure sets p_b = p_P + g (n·d) and drops k·∇p_P, where k = (I − nn)·d.
+  - The mesh motion moves the cells next to a tilting interface almost along fixed columns, so k = O(h) persists under refinement.
+  - The interface pressure and traction are therefore first order, and the solid loses order through the traction.
+- **Evidence:**
+  - solids4foam#747.
+  - At n128, k·∇p_exact = 5.49e-3 against a measured interface p error of 5.28e-3 (correlation 0.96). The reconstruction with exact p_P and exact g gives exactly 5.49e-3.
+  - Spatial orders at Δt = 0.000625, n64 to n128:
+
+    | quantity | full variant | flat variant |
+    |---|---|---|
+    | interface traction | 1.11 | 1.67 |
+    | solid D | 1.37 | 2.17 |
+
+  - A boundary-value-only fix (`fixedGradientCorrected` with a consistently evaluated gradient) excites a near-wall mode and makes U worse by about 50%.
+- **Right choice in the paper:** the ring and tube meshes are near-orthogonal at the interface, so the term is close to zero there. Check this for any case whose interface tilts relative to the mesh (collapsible channel, FSI3, Hessenthaler).
+- **State:** Issue filed (#747); a consistent fix (wall value, Rhie–Chow wall flux and wall-cell gradient) is being prototyped.
+- **Robust fix to consider:** the consistent correction, or at least a warning when the interface non-orthogonality exceeds a threshold.
+
+### 30. Correction vectors from `patch().delta()` are zero on OpenFOAM.com
+
+- **Found:** 21 Nov 2026, Fable review of the MMS case; confirmed in the code.
+- **What goes wrong:**
+  - Several conditions compute k = (I − nn)·`patch().delta()`.
+  - On OpenFOAM.com, `fvPatch::delta()` is purely normal for non-coupled patches, so k ≡ 0 and their non-orthogonal correction does nothing.
+  - Affected: `newMovingWallVelocity`, `elasticWallVelocity`, `normalInletVelocity`, `paraboloidInletVelocity`, `solidSymmetry`, `normalDisplacement`, `tractionPressureDisplacement`, `fixedTemperature`.
+  - `patchCorrectionVectors()` (Cf − Cn) is correct.
+- **Evidence:** solids4foam#748; v2512 `fvPatch.C`.
+- **Right choice in the paper:** none needed for the near-orthogonal interfaces. For the partitioned runs on tilting interfaces, the interface viscous flux and traction are uncorrected whatever the condition claims.
+- **State:** Issue filed (#748).
+- **Robust fix to consider:** use `patchCorrectionVectors()` everywhere, and update the regression references.
+
+### 31. Δt-dependent error plateau in `newtonIcoFluid`
+
+- **Found:** 21 Nov 2026, MMS temporal study (n32 mesh, Δt 0.04 → 0.00125).
+- **What goes wrong:**
+  - The differences between successive-Δt solutions converge at second order for the solid down to Δt ≈ 0.005.
+  - Below that they stall or grow for the interface traction (−0.28 and −0.54 for the two variants) and the fluid pressure.
+  - The plateau is about 3–5e-3, against a spatial error of about 1e-2 at n32.
+- **Evidence:**
+  - solids4foam#749.
+  - Tight tolerances (snes_rtol 1e-13, ksp_rtol 1e-10) change nothing.
+  - A Rhie–Chow scale factor of 4 reduces the plateau by about 50% but does not remove it. A Rhie–Chow coefficient that scales with Δt is suspected.
+- **Right choice in the paper:**
+  - Run spatial studies at a fixed small Δt and temporal studies on a fixed mesh. Refining h and Δt together mixes partly cancelling errors.
+  - Check whether the paper's temporal orders for the pressure and traction come from Δt below the plateau.
+- **State:** Issue filed (#749).
+- **Robust fix to consider:** a pressure stabilisation independent of Δt, or a Rhie–Chow coefficient without the 1/Δt dependence, verified on the MMS case.
+
+### 32. `pimpleFluid` pressure order and outlet–wall corner in MMS
+
+- **Found:** 21 Nov 2026, MMS case, Aitken and Robin–Neumann couplings (n16 to n64).
+- **What goes wrong:**
+  - The fluid pressure is first order in the whole domain: about 1.0, also with the outlet region excluded.
+  - The mean pressure offset does not halve with h.
+  - The velocity L∞ is dominated by the cell column at the outlet–bottom-wall corner, with orders 0.4–0.8.
+  - The solid D is still second order.
+  - QM on the same meshes has a pressure order of 1.7–2.1 and no corner outlier.
+- **Evidence:** solids4foam#750; MMS README §5.4.
+- **Right choice in the paper:** when the pressure-type accuracy of the two couplings is compared, separate coupling effects from this `pimpleFluid` effect.
+- **State:** Issue filed (#750); not yet isolated (the boundary condition set-up, #748, or the Dirichlet-p/Neumann-U outlet next to a `fixedFluxPressure` wall).
+- **Robust fix to consider:** depends on the cause.
+

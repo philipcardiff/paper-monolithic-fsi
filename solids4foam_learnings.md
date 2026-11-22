@@ -521,3 +521,66 @@ The entries below come from the manufactured-solution (MMS) FSI case built on 20
   - an option of `leastSquaresS4f` that sets the boundary normal derivative, for the fluid and for post-processing;
   - field-specific vector caches on all forks;
   - then the recipe as the default of the tutorials with tilting interfaces (TurekHron, blobInTreacle, collapsible channel, beam in cross-flow), after a reference update.
+
+### 35. Traction applied with the boundary cell's deformed area (TL solids)
+
+- **Found:** 21–22 Nov 2026, MMS case with the solid alone driven by the exact interface traction (`claude-runs/qm-solid-order`).
+- **What goes wrong:**
+  - Both total Lagrangian solids apply a `solidTraction` as (t − n p)|J F⁻ᵀ N| dA. This includes the QM velocity solid and the displacement form.
+  - F is the boundary value of `gradD`, but `leastSquaresS4f` has `extrapolatedCalculated` patches. So the deformed area and normal are those of the adjacent cell, half a cell from the face.
+  - The result is an O(h) error in the Neumann data, so the displacement is first order under large deformation.
+  - On the full MMS variant, the solid D L2 orders fall at t = 0.4 to 1.06 and 0.89 (n64→n256), and to 1.81 at t = 0.2 on the finest pair. The location and sign match the predicted area error.
+  - The flat variant has a term 8× smaller, which appears only at n256 (1.62).
+  - The default QM transfer (`conservativeTractionTransfer no`) passes a Cauchy traction, so it is affected too.
+  - With cell-centre areas, a uniform pressure on a bent structure gives a spurious net force of about p·h·κ.
+- **Evidence:**
+  - solids4foam#755. The fix is PR #756: opt-in `tractionPatchSurfaceGradient yes;`, which takes the tangential rows of the boundary gradient from the surface gradient over the face.
+  - **Solid alone, D L2 orders at t = 0.4 (n32→n256):**
+    - default: 1.93, 1.06, 0.89;
+    - exact nominal traction on the reference area: 2.26, 2.15, 2.06;
+    - with the option: 2.28, 2.16, 2.06.
+  - The displacement form behaves the same in space.
+  - **Coupled QM MMS together with #754 (near-wall reconstruction; fluid side in entry 34):** every quantity becomes second order. The traction is 9.2e-4 at n128 (orders 2.22, 2.21, 1.94), against 2.5e-3 with #754 alone and 5.7e-3 with neither.
+  - **Regressions with the option:** ring identical (linear geometry). FSI3 tutorial mesh: tip and lift amplitudes +0.33% and −0.55%. blobInTreacle: −0.7% at the tutorial mesh, converging to the same limit as the default within 0.1% (mesh factors 0.5–4).
+- **Right choice in the paper:**
+  - Not affected: the linear-geometry cases (ring, pulsatile tube, 3-D tube), and the collapsible-channel runs with conservative transfer plus `useUndeformedArea yes`.
+  - FSI3 and the half-cylinder change by less than their mesh error.
+  - **Hessenthaler level 1 (QM rF0), checked 22 Nov 2026 on MeluXina.** The production t = 45 state was restarted to t = 49.5 with the option off and on, with the same build (build-bf697 + #756) and the same 64-rank decomposition.
+    - **Restart.** The reconstructed t = 45 state lacked the solid velocity, the old times and the mesh-motion fields. These were rebuilt from the t = 45 points, with the solid at rest. The restart kick decays in about 0.02 s, and the off arm continues the production run: 2 Newton iterations per step, mean tip deflection 15.967 mm over 45–49.5 against 15.967 mm over 40–45.
+    - **Tip u_y (mean, min–max) over 45.3–49.5:** off 15.966 (15.932–15.998) mm; on 15.965 (15.932–15.997) mm.
+    - **Difference (on − off):** −0.0005 mm, steady from t ≈ 45.5. That is −0.003% of 15.97 mm, and 0.2%, 1.3% and 0.7% of the QM–IQN-ILS gaps on levels 1–3 (0.34, 0.04 and 0.08 mm).
+    - **Conclusion:** Section 6.3 needs no note.
+- **State:** Issue #755; PR #756 (opt-in, not merged).
+- **Robust fix to consider:**
+  - Make the option the default for the TL solids and update the blobInTreacle references (−0.7%).
+  - The hoop row on wedge meshes stays first order; a fix would need the rotated face value.
+
+### 36. Displacement-form TL solid: first-order start-up in time
+
+- **Found:** 21–22 Nov 2026, same MMS case, `nonLinearGeometryTotalLagrangianTotalDisplacement` with `d2dt2 backward`.
+- **What goes wrong:**
+  - From rest with a non-zero initial acceleration, the velocity is off by about 0.74·a₀·Δt from the first step, and the offset does not decay.
+  - The displacement error therefore grows like 0.74·a₀·Δt·t.
+  - It is mesh-independent: D L2 at t = 0.1 is 8.6e-5 on n64 to n256. It falls 4× with Δt/4.
+  - The velocity form has 6.2e-7 at t = 0.01 on the same problem, against 9.4e-6.
+- **Evidence:** solids4foam#757.
+- **Right choice in the paper:**
+  - The paper's partitioned runs ramp their loads from zero, so a₀ ≈ 0 and they are not affected.
+  - In MMS or verification cases that switch a load on at t = 0, compare the displacement form only through differences of successive mesh solutions, or use the velocity form.
+- **State:** Issue filed (#757).
+- **Robust fix to consider:** initialise the old-time levels from U₀ and an A₀ from the momentum balance at t = 0, or use a self-starting second-order first step.
+
+### 37. High-order residual: corner velocity mode on a fine mesh
+
+- **Found:** 22 Nov 2026, same MMS case, velocity solid with `highOrderResidual true` (`movingLeastSquares`, p = 3, alpha 0.1).
+- **What goes wrong:**
+  - At n128 (32 cells across), a velocity mode grows at the traction/clamp corners from t ≈ 0.3: Us L2 goes from 1.1e-4 to 2.1e-3 by t = 0.4, doubling about every 0.025 s.
+  - The growth is independent of Δt. It does not occur at n32 or n64.
+  - It does not occur with alpha 0.3 or 1.0, or with p = 2.
+  - The stencils are well conditioned (condition numbers ≤ 1.2e4), so this is not the singular-stencil mechanism of #698.
+  - Until it starts, the high-order D is second order and 2–3× more accurate than the standard reconstruction.
+- **Evidence:** solids4foam#758 (cross-referenced on #698).
+- **Right choice in the paper:**
+  - The high-order appendix (collapsible channel, FSI3) already uses jump stabilisation 0.1, with a repeat at 1.0 where needed. Check for corner growth when quoting order-3 results on long runs or fine meshes.
+- **State:** Issue filed (#758).
+- **Robust fix to consider:** a stabilisation that scales with the deformation or the corner stiffness, or a documented minimum alpha for p = 3.

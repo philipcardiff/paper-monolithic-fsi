@@ -59,6 +59,7 @@ The verification paper (paper-fsi-verification) keeps the matching register, `so
 | 31 | Δt-dependent error plateau in `newtonIcoFluid` | discretisation | temporal orders of p and traction stall below Δt ≈ 0.005 | Issue filed (#749); opt-in fix in PR #752 (entry 33) |
 | 32 | `pimpleFluid` pressure order and outlet–wall corner in MMS | discretisation | first-order fluid pressure; L∞ dominated by the outlet corner | Issue filed (#750); `ddtCorr` implicated (entry 33) |
 | 33 | Δt-consistent Rhie–Chow as the `newtonIcoFluid` default (pfv 16, 18) | discretisation | discrete problem depends on Δt: MMS plateau; coarse FSI3 drag −2.2% when Δt halves | Open (opt-in PR #752) |
+| 34 | Non-orthogonal fluid walls: reuse the solid's boundary machinery (`leastSquaresS4f`, corrected conditions) | interface | first-order interface traction on tilting interfaces; with the recipe half-applied, wall mass leak or misread pressure | Open (PR #754) |
 
 ## Interface conditions
 
@@ -367,8 +368,8 @@ The entries below come from the manufactured-solution (MMS) FSI case built on 20
 
   - A boundary-value-only fix (`fixedGradientCorrected` with a consistently evaluated gradient) excites a near-wall mode and makes U worse by about 50%.
 - **Right choice in the paper:** the ring and tube meshes are near-orthogonal at the interface, so the term is close to zero there. Check this for any case whose interface tilts relative to the mesh (collapsible channel, FSI3, Hessenthaler).
-- **State:** Issue filed (#747); a consistent fix (wall value, Rhie–Chow wall flux and wall-cell gradient) is being prototyped.
-- **Robust fix to consider:** the consistent correction, or at least a warning when the interface non-orthogonality exceeds a threshold.
+- **State:** Issue filed (#747). Diagnosed and addressed by the recipe of entry 34 (PR #754, not merged).
+- **Robust fix to consider:** the recipe of entry 34, as the default of the QM tutorials once its caveats are fixed, or at least a warning when the interface non-orthogonality exceeds a threshold.
 
 ### 30. Correction vectors from `patch().delta()` are zero on OpenFOAM.com
 
@@ -474,3 +475,49 @@ The entries below come from the manufactured-solution (MMS) FSI case built on 20
   - Make the time-history correction the `newtonIcoFluid` default and remove the keyword. Alternatively, keep only a regression switch, named for its purpose (for example `legacyRhieChowCoefficient`), that prints a warning. Update the regression references once.
   - Keep the FatalError for ddt schemes without matching weights, until a BDF-q version exists.
   - For `pimpleFluid`, a separate decision once its `ddtCorr` effect is isolated: the Δt-consistent coefficient and no limiter there too, or a documented default.
+
+### 34. Non-orthogonal fluid walls: reuse the solid's boundary machinery (`leastSquaresS4f`, corrected conditions)
+
+- **Found:** 21–22 Nov 2026, MMS case (full variant), follow-up to entry 29; Philip's question on PR #754.
+- **What goes wrong:**
+  - **Placement.** On OpenFOAM.com, `fvPatch::delta()` is the normal projection ℓn for non-coupled patches. So `leastSquares`, `snGrad` and the Laplacian read a boundary value at the projected point C + ℓn, not at the face centre.
+    - The momentum-balance `fixedGradient` value p_P + gℓ is the pressure at that point.
+    - A fixed-value velocity is a face-centre value: it is misplaced in the wall-cell ∇U and the two-point viscous flux (#716).
+    - The traction needs the face-centre pressure (#747).
+  - **Exact pressure makes it worse.** Writing the exact (face-centre) pressure into the boundary value is worse, because the least-squares gradient reads it at the projected point.
+  - **`fixedGradientCorrected` on the QM branch.** It got no momentum-balance gradient (g = 0), read a lagged `grad(p)`, and was misread by `leastSquares`. As a pure case change it gives wrong results or aborts.
+- **Evidence:**
+  - PR #754, both versions, with its discussion.
+  - `claude-runs/qm-nearwall` (NOTE.md, PROGRESS.md, `case/runs`).
+  - MMS full variant, Δt = 0.000625, n16 → n128, interface traction L2 at t = 0.4:
+
+    | | fluid alone, n128 (orders) | coupled, n128 (orders) |
+    |---|---|---|
+    | default | 6.73e-3 (1.53, 1.25, 1.09) | 5.67e-3 (1.63, 1.31, 1.11) |
+    | `leastSquaresS4f` + `fixedValueCorrected` + `fixedGradient` | 6.63e-3 (1.44, 1.28, 1.12) | 5.93e-3 (1.54, 1.33, 1.17) |
+    | recipe (with the solver support of #754) | 1.39e-3 (1.92, 1.97, 1.60) | 2.73e-3 (1.93, 1.63, 1.27) |
+
+  - The remaining coupled order at t = 0.4 was the velocity solid's deformed traction area (#755, PR #756). With the recipe and #756 (`tractionPatchSurfaceGradient yes`) the coupled case is second order at t = 0.4: traction 1.21e-3 (orders 2.05, 2.05, 1.92), solid D 2.36, 2.28, 2.16, interface D 1.85, 2.00, 1.99; with #752 as well, traction 1.07e-3 (1.92 last pair) and fluid p 1.94.
+  - **Flat variant:** no degradation.
+  - **ν×10:** traction 6.13e-3 → 4.15e-3.
+- **Right choice (the recipe, documented in the `newtonIcoFluid` README):**
+  - `grad(U)` and `grad(p)` `leastSquaresS4f`, set **per field**: as `default` it also catches the mesh-motion `grad(cellDisplacement)`, which has no `useBoundaryFaceValues` list, and the run stops.
+  - `fixedValueCorrected` velocity on walls and interface.
+  - `fixedGradientCorrected` pressure on momentum-balance walls and interface.
+  - `Gauss linear corrected` Laplacian.
+- **Pitfalls found on the way** (each now handled in #754):
+  - **Rhie–Chow wall leak.** `leastSquaresS4f` deliberately leaves the adjacent-cell value as the boundary gradient (no gaussGrad correction, which caused SNES problems in the solid). In the fluid, the Rhie–Chow wall flux `snGrad(p) − n·∇p_b` is then not zero, and mass leaks through walls: the ring's amplitude *grew* by 0.5–1.1% per period. `newtonIcoFluid` now applies the boundary normal correction for this scheme.
+  - **Wrong scheme.** `fixedGradientCorrected` with `leastSquares` for `grad(p)` is inconsistent, and the residual depends on the previous iterate. The solver now stops.
+  - **Copies.** `fixedValueCorrected` lost its correction when copied (fixed).
+- **Caveats:**
+  - **Post-processing.** OpenFOAM's `forces` function object recomputes `grad(U)` with the case's scheme. With `leastSquaresS4f`, its viscous force uses the adjacent-cell gradient. blobInTreacle: −2.0% in the reported force, while the force passed to the solid changes by +0.05%.
+  - **Other forks.** `leastSquaresS4f` shares its vectors between fields, so it is not yet safe for the fluid.
+  - **Parallel.** Slightly more decomposition dependence (point-only neighbours across processors).
+  - **Ring.** Slightly less accurate with the recipe: wet/dry ratio error −0.034% against −0.004%; amplitude loss per period 0.077% against 0.048%.
+  - **FSI3, coarse tutorial mesh, t = 6.** The tip uy amplitude drops from 20.9 mm to 15.6 mm, against a benchmark of 34.4 mm. `leastSquaresS4f` alone for the fluid gradients, with plain conditions, gives 15.4 mm, so the change comes from the gradient scheme. Which is more accurate needs a mesh study.
+- **Right choice in the paper:** none of the paper's QM cases needs it (near-orthogonal interfaces). For tilting-interface cases, use the recipe, and take forces from the coupling, not from `forces`.
+- **State:** Open. PR #754 (solver support and README recipe), not merged. The QM tutorials are unchanged.
+- **Robust fix:**
+  - an option of `leastSquaresS4f` that sets the boundary normal derivative, for the fluid and for post-processing;
+  - field-specific vector caches on all forks;
+  - then the recipe as the default of the tutorials with tilting interfaces (TurekHron, blobInTreacle, collapsible channel, beam in cross-flow), after a reference update.

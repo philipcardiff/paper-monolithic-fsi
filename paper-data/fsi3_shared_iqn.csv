@@ -1,0 +1,14 @@
+# Turek-Hron FSI3, shared partitioned runs used by both papers (IQN-ILS, solids4foam 9e6d1bfb2 =
+# QM branch 9dd35dce1 + development 206437983 (#671); movingWallPressure interface pressure
+# (acceleration term), Gauss linearUpwind grad(U), coupling tol 1e-6 on all residual measures,
+# reuse 5, fluid abs tol 1e-9; Gmsh meshes of simulationData/fsi3-gmsh-meshes). Levels 1-2: UCD
+# Sonic /scratch/pcardiff/fsi3gmsh/cases/g{1_np24,2_np32} (verification coordinator); level 3:
+# MeluXina /project/home/p201287/philip/fsi3-l3/g3_np128 (jobs 5468636/7, 5471141-3, p201141),
+# Mac copies ~/claude-runs/fsi3gmsh/results/g{1,2} and claude-runs/fsi3-l3-shared.
+# Statistics: paper-data/fsi3/qoi.py stats() (periodic_statistics, t = 5-6 s); errors vs Featflow
+# level 4. Coupling iterations per step over t = 5-6 s from the logs/fsiResiduals.dat.
+# Not protocol-timed: production L3 runs at 16.0 s/step on 128 processes (t = 5.3-6.2).
+run,coupling,level,fluid_cells,solid_cells,dt_s,ranks,machine,window_s,ux_mean,ux_mean_err,ux_amplitude,ux_amplitude_err,uy_mean,uy_mean_err,uy_amplitude,uy_amplitude_err,uy_frequency,uy_frequency_err,drag_mean,drag_mean_err,drag_amplitude,drag_amplitude_err,lift_mean,lift_mean_err,lift_amplitude,lift_amplitude_err,coupling_its_per_step
+iqn_shared_1,IQN-ILS,1,96712,10320,0.0002,24,UCD Sonic,5-6,-0.00288937,-0.00325,0.00273631,0.00600,0.00153032,0.04103,0.0349805,-0.00027,5.47135,0.00208,460.989,0.00106,28.4223,0.02460,2.69855,0.07942,163.686,0.06352,4.87
+iqn_shared_2,IQN-ILS,2,194183,20672,0.000141421356,32,UCD Sonic,5-6,-0.00294047,-0.02100,0.0027812,0.02250,0.00155373,0.05696,0.0352374,0.00707,5.47371,0.00251,461.17,0.00145,28.2777,0.01938,0.18248,-0.92701,160.906,0.04545,5.23
+iqn_shared_3,IQN-ILS,3,387219,41280,0.0001,128,MeluXina,5-6,-0.00294634,-0.02304,0.00278511,0.02394,0.00153115,0.04160,0.0353244,0.00956,5.47455,0.00266,461.276,0.00169,28.3258,0.02112,1.2659,-0.49364,159.103,0.03374,5.78

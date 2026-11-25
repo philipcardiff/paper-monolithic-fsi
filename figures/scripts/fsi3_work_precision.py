@@ -17,6 +17,11 @@ root = Path(__file__).resolve().parents[2]
 rows = {r["run"]: r for r in csv.DictReader(
     line for line in open(root / "paper-data/fsi3_runs.csv")
     if not line.startswith("#"))}
+# IQN-ILS errors from the runs shared with the companion paper; its cost is the
+# protocol timing of the earlier IQN-ILS set-up on the same meshes (see the text)
+for r in csv.DictReader(line for line in open(root / "paper-data/fsi3_shared_iqn.csv")
+                        if not line.startswith("#")):
+    rows["iqn_" + r["level"]] = r
 cost = {r["run"]: float(r["core_h_per_s"]) for r in csv.DictReader(
     line for line in open(root / "paper-data/fsi3_timing.csv")
     if not line.startswith("#"))}

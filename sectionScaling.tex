@@ -144,6 +144,7 @@ The variants are: an upper-triangular instead of a full Schur factorisation of t
 \end{table}
 
 The default settings are the fastest of the seven; every variant reaches the same solution, so the choice is one of cost only.
+The Jacobian of the solid residual as the solid block (Section~\ref{sec:solid_block}), tested separately on level 1 in serial over 60 steps, leaves the Krylov iterations unchanged on this thick wall (14.8 against 14.5 per Newton iteration), but each step costs about 50\,\% more, as BoomerAMG then works on a solid block with three times the non-zeros; the automatic option keeps the compact block here.
 The solid-block preconditioner has the largest effect: the replicated LU factorisation multiplies the cost by eight at unchanged iteration counts, since its cost and memory do not fall with the number of processes (on 4 processes it costs 2.6 times as much as BoomerAMG); in the two-dimensional cases, whose solid blocks are small, it remains the cheaper choice, as BoomerAMG there doubles the Krylov iterations on the ring.
 A looser Krylov tolerance saves Krylov iterations but costs Newton iterations and is slower overall.
 Rebuilding the Jacobian and preconditioner every Newton iteration (lag 1) leaves the iteration counts unchanged and costs $26\%$ more than the default lag of eight; the upper-triangular Schur factorisation saves the second pressure solve but needs $38\%$ more Krylov iterations, for $25\%$ more time.

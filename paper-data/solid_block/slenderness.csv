@@ -1,0 +1,25 @@
+# collapsible channel, fluid level 1, dt 0.00625 s, t <= 0.15 s; series A: cell aspect fixed (nx ~ 1/h, AMI);
+# series B: 80x8 wall; E h^3 fixed in the slenderness sweep; E_factor at fixed h; paper solver settings otherwise
+study,series,h_m,L_over_h,E_factor,solid_block,steps,newton_per_step,krylov_per_newton,run
+slenderness,A,0.2,50,1,compact,24,2.000,51.1,E3_slenderness/A_h0.2_left
+slenderness,A,0.2,50,1,colouredFD,24,2.000,21.4,E16_head/A_h0.2_fd
+slenderness,B,0.2,50,1,compact,24,2.000,89.7,E3_slenderness/B_h0.2_left
+slenderness,B,0.2,50,1,colouredFD,24,2.000,22.4,E16_head/B_h0.2_fd
+slenderness,A,0.1,100,1,compact,24,2.000,148.3,E3_slenderness/A_h0.1_left
+slenderness,A,0.1,100,1,colouredFD,24,2.000,21.7,E16_head/A_h0.1_fd
+slenderness,B,0.1,100,1,compact,24,2.000,185.2,E3_slenderness/B_h0.1_left
+slenderness,B,0.1,100,1,colouredFD,24,2.000,22.2,E16_head/B_h0.1_fd
+slenderness,A,0.05,200,1,compact,24,2.500,332.1,E0_collapsible/L1_80x8_dt00625_base
+slenderness,A,0.05,200,1,colouredFD,24,2.000,21.8,E16_head/L1_fd
+slenderness,B,0.05,200,1,compact,24,2.500,332.1,E0_collapsible/L1_80x8_dt00625_base
+slenderness,B,0.05,200,1,colouredFD,24,2.000,21.8,E16_head/L1_fd
+slenderness,A,0.025,400,1,compact,24,2.875,534.6,E3_slenderness/A_h0.025_left
+slenderness,A,0.025,400,1,colouredFD,24,2.000,21.6,E16_head/A_h0.025_fd
+slenderness,B,0.025,400,1,compact,24,2.667,383.6,E3_slenderness/B_h0.025_left
+slenderness,B,0.025,400,1,colouredFD,24,2.000,20.9,E16_head/B_h0.025_fd
+stiffness,B,0.05,200,0.125,compact,24,2.042,164.3,E3_slenderness/C_E0.125_left
+stiffness,B,0.05,200,0.125,colouredFD,24,2.000,24.2,E16_head/C_E0.125_fd
+stiffness,B,0.05,200,8,compact,24,2.958,447.9,E3_slenderness/C_E8_left
+stiffness,B,0.05,200,8,colouredFD,24,2.000,20.4,E16_head/C_E8_fd
+stiffness,B,0.05,200,1,compact,24,2.500,332.1,E0_collapsible/L1_80x8_dt00625_base
+stiffness,B,0.05,200,1,colouredFD,24,2.000,21.8,E16_head/L1_fd

@@ -190,7 +190,9 @@ approximation of the divergence of the stress, in terms of the solid velocity
 unknown.
 This approximation provides a compact first-neighbour solid block for the
 approximate Jacobian, but it is not a consistent linearisation of the nonlinear
-total Lagrangian constitutive response.
+total Lagrangian constitutive response; as it treats the velocity components
+separately, it misrepresents the bending of slender solids
+(Section~\ref{sec:solid_block}).
 
 For a solid interface face $s$ associated with solid cell $P$, overlapped by a
 fluid interface face $f$ whose adjacent fluid cell is $Q$, the pressure part of

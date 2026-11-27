@@ -18,7 +18,7 @@ Table~\ref{tab:solver_settings} lists the settings of the quasi-monolithic runs 
 	Tol.: relative Newton residual and step tolerances; KSP: relative Krylov tolerance.
 	Schur: Schur factorisation (upper triangular or full); solid PC: replicated LU or one BoomerAMG V-cycle (AMG); lag: Jacobian and preconditioner reuse in Newton iterations, persisting across steps (--: rebuilt every iteration).
 	Source: the run files of each case.
-	Implementation names: Jacobian convection \texttt{jacobian-div(phi,U) Gauss upwind}; Schur approximation \texttt{selfp}; LG/TL \texttt{linearGeometryVelocity}/\texttt{nonLinearGeometryTotalLagrangianVelocity}; stabilisation \texttt{diffStencilLaplacian}; tolerances \texttt{snes\_rtol}, \texttt{snes\_stol}, \texttt{ksp\_rtol}; replicated LU \texttt{redundant}.}
+	Implementation names: Jacobian convection \texttt{jacobian-div(phi,U) Gauss upwind}; Schur approximation \texttt{selfp}; LG/TL \texttt{linearGeometryVelocity}/\texttt{nonLinearGeometryTotalLagrangianVelocity}; stabilisation \texttt{diffStencilLaplacian}; tolerances \texttt{snes\_rtol}, \texttt{snes\_stol}, \texttt{ksp\_rtol}; replicated LU \texttt{redundant}; compact solid block \texttt{solidJacobian compact} (the alternative of Section~\ref{sec:solid_block}: \texttt{colouredFiniteDifference} or \texttt{automatic}).}
 	\label{tab:solver_settings}
 	\begin{tabular}{lllllllllll}
 		\toprule

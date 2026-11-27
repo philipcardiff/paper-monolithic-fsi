@@ -1,13 +1,13 @@
 # paper configuration (fluid level 2, 640x8 wall via AMI, conservative transfer), dt 0.00625 s, t in [0, 0.15] s;
-# variants run back to back in one Slurm allocation (1 core, Xenosim, AMD EPYC 9684X), interleaved, 3 repeats;
-# time = OpenFOAM ExecutionTime at t = 0.15 s (includes set-up); right = right preconditioning (not recommended)
-variant,repeat,time_s,steps,newton_per_step,krylov_per_newton
-paper,1,494.02,24,2.708,380.5
-right,1,159.45,24,3.000,104.3
-colouredFD,1,45.16,24,2.000,27.9
-paper,2,472.42,24,2.708,380.5
-right,2,143.66,24,3.000,104.3
-colouredFD,2,40.8,24,2.000,27.9
-paper,3,446.32,24,2.708,380.5
-right,3,124.96,24,3.000,104.3
-colouredFD,3,35.45,24,2.000,27.9
+# variants run back to back in one Slurm allocation (1 core, AMD EPYC 9684X), interleaved, 3 repeats;
+# solids4foam feature/qm-solid-fd-jacobian @ 0f554fd5; time = OpenFOAM ExecutionTime at t = 0.15 s (incl. set-up)
+solid_block,repeat,time_s,steps,newton_per_step,krylov_per_newton
+compact,1,391.69,24,2.708,380.5
+colouredFiniteDifference,1,32.67,24,2.000,28.0
+auto,1,67.77,24,2.042,74.6
+compact,2,384.8,24,2.708,380.5
+colouredFiniteDifference,2,32.48,24,2.000,28.0
+auto,2,67.46,24,2.042,74.6
+compact,3,384.81,24,2.708,380.5
+colouredFiniteDifference,3,32.4,24,2.000,28.0
+auto,3,67.23,24,2.042,74.6

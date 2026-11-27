@@ -55,7 +55,7 @@ The verification paper (paper-fsi-verification) keeps the matching register, `so
 | 27 | Region-by-region `decomposePar` drops `<time>/uniform` | restart | time index restarts from zero on a re-decomposed restart | Robust (#741, QM branch) |
 | 28 | QM solvers ignore fvOptions | sources | body forces (gravity, MMS sources) silently dropped; inconsistent wall pressure | Robust (#751, QM branch) |
 | 29 | QM interface pressure without the k·∇p non-orthogonal term | interface | first-order interface pressure and traction on tilting interfaces | Issue filed (#747) |
-| 30 | Correction vectors from `patch().delta()` are zero on OpenFOAM.com | boundary conditions | non-orthogonal correction silently off (`newMovingWallVelocity`, `elasticWallVelocity`, others) | Issue filed (#748) |
+| 30 | Correction vectors from `patch().delta()` are zero on OpenFOAM.com | boundary conditions | non-orthogonal correction silently off (`newMovingWallVelocity`, `elasticWallVelocity`, others) | Robust (#760, development) |
 | 31 | Δt-dependent error plateau in `newtonIcoFluid` | discretisation | temporal orders of p and traction stall below Δt ≈ 0.005 | Issue filed (#749); opt-in fix in PR #752 (entry 33) |
 | 32 | `pimpleFluid` pressure order and outlet–wall corner in MMS | discretisation | first-order fluid pressure; L∞ dominated by the outlet corner | Issue filed (#750); `ddtCorr` implicated (entry 33) |
 | 33 | Δt-consistent Rhie–Chow as the `newtonIcoFluid` default (pfv 16, 18) | discretisation | discrete problem depends on Δt: MMS plateau; coarse FSI3 drag −2.2% when Δt halves | Open (opt-in PR #752) |
@@ -381,7 +381,7 @@ The entries below come from the manufactured-solution (MMS) FSI case built on 20
   - `patchCorrectionVectors()` (Cf − Cn) is correct.
 - **Evidence:** solids4foam#748; v2512 `fvPatch.C`.
 - **Right choice in the paper:** none needed for the near-orthogonal interfaces. For the partitioned runs on tilting interfaces, the interface viscous flux and traction are uncorrected whatever the condition claims.
-- **State:** Issue filed (#748).
+- **State:** Robust on development: #760 (merged) uses `patchCorrectionVectors()`, i.e. (I − nn)·(Cf − Cn), in the affected conditions. Small effect on partitioned tutorials (TurekHron tip +0.3%), none on the MMS partitioned orders.
 - **Robust fix to consider:** use `patchCorrectionVectors()` everywhere, and update the regression references.
 
 ### 31. Δt-dependent error plateau in `newtonIcoFluid`

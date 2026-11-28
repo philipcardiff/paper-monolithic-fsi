@@ -111,16 +111,19 @@ textheight=24cm, % llncs has 19.3cm
 %\author[4]{\fnm{\v{Z}eljko} \sur{Tukovi\'{c}}}
 % Emad Tandis removed from this paper (Philip, 1 Nov 2026) until there is a clear
 % contribution to it; he stays an author of the companion verification paper.
-% To re-add: \author[3]{\fnm{Emad} \sur{Tandis}} and the Aston affiliation below.
+% To re-add: \author[4]{\fnm{Emad} \sur{Tandis}} and the Aston affiliation below.
 % Ivan Batisti\'{c} is the final (senior) author (Philip, 1 Nov 2026): add any new
 % author, and their CRediT entry, above Ivan's line, never after it.
+% Sairam Pamulaparthi Venkata added (Philip, 28 Nov 2026; solid block, #121).
+\author[1,3]{\fnm{Sairam} \sur{Pamulaparthi Venkata}}
 \author[1,2]{\fnm{Ivan} \sur{Batisti\'{c}}}
 
 \affil[1]{\orgdiv{School of Mechanical and Materials Engineering}, \orgname{University College Dublin}, \orgaddress{\country{Ireland}}}
 %\affil[2]{\orgdiv{UCD Centre for Mechanics}, \orgname{University College Dublin}, \orgaddress{\country{Ireland}}}
 %\affil[3]{\orgdiv{I-Form Centre}, \orgname{University College Dublin}, \orgaddress{\country{Ireland}}}
 \affil[2]{\orgdiv{Faculty of Mechanical Engineering and Naval Architecture}, \orgname{University of Zagreb}, \orgaddress{\country{Croatia}}}
-%\affil[3]{\orgname{Aston University}, \orgaddress{\city{Birmingham}, \country{United Kingdom}}}% (E. Tandis; see note above)
+\affil[3]{\orgdiv{School of Mechanical Engineering}, \orgname{Technological University Dublin}, \orgaddress{\city{Dublin}, \country{Ireland}}}
+%\affil[4]{\orgname{Aston University}, \orgaddress{\city{Birmingham}, \country{United Kingdom}}}% (E. Tandis; see note above)
 %\affil[5]{\orgname{National Institute of Aerospace}, \orgaddress{\country{Hampton, VA 23666, USA}}}
 
 
@@ -132,7 +135,7 @@ Exact solutions for an added-mass ring and a pulsatile tube show which interface
 The method is compared with partitioned Dirichlet--Neumann coupling, accelerated by Aitken relaxation or interface quasi-Newton iterations (IQN-ILS), and with partitioned Robin--Neumann coupling.
 On matched meshes the quasi-monolithic and partitioned solutions differ by at most 0.13\% on the finest meshes of the consistency cases and by at most 1.0\% in the benchmark quantities of the Turek--Hron FSI3 problem.
 Over the density ratios and time steps of the robustness maps, including a massless wall, the method needs two to four Newton iterations per step, whereas the accelerated Dirichlet--Neumann couplings reach their iteration cap in most cases at solid-to-fluid density ratios of 0.1 and below.
-On the thin wall of a collapsible channel the cost of the linear solves is set by the solid block of the preconditioner, which treats the velocity components separately and misrepresents bending; replacing it by the Jacobian of the solid residual, computed by coloured finite differences, makes the Krylov iterations independent of the wall slenderness and reduces the run time twelvefold at an unchanged solution.
+On the thin wall of a collapsible channel the cost of the linear solves is set by the solid block of the preconditioner, which treats the velocity components separately and misrepresents bending; replacing it by the Jacobian of the solid residual, computed by coloured finite differences, makes the Krylov iterations independent of the wall slenderness and reduces the run time of the collapse twelvefold at an unchanged solution.
 The cost of the method relative to IQN-ILS depends on how many coupling iterations IQN-ILS needs: the method is 1.4 to 6 times cheaper under strong added mass (ring, elastic half-cylinder), but 1.2--1.6 times as expensive on Turek--Hron FSI3, where few coupling iterations suffice, and between 0.9 and 1.9 times as expensive on a three-dimensional flap experiment at equal process counts; on the flap experiment both couplings match the measured flap centreline to within a third of the imaging resolution (RMS).
 On a three-dimensional tube it costs 3.2--3.5 times as much as Robin--Neumann coupling and keeps a single-node parallel efficiency of 0.81 from 16 to 128 cores.
 The implementation and all case set-ups are shared publicly in the open-source solids4foam toolbox for OpenFOAM.
@@ -220,6 +223,7 @@ The authors wish to acknowledge the Irish Centre for High-End Computing (ICHEC) 
 \bmhead{CRediT authorship contribution statement}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \textbf{Philip Cardiff:} Conceptualization, Methodology, Software, Investigation, Writing -- original draft, Writing -- review \& editing, Supervision, Funding acquisition.
+\textbf{Sairam Pamulaparthi Venkata:} Investigation, Methodology, Software (coloured finite-difference solid block, solids4foam\#788), Formal analysis, Validation (FEniCSx check), Visualization, Writing -- original draft (Section~\ref{sec:solid_block}), Writing -- review \& editing \tbd{confirm}.
 % Ivan's CRediT entry stays last (final author).
 \textbf{Ivan Batisti\'{c}:} Software (velocity-based solid and JFNK solid discretisation), Methodology, Writing -- review \& editing \tbd{confirm}.
 \todo{CRediT statement to be confirmed by each author.}
